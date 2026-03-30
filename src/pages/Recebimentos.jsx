@@ -126,7 +126,6 @@ function Recebimentos() {
             console.log("UPLOAD STATUS:", res.status);
             console.log("Conferente:", funcionario);
             console.log("Localização:", paletes.filter(p => p.trim() !== "").join(" | "));
-
             console.log("OBS FINAL ENVIADA:",observacao_palet);
 
             const response = await fetch(
@@ -610,7 +609,6 @@ function Recebimentos() {
                                     size="large"
                                     sx={{ width: '100%', bgcolor: '#007bff', mb: 2, '&:hover': { bgcolor: '#0056b3' } }}
                                     onClick={() => setOpenRetirada(true)}
-                                    disabled
                                 >
                                     Retirar peça
                                 </Button>
@@ -638,7 +636,6 @@ function Recebimentos() {
                                         });
                                         setOpenErro(true);
                                     }}
-                                    disabled
                                 >
                                     Relatar erro
                                 </Button>

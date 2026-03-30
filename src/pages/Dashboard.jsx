@@ -304,7 +304,6 @@ function Dashboard() {
                                                         '&:hover': { bgcolor: '#0056b3' }
                                                     }}
                                                     onClick={() => navigate(`/Conferencia/${nota.id}`)}
-                                                    disabled
                                                 >Iniciar Conferência
                                                 </Button>
                                             </Box>
