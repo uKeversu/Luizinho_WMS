@@ -229,7 +229,9 @@ function Recebimentos() {
             const nota = xml.getElementsByTagName("nNF")[0]?.textContent;
             const serie = xml.getElementsByTagName("serie")[0]?.textContent;
             const fornecedor = xml.getElementsByTagName("xNome")[0]?.textContent;
-            const cnpj = xml.getElementsByTagName("CNPJ")[0]?.textContent;
+            const destNode = xml.getElementsByTagName("dest")[0];
+            const cnpjDest = destNode?.getElementsByTagName("CNPJ")[0]?.textContent ||
+                destNode?.getElementsByTagName("CPF")[0]?.textContent;
             const volNode = xml.getElementsByTagName("vol")[0];
             let volumes = "Não informado";
             if (volNode) {
@@ -240,13 +242,27 @@ function Recebimentos() {
                 nota,
                 serie,
                 fornecedor,
-                cnpj,
+                cnpj: cnpjDest,
                 totalPecas,
                 volumes
             });
         };
 
         reader.readAsText(f);
+    }
+
+    const CNPJ_EMPRESA = "03978085000175";
+
+    if (cnpjDest !== CNPJ_EMPRESA) {
+        setSnackbar({
+            open: true,
+            message: `Este XML não pertence à sua empresa (${cnpjDest})`,
+            severity: "error"
+        });
+
+        setFile(null);
+        setXmlData(null);
+        return;
     }
 
     // Paletes
