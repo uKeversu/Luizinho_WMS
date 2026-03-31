@@ -53,6 +53,7 @@ function Dashboard() {
     const [itensNota, setItensNota] = useState([]);
     const [buscaItem, setBuscaItem] = useState("");
     const [notaSelecionada, setNotaSelecionada] = useState(null);
+    const [observacaoPalet, setObservacaoPalet] = useState("");
 
     useEffect(() => {
         if (token) buscarNotas();
@@ -72,15 +73,32 @@ function Dashboard() {
 
             const data = await response.json();
 
-            console.log("RESPOSTA API NOTAS:", data);
-
             if (!response.ok) {
                 console.error("Erro ao buscar notas:", data);
                 setNotas([]);
                 return;
             }
 
-            setNotas(Array.isArray(data) ? data : []);
+            const notasArray = Array.isArray(data) ? data : [];
+
+            // Buscar observação do palete para cada nota
+            const notasComObs = await Promise.all(
+                notasArray.map(async (nota) => {
+                    try {
+                        const respPalet = await fetch(`${API}/api/palet_nfe/${nota.id}`);
+                        const dataPalet = await respPalet.json();
+
+                        const observacao = (dataPalet.items && dataPalet.items[0]?.observacao_palet) || "";
+
+                        return { ...nota, observacao_palet: observacao };
+                    } catch (err) {
+                        console.error(`Erro ao buscar observação da nota ${nota.id}:`, err);
+                        return { ...nota, observacao_palet: "" };
+                    }
+                })
+            );
+
+            setNotas(notasComObs);
 
         } catch (error) {
             console.error("Erro na requisição:", error);
@@ -137,6 +155,23 @@ function Dashboard() {
             item?.codigo_barras?.toString().includes(termo)
         );
     });
+
+    // Busca observação da nota
+    const buscarObservacaoPalet = async (notaId) => {
+        try {
+            const response = await fetch(`${API}/api/palet_nfe/${notaId}`);
+            const data = await response.json();
+
+            if (response.ok && data.items && data.items.length > 0) {
+                setObservacaoPalet(data.items[0].observacao_palet || "");
+            } else {
+                setObservacaoPalet("");
+            }
+        } catch (err) {
+            console.error("Erro ao buscar observação do palet:", err);
+            setObservacaoPalet("");
+        }
+    };
 
     // Sincroniza com SS PLUS
     const pegarLocal = async () => {
@@ -273,13 +308,9 @@ function Dashboard() {
                                             <Typography sx={{ fontSize: '0.8rem' }}><strong>Emissão:</strong> {nota.data_emissao}</Typography>
                                             <Typography sx={{ fontSize: '0.8rem' }}><strong>Recebimento:</strong> {nota.data_recebimento}</Typography>
                                             <Typography sx={{ fontSize: '0.8rem' }}><strong>Paletes:</strong> {nota.pallets?.toUpperCase()}</Typography>
-                                            {nota.observacao?.trim() && (
-                                                <Typography sx={{
-                                                    fontSize: '0.8rem',
-                                                    color: '#696969',
-                                                    fontStyle: 'italic'
-                                                }}>
-                                                    <strong>Obs:</strong> {nota.observacao}
+                                            {nota.observacao_palet?.trim() && (
+                                                <Typography sx={{ fontSize: '0.8rem', color: '#696969', fontStyle: 'italic' }}>
+                                                    <strong>Obs:</strong> {nota.observacao_palet}
                                                 </Typography>
                                             )}
                                             <Typography sx={{ fontSize: '0.8rem' }}><strong>Status:</strong> {nota.status}</Typography>
@@ -293,7 +324,7 @@ function Dashboard() {
                                                         bgcolor: '#007bff',
                                                         '&:hover': { bgcolor: '#0056b3' }
                                                     }}
-                                                    onClick={() => buscarItens(nota)}
+                                                    onClick={() => { buscarItens(nota)}}
                                                 >Ver itens
                                                 </Button>
                                                 <Button

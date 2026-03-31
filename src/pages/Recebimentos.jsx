@@ -47,6 +47,7 @@ function Recebimentos() {
         return user ? JSON.parse(user) : null;
     });
     const [token, setToken] = useState(() => localStorage.getItem("nfe_token") || "");
+    
     useEffect(() => {
         if (userInfo?.codigo) {
             setFuncionario(userInfo.codigo);
@@ -123,10 +124,10 @@ function Recebimentos() {
                 body: formData
             });
 
-            console.log("UPLOAD STATUS:", res.status);
+            console.log("UPLOAD NFE STATUS:", res.status);
             console.log("Conferente:", funcionario);
             console.log("Localização:", paletes.filter(p => p.trim() !== "").join(" | "));
-            console.log("OBS FINAL ENVIADA:",observacao_palet);
+            console.log("Observação antes de atualizar:",observacao_palet);
 
             const response = await fetch(
                 `${API}/api/nfe/atualizar_por_nfe/${xmlData?.serie}/${xmlData?.nota}`,
@@ -145,6 +146,7 @@ function Recebimentos() {
             );
 
             console.log("STATUS ATUALIZAR:", response.status);
+            console.log("Observação depois de atualizar:",observacao_palet);
             setSnackbar({
                 open: true,
                 message: "Recebimento enviado com sucesso!",
@@ -609,6 +611,7 @@ function Recebimentos() {
                                     size="large"
                                     sx={{ width: '100%', bgcolor: '#007bff', mb: 2, '&:hover': { bgcolor: '#0056b3' } }}
                                     onClick={() => setOpenRetirada(true)}
+                                    disabled
                                 >
                                     Retirar peça
                                 </Button>

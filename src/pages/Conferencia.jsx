@@ -68,10 +68,10 @@ function Conferencia() {
     const [itens, setItens] = useState([]);
     const [loading, setLoading] = useState(false);
     const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success"
-});
+        open: false,
+        message: "",
+        severity: "success"
+    });
 
     // Scanner
     const [codigo, setCodigo] = useState("");
@@ -148,7 +148,7 @@ function Conferencia() {
             if (response.ok) {
                 const formatado = (data.items || []).map(item => ({
                     descricao: item.descricao || "Item sem identificação",
-                    codigo_barras: item.cean || "",
+                    codigo_barras: item.cean || "Sem código de barras",
                     quantidade: toNumber(item.quantidade_comercial) || 0,
                     localizacao: item.loc_sistema || "Sem localização",
                     conferido: 0,
@@ -193,6 +193,9 @@ function Conferencia() {
         }
 
         novosItens[index].conferido += 1;
+        const itemMovido = novosItens.splice(index, 1)[0];
+        // Move item conferido para primeiro da lista
+        novosItens.unshift(itemMovido);
 
         setItens(novosItens);
         setCodigo("");
