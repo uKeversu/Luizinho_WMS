@@ -14,18 +14,25 @@ import {
     Dialog,
     DialogTitle,
     DialogContent,
-    DialogActions
+    DialogActions,
+    Checkbox,
+    FormGroup,
+    FormControlLabel,
+    Switch,
 } from "@mui/material";
+
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import SyncIcon from '@mui/icons-material/Sync';
 import ArticleIcon from '@mui/icons-material/Article';
 import AttachmentIcon from '@mui/icons-material/Attachment';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import {
     UploadFile,
     BugReport,
     Logout,
-    Description
+    Description,
+    CheckBox
 } from "@mui/icons-material";
 
 import LoginFuncionario from "../components/LoginFuncionario";
@@ -47,7 +54,7 @@ function Recebimentos() {
         return user ? JSON.parse(user) : null;
     });
     const [token, setToken] = useState(() => localStorage.getItem("nfe_token") || "");
-    
+
     useEffect(() => {
         if (userInfo?.codigo) {
             setFuncionario(userInfo.codigo);
@@ -59,6 +66,11 @@ function Recebimentos() {
     const [paletes, setPaletes] = useState([""]);
     const [funcionario, setFuncionario] = useState("");
     const [file, setFile] = useState(null);
+
+    // Venda Casada
+    const [vendaCasada, setVendaCasada] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("");
+    const [refreshInterval, setRefreshInterval] = useState("");
 
     // Loading de XML 
     const [loading, setLoading] = useState(false);
@@ -103,16 +115,20 @@ function Recebimentos() {
         localStorage.removeItem("user_info");
     };
 
+    const handleFornecedorToggle = (event) => {
+        setFornecedor(event.target.checked);
+        if (event.target.checked) {
+            setSuccessMessage(`Venda_Casada, ativado (${refreshInterval / 1000}s)`);
+        } else {
+            setSuccessMessage('Fornecedor normal');
+        }
+    };
+
     // Enviar XML para API
     async function enviarXML() {
-
         setLoading(true);
-
         try {
             console.log("TOKEN:", token);
-
-
-
             const formData = new FormData();
             formData.append("file", file);
 
@@ -127,7 +143,10 @@ function Recebimentos() {
             console.log("UPLOAD NFE STATUS:", res.status);
             console.log("Conferente:", funcionario);
             console.log("Localização:", paletes.filter(p => p.trim() !== "").join(" | "));
-            console.log("Observação antes de atualizar:",observacao_palet);
+            console.log("Observação antes de atualizar:", observacao_palet);
+            console.log("Status da nota antes:", vendaCasada);
+
+            const statusFinal = vendaCasada ? "VENDA_CASADA" : "RECEBIDA";
 
             const response = await fetch(
                 `${API}/api/nfe/atualizar_por_nfe/${xmlData?.serie}/${xmlData?.nota}`,
@@ -137,7 +156,7 @@ function Recebimentos() {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                        status: "RECEBIDA",
+                        status: statusFinal,
                         conferente: funcionario,
                         localizacao: paletes.filter(p => p.trim() !== "").join(" | "),
                         observacao_palet: observacao_palet,
@@ -145,8 +164,9 @@ function Recebimentos() {
                 }
             );
 
+            console.log("Status da nota depois:", vendaCasada);
             console.log("STATUS ATUALIZAR:", response.status);
-            console.log("Observação depois de atualizar:",observacao_palet);
+            console.log("Observação depois de atualizar:", observacao_palet);
             setSnackbar({
                 open: true,
                 message: "Recebimento enviado com sucesso!",
@@ -172,7 +192,6 @@ function Recebimentos() {
             setLoading(false);
         }
     }
-
 
     // Upload de XML
     async function handleFileUpload(e) {
@@ -400,8 +419,8 @@ function Recebimentos() {
 
     // Adiciona observação
     const handleObservacaoChange = (e) => {
-    setObservacaoPalet(e.target.value);
-};
+        setObservacaoPalet(e.target.value);
+    };
 
     const confirmarObservacao = () => {
         if (!observacao_palet.trim()) {
@@ -550,7 +569,24 @@ function Recebimentos() {
                                 ) : (
                                     <Typography mt={2}>Nenhum XML carregado</Typography>
                                 )}
-
+                                <Box>
+                                    <FormControlLabel
+                                        control={
+                                            <Switch
+                                                checked={vendaCasada}
+                                                onChange={(e) => setVendaCasada(e.target.checked)}
+                                                color="primary"
+                                                size="small"
+                                            />
+                                        }
+                                        label={
+                                            <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                Venda casada
+                                            </Typography>
+                                        }
+                                        sx={{ mr: 1 }}
+                                    />
+                                </Box>
                             </CardContent>
                         </Card>
                     </Grid>
@@ -620,7 +656,7 @@ function Recebimentos() {
                                     size="large"
                                     sx={{ width: '100%', bgcolor: 'rgb(231, 153, 49)', mb: 2, '&:hover': { bgcolor: 'rgb(199, 129, 38)' } }}
                                     onClick={() => {
-                                        
+
                                         setOpenObservacao(true);
                                     }}
                                 >
