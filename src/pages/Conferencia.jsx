@@ -40,6 +40,7 @@ function Conferencia() {
     const [codigo, setCodigo] = useState("");
     const [caixasDisponiveis, setCaixasDisponiveis] = useState([]);
     const [loadingCaixas, setLoadingCaixas] = useState(false);
+    const [ultimoItem, setUltimoItem] = useState(null);
 
     // Caixa aberta e fechadas
     const [caixaAberta, setCaixaAberta] = useState(null);
@@ -168,6 +169,7 @@ function Conferencia() {
     // Scanner
     const scanner = () => {
         const codigoLimpo = codigo.trim();
+        setUltimoItem(item.codigo_barras);
 
         if (!caixaAberta) {
             setSnackbar({ open: true, message: "Abra uma caixa antes de conferir itens", severity: "warning" });
@@ -277,7 +279,10 @@ function Conferencia() {
                                         </TableHead>
                                         <TableBody>
                                             {itens.map((item, index) => (
-                                                <TableRow key={index} sx={{ bgcolor: item.conferido === item.quantidade ? '#a8ecaa' : '#f3f3f3' }}>
+                                                <TableRow key={index} sx={{
+                                                    bgcolor: item.codigo_barras === ultimoItem ? '#ffe082'
+                                                        : item.conferido === item.quantidade ? '#a8ecaa' : '#f3f3f3'
+                                                }}>
                                                     <TableCell>{item.localizacao}</TableCell>
                                                     <TableCell>{item.codigo_barras}</TableCell>
                                                     <TableCell>{item.descricao}</TableCell>
@@ -399,7 +404,6 @@ function Conferencia() {
                                                     ))}
                                             </TableBody>
                                         </Table>
-
                                     ) : (
                                         <Typography>Nenhum item conferido nesta caixa</Typography>
                                     )}
