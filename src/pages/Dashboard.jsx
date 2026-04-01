@@ -185,10 +185,20 @@ function Dashboard() {
             if (response.ok && data.encontrado) {
                 console.log(`Localização atualizada: ${data.localiza} (via ${data.metodo})`);
             } else {
+                setSnackbar({
+                    open: true,
+                    message: "Sincronização com sucesso!",
+                    severity: "success"
+                });
                 console.error(data.mensagem || 'Produto não encontrado no ERP');
             }
         } catch (err) {
             console.error('Erro na requisição:', err);
+            setSnackbar({
+                open: true,
+                message: "Erro ao sincronizar com SS PLus!",
+                severity: "error"
+            });
         }
     };
 
@@ -324,7 +334,7 @@ function Dashboard() {
                                                         bgcolor: '#007bff',
                                                         '&:hover': { bgcolor: '#0056b3' }
                                                     }}
-                                                    onClick={() => { buscarItens(nota)}}
+                                                    onClick={() => { buscarItens(nota) }}
                                                 >Ver itens
                                                 </Button>
                                                 <Button

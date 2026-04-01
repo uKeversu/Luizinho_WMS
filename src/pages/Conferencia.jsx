@@ -213,6 +213,36 @@ function Conferencia() {
         setCodigo("");
     };
 
+    // Sincroniza com SS PLUS
+    const pegarLocal = async () => {
+        try {
+            const response = await fetch('http://192.168.1.184:8077/api/checar_localizacao_lote', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ todos: true })
+            });
+            const data = await response.json();
+            if (response.ok && data.encontrado) {
+                console.log(`Localização atualizada: ${data.localiza} (via ${data.metodo})`);
+            } else {
+                setSnackbar({
+                    open: true,
+                    message: "Sincronização com sucesso!",
+                    severity: "success"
+                });
+                console.error(data.mensagem || 'Produto não encontrado no ERP');
+            }
+        } catch (err) {
+            console.error('Erro na requisição:', err);
+            setSnackbar({
+                open: true,
+                message: "Erro ao sincronizar com SS PLus!",
+                severity: "error"
+            });
+        }
+    };
+
+
     if (!token) {
         return (
             <LoginFuncionario onLogin={(data) => {
@@ -239,7 +269,11 @@ function Conferencia() {
                         )}
                     </Box>
                     <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
-                        <Button id="btnAtualizar" size="small" sx={{ color: '#ffffff', display: 'flex', gap: 1 }}>SS Plus Sync {<SyncIcon />}</Button>
+                        <Button id="btnAtualizar" onClick={pegarLocal} size="small"
+                            sx={{ color: '#ffffff', display: 'flex', gap: 1 }}>
+                            SS Plus Sync
+                            {<SyncIcon />}
+                        </Button>
                         <Button onClick={() => navigate("/Dashboard")} sx={{ color: '#ffffff', display: 'flex', gap: 1 }}>Voltar {< ArrowBackIcon />}</Button>
                     </Box>
                 </Box>
