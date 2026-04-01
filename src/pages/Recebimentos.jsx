@@ -67,8 +67,8 @@ function Recebimentos() {
     const [funcionario, setFuncionario] = useState("");
     const [file, setFile] = useState(null);
 
-    // Venda Casada
-    const [vendaCasada, setVendaCasada] = useState(false);
+    // Fornecedor direto
+    const [fornecedorDireto, setFornecedorDireto] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
     const [refreshInterval, setRefreshInterval] = useState("");
 
@@ -144,9 +144,9 @@ function Recebimentos() {
             console.log("Conferente:", funcionario);
             console.log("Localização:", paletes.filter(p => p.trim() !== "").join(" | "));
             console.log("Observação antes de atualizar:", observacao_palet);
-            console.log("Status da nota antes:", vendaCasada);
+            console.log("Status da nota antes:", fornecedorDireto);
 
-            const statusFinal = vendaCasada ? "VENDA_CASADA" : "RECEBIDA";
+            const statusFinal = fornecedorDireto ? "FORNECEDOR_DIRETO" : "RECEBIDA";
 
             const response = await fetch(
                 `${API}/api/nfe/atualizar_por_nfe/${xmlData?.serie}/${xmlData?.nota}`,
@@ -164,7 +164,7 @@ function Recebimentos() {
                 }
             );
 
-            console.log("Status da nota depois:", vendaCasada);
+            console.log("Status da nota depois:", fornecedorDireto);
             console.log("STATUS ATUALIZAR:", response.status);
             console.log("Observação depois de atualizar:", observacao_palet);
             setSnackbar({
@@ -243,7 +243,7 @@ function Recebimentos() {
             if (cnpjDest !== CNPJ_EMPRESA) {
                 setSnackbar({
                     open: true,
-                    message: `Este XML pertence à empresa (${nomeDest})`,
+                    message: `Este XML pertence à ${nomeDest}`,
                     severity: "error"
                 });
 
@@ -501,7 +501,7 @@ function Recebimentos() {
                     setUserInfo(user);
                     setToken(data.token);
                 }}
-            />
+            /> 
         ) : (
             <Container maxWidth="100%" sx={{ mt: 4, bgcolor: '#FFFFFF' }}>
                 {/* Header */}
@@ -588,15 +588,15 @@ function Recebimentos() {
                                     <FormControlLabel
                                         control={
                                             <Switch
-                                                checked={vendaCasada}
-                                                onChange={(e) => setVendaCasada(e.target.checked)}
+                                                checked={fornecedorDireto}
+                                                onChange={(e) => setFornecedorDireto(e.target.checked)}
                                                 color="primary"
                                                 size="small"
                                             />
                                         }
                                         label={
                                             <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                Venda casada
+                                                Fornecedor direto
                                             </Typography>
                                         }
                                         sx={{ mr: 1 }}
@@ -690,6 +690,7 @@ function Recebimentos() {
                                         });
                                         setOpenErro(true);
                                     }}
+                                    disabled
                                 >
                                     Relatar erro
                                 </Button>

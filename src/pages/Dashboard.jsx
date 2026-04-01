@@ -23,7 +23,7 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import LoginFuncionario from "../components/LoginFuncionario";
 import Conferencia from "./Conferencia";
 
-function Dashboard() {
+function Dashboard({ tipo }) {
 
     // API Base
     const API = "http://192.168.1.184:8077";
@@ -116,6 +116,13 @@ function Dashboard() {
             nota?.numero?.toString().includes(termo) ||
             nota?.serie?.toString().includes(termo)
         );
+    });
+
+    const notasPorTipo = notasFiltradas.filter(nota => {
+        if (tipo === "transito") return nota.status === "EM_TRANSITO";
+        if (tipo === "recebidas") return nota.status === "RECEBIDA";
+        if (tipo === "conferidas") return nota.status === "CONFERIDA";
+        return true;
     });
 
     // Busca itens das notas
@@ -224,7 +231,13 @@ function Dashboard() {
                 {/* Header */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, bgcolor: '#007bff', height: '7vh' }}>
                     <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: '#FFFFFF' }}>
-                        <strong>Notas recebidas</strong>
+                        <strong>
+                            {
+                                tipo === "transito" ? "Notas em Trânsito" :
+                                    tipo === "recebidas" ? "Notas Recebidas" :
+                                        "Notas Conferidas"
+                            }
+                        </strong>
                     </Typography>
                     <Box>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '0' }}>
@@ -283,11 +296,11 @@ function Dashboard() {
 
                     {loadingNotas ? (
                         <Typography>Carregando...</Typography>
-                    ) : notasFiltradas.length === 0 ? (
+                    ) : notasPorTipo.length === 0 ? (
                         <Typography>Nenhuma nota encontrada</Typography>
                     ) : (
                         <Grid container spacing={4}>
-                            {notasFiltradas.map((nota, idx) => (
+                            {notasPorTipo.map((nota, idx) => (
                                 <Grid size={{ xs: 12, md: 3 }} key={idx}>
                                     <Card variant="outlined" sx={{
                                         borderRadius: '2vh',
@@ -317,7 +330,7 @@ function Dashboard() {
 
                                             <Typography sx={{ fontSize: '0.8rem' }}><strong>Emissão:</strong> {nota.data_emissao}</Typography>
                                             <Typography sx={{ fontSize: '0.8rem' }}><strong>Recebimento:</strong> {nota.data_recebimento}</Typography>
-                                            <Typography sx={{ fontSize: '0.8rem' }}><strong>Paletes:</strong> {nota.pallets?.toUpperCase()}</Typography>
+                                            <Typography sx={{ fontSize: '0.8rem' }}><strong>Local:</strong> {nota.pallets?.toUpperCase()}</Typography>
                                             {nota.observacao_palet?.trim() && (
                                                 <Typography sx={{ fontSize: '0.8rem', color: '#696969', fontStyle: 'italic' }}>
                                                     <strong>Obs:</strong> {nota.observacao_palet}

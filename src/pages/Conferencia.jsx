@@ -38,9 +38,11 @@ function Conferencia() {
     const [loading, setLoading] = useState(false);
     const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
     const [codigo, setCodigo] = useState("");
-    const [caixasDisponiveis, setCaixasDisponiveis] = useState([]);
-    const [loadingCaixas, setLoadingCaixas] = useState(false);
     const [ultimoItem, setUltimoItem] = useState(null);
+    const [loadingCaixas, setLoadingCaixas] = useState(false);
+    const [caixasDisponiveis, setCaixasDisponiveis] = useState([]);
+    const [observacao, setObservacao] = useState("");
+    const [finalizando, setFinalizando] = useState(false);
 
     // Caixa aberta e fechadas
     const [caixaAberta, setCaixaAberta] = useState(null);
@@ -169,7 +171,6 @@ function Conferencia() {
     // Scanner
     const scanner = () => {
         const codigoLimpo = codigo.trim();
-        setUltimoItem(item.codigo_barras);
 
         if (!caixaAberta) {
             setSnackbar({ open: true, message: "Abra uma caixa antes de conferir itens", severity: "warning" });
@@ -180,6 +181,7 @@ function Conferencia() {
         const index = itens.findIndex(item => item.codigo_barras === codigoLimpo);
 
         if (index === -1) {
+            setUltimoItem(codigoLimpo);
             setSnackbar({ open: true, message: "Produto não encontrado", severity: "warning" });
             setCodigo("");
             return;
@@ -188,23 +190,22 @@ function Conferencia() {
         const novosItens = [...itens];
         const item = novosItens[index];
 
+        setUltimoItem(item.codigo_barras);
+
         if (item.conferido >= item.quantidade) {
             setSnackbar({ open: true, message: "Quantidade total já conferida", severity: "info" });
             setCodigo("");
             return;
         }
 
-        // Atualiza quantidade conferida e marca a caixa
         item.conferido += 1;
         item.caixa = caixaAberta.id;
 
-        // Move o item conferido para o topo (opcional)
         novosItens.splice(index, 1);
         novosItens.unshift(item);
 
         setItens(novosItens);
 
-        // Atualiza itens na caixa aberta
         setCaixaAberta(prev => ({
             ...prev,
             itens: novosItens.filter(i => i.caixa === prev.id)
@@ -212,6 +213,81 @@ function Conferencia() {
 
         setCodigo("");
     };
+
+    // Finalizar conferência
+    const finalizarConferencia = async () => {
+        try {
+            if (!notaInfo?.serie || !notaInfo?.numero) {
+                setSnackbar({
+                    open: true,
+                    message: "Dados da nota ainda não carregados",
+                    severity: "warning"
+                });
+                return;
+            }
+
+            const localizacaoFinal = caixas.map(c => c.numero).join(", ");
+
+            if (!localizacaoFinal) {
+                setSnackbar({
+                    open: true,
+                    message: "Nenhuma caixa informada",
+                    severity: "warning"
+                });
+                return;
+            }
+
+            setFinalizando(true);
+
+            const atualizacao = {
+                status: "CONFERIDA",
+                localizacao: localizacaoFinal
+            };
+
+            console.log("ENVIO FINAL:", atualizacao);
+
+            const response = await fetch(
+                `${API}/api/nfe/atualizar_por_nfe/${notaInfo.serie}/${notaInfo.numero}`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        status: "CONFERIDA",
+                        localizacao: localizacaoFinal
+                    })
+                }
+            );
+
+            const text = await response.text();
+            console.log("RESPOSTA BACK:", text);
+
+            if (response.ok) {
+                setSnackbar({
+                    open: true,
+                    message: "Conferência finalizada com sucesso!",
+                    severity: "success"
+                });
+
+                navigate("/Dashboard");
+            } else {
+                throw new Error(text || "Erro ao finalizar");
+            }
+
+        } catch (error) {
+            console.error(error);
+            setSnackbar({
+                open: true,
+                message: "Erro ao finalizar conferência",
+                severity: "error"
+            });
+        } finally {
+            setFinalizando(false);
+        }
+    };
+
+    const itensPendentes = itens.some(i => i.conferido < i.quantidade);
 
     // Sincroniza com SS PLUS
     const pegarLocal = async () => {
@@ -314,8 +390,7 @@ function Conferencia() {
                                         <TableBody>
                                             {itens.map((item, index) => (
                                                 <TableRow key={index} sx={{
-                                                    bgcolor: item.codigo_barras === ultimoItem ? '#ffe082'
-                                                        : item.conferido === item.quantidade ? '#a8ecaa' : '#f3f3f3'
+                                                    bgcolor: item.conferido === item.quantidade ? '#a8ecaa' : '#f3f3f3'
                                                 }}>
                                                     <TableCell>{item.localizacao}</TableCell>
                                                     <TableCell>{item.codigo_barras}</TableCell>
@@ -331,7 +406,7 @@ function Conferencia() {
 
                     {/* Card de caixas */}
                     <Box sx={{ flex: 1 }}>
-                        <Card sx={{ p: 2 }}>
+                        <Card sx={{ p: 2, boxShadow: '0vh 0.1vh 0.5vh #000000' }}>
                             <Typography variant="h6">Caixas</Typography>
 
                             {/* Caixa aberta */}
@@ -470,6 +545,39 @@ function Conferencia() {
                                     </Button>
                                 </DialogActions>
                             </Dialog>
+                        </Card>
+                        <Card sx={{ p: 2, mt: 2, boxShadow: '0vh 0.1vh 0.5vh #000000' }}>
+                            <Typography variant="h6">Observações</Typography>
+
+                            <TextField
+                                label="Descrição"
+                                multiline
+                                rows={3}
+                                fullWidth
+                                value={observacao}
+                                onChange={(e) => setObservacao(e.target.value)}
+                                sx={{
+                                    my: 2,
+                                    '& .MuiOutlinedInput-root': {
+                                        '&:hover fieldset': {
+                                            borderColor: '#007bff',
+                                        },
+                                        '&.Mui-focused fieldset': {
+                                            borderColor: '#007bff',
+                                        }
+                                    }
+                                }}
+                            />
+
+                            <Button
+                                variant="contained"
+                                color="success"
+                                fullWidth
+                                disabled={finalizando || caixas.length === 0}
+                                onClick={finalizarConferencia}
+                            >
+                                {finalizando ? "Finalizando..." : "Finalizar Conferência"}
+                            </Button>
                         </Card>
                     </Box>
                 </Box>
