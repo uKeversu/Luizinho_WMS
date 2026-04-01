@@ -22,7 +22,7 @@ function ModalObservacoes({
             <DialogContent>
 
                 <TextField
-                    label="Observação"
+                    label="Descrição"
                     name="observacao_palet"
                     fullWidth
                     value={observacao_palet}
