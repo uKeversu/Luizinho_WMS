@@ -83,10 +83,13 @@ function Conferencia() {
                 const response = await fetch(`${API}/api/itens_nfe/${notaId}`);
                 const data = await response.json();
 
+                console.log("BUSCANDO ITENS:", data.items);
+
                 if (response.ok) {
                     const itensFormatados = (data.items || []).map(item => ({
                         descricao: item.descricao || "Item sem identificação",
-                        codigo_barras: item.cean || "Sem código de barras",
+                        codigo_barras: item.cean || "",
+                        codigo_produto: item.cod_produto || "",
                         quantidade: Number(item.quantidade_comercial) || 0,
                         localizacao: item.loc_sistema || "Sem localização",
                         conferido: 0,
@@ -258,28 +261,56 @@ function Conferencia() {
 
             setFinalizando(true);
 
+            const itensSemCaixa = itens.filter(i => i.conferido > 0 && !i.caixa);
+
+            if (itensSemCaixa.length > 0) {
+                setSnackbar({
+                    open: true,
+                    message: "Existem itens conferidos sem caixa",
+                    severity: "warning"
+                });
+                return;
+            }
+
             for (const item of itens) {
                 if (item.conferido > 0) {
+                    console.log("TOKEN:", token);
+                    console.log("ENVIANDO ITEM:", {
+                        notaId: item.notaId,
+                        codigo: item.codigo_barras,
+                        itemCompleto: item
+                    });
+
                     try {
-                        const response = await fetch(`${API}/api/nfe/item/${item.notaId}/${item.codigo_barras}`,
+                        const response = await fetch(
+                            `${API}/api/nfe/item/${item.notaId}/${item.codigo_barras}`,
                             {
-                                method: "POST",
+                                method: "PUT",
                                 headers: {
-                                    "Content-Type": "application/json"
+                                    "Content-Type": "application/json",
+                                    "X-Auth-Token": token
                                 },
                                 body: JSON.stringify({
-                                    status: "deu boa",
+                                    status: "ITEM_CONFERIDO",
                                     quantidade: item.conferido,
-                                    localizacao: localizacaoFinal,
-                                    caixa: caixas.find(c => c.id === item.caixa)?.numero || null
+                                    localizacao: caixas.find(c => c.id === item.caixa)?.numero || null
                                 })
                             }
                         );
 
+                        if (response.status === 401) {
+                            setSnackbar({
+                                open: true,
+                                message: `Sessão expirada, faça login novamente!`,
+                                severity: "error"
+                            });
+                            throw new Error("Sessão expirada");
+                        }
+
                         const text = await response.text();
 
                         if (!response.ok) {
-                            throw new Error(`Erro item ${item.codigo_barras}: ${text}`);
+                            throw new Error(`Erro item ${codigo}: ${text}`);
                         }
 
                     } catch (error) {
@@ -287,22 +318,23 @@ function Conferencia() {
 
                         setSnackbar({
                             open: true,
-                            message: `Erro ao enviar item ${item.codigo_barras}`,
+                            message: `Erro ao enviar item ${codigo}`,
                             severity: "error"
                         });
 
-                        return; // para tudo se der erro
+                        return;
                     }
                 }
             }
 
             for (const nota of notaInfo) {
                 const response = await fetch(
-                    `${API}/api/nfe/atualizar_por_nfe/${nota.numero}/${nota.numero}`,
+                    `${API}/api/nfe/atualizar_por_nfe/${nota.serie}/${nota.numero}`,
                     {
                         method: "PUT",
                         headers: {
-                            "Content-Type": "application/json"
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`
                         },
                         body: JSON.stringify({
                             status: "CONFERIDA",
