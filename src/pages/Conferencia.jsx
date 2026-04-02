@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
     Container, Typography, Card, Box, TextField, Button,
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
@@ -16,7 +16,7 @@ import LoginFuncionario from "../components/LoginFuncionario";
 
 function Conferencia() {
     const navigate = useNavigate();
-    const { id } = useParams();
+
     const API = "http://192.168.1.184:8077";
 
     // Login
@@ -43,6 +43,10 @@ function Conferencia() {
     const [caixasDisponiveis, setCaixasDisponiveis] = useState([]);
     const [observacao, setObservacao] = useState("");
     const [finalizando, setFinalizando] = useState(false);
+    const [notaInfo, setNotaInfo] = useState(null);
+    const location = useLocation();
+    const notas = location.state?.notas || [];
+    const modo = notas.some(n => n.status === "FORNECEDOR_DIRETO") ? "MULTIPLO" : "UNICO";
 
     // Caixa aberta e fechadas
     const [caixaAberta, setCaixaAberta] = useState(null);
@@ -52,44 +56,50 @@ function Conferencia() {
     const [openFecharDialog, setOpenFecharDialog] = useState(false);
     const [numeroCaixa, setNumeroCaixa] = useState("");
 
-    const [notaInfo, setNotaInfo] = useState(null);
-
     useEffect(() => {
-        if (id) {
+        if (notas.length > 0) {
             buscarItens();
             buscarNota();
         }
-    }, [id]);
+    }, [notas]);
 
     const buscarNota = async () => {
         const res = await fetch(`${API}/api/notas/listar`);
         const data = await res.json();
-        const encontrada = data.find(n => n.id == id);
-        setNotaInfo(encontrada);
+
+        const selecionadas = data.filter(n => notas.includes(n.id));
+        setNotaInfo(selecionadas);
     };
 
     const buscarItens = async () => {
         try {
             setLoading(true);
-            const response = await fetch(`${API}/api/itens_nfe/${id}`);
-            const data = await response.json();
 
-            const toNumber = (value) => {
-                const n = parseFloat(value);
-                return isNaN(n) ? 0 : n;
-            };
+            let todosItens = [];
 
-            if (response.ok) {
-                const formatado = (data.items || []).map(item => ({
-                    descricao: item.descricao || "Item sem identificação",
-                    codigo_barras: item.cean || "Sem código de barras",
-                    quantidade: toNumber(item.quantidade_comercial) || 0,
-                    localizacao: item.loc_sistema || "Sem localização",
-                    conferido: 0,
-                    caixa: null
-                }));
-                setItens(formatado);
+            for (const n of notas) {
+                const notaId = typeof n === "object" ? n.id : n;
+
+                const response = await fetch(`${API}/api/itens_nfe/${notaId}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    const itensFormatados = (data.items || []).map(item => ({
+                        descricao: item.descricao || "Item sem identificação",
+                        codigo_barras: item.cean || "Sem código de barras",
+                        quantidade: Number(item.quantidade_comercial) || 0,
+                        localizacao: item.loc_sistema || "Sem localização",
+                        conferido: 0,
+                        caixa: null,
+                        notaId: notaId
+                    }));
+
+                    todosItens = [...todosItens, ...itensFormatados];
+                }
             }
+
+            setItens(todosItens);
+
         } catch (error) {
             console.error(error);
         } finally {
@@ -217,10 +227,10 @@ function Conferencia() {
     // Finalizar conferência
     const finalizarConferencia = async () => {
         try {
-            if (!notaInfo?.serie || !notaInfo?.numero) {
+            if (!notaInfo || notaInfo.length === 0) {
                 setSnackbar({
                     open: true,
-                    message: "Dados da nota ainda não carregados",
+                    message: "Notas não carregadas",
                     severity: "warning"
                 });
                 return;
@@ -237,43 +247,85 @@ function Conferencia() {
                 return;
             }
 
-            setFinalizando(true);
-
-            const atualizacao = {
-                status: "CONFERIDA",
-                localizacao: localizacaoFinal
-            };
-
-            console.log("ENVIO FINAL:", atualizacao);
-
-            const response = await fetch(
-                `${API}/api/nfe/atualizar_por_nfe/${notaInfo.serie}/${notaInfo.numero}`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        status: "CONFERIDA",
-                        localizacao: localizacaoFinal
-                    })
-                }
-            );
-
-            const text = await response.text();
-            console.log("RESPOSTA BACK:", text);
-
-            if (response.ok) {
+            if (itensPendentes && !observacao.trim()) {
                 setSnackbar({
                     open: true,
-                    message: "Conferência finalizada com sucesso!",
-                    severity: "success"
+                    message: "É obrigatório informar uma observação ao finalizar com itens pendentes",
+                    severity: "warning"
                 });
-
-                navigate("/Dashboard");
-            } else {
-                throw new Error(text || "Erro ao finalizar");
+                return;
             }
+
+            setFinalizando(true);
+
+            for (const item of itens) {
+                if (item.conferido > 0) {
+                    try {
+                        const response = await fetch(`${API}/api/nfe/item/${item.notaId}/${item.codigo_barras}`,
+                            {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json"
+                                },
+                                body: JSON.stringify({
+                                    status: "deu boa",
+                                    quantidade: item.conferido,
+                                    localizacao: localizacaoFinal,
+                                    caixa: caixas.find(c => c.id === item.caixa)?.numero || null
+                                })
+                            }
+                        );
+
+                        const text = await response.text();
+
+                        if (!response.ok) {
+                            throw new Error(`Erro item ${item.codigo_barras}: ${text}`);
+                        }
+
+                    } catch (error) {
+                        console.error(error);
+
+                        setSnackbar({
+                            open: true,
+                            message: `Erro ao enviar item ${item.codigo_barras}`,
+                            severity: "error"
+                        });
+
+                        return; // para tudo se der erro
+                    }
+                }
+            }
+
+            for (const nota of notaInfo) {
+                const response = await fetch(
+                    `${API}/api/nfe/atualizar_por_nfe/${nota.numero}/${nota.numero}`,
+                    {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            status: "CONFERIDA",
+                            localizacao: localizacaoFinal,
+                            observacao: observacao || null
+                        })
+                    }
+                );
+
+                const text = await response.text();
+
+                if (!response.ok) {
+                    throw new Error(text || "Erro ao finalizar");
+                }
+            }
+
+            setSnackbar({
+                open: true,
+                message: "Conferência finalizada com sucesso!",
+                severity: "success"
+            });
+
+            navigate("/Dashboard");
 
         } catch (error) {
             console.error(error);
@@ -288,36 +340,6 @@ function Conferencia() {
     };
 
     const itensPendentes = itens.some(i => i.conferido < i.quantidade);
-
-    // Sincroniza com SS PLUS
-    const pegarLocal = async () => {
-        try {
-            const response = await fetch('http://192.168.1.184:8077/api/checar_localizacao_lote', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ todos: true })
-            });
-            const data = await response.json();
-            if (response.ok && data.encontrado) {
-                console.log(`Localização atualizada: ${data.localiza} (via ${data.metodo})`);
-            } else {
-                setSnackbar({
-                    open: true,
-                    message: "Sincronização com sucesso!",
-                    severity: "success"
-                });
-                console.error(data.mensagem || 'Produto não encontrado no ERP');
-            }
-        } catch (err) {
-            console.error('Erro na requisição:', err);
-            setSnackbar({
-                open: true,
-                message: "Erro ao sincronizar com SS PLus!",
-                severity: "error"
-            });
-        }
-    };
-
 
     if (!token) {
         return (
@@ -335,7 +357,13 @@ function Conferencia() {
         <Container maxWidth="100%" sx={{ mt: 4, bgcolor: '#FFFFFF' }}>
             {/* Header */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, bgcolor: '#007bff', height: '7vh' }}>
-                <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: '#FFFFFF' }}><strong>Conferência de mercadorias</strong></Typography>
+                <Typography variant="h4" sx={{ color: "#FFFFFF" }}>
+                    <strong>
+                        {modo === "MULTIPLO"
+                            ? "Conferência - Múltiplas Notas)"
+                            : "Conferência"}
+                    </strong>
+                </Typography>
                 <Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '0' }}>
                         {<PersonIcon sx={{ color: "#FFFFFF", paddingRight: '1vh' }} />}
@@ -345,11 +373,6 @@ function Conferencia() {
                         )}
                     </Box>
                     <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
-                        <Button id="btnAtualizar" onClick={pegarLocal} size="small"
-                            sx={{ color: '#ffffff', display: 'flex', gap: 1 }}>
-                            SS Plus Sync
-                            {<SyncIcon />}
-                        </Button>
                         <Button onClick={() => navigate("/Dashboard")} sx={{ color: '#ffffff', display: 'flex', gap: 1 }}>Voltar {< ArrowBackIcon />}</Button>
                     </Box>
                 </Box>
@@ -357,8 +380,24 @@ function Conferencia() {
 
             {/* Informações da nota e scanner */}
             <Box sx={{ mt: 3 }}>
-                <Typography variant="h6">NF: {notaInfo?.numero || id}</Typography>
-                <Typography variant="h6">{notaInfo?.fornecedor}</Typography>
+                {modo === "MULTIPLO" ? (
+                    <Box>
+                        {notaInfo?.map((n, i) => (
+                            <Typography key={i} variant="h6">
+                                NF: {n.numero} | Fornecedor: {n.fornecedor}
+                            </Typography>
+                        ))}
+                    </Box>
+                ) : (
+                    <Box>
+                        <Typography variant="h6">
+                            Nota: {notaInfo?.[0]?.numero}
+                        </Typography>
+                        <Typography variant="h6">
+                            Fornecedor: {notaInfo?.[0]?.fornecedor}
+                        </Typography>
+                    </Box>
+                )}
                 <TextField
                     label="Código de barras"
                     variant="outlined"
@@ -573,7 +612,6 @@ function Conferencia() {
                                 variant="contained"
                                 color="success"
                                 fullWidth
-                                disabled={finalizando || caixas.length === 0}
                                 onClick={finalizarConferencia}
                             >
                                 {finalizando ? "Finalizando..." : "Finalizar Conferência"}

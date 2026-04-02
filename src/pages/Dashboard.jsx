@@ -12,7 +12,11 @@ import {
     Dialog,
     DialogTitle,
     DialogContent,
-    DialogActions
+    DialogActions,
+    Tabs,
+    Tab,
+    Checkbox,
+    Snackbar
 } from "@mui/material";
 
 import PersonIcon from '@mui/icons-material/Person';
@@ -54,10 +58,17 @@ function Dashboard({ tipo }) {
     const [buscaItem, setBuscaItem] = useState("");
     const [notaSelecionada, setNotaSelecionada] = useState(null);
     const [observacaoPalet, setObservacaoPalet] = useState("");
+    const [aba, setAba] = useState(1);
+    const [notasSelecionadas, setNotasSelecionadas] = useState([]);
+    const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
     useEffect(() => {
         if (token) buscarNotas();
     }, [token]);
+
+    useEffect(() => {
+        setNotasSelecionadas([]);
+    }, [aba]);
 
     // Busca notas na API
     const buscarNotas = async () => {
@@ -118,10 +129,10 @@ function Dashboard({ tipo }) {
         );
     });
 
-    const notasPorTipo = notasFiltradas.filter(nota => {
-        if (tipo === "transito") return nota.status === "EM_TRANSITO";
-        if (tipo === "recebidas") return nota.status === "RECEBIDA";
-        if (tipo === "conferidas") return nota.status === "CONFERIDA";
+    const notasFiltradasPorAba = notasFiltradas.filter(nota => {
+        if (aba === 0) return nota.status === "EM_TRANSITO";
+        if (aba === 1) { return ["RECEBIDA", "FORNECEDOR_DIRETO"].includes(nota.status); }
+        if (aba === 2) return nota.status === "CONFERIDA";
         return true;
     });
 
@@ -180,35 +191,6 @@ function Dashboard({ tipo }) {
         }
     };
 
-    // Sincroniza com SS PLUS
-    const pegarLocal = async () => {
-        try {
-            const response = await fetch('http://192.168.1.184:8077/api/checar_localizacao_lote', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ todos: true })
-            });
-            const data = await response.json();
-            if (response.ok && data.encontrado) {
-                console.log(`Localização atualizada: ${data.localiza} (via ${data.metodo})`);
-            } else {
-                setSnackbar({
-                    open: true,
-                    message: "Sincronização com sucesso!",
-                    severity: "success"
-                });
-                console.error(data.mensagem || 'Produto não encontrado no ERP');
-            }
-        } catch (err) {
-            console.error('Erro na requisição:', err);
-            setSnackbar({
-                open: true,
-                message: "Erro ao sincronizar com SS PLus!",
-                severity: "error"
-            });
-        }
-    };
-
     return (
         !token ? (
             <LoginFuncionario
@@ -232,11 +214,9 @@ function Dashboard({ tipo }) {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, bgcolor: '#007bff', height: '7vh' }}>
                     <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: '#FFFFFF' }}>
                         <strong>
-                            {
-                                tipo === "transito" ? "Notas em Trânsito" :
-                                    tipo === "recebidas" ? "Notas Recebidas" :
-                                        "Notas Conferidas"
-                            }
+                            {aba === 0 && "Notas em Trânsito"}
+                            {aba === 1 && "Notas Recebidas"}
+                            {aba === 2 && "Notas Conferidas"}
                         </strong>
                     </Typography>
                     <Box>
@@ -256,13 +236,6 @@ function Dashboard({ tipo }) {
                         </Box>
                         <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
                             <Button
-                                id="btnAtualizar" onClick={pegarLocal}
-                                size="small"
-                                sx={{ color: '#ffffff', display: 'flex', gap: 1 }}>
-                                SS Plus Sync
-                                {<SyncIcon />}
-                            </Button>
-                            <Button
                                 onClick={() => navigate("/")}
                                 sx={{ color: '#ffffff', display: 'flex', gap: 1 }}
                             >
@@ -272,6 +245,19 @@ function Dashboard({ tipo }) {
                             <pre id="resultado"></pre>
                         </Box>
                     </Box>
+                </Box>
+                <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: "#fff" }}>
+                    <Tabs
+                        value={aba}
+                        onChange={(e, newValue) => setAba(newValue)}
+                        textColor="primary"
+                        indicatorColor="primary"
+                        centered
+                    >
+                        <Tab label="Em Trânsito" />
+                        <Tab label="Recebidas" />
+                        <Tab label="Conferidas" />
+                    </Tabs>
                 </Box>
                 <Box sx={{ mt: 3 }}>
 
@@ -293,19 +279,52 @@ function Dashboard({ tipo }) {
                         value={busca}
                         onChange={(e) => setBusca(e.target.value)}
                     />
+                    {aba === 1 && (
+                        <Button
+                            variant="contained"
+                            sx={{ mb: 2 }}
+                            disabled={notasSelecionadas.length === 0}
+                            onClick={() => {
+                                const notasValidas = notasSelecionadas.filter(id => {
+                                    const nota = notas.find(n => n.id === id);
+                                    return nota?.status === "FORNECEDOR_DIRETO" || nota?.status === "RECEBIDA";
+                                });
+
+                                const temRecebida = notasValidas.some(id => {
+                                    const nota = notas.find(n => n.id === id);
+                                    return nota?.status === "RECEBIDA";
+                                });
+
+                                if (temRecebida && notasValidas.length > 1) {
+                                    setSnackbar({
+                                        open: true,
+                                        message: "Notas com status 'RECEBIDA' só podem ser conferidas uma por vez!",
+                                        severity: "success"
+                                    });
+                                    return;
+                                }
+
+                                navigate("/Conferencia", {
+                                    state: { notas: notasValidas }
+                                });
+                            }}
+                        >
+                            Conferir selecionadas ({notasSelecionadas.length})
+                        </Button>
+                    )}
 
                     {loadingNotas ? (
                         <Typography>Carregando...</Typography>
-                    ) : notasPorTipo.length === 0 ? (
+                    ) : notasFiltradasPorAba.length === 0 ? (
                         <Typography>Nenhuma nota encontrada</Typography>
                     ) : (
                         <Grid container spacing={4}>
-                            {notasPorTipo.map((nota, idx) => (
+                            {notasFiltradasPorAba.map((nota, idx) => (
                                 <Grid size={{ xs: 12, md: 3 }} key={idx}>
                                     <Card variant="outlined" sx={{
                                         borderRadius: '2vh',
                                         boxShadow: '0vh 0.1vh 0.5vh #000000',
-                                        bgcolor: '#f3f3f3',
+                                        bgcolor: nota.status === "FORNECEDOR_DIRETO" ? '#e3f2fd' : '#f3f3f3',
                                         height: '100%',
                                         display: 'flex',
                                         textAlign: 'left',
@@ -317,7 +336,32 @@ function Dashboard({ tipo }) {
                                             flexGrow: 1,
                                             gap: 1,
                                         }}>
-                                            <Typography><strong>NF:</strong> {nota.numero}</Typography>
+                                            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                                <Typography><strong>NF:</strong> {nota.numero}</Typography>
+
+                                                {(nota.status === "FORNECEDOR_DIRETO" || nota.status === "RECEBIDA") && (
+                                                    <Checkbox
+                                                        checked={notasSelecionadas.includes(nota.id)}
+                                                        onChange={(e) => {
+                                                            if (e.target.checked) {
+                                                                const notaAtual = nota;
+                                                                if (notaAtual.status === "RECEBIDA" && notasSelecionadas.length >= 1) {
+                                                                    setSnackbar({
+                                                                        open: true,
+                                                                        message: "Só é permitido uma nota por vez",
+                                                                        severity: "warning"
+                                                                    });
+                                                                    return;
+                                                                }
+
+                                                                setNotasSelecionadas(prev => [...prev, nota.id]);
+                                                            } else {
+                                                                setNotasSelecionadas(prev => prev.filter(id => id !== nota.id));
+                                                            }
+                                                        }}
+                                                    />
+                                                )}
+                                            </Box>
                                             <Typography><strong>Série:</strong> {nota.serie}</Typography>
                                             <Typography sx={{
                                                 whiteSpace: 'nowrap',
@@ -329,7 +373,7 @@ function Dashboard({ tipo }) {
                                             </Typography>
 
                                             <Typography sx={{ fontSize: '0.8rem' }}><strong>Emissão:</strong> {nota.data_emissao}</Typography>
-                                            <Typography sx={{ fontSize: '0.8rem' }}><strong>Recebimento:</strong> {nota.data_recebimento}</Typography>
+                                            <Typography sx={{ fontSize: '0.8rem' }}><strong>Importação:</strong> {nota.data_recebimento}</Typography>
                                             <Typography sx={{ fontSize: '0.8rem' }}><strong>Local:</strong> {nota.pallets?.toUpperCase()}</Typography>
                                             {nota.observacao_palet?.trim() && (
                                                 <Typography sx={{ fontSize: '0.8rem', color: '#696969', fontStyle: 'italic' }}>
@@ -349,16 +393,6 @@ function Dashboard({ tipo }) {
                                                     }}
                                                     onClick={() => { buscarItens(nota) }}
                                                 >Ver itens
-                                                </Button>
-                                                <Button
-                                                    fullWidth
-                                                    variant="contained"
-                                                    sx={{
-                                                        bgcolor: '#007bff',
-                                                        '&:hover': { bgcolor: '#0056b3' }
-                                                    }}
-                                                    onClick={() => navigate(`/Conferencia/${nota.id}`)}
-                                                >Iniciar Conferência
                                                 </Button>
                                             </Box>
                                         </CardContent>
@@ -411,7 +445,6 @@ function Dashboard({ tipo }) {
                                         <Typography>
                                             <strong>Código de barras:</strong> {item.cean || item.codigo_barras || "-"}
                                         </Typography>
-
                                     </Card>
                                 );
                             })

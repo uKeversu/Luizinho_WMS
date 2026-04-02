@@ -69,6 +69,7 @@ function Recebimentos() {
 
     // Fornecedor direto
     const [fornecedorDireto, setFornecedorDireto] = useState(false);
+    const [emTransito, setEmTransito] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
     const [refreshInterval, setRefreshInterval] = useState("");
 
@@ -118,7 +119,7 @@ function Recebimentos() {
     const handleFornecedorToggle = (event) => {
         setFornecedor(event.target.checked);
         if (event.target.checked) {
-            setSuccessMessage(`Venda_Casada, ativado (${refreshInterval / 1000}s)`);
+            setSuccessMessage(`FORNECEDOR_DIRETO, ativado (${refreshInterval / 1000}s)`);
         } else {
             setSuccessMessage('Fornecedor normal');
         }
@@ -146,7 +147,13 @@ function Recebimentos() {
             console.log("Observação antes de atualizar:", observacao_palet);
             console.log("Status da nota antes:", fornecedorDireto);
 
-            const statusFinal = fornecedorDireto ? "FORNECEDOR_DIRETO" : "RECEBIDA";
+            let statusFinal = "RECEBIDA";
+            if (emTransito) {
+                statusFinal = "EM_TRANSITO";
+            } else if (fornecedorDireto) {
+                statusFinal = "FORNECEDOR_DIRETO";
+            }
+
 
             const response = await fetch(
                 `${API}/api/nfe/atualizar_por_nfe/${xmlData?.serie}/${xmlData?.nota}`,
@@ -501,7 +508,7 @@ function Recebimentos() {
                     setUserInfo(user);
                     setToken(data.token);
                 }}
-            /> 
+            />
         ) : (
             <Container maxWidth="100%" sx={{ mt: 4, bgcolor: '#FFFFFF' }}>
                 {/* Header */}
@@ -584,12 +591,15 @@ function Recebimentos() {
                                 ) : (
                                     <Typography mt={2}>Nenhum XML carregado</Typography>
                                 )}
-                                <Box>
+                                <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-around' }}>
                                     <FormControlLabel
                                         control={
                                             <Switch
                                                 checked={fornecedorDireto}
-                                                onChange={(e) => setFornecedorDireto(e.target.checked)}
+                                                onChange={(e) => {
+                                                    setFornecedorDireto(e.target.checked);
+                                                    if (e.target.checked) setEmTransito(false);
+                                                }}
                                                 color="primary"
                                                 size="small"
                                             />
@@ -597,6 +607,25 @@ function Recebimentos() {
                                         label={
                                             <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                                 Fornecedor direto
+                                            </Typography>
+                                        }
+                                        sx={{ mr: 1 }}
+                                    />
+                                    <FormControlLabel
+                                        control={
+                                            <Switch
+                                                checked={emTransito}
+                                                onChange={(e) => {
+                                                    setEmTransito(e.target.checked);
+                                                    if (e.target.checked) setFornecedorDireto(false);
+                                                }}
+                                                color="primary"
+                                                size="small"
+                                            />
+                                        }
+                                        label={
+                                            <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                Em trânsito
                                             </Typography>
                                         }
                                         sx={{ mr: 1 }}
