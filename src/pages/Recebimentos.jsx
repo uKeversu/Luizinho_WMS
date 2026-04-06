@@ -11,12 +11,6 @@ import {
     Box,
     Snackbar,
     Alert,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Checkbox,
-    FormGroup,
     FormControlLabel,
     Switch,
 } from "@mui/material";
@@ -26,14 +20,6 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import SyncIcon from '@mui/icons-material/Sync';
 import ArticleIcon from '@mui/icons-material/Article';
 import AttachmentIcon from '@mui/icons-material/Attachment';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import {
-    UploadFile,
-    BugReport,
-    Logout,
-    Description,
-    CheckBox
-} from "@mui/icons-material";
 
 import LoginFuncionario from "../components/LoginFuncionario";
 import Dashboard from "./Dashboard";
@@ -154,7 +140,6 @@ function Recebimentos() {
                 statusFinal = "FORNECEDOR_DIRETO";
             }
 
-
             const response = await fetch(
                 `${API}/api/nfe/atualizar_por_nfe/${xmlData?.serie}/${xmlData?.nota}`,
                 {
@@ -227,6 +212,7 @@ function Recebimentos() {
             const dets = xml.getElementsByTagName("det");
 
             let totalPecas = 0;
+            let volumes = "Não informado";
 
             for (let i = 0; i < dets.length; i++) {
                 const qCom = dets[i].getElementsByTagName("qCom")[0]?.textContent;
@@ -238,13 +224,12 @@ function Recebimentos() {
             const fornecedor = xml.getElementsByTagName("xNome")[0]?.textContent;
             const cnpj = xml.getElementsByTagName("CNPJ")[0]?.textContent;
             const volNode = xml.getElementsByTagName("vol")[0];
-            let volumes = "Não informado";
             if (volNode) { volumes = volNode.getElementsByTagName("qVol")[0]?.textContent || "0"; }
-
             const destNode = xml.getElementsByTagName("dest")[0];
             const cnpjDest = destNode?.getElementsByTagName("CNPJ")[0]?.textContent ||
                 destNode?.getElementsByTagName("CPF")[0]?.textContent;
             const nomeDest = destNode?.getElementsByTagName("xNome")[0]?.textContent
+
             const CNPJ_EMPRESA = "03978085000175";
 
             if (cnpjDest !== CNPJ_EMPRESA) {

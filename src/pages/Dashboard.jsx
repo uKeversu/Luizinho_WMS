@@ -21,7 +21,6 @@ import {
 
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
-import SyncIcon from '@mui/icons-material/Sync';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 
 import LoginFuncionario from "../components/LoginFuncionario";
@@ -441,9 +440,18 @@ function Dashboard({ tipo }) {
                                         <Typography>
                                             <strong>Quantidade:</strong> {Number(item.quantidade_comercial)}
                                         </Typography>
-
+ 
                                         <Typography>
                                             <strong>Código de barras:</strong> {item.cean || item.codigo_barras || "-"}
+                                        </Typography>
+                                        <Typography sx={{
+                                            color:
+                                                item.status === "CONFERIDA" ? "#00ca32" :
+                                                    item.status === "RECEBIDA" ? "#007bff" :
+                                                        item.status === "EM_TRANSITO" ? "#414141" :
+                                                            "#414141"
+                                        }}>
+                                            <strong>Status:</strong> {item.status || "SEM STATUS"}
                                         </Typography>
                                     </Card>
                                 );

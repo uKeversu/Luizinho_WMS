@@ -4,12 +4,10 @@ import {
     Container, Typography, Card, Box, TextField, Button,
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions,
-    Select, MenuItem, FormControl, InputLabel
 } from "@mui/material";
 
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
-import SyncIcon from '@mui/icons-material/Sync';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 import LoginFuncionario from "../components/LoginFuncionario";
@@ -185,17 +183,36 @@ function Conferencia() {
     const scanner = () => {
         const codigoLimpo = codigo.trim();
 
+        if (!codigoLimpo) return;
+
         if (!caixaAberta) {
-            setSnackbar({ open: true, message: "Abra uma caixa antes de conferir itens", severity: "warning" });
+            setSnackbar({
+                open: true,
+                message: "Abra uma caixa antes de conferir itens",
+                severity: "warning"
+            });
             setCodigo("");
             return;
         }
 
-        const index = itens.findIndex(item => item.codigo_barras === codigoLimpo);
+        const index = itens.findIndex(item => {
+            const codigoBarrasValido =
+                item.codigo_barras &&
+                item.codigo_barras !== "SEM GTIN";
+
+            return (
+                (codigoBarrasValido && item.codigo_barras === codigoLimpo) ||
+                item.codigo_produto === codigoLimpo
+            );
+        });
 
         if (index === -1) {
             setUltimoItem(codigoLimpo);
-            setSnackbar({ open: true, message: "Produto não encontrado", severity: "warning" });
+            setSnackbar({
+                open: true,
+                message: `Produto não encontrado: ${codigoLimpo}`,
+                severity: "warning"
+            });
             setCodigo("");
             return;
         }
@@ -203,10 +220,19 @@ function Conferencia() {
         const novosItens = [...itens];
         const item = novosItens[index];
 
-        setUltimoItem(item.codigo_barras);
+        const codigoExibicao =
+            item.codigo_barras && item.codigo_barras !== "SEM GTIN"
+                ? item.codigo_barras
+                : item.codigo_produto;
+
+        setUltimoItem(codigoExibicao);
 
         if (item.conferido >= item.quantidade) {
-            setSnackbar({ open: true, message: "Quantidade total já conferida", severity: "info" });
+            setSnackbar({
+                open: true,
+                message: "Quantidade total já conferida",
+                severity: "info"
+            });
             setCodigo("");
             return;
         }
