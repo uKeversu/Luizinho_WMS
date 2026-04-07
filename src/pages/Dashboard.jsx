@@ -284,6 +284,7 @@ function Dashboard({ tipo }) {
                             {aba === 0 && "Notas em Trânsito"}
                             {aba === 1 && "Notas Recebidas"}
                             {aba === 2 && "Notas Conferidas"}
+                            {aba === 3 && "Histórico"}
                         </strong>
                     </Typography>
                     <Box>
@@ -323,7 +324,8 @@ function Dashboard({ tipo }) {
                     >
                         <Tab label="Em Trânsito" />
                         <Tab label="Recebidas" />
-                        <Tab label="Conferidas" />
+                        <Tab label="Guarda pendente" />
+                        <Tab label="Histórico" />
                     </Tabs>
                 </Box>
                 <Box sx={{ mt: 3 }}>
@@ -467,7 +469,7 @@ function Dashboard({ tipo }) {
                                                         variant="contained"
                                                         disabled={loadingNotasIds.includes(nota.id)}
                                                         sx={{
-                                                            bgcolor: "#00ca32",
+                                                            bgcolor: "#02bb31",
                                                             '&:hover': { bgcolor: "#009425" }
                                                         }}
                                                         onClick={() => atualizarStatusNota(nota)}
@@ -533,7 +535,7 @@ function Dashboard({ tipo }) {
                                         </Typography>
                                         <Typography sx={{
                                             color:
-                                                item.status_item === "ITEM_CONFERIDO" ? "#00ca32" :
+                                                item.status_item === "ITEM_CONFERIDO" ? "#02bb31" :
                                                     item.status_item === "PENDENTE" ? "#007bff" :
                                                         item.status_item === "FORNECEDOR_DIRETO" ? "rgb(231, 153, 49)" :
                                                             item.status_item === "EM_TRANSITO" ? "#414141" :

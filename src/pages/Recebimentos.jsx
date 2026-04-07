@@ -13,6 +13,10 @@ import {
     Alert,
     FormControlLabel,
     Switch,
+    DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogActions
 } from "@mui/material";
 
 import PersonIcon from '@mui/icons-material/Person';
@@ -20,7 +24,11 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import SyncIcon from '@mui/icons-material/Sync';
 import ArticleIcon from '@mui/icons-material/Article';
 import AttachmentIcon from '@mui/icons-material/Attachment';
-import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import InputAdornment from "@mui/material/InputAdornment";
+import IconButton from "@mui/material/IconButton";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
 import LoginFuncionario from "../components/LoginFuncionario";
 import Dashboard from "./Dashboard";
@@ -47,6 +55,11 @@ function Recebimentos() {
             setFuncionario(userInfo.codigo);
         }
     }, [userInfo]);
+
+    // Cadastro de funcionario
+    const [openDialog, setOpenDialog] = useState(false);
+    const [senhaAdmin, setSenhaAdmin] = useState("");
+    const [showSenha, setShowSenha] = useState(false);
 
     // Sistema
     const [xmlData, setXmlData] = useState(null);
@@ -467,6 +480,22 @@ function Recebimentos() {
         setOpenObservacao(false);
     };
 
+    // Bloqueia cadastro sem senha
+    const acessarCadastro = () => {
+        if (senhaAdmin !== "Admin100378") {
+            setSnackbar({
+                open: true,
+                message: "Senha de administrador inválida",
+                severity: "error"
+            });
+            return;
+        }
+
+        setOpenDialog(false);
+        setSenhaAdmin("");
+        navigate("/CadastrarFuncionario");
+    };
+
     // Sincroniza com SS PLUS
     const pegarLocal = async () => {
         try {
@@ -537,6 +566,13 @@ function Recebimentos() {
                         </Box>
                         <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
                             <Button
+                                onClick={() => setOpenDialog(true)}
+                                sx={{ color: '#ffffff', display: 'flex', gap: 1 }}
+                            >
+                                CADASTRAR FUNCIONARIO
+                                {< PersonAddIcon />}
+                            </Button>
+                            <Button
                                 id="btnAtualizar" onClick={pegarLocal}
                                 size="small"
                                 sx={{ color: '#ffffff', display: 'flex', gap: 1 }}>
@@ -586,11 +622,10 @@ function Recebimentos() {
                                 {xmlData ? (
                                     <Box mt={2}>
                                         {detectaGarantia && (
-                                            <Box sx={{display:'flex', justifyContent:'space-around', mt: 2, mb: 2 }}>
-                                            <Typography severity="warning">
-                                                <WorkspacePremiumIcon sx={{mr:2, alignItems: 'center'}}/>
-                                                Nota de retorno de garantia (CFOP: {xmlData.cfop})
-                                            </Typography>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-around', mt: 2, mb: 2 }}>
+                                                <Typography severity="warning">
+                                                    Nota de retorno de garantia (CFOP: {xmlData.cfop})
+                                                </Typography>
                                             </Box>
                                         )}
                                         <Typography><strong>Nota:</strong> {xmlData.nota}</Typography>
@@ -766,7 +801,7 @@ function Recebimentos() {
                             />
                             <Button
                                 variant="contained"
-                                sx={{ mt: 1, ml: 1, bgcolor: '#00ca32', '&:hover': { bgcolor: '#009425' }, height: "7.3vh" }}
+                                sx={{ mt: 1, ml: 1, bgcolor: '#02bb31', '&:hover': { bgcolor: '#009425' }, height: "7.3vh" }}
                                 onClick={() => {
                                     if (!file) {
                                         setSnackbar({
@@ -799,6 +834,61 @@ function Recebimentos() {
                         </Box>
                     </CardContent>
                 </Card>
+
+                <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+                    <DialogTitle>Acesso restrito</DialogTitle>
+
+                    <DialogContent>
+                        <TextField
+                            label="Senha de administrador"
+                            type={showSenha ? "text" : "password"}
+                            fullWidth
+                            value={senhaAdmin}
+                            onChange={(e) => setSenhaAdmin(e.target.value)}
+                            autoFocus
+                            sx={{
+                                mt: 1,
+                                '& .MuiOutlinedInput-root': {
+                                    '&:hover fieldset': {
+                                        borderColor: '#007bff',
+                                    },
+                                    '&.Mui-focused fieldset': {
+                                        borderColor: '#007bff',
+                                    }
+                                }
+                            }}
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            onClick={() => setShowSenha(!showSenha)}
+                                            edge="end"
+                                        >
+                                            {showSenha ? <VisibilityOff /> : <Visibility />}
+                                        </IconButton>
+                                    </InputAdornment>
+                                )
+                            }}
+                        />
+                    </DialogContent>
+
+                    <DialogActions>
+                        <Button sx={{ color: '#FFFFFF', bgcolor: 'rgb(255, 53, 53)', '&:hover': { bgcolor: 'rgb(202, 40, 40)' } }} onClick={() => setOpenDialog(false)}>
+                            Cancelar
+                        </Button>
+
+                        <Button
+                            variant="contained"
+                            onClick={acessarCadastro}
+                            sx={{
+                                bgcolor: '#02bb31',
+                                '&:hover': { bgcolor: '#009425' }
+                            }}
+                        >
+                            Entrar
+                        </Button>
+                    </DialogActions>
+                </Dialog>
 
                 {/* Modal retirada de peças */}
                 <ModalRetira
