@@ -237,6 +237,15 @@ function Conferencia() {
             return;
         }
 
+        if (item.caixa && item.caixa !== caixaAberta.id) {
+            setSnackbar({
+                open: true,
+                message: "Item já pertence a outra caixa",
+                severity: "warning"
+            });
+            return;
+        }
+
         item.conferido += 1;
         item.caixa = caixaAberta.id;
 
@@ -299,11 +308,17 @@ function Conferencia() {
             }
 
             for (const item of itens) {
-                if (item.conferido > 0) {
+
+                const itemCompleto = item.conferido === item.quantidade;
+                const itemEmCaixa = !!item.caixa;
+
+                if (itemCompleto && itemEmCaixa) {
+
                     console.log("TOKEN:", token);
                     console.log("ENVIANDO ITEM:", {
                         notaId: item.notaId,
                         codigo: item.codigo_barras,
+                        status_item: "ITEM_CONFERIDO",
                         itemCompleto: item
                     });
 
@@ -314,29 +329,29 @@ function Conferencia() {
                                 method: "PUT",
                                 headers: {
                                     "Content-Type": "application/json",
-                                    "X-Auth-Token": token
+                                    "Authorization": `Bearer ${token}`
                                 },
                                 body: JSON.stringify({
-                                    status: "ITEM_CONFERIDO",
-                                    quantidade: item.conferido,
-                                    localizacao: caixas.find(c => c.id === item.caixa)?.numero || null
+                                    status_item: "ITEM_CONFERIDO",
+                                    caixa: caixas.find(c => c.id === item.caixa)?.numero || null
                                 })
                             }
                         );
 
                         if (response.status === 401) {
+                            logout();
                             setSnackbar({
                                 open: true,
-                                message: `Sessão expirada, faça login novamente!`,
+                                message: "Sessão expirada, faça login novamente!",
                                 severity: "error"
                             });
-                            throw new Error("Sessão expirada");
+                            return;
                         }
 
                         const text = await response.text();
 
                         if (!response.ok) {
-                            throw new Error(`Erro item ${codigo}: ${text}`);
+                            throw new Error(`Erro item ${item.codigo_barras}: ${text}`);
                         }
 
                     } catch (error) {

@@ -60,6 +60,7 @@ function Dashboard({ tipo }) {
     const [aba, setAba] = useState(1);
     const [notasSelecionadas, setNotasSelecionadas] = useState([]);
     const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+    const [loadingNotasIds, setLoadingNotasIds] = useState([]);
 
     useEffect(() => {
         if (token) buscarNotas();
@@ -187,6 +188,73 @@ function Dashboard({ tipo }) {
         } catch (err) {
             console.error("Erro ao buscar observação do palet:", err);
             setObservacaoPalet("");
+        }
+    };
+
+    // Altera status para recebida
+    const atualizarStatusNota = async (nota) => {
+        if (!nota.numero || !nota.serie) {
+            console.error("Nota inválida:", nota);
+            return;
+        }
+
+        setLoadingNotasIds(prev => [...prev, nota.id]);
+
+        try {
+            const response = await fetch(
+                `${API}/api/nfe/atualizar_por_nfe/${nota.serie}/${nota.numero}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Auth-Token": token
+                    },
+                    body: JSON.stringify({
+                        status: "RECEBIDA"
+                    })
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data?.erro || "Erro ao atualizar");
+            }
+
+            const formatarDataBR = () => {
+                const hoje = new Date();
+                const dia = String(hoje.getDate()).padStart(2, '0');
+                const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+                const ano = hoje.getFullYear();
+
+                return `${dia}-${mes}-${ano}`;
+            };
+
+            setNotas(prev =>
+                prev.map(n =>
+                    n.id === nota.id
+                        ? { ...n, status: "RECEBIDA", data_recebimento: new Date().toISOString() }
+                        : n
+                )
+            );
+
+            setSnackbar({
+                open: true,
+                message: `NF ${nota.numero} atualizada com sucesso`,
+                severity: "success"
+            });
+
+        } catch (error) {
+            console.error(error);
+
+            setSnackbar({
+                open: true,
+                message: error.message || "Erro ao atualizar nota",
+                severity: "error"
+            });
+
+        } finally {
+            setLoadingNotasIds(prev => prev.filter(id => id !== nota.id));
         }
     };
 
@@ -393,6 +461,22 @@ function Dashboard({ tipo }) {
                                                     onClick={() => { buscarItens(nota) }}
                                                 >Ver itens
                                                 </Button>
+                                                {nota.status === "EM_TRANSITO" && (
+                                                    <Button
+                                                        fullWidth
+                                                        variant="contained"
+                                                        disabled={loadingNotasIds.includes(nota.id)}
+                                                        sx={{
+                                                            bgcolor: "#00ca32",
+                                                            '&:hover': { bgcolor: "#009425" }
+                                                        }}
+                                                        onClick={() => atualizarStatusNota(nota)}
+                                                    >
+                                                        {loadingNotasIds.includes(nota.id)
+                                                            ? "Atualizando..."
+                                                            : "Marcar como Recebida"}
+                                                    </Button>
+                                                )}
                                             </Box>
                                         </CardContent>
                                     </Card>
@@ -440,18 +524,22 @@ function Dashboard({ tipo }) {
                                         <Typography>
                                             <strong>Quantidade:</strong> {Number(item.quantidade_comercial)}
                                         </Typography>
- 
+
                                         <Typography>
                                             <strong>Código de barras:</strong> {item.cean || item.codigo_barras || "-"}
                                         </Typography>
+                                        <Typography>
+                                            <strong>Caixa:</strong> {item.caixa !== "0" ? item.caixa : "SEM CAIXA"}
+                                        </Typography>
                                         <Typography sx={{
                                             color:
-                                                item.status === "CONFERIDA" ? "#00ca32" :
-                                                    item.status === "RECEBIDA" ? "#007bff" :
-                                                        item.status === "EM_TRANSITO" ? "#414141" :
-                                                            "#414141"
+                                                item.status_item === "ITEM_CONFERIDO" ? "#00ca32" :
+                                                    item.status_item === "PENDENTE" ? "#007bff" :
+                                                        item.status_item === "FORNECEDOR_DIRETO" ? "rgb(231, 153, 49)" :
+                                                            item.status_item === "EM_TRANSITO" ? "#414141" :
+                                                                "#414141"
                                         }}>
-                                            <strong>Status:</strong> {item.status || "SEM STATUS"}
+                                            <strong>Status:</strong> {item.status_item || "SEM STATUS"}
                                         </Typography>
                                     </Card>
                                 );

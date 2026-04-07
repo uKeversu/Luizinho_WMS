@@ -20,6 +20,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import SyncIcon from '@mui/icons-material/Sync';
 import ArticleIcon from '@mui/icons-material/Article';
 import AttachmentIcon from '@mui/icons-material/Attachment';
+import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 
 import LoginFuncionario from "../components/LoginFuncionario";
 import Dashboard from "./Dashboard";
@@ -103,7 +104,7 @@ function Recebimentos() {
     };
 
     const handleFornecedorToggle = (event) => {
-        setFornecedor(event.target.checked);
+        setFornecedorDireto(event.target.checked);
         if (event.target.checked) {
             setSuccessMessage(`FORNECEDOR_DIRETO, ativado (${refreshInterval / 1000}s)`);
         } else {
@@ -219,10 +220,16 @@ function Recebimentos() {
                 totalPecas += parseFloat(qCom || 0);
             }
 
+            // para acessar
+            const ns = "http://www.portalfiscal.inf.br/nfe";
+
             const nota = xml.getElementsByTagName("nNF")[0]?.textContent;
             const serie = xml.getElementsByTagName("serie")[0]?.textContent;
             const fornecedor = xml.getElementsByTagName("xNome")[0]?.textContent;
             const cnpj = xml.getElementsByTagName("CNPJ")[0]?.textContent;
+            const detNode = xml.getElementsByTagNameNS(ns, "det")[0];
+            const prodNode = detNode?.getElementsByTagNameNS(ns, "prod")[0];
+            const cfop = prodNode?.getElementsByTagNameNS(ns, "CFOP")[0]?.textContent;
             const volNode = xml.getElementsByTagName("vol")[0];
             if (volNode) { volumes = volNode.getElementsByTagName("qVol")[0]?.textContent || "0"; }
             const destNode = xml.getElementsByTagName("dest")[0];
@@ -231,6 +238,8 @@ function Recebimentos() {
             const nomeDest = destNode?.getElementsByTagName("xNome")[0]?.textContent
 
             const CNPJ_EMPRESA = "03978085000175";
+
+            console.log("CFOP:", cfop);
 
             if (cnpjDest !== CNPJ_EMPRESA) {
                 setSnackbar({
@@ -250,12 +259,22 @@ function Recebimentos() {
                 fornecedor,
                 cnpj,
                 totalPecas,
-                volumes
+                volumes,
+                cfop
             });
         };
 
         reader.readAsText(f);
     }
+
+    const CFOP_GARANTIA = ["5949", "6949"];
+    const detectaGarantia = xmlData && CFOP_GARANTIA.includes(xmlData.cfop);
+    useEffect(() => {
+        if (xmlData?.cfop && CFOP_GARANTIA.includes(xmlData.cfop)) {
+            setObservacaoPalet("RETORNO DE GARANTIA");
+        }
+    }, [xmlData]);
+
     // Paletes
     function handlePaleteChange(index, value) {
         const novos = [...paletes];
@@ -566,9 +585,18 @@ function Recebimentos() {
 
                                 {xmlData ? (
                                     <Box mt={2}>
+                                        {detectaGarantia && (
+                                            <Box sx={{display:'flex', justifyContent:'space-around', mt: 2, mb: 2 }}>
+                                            <Typography severity="warning">
+                                                <WorkspacePremiumIcon sx={{mr:2, alignItems: 'center'}}/>
+                                                Nota de retorno de garantia (CFOP: {xmlData.cfop})
+                                            </Typography>
+                                            </Box>
+                                        )}
                                         <Typography><strong>Nota:</strong> {xmlData.nota}</Typography>
                                         <Typography><strong>Serie:</strong> {xmlData.serie}</Typography>
                                         <Typography><strong>Fornecedor:</strong> {xmlData.fornecedor}</Typography>
+                                        <Typography><strong>CFOP:</strong> {xmlData.cfop}</Typography>
                                         <Typography><strong>CNPJ:</strong> {xmlData.cnpj}</Typography>
                                         <Typography><strong>Total de peças:</strong> {xmlData.totalPecas}</Typography>
                                         <Typography><strong>Volumes:</strong> {xmlData.volumes}</Typography>
