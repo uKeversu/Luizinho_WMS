@@ -29,7 +29,7 @@ import Conferencia from "./Conferencia";
 function Dashboard({ tipo }) {
 
     // API Base
-    const API = "http://192.168.1.184:8077";
+    const API = "http://192.168.1.185:8077";
 
     // Acessar outras pages
     const navigate = useNavigate();
@@ -388,7 +388,9 @@ function Dashboard({ tipo }) {
                         <Typography>Nenhuma nota encontrada</Typography>
                     ) : (
                         <Grid container spacing={4}>
+                            
                             {notasFiltradasPorAba.map((nota, idx) => (
+                                
                                 <Grid size={{ xs: 12, md: 3 }} key={idx}>
                                     <Card variant="outlined" sx={{
                                         borderRadius: '2vh',
@@ -515,7 +517,7 @@ function Dashboard({ tipo }) {
                             <Typography>Nenhum item encontrado</Typography>
                         ) : (
                             itensFiltrados.map((item, index) => {
-
+                                
                                 return (
 
                                     <Card key={index} sx={{ mt: 2, mb: 2, p: 2, borderRadius: '1vh', boxShadow: '0vh 0.1vh 0.5vh #000000', bgcolor: '#f3f3f3', }}>

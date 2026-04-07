@@ -3,6 +3,7 @@ import Recebimentos from './pages/Recebimentos';
 import Dashboard from "./pages/Dashboard";
 import Conferencia from "./pages/Conferencia";
 import CadastrarFuncionario from "./pages/CadastrarFuncionario";
+import Alertas from "./pages/Alertas"
 import './index.css';
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/Conferencia" element={<Conferencia />} />
         <Route path="/CadastrarFuncionario" element={<CadastrarFuncionario />} />
+        <Route path="/Alertas" element={<Alertas />} />
         <Route path="/transito" element={<Dashboard tipo="transito" />} />
         <Route path="/recebidas" element={<Dashboard tipo="recebidas" />} />
         <Route path="/conferidas" element={<Dashboard tipo="conferidas" />} />

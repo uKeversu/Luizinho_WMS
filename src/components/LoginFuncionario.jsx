@@ -13,7 +13,7 @@ function LoginFuncionario({ onLogin }) {
   const [loading, setLoading] = useState(false);
   const [resultado, setResultado] = useState("");
 
-  const API = "http://192.168.1.184:8077";
+  const API = "http://192.168.1.185:8077";
 
   const fazerLogin = async () => {
     if (!codigo.trim()) {
