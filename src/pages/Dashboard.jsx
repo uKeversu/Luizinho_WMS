@@ -28,7 +28,7 @@ import Conferencia from "./Conferencia";
 
 function Dashboard({ tipo }) {
 
-    // API Base
+    // API BASE
     const API = "http://192.168.1.185:8077";
 
     // Acessar outras pages

@@ -27,6 +27,8 @@ import AttachmentIcon from '@mui/icons-material/Attachment';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
+import WarningIcon from '@mui/icons-material/Warning';
+
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
@@ -107,6 +109,7 @@ function Recebimentos() {
     // Modal confirmar recebimento
     const [openConfirmar, setOpenConfirmar] = useState(false);
 
+    // API BASE
     const API = "http://192.168.1.185:8077";
 
     const logout = () => {
@@ -233,7 +236,7 @@ function Recebimentos() {
                 totalPecas += parseFloat(qCom || 0);
             }
 
-            // para acessar
+            // Para acessar cfop
             const ns = "http://www.portalfiscal.inf.br/nfe";
 
             const nota = xml.getElementsByTagName("nNF")[0]?.textContent;
@@ -499,7 +502,7 @@ function Recebimentos() {
     // Sincroniza com SS PLUS
     const pegarLocal = async () => {
         try {
-            const response = await fetch('http://192.168.1.184:8077/api/checar_localizacao_lote', {
+            const response = await fetch('http://192.168.1.185:8077/api/checar_localizacao_lote', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ todos: true })
@@ -571,6 +574,13 @@ function Recebimentos() {
                             >
                                 CADASTRAR FUNCIONARIO
                                 {< PersonAddIcon />}
+                            </Button>
+                            <Button
+                                onClick={() => navigate("/Alertas")}
+                                sx={{ color: '#ffffff', display: 'flex', gap: 1 }}
+                            >
+                                Alertas
+                                {< WarningIcon />}
                             </Button>
                             <Button
                                 id="btnAtualizar" onClick={pegarLocal}

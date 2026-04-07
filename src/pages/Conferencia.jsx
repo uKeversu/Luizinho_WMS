@@ -15,6 +15,7 @@ import LoginFuncionario from "../components/LoginFuncionario";
 function Conferencia() {
     const navigate = useNavigate();
 
+    // API BASE
     const API = "http://192.168.1.185:8077";
 
     // Login
