@@ -7,7 +7,6 @@ import {
     CardContent,
     Grid,
     Box,
-    Chip,
     Button,
 } from "@mui/material";
 
@@ -129,7 +128,7 @@ function Alertas() {
                 });
             }
 
-            // 2 - CFOP garantia
+            // CFOP garantia
             const itens = await buscarItensNota(nota.id);
 
             const temCfopGarantia = itens.some(item =>
@@ -147,14 +146,6 @@ function Alertas() {
         }
 
         return alertas;
-    };
-
-    const corAlerta = (tipo) => {
-        switch (tipo) {
-            case "ATRASO_CONFERENCIA": return "#ff2323";
-            case "CFOP_GARANTIA": return "#9c27b0";
-            default: return "#607d8b";
-        }
     };
 
     return (
@@ -201,47 +192,78 @@ function Alertas() {
 
                     {alertas.map((alerta, idx) => (
                         <Grid item xs={12} md={3} key={idx}>
-                            <Card sx={{
-                                borderRadius: "2vh",
-                                boxShadow: "0vh 0.1vh 0.5vh #000000",
-                                borderLeft: `6px solid ${corAlerta(alerta.tipo)}`
-                            }}>
-                                <CardContent>
+                            <Card
+                                variant="outlined"
+                                sx={{
+                                    borderRadius: '2vh',
+                                    boxShadow: '0vh 0.1vh 0.5vh #000000',
+                                    bgcolor: '#f3f3f3',
+                                    height: '100%',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    textAlign: 'left',
+                                    minHeight: '30vh',
+                                    maxHeight: '30vh',
+                                    minWidth: '50vh',
+                                    maxWidth: '50vh',
+                                    borderLeft: `6px solid ${alerta.tipo === "ATRASO_CONFERENCIA" ? "#d32f2f" :
+                                        alerta.tipo === "CFOP_GARANTIA" ? "#7b1fa2" :
+                                            alerta.tipo === "GUARDA_PENDENTE" ? "#f57c00" :
+                                                "#607d8b"
+                                        }`
+                                }}
+                            >
+                                <CardContent
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        flexGrow: 1,
+                                        gap: 1,
+                                    }}
+                                >
 
-                                    <Typography variant="h6">
-                                        <strong>NF:</strong> {alerta.nota.numero}
-                                    </Typography>
+                                    {/* HEADER */}
+                                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                        <Typography><strong>NF:</strong> {alerta.nota.numero}</Typography>
+                                    </Box>
 
-                                    <Typography sx={{ fontSize: "0.8rem" }}>
-                                        <strong>Série:</strong> {alerta.nota.serie}
-                                    </Typography>
+                                    <Typography><strong>Série:</strong> {alerta.nota.serie}</Typography>
 
                                     <Typography sx={{
-                                        fontSize: "0.8rem",
-                                        whiteSpace: "nowrap",
-                                        overflow: "hidden",
-                                        textOverflow: "ellipsis"
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        fontSize: '0.8rem'
                                     }}>
                                         <strong>Fornecedor:</strong> {alerta.nota.fornecedor}
                                     </Typography>
 
-                                    <Typography sx={{ fontSize: "0.8rem" }}>
-                                        <strong>Data de emissão:</strong> {alerta.nota.data_emissao}
+                                    <Typography sx={{ fontSize: '0.8rem' }}>
+                                        <strong>Emissão:</strong> {alerta.nota.data_emissao}
                                     </Typography>
 
-                                    <Typography sx={{ fontSize: "0.8rem" }}>
-                                        <strong>Data de importação:</strong> {alerta.nota.data_recebimento}
+                                    <Typography sx={{ fontSize: '0.8rem' }}>
+                                        <strong>Importação:</strong> {alerta.nota.data_recebimento}
                                     </Typography>
 
-                                    <Box sx={{ mt: 2 }}>
-                                        <Chip
-                                            label={alerta.mensagem}
+                                    <Typography sx={{ fontSize: '0.8rem' }}>
+                                        <strong>Status:</strong> {alerta.nota.status}
+                                    </Typography>
+
+                                    <Box sx={{ mt: 'auto' }}>
+                                        <Typography
                                             sx={{
-                                                bgcolor: corAlerta(alerta.tipo),
-                                                color: "#fff",
-                                                fontWeight: "bold"
+                                                fontSize: '0.8rem',
+                                                fontWeight: 'bold',
+                                                color:
+                                                    alerta.tipo === "ATRASO_CONFERENCIA" ? "#d32f2f" :
+                                                        alerta.tipo === "CFOP_GARANTIA" ? "#7b1fa2" :
+                                                            alerta.tipo === "GUARDA_PENDENTE" ? "#f57c00" :
+                                                                "#607d8b"
                                             }}
-                                        />
+                                        >
+                                            {alerta.mensagem}
+                                        </Typography>
                                     </Box>
 
                                 </CardContent>
