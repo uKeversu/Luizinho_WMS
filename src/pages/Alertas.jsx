@@ -151,7 +151,17 @@ function Alertas() {
     return (
         <Container maxWidth="100%" sx={{ mt: 4, bgcolor: '#FFFFFF' }}>
             {/* Header */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, bgcolor: '#007bff', height: '7vh', mb: 2 }}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', md: 'row' },
+                    justifyContent: 'space-between',
+                    alignItems: { xs: 'flex-start', md: 'center' },
+                    gap: 2,
+                    p: 2,
+                    bgcolor: '#007bff'
+                }}
+            >
                 <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: '#FFFFFF' }}>
                     <strong>Alerta de mercadorias</strong>
                 </Typography>

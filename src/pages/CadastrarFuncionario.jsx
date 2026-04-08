@@ -137,7 +137,18 @@ function CadastroFuncionario() {
         <Container maxWidth="100%" sx={{ mt: 4, bgcolor: '#FFFFFF' }}>
 
             {/* Header */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, bgcolor: '#007bff', mb: 10 }}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', md: 'row' },
+                    justifyContent: 'space-between',
+                    alignItems: { xs: 'flex-start', md: 'center' },
+                    gap: 2,
+                    p: 2,
+                    bgcolor: '#007bff',
+                    mb: 5
+                }}
+            >
                 <Typography variant="h4" sx={{ color: "#FFFFFF" }}>
                     <strong>Cadastro de Funcionário</strong>
                 </Typography>

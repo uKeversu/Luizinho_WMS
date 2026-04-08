@@ -548,7 +548,17 @@ function Recebimentos() {
         ) : (
             <Container maxWidth="100%" sx={{ mt: 4, bgcolor: '#FFFFFF' }}>
                 {/* Header */}
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, bgcolor: '#007bff', height: '7vh' }}>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: { xs: 'column', md: 'row' },
+                        justifyContent: 'space-between',
+                        alignItems: { xs: 'flex-start', md: 'center' },
+                        gap: 2,
+                        p: 2,
+                        bgcolor: '#007bff'
+                    }}
+                >
                     <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: '#FFFFFF' }}>
                         <strong>Recebimento de mercadorias</strong>
                     </Typography>
@@ -567,17 +577,42 @@ function Recebimentos() {
                                 </Button>
                             )}
                         </Box>
-                        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                flexDirection: 'row',
+                                justifyContent: 'flex-end',
+                                alignItems: 'center',
+                                gap: 1,
+                                flexWrap: 'nowrap',
+                                overflow: 'hidden'
+                            }}>
                             <Button
                                 onClick={() => setOpenDialog(true)}
-                                sx={{ color: '#ffffff', display: 'flex', gap: 1 }}
+                                sx={{
+                                    color: '#ffffff',
+                                    display: 'flex',
+                                    gap: 0.5,
+                                    fontSize: '0.75rem',
+                                    minWidth: 'auto',
+                                    padding: '4px 8px',
+                                    whiteSpace: 'nowrap'
+                                }}
                             >
                                 CADASTRAR FUNCIONARIO
                                 {< PersonAddIcon />}
                             </Button>
                             <Button
                                 onClick={() => navigate("/Alertas")}
-                                sx={{ color: '#ffffff', display: 'flex', gap: 1 }}
+                                sx={{
+                                    color: '#ffffff',
+                                    display: 'flex',
+                                    gap: 0.5,
+                                    fontSize: '0.75rem',
+                                    minWidth: 'auto',
+                                    padding: '4px 8px',
+                                    whiteSpace: 'nowrap'
+                                }}
                             >
                                 Alertas
                                 {< WarningIcon />}
@@ -585,13 +620,29 @@ function Recebimentos() {
                             <Button
                                 id="btnAtualizar" onClick={pegarLocal}
                                 size="small"
-                                sx={{ color: '#ffffff', display: 'flex', gap: 1 }}>
+                                sx={{
+                                    color: '#ffffff',
+                                    display: 'flex',
+                                    gap: 0.5,
+                                    fontSize: '0.75rem',
+                                    minWidth: 'auto',
+                                    padding: '4px 8px',
+                                    whiteSpace: 'nowrap'
+                                }}>
                                 SS Plus Sync
                                 {<SyncIcon />}
                             </Button>
                             <Button
                                 onClick={() => navigate("/Dashboard")}
-                                sx={{ color: '#ffffff', display: 'flex', gap: 1 }}
+                                sx={{
+                                    color: '#ffffff',
+                                    display: 'flex',
+                                    gap: 0.5,
+                                    fontSize: '0.75rem',
+                                    minWidth: 'auto',
+                                    padding: '4px 8px',
+                                    whiteSpace: 'nowrap'
+                                }}
                             >
                                 NOTAS RECEBIDAS
                                 {< ArticleIcon />}
@@ -621,10 +672,10 @@ function Recebimentos() {
                     </CardContent>
                 </Card>
 
-                <Grid container spacing={3} sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Grid container spacing={3} justifyContent="space-between" alignItems="stretch">
 
                     {/* Dados da nota */}
-                    <Grid item xs={12} md={6} sx={{ width: '30%' }}>
+                    <Grid item xs={12} lg={3} sx={{ maxWidth: '50vh' }}>
                         <Card sx={{ borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh #000000', bgcolor: '#f3f3f3' }}>
                             <CardContent>
                                 <Typography variant="h6">Dados da Nota</Typography>
@@ -694,7 +745,7 @@ function Recebimentos() {
                     </Grid>
 
                     {/* Paletes */}
-                    <Grid item xs={12} md={6} sx={{ width: '50%' }}>
+                    <Grid item xs={12} lg={7} sx={{ maxWidth: '100vh', minWidth: '60vh' }}>
                         <Card sx={{ borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh #000000', bgcolor: '#f3f3f3' }}>
                             <CardContent>
 
@@ -741,7 +792,7 @@ function Recebimentos() {
                     </Grid>
 
                     {/* Botões extras */}
-                    <Grid item xs={12} md={6} sx={{ width: '30vh' }}>
+                    <Grid item xs={12} lg={12} sx={{ maxWidth: '30vh' }}>
                         <Card sx={{ borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh #000000', bgcolor: '#f3f3f3' }}>
                             <CardContent>
                                 <Button

@@ -278,7 +278,17 @@ function Dashboard({ tipo }) {
         ) : (
             <Container maxWidth="100%" sx={{ mt: 4, bgcolor: '#FFFFFF' }}>
                 {/* Header */}
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, bgcolor: '#007bff', height: '7vh' }}>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: { xs: 'column', md: 'row' },
+                        justifyContent: 'space-between',
+                        alignItems: { xs: 'flex-start', md: 'center' },
+                        gap: 2,
+                        p: 2,
+                        bgcolor: '#007bff'
+                    }}
+                >
                     <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: '#FFFFFF' }}>
                         <strong>
                             {aba === 0 && "Notas em Trânsito"}
@@ -388,9 +398,9 @@ function Dashboard({ tipo }) {
                         <Typography>Nenhuma nota encontrada</Typography>
                     ) : (
                         <Grid container spacing={4}>
-                            
+
                             {notasFiltradasPorAba.map((nota, idx) => (
-                                
+
                                 <Grid size={{ xs: 12, md: 3 }} key={idx}>
                                     <Card variant="outlined" sx={{
                                         borderRadius: '2vh',
@@ -517,7 +527,7 @@ function Dashboard({ tipo }) {
                             <Typography>Nenhum item encontrado</Typography>
                         ) : (
                             itensFiltrados.map((item, index) => {
-                                
+
                                 return (
 
                                     <Card key={index} sx={{ mt: 2, mb: 2, p: 2, borderRadius: '1vh', boxShadow: '0vh 0.1vh 0.5vh #000000', bgcolor: '#f3f3f3', }}>
