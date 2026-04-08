@@ -675,7 +675,7 @@ function Recebimentos() {
                 <Grid container spacing={3} justifyContent="space-between" alignItems="stretch">
 
                     {/* Dados da nota */}
-                    <Grid item xs={12} lg={3} sx={{ maxWidth: '50vh' }}>
+                    <Grid item xs={12} md={3} lg={2} sx={{ maxWidth: '50vh' }}>
                         <Card sx={{ borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh #000000', bgcolor: '#f3f3f3' }}>
                             <CardContent>
                                 <Typography variant="h6">Dados da Nota</Typography>
@@ -745,8 +745,8 @@ function Recebimentos() {
                     </Grid>
 
                     {/* Paletes */}
-                    <Grid item xs={12} lg={7} sx={{ maxWidth: '100vh', minWidth: '60vh' }}>
-                        <Card sx={{ borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh #000000', bgcolor: '#f3f3f3' }}>
+                    <Grid item xs={12} md={9} lg={8}>
+                        <Card sx={{ borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh #000000', bgcolor: '#f3f3f3', width: '100%', minWidth: '40vw' }}>
                             <CardContent>
 
                                 <Typography variant="h6">Organização em Paletes</Typography>
@@ -792,8 +792,8 @@ function Recebimentos() {
                     </Grid>
 
                     {/* Botões extras */}
-                    <Grid item xs={12} lg={12} sx={{ maxWidth: '30vh' }}>
-                        <Card sx={{ borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh #000000', bgcolor: '#f3f3f3' }}>
+                    <Grid item xs={12} md={12} lg={2}>
+                        <Card sx={{ borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh #000000', bgcolor: '#f3f3f3', maxWidth: '30vh' }}>
                             <CardContent>
                                 <Button
                                     variant="contained"

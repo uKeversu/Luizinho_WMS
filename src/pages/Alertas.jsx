@@ -159,7 +159,8 @@ function Alertas() {
                     alignItems: { xs: 'flex-start', md: 'center' },
                     gap: 2,
                     p: 2,
-                    bgcolor: '#007bff'
+                    bgcolor: '#007bff',
+                    mb: 5
                 }}
             >
                 <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: '#FFFFFF' }}>
