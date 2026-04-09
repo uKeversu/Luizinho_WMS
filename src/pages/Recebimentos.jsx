@@ -38,7 +38,7 @@ import Dashboard from "./Dashboard";
 import ModalErro from "../components/ModalErro";
 import ModalRetira from "../components/ModalRetira";
 import ModalObservacao from "../components/ModalObservacoes";
-import ModalConfirmaRecebimento from "../components/modalConfirmaRecebimento";
+import ModalConfirmaRecebimento from "../components/ModalConfirmaRecebimento";
 
 function Recebimentos() {
 
