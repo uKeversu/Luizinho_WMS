@@ -312,7 +312,7 @@ function Conferencia() {
         item.caixa = caixaAberta.id;
 
         // Chama função que imprime a etiqueta da peça
-        // imprimirEtiqueta(item);
+        imprimirEtiqueta(item);
 
         novosItens.splice(index, 1);
         novosItens.unshift(item);
@@ -334,7 +334,7 @@ function Conferencia() {
                 ? item.codigo_barras
                 : item.codigo_produto;
 
-        const urlRastreio = `https://seusistema.com/rastreio/${codigoBarras}`;
+        const urlRastreio = `http://192.168.1.185:5173/rastreio/${codigoBarras}`;
 
         const dataAtual = new Date().toLocaleDateString("pt-BR");
 
