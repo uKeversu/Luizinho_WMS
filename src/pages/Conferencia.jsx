@@ -57,10 +57,58 @@ function Conferencia() {
 
     useEffect(() => {
         if (notas.length > 0) {
-            buscarItens();
-            buscarNota();
+            carregarTudo();
         }
     }, [notas]);
+
+    const carregarTudo = async () => {
+        try {
+            setLoading(true);
+
+            // Busca notas
+            const res = await fetch(`${API}/api/notas/listar`);
+            const data = await res.json();
+
+            const selecionadas = data.filter(n => notas.includes(n.id));
+            setNotaInfo(selecionadas);
+
+            // Busca itens usando as notas carregadas
+            let todosItens = [];
+
+            for (const n of notas) {
+                const notaId = typeof n === "object" ? n.id : n;
+
+                const response = await fetch(`${API}/api/itens_nfe/${notaId}`);
+                const dataItens = await response.json();
+
+                if (response.ok) {
+                    const notaAtual = selecionadas.find(n => n.id === notaId);
+
+                    const itensFormatados = (dataItens.items || []).map(item => ({
+                        descricao: item.descricao || "Item sem identificação",
+                        codigo_barras: item.cean || "",
+                        codigo_produto: item.cod_produto || "",
+                        quantidade: Number(item.quantidade_comercial) || 0,
+                        localizacao: item.loc_sistema || "Sem localização",
+                        conferido: 0,
+                        caixa: null,
+                        notaId: notaId,
+                        notaNumero: notaAtual?.numero || "-",
+                        notaSerie: notaAtual?.serie || "-"
+                    }));
+
+                    todosItens = [...todosItens, ...itensFormatados];
+                }
+            }
+
+            setItens(todosItens);
+
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const buscarNota = async () => {
         const res = await fetch(`${API}/api/notas/listar`);
@@ -85,6 +133,8 @@ function Conferencia() {
                 console.log("BUSCANDO ITENS:", data.items);
 
                 if (response.ok) {
+                    const notaAtual = notaInfo?.find(n => n.id === notaId);
+
                     const itensFormatados = (data.items || []).map(item => ({
                         descricao: item.descricao || "Item sem identificação",
                         codigo_barras: item.cean || "",
@@ -93,7 +143,9 @@ function Conferencia() {
                         localizacao: item.loc_sistema || "Sem localização",
                         conferido: 0,
                         caixa: null,
-                        notaId: notaId
+                        notaId: notaId,
+                        notaNumero: notaAtual?.numero || "-",
+                        notaSerie: notaAtual?.serie || "-"
                     }));
 
                     todosItens = [...todosItens, ...itensFormatados];
@@ -134,8 +186,17 @@ function Conferencia() {
 
         const caixaFinal = {
             ...caixaAberta,
-            numero: caixaAberta.numero || numeroCaixa
+            numero: caixaAberta.numero || numeroCaixa,
+            jaImprimiu: caixaAberta.jaImprimiu || false
         };
+
+        setCaixas(prev => [...prev, caixaFinal]);
+
+        if (!caixaFinal.jaImprimiu) {
+            imprimirEtiquetaCaixa(caixaFinal);
+
+            caixaFinal.jaImprimiu = true;
+        }
 
         setCaixas([...caixas, caixaFinal]);
         setCaixaAberta(null);
@@ -250,6 +311,9 @@ function Conferencia() {
         item.conferido += 1;
         item.caixa = caixaAberta.id;
 
+        // Chama função que imprime a etiqueta da peça
+        // imprimirEtiqueta(item);
+
         novosItens.splice(index, 1);
         novosItens.unshift(item);
 
@@ -261,6 +325,192 @@ function Conferencia() {
         }));
 
         setCodigo("");
+    };
+
+    // Impressão de etiquetas de peça
+    const imprimirEtiqueta = (item) => {
+        const codigoBarras =
+            item.codigo_barras && item.codigo_barras !== "SEM GTIN"
+                ? item.codigo_barras
+                : item.codigo_produto;
+
+        const urlRastreio = `https://seusistema.com/rastreio/${codigoBarras}`;
+
+        const dataAtual = new Date().toLocaleDateString("pt-BR");
+
+        const conteudo = `
+    <html>
+        <head>
+            <title>Etiqueta</title>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+            <style>
+                @page {
+                    size: 32mm 18mm;
+                    margin: 0;
+                }
+                body {
+                    margin: 0;
+                    padding: 2px;
+                    font-family: Arial;
+                }
+                .container {
+                    display: flex;
+                    align-items: center;
+                    height: 100%;
+                }
+                .qr {
+                    width: 45px;
+                    height: 45px;
+                }
+                .right {
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                    margin-left: 4px;
+                    flex: 1;
+                    height: 100%;
+                }
+                .top {
+                    font-size: 9px;
+                    font-weight: bold;
+                    line-height: 10px;
+                }
+                .bottom {
+                    font-size: 7px;
+                    line-height: 9px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                
+                <!-- QR -->
+                <div id="qrcode" class="qr"></div>
+
+                <!-- Direita -->
+                <div class="right">
+                    
+                    <!-- Parte de cima (destaque) -->
+                    <div class="top">
+                        ${item.codigo_produto}<br/>
+                        ${item.localizacao}
+                    </div>
+
+                    <!-- Parte de baixo -->
+                    <div class="bottom">
+                        ${userInfo?.codigo || "-"}<br/>
+                        ${item.notaNumero}-${item.notaSerie}<br/>
+                        ${dataAtual}
+                    </div>
+
+                </div>
+            </div>
+
+            <script>
+                new QRCode(document.getElementById("qrcode"), {
+                    text: "${urlRastreio}",
+                    width: 45,
+                    height: 45
+                });
+
+                setTimeout(() => {
+                    window.print();
+                    window.close();
+                }, 300);
+            </script>
+        </body>
+    </html>
+    `;
+
+        const janela = window.open("", "", "width=220,height=140");
+        janela.document.write(conteudo);
+        janela.document.close();
+    };
+
+    const imprimirEtiquetaCaixa = (caixa) => {
+        const codigoCaixa = caixa.numero;
+
+        const dataAtual = new Date().toLocaleDateString("pt-BR");
+
+        const conteudo = `
+    <html>
+        <head>
+            <title>Etiqueta Caixa</title>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+            <style>
+                @page {
+                    size: 100mm 34mm;
+                    margin: 0;
+                }
+
+                body {
+                    margin: 0;
+                    padding: 4px;
+                    font-family: Arial;
+                }
+
+                .container {
+                    display: flex;
+                    align-items: center;
+                    height: 100%;
+                }
+
+                .qr {
+                    width: 90px;
+                    height: 90px;
+                }
+
+                .info {
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                    flex: 1;
+                    align-items: flex-start;
+                    padding-left: 60px;
+                }
+
+                .numero {
+                    font-size: 42px;
+                    font-weight: bold;
+                    line-height: 40px;
+                }
+
+                .data {
+                    font-size: 16px;
+                    margin-top: 4px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div id="qrcode" class="qr"></div>
+
+                <div class="info">
+                    <div class="numero">${codigoCaixa}</div>
+                    <div class="data">${dataAtual}</div>
+                </div>
+            </div>
+
+            <script>
+                new QRCode(document.getElementById("qrcode"), {
+                    text: "${codigoCaixa}",
+                    width: 90,
+                    height: 90
+                });
+
+                setTimeout(() => {
+                    window.print();
+                    window.close();
+                }, 400);
+            </script>
+        </body>
+    </html>
+    `;
+
+        const janela = window.open("", "", "width=400,height=300");
+        janela.document.write(conteudo);
+        janela.document.close();
     };
 
     // Finalizar conferência
@@ -491,7 +741,17 @@ function Conferencia() {
                     onKeyDown={(e) => { if (e.key === "Enter") scanner(); }}
                     autoFocus
                     fullWidth
-                    sx={{ mb: 2, width: '100%', bgcolor: '#f3f3f3' }}
+                    sx={{
+                        mb: 2, width: '100%', bgcolor: '#f3f3f3',
+                        '& .MuiOutlinedInput-root': {
+                            '&:hover fieldset': {
+                                borderColor: '#007bff',
+                            },
+                            '&.Mui-focused fieldset': {
+                                borderColor: '#007bff',
+                            }
+                        }
+                    }}
                 />
 
                 {/* Tabela de conferência + caixas*/}
