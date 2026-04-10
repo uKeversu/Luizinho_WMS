@@ -16,7 +16,7 @@ function Conferencia() {
     const navigate = useNavigate();
 
     // API BASE
-    const API = "http://192.168.1.185:8077";
+    const API = "http://192.168.1.184:8077";
 
     // Login
     const [userInfo, setUserInfo] = useState(() => {
@@ -178,7 +178,7 @@ function Conferencia() {
         if (!caixaAberta?.numero && !numeroCaixa.trim()) {
             setSnackbar({
                 open: true,
-                message: "Informe o número da caixa",
+                message: "Informe o nome da caixa",
                 severity: "warning"
             });
             return;
@@ -334,7 +334,7 @@ function Conferencia() {
                 ? item.codigo_barras
                 : item.codigo_produto;
 
-        const urlRastreio = `http://192.168.1.185:5173/rastreio/${codigoBarras}`;
+        const urlRastreio = `http://192.168.1.184:5173/rastreio/${codigoBarras}`;
 
         const dataAtual = new Date().toLocaleDateString("pt-BR");
 
@@ -359,8 +359,8 @@ function Conferencia() {
                     height: 100%;
                 }
                 .qr {
-                    width: 45px;
-                    height: 45px;
+                    width: 60px;
+                    height: 60px;
                 }
                 .right {
                     display: flex;
@@ -370,7 +370,11 @@ function Conferencia() {
                     flex: 1;
                     height: 100%;
                 }
-                .top {
+                .codigo {
+                    font-size: 9px;
+                    line-height: 10px;
+                }
+                .loc {
                     font-size: 9px;
                     font-weight: bold;
                     line-height: 10px;
@@ -390,9 +394,14 @@ function Conferencia() {
                 <!-- Direita -->
                 <div class="right">
                     
-                    <!-- Parte de cima (destaque) -->
-                    <div class="top">
-                        ${item.codigo_produto}<br/>
+                    <!-- Código do produto -->
+                    <div class="codigo">
+                        ${item.codigo_produto}
+                    </div>
+
+                    <!-- Localização -->
+
+                    <div class="loc">
                         ${item.localizacao}
                     </div>
 
@@ -409,8 +418,8 @@ function Conferencia() {
             <script>
                 new QRCode(document.getElementById("qrcode"), {
                     text: "${urlRastreio}",
-                    width: 45,
-                    height: 45
+                    width: 60,
+                    height: 60
                 });
 
                 setTimeout(() => {

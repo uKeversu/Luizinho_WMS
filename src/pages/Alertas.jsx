@@ -19,7 +19,7 @@ function Alertas() {
     const navigate = useNavigate();
 
     // API BASE
-    const API = "http://192.168.1.185:8077";
+    const API = "http://192.168.1.184:8077";
 
     // Login
     const [userInfo, setUserInfo] = useState(() => {
