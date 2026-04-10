@@ -16,7 +16,9 @@ import {
     DialogTitle,
     Dialog,
     DialogContent,
-    DialogActions
+    DialogActions,
+    Backdrop,
+    CircularProgress
 } from "@mui/material";
 
 import PersonIcon from '@mui/icons-material/Person';
@@ -28,6 +30,7 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
 import WarningIcon from '@mui/icons-material/Warning';
+import BorderColorIcon from '@mui/icons-material/BorderColor';
 
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
@@ -68,6 +71,8 @@ function Recebimentos() {
     const [paletes, setPaletes] = useState([""]);
     const [funcionario, setFuncionario] = useState("");
     const [file, setFile] = useState(null);
+    const [itensSemGTIN, setItensSemGTIN] = useState([]);
+    const [openGTINDialog, setOpenGTINDialog] = useState(false);
 
     // Fornecedor direto
     const [fornecedorDireto, setFornecedorDireto] = useState(false);
@@ -82,6 +87,9 @@ function Recebimentos() {
         message: "",
         severity: "success"
     });
+
+    // SS PLUS Sync
+    const [loadingSync, setLoadingSync] = useState(false);
 
     // Modal retirar peças
     const [openRetirada, setOpenRetirada] = useState(false);
@@ -136,6 +144,15 @@ function Recebimentos() {
             const formData = new FormData();
             formData.append("file", file);
 
+            let itensCorrigidos = [];
+
+            if (itensSemGTIN.length > 0) {
+                itensCorrigidos = itensSemGTIN.map(i => ({
+                    index: i.index,
+                    codigo_barras: i.codigo
+                }));
+            }
+
             const res = await fetch(`${API}/api/nfe/upload`, {
                 method: "POST",
                 headers: {
@@ -169,6 +186,7 @@ function Recebimentos() {
                         conferente: funcionario,
                         localizacao: paletes.filter(p => p.trim() !== "").join(" | "),
                         observacao_palet: observacao_palet,
+                        itens_corrigidos: itensCorrigidos
                     })
                 }
             );
@@ -234,6 +252,18 @@ function Recebimentos() {
             for (let i = 0; i < dets.length; i++) {
                 const qCom = dets[i].getElementsByTagName("qCom")[0]?.textContent;
                 totalPecas += parseFloat(qCom || 0);
+            }
+
+            let temSemGTIN = false;
+
+            for (let i = 0; i < dets.length; i++) {
+                const prod = dets[i].getElementsByTagName("prod")[0];
+                const cEAN = prod?.getElementsByTagName("cEAN")[0]?.textContent;
+
+                if (!cEAN || cEAN === "SEM GTIN") {
+                    temSemGTIN = true;
+                    break;
+                }
             }
 
             // Para acessar cfop
@@ -501,30 +531,63 @@ function Recebimentos() {
 
     // Sincroniza com SS PLUS
     const pegarLocal = async () => {
+        setLoadingSync(true);
+
+        const tempoMinimo = 2000;
+        const inicio = Date.now();
+
+        let snackbarData = null;
+
         try {
             const response = await fetch('http://192.168.1.184:8077/api/checar_localizacao_lote', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ todos: true })
             });
+
             const data = await response.json();
+
             if (response.ok && data.encontrado) {
                 console.log(`Localização atualizada: ${data.localiza} (via ${data.metodo})`);
-            } else {
-                setSnackbar({
+                snackbarData = {
                     open: true,
                     message: "Sincronização com sucesso!",
                     severity: "success"
-                });
+                };
+            } else {
                 console.error(data.mensagem || 'Produto não encontrado no ERP');
+                console.log("RESPOSTA API:", data);
+                snackbarData = {
+                    open: true,
+                    message: "Erro ao sincronizar com SS Plus!",
+                    severity: "error"
+                };
             }
+
         } catch (err) {
             console.error('Erro na requisição:', err);
-            setSnackbar({
+            snackbarData = {
                 open: true,
-                message: "Erro ao sincronizar com SS PLus!",
+                message: "Erro ao sincronizar com SS Plus!",
                 severity: "error"
-            });
+            };
+
+        } finally {
+            const tempoPassado = Date.now() - inicio;
+            const tempoRestante = tempoMinimo - tempoPassado;
+
+            const finalizar = () => {
+                setLoadingSync(false);
+                if (snackbarData) {
+                    setSnackbar(snackbarData);
+                }
+            };
+
+            if (tempoRestante > 0) {
+                setTimeout(finalizar, tempoRestante);
+            } else {
+                finalizar();
+            }
         }
     };
 
@@ -588,6 +651,21 @@ function Recebimentos() {
                                 overflow: 'hidden'
                             }}>
                             <Button
+                                onClick={() => navigate("/AtualizarCean")}
+                                sx={{
+                                    color: '#ffffff',
+                                    display: 'flex',
+                                    gap: 0.5,
+                                    fontSize: '0.75rem',
+                                    minWidth: 'auto',
+                                    padding: '4px 8px',
+                                    whiteSpace: 'nowrap'
+                                }}
+                            >
+                                CÓDIGO DE BARRAS
+                                {<BorderColorIcon />}
+                            </Button>
+                            <Button
                                 onClick={() => setOpenDialog(true)}
                                 sx={{
                                     color: '#ffffff',
@@ -619,6 +697,7 @@ function Recebimentos() {
                             </Button>
                             <Button
                                 id="btnAtualizar" onClick={pegarLocal}
+                                disabled={loadingSync}
                                 size="small"
                                 sx={{
                                     color: '#ffffff',
@@ -651,6 +730,19 @@ function Recebimentos() {
                         </Box>
                     </Box>
                 </Box>
+
+                {/* Loading de sincronização SS Plus*/}
+                <Backdrop
+                    open={loadingSync}
+                    sx={{ zIndex: (theme) => theme.zIndex.drawer + 999 }}
+                >
+                    <Box textAlign="center">
+                        <CircularProgress sx={{ color: '#FFFFFF' }} color="inherit" />
+                        <Typography mt={2} sx={{ color: '#FFFFFF' }}>
+                            Sincronizando com o SS Plus...
+                        </Typography>
+                    </Box>
+                </Backdrop>
 
                 {/* Importar XML */}
                 <Card sx={{ mt: 3, mb: 3, borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh #000000', bgcolor: '#f3f3f3' }}>
@@ -720,6 +812,7 @@ function Recebimentos() {
                                         }
                                         sx={{ mr: 1 }}
                                     />
+
                                     <FormControlLabel
                                         control={
                                             <Switch
@@ -888,6 +981,12 @@ function Recebimentos() {
                                         });
                                         return;
                                     }
+
+                                    if (itensSemGTIN.length > 0) {
+                                        setOpenGTINDialog(true);
+                                        return;
+                                    }
+
                                     setOpenConfirmar(true);
                                 }}
                             >Confirmar recebimento
@@ -895,6 +994,54 @@ function Recebimentos() {
                         </Box>
                     </CardContent>
                 </Card>
+
+                <Dialog open={openGTINDialog} onClose={() => { }}>
+                    <DialogTitle>Itens sem código de barras</DialogTitle>
+
+                    <DialogContent>
+                        <Typography sx={{ mb: 2 }}>
+                            Existem itens sem código de barras. Informe manualmente:
+                        </Typography>
+
+                        {itensSemGTIN.map((item, index) => (
+                            <TextField
+                                key={index}
+                                fullWidth
+                                label={`Item ${item.index + 1}`}
+                                value={item.codigo}
+                                onChange={(e) => {
+                                    const novos = [...itensSemGTIN];
+                                    novos[index].codigo = e.target.value;
+                                    setItensSemGTIN(novos);
+                                }}
+                                sx={{ mb: 2 }}
+                            />
+                        ))}
+                    </DialogContent>
+
+                    <DialogActions>
+                        <Button
+                            variant="contained"
+                            onClick={() => {
+                                const invalido = itensSemGTIN.some(i => !i.codigo.trim());
+
+                                if (invalido) {
+                                    setSnackbar({
+                                        open: true,
+                                        message: "Preencha todos os códigos de barras",
+                                        severity: "warning"
+                                    });
+                                    return;
+                                }
+
+                                setOpenGTINDialog(false);
+                                setOpenConfirmar(true);
+                            }}
+                        >
+                            Confirmar
+                        </Button>
+                    </DialogActions>
+                </Dialog>
 
                 <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
                     <DialogTitle>Acesso restrito</DialogTitle>
