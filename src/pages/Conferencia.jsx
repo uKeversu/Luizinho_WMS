@@ -178,7 +178,7 @@ function Conferencia() {
         if (!caixaAberta?.numero && !numeroCaixa.trim()) {
             setSnackbar({
                 open: true,
-                message: "Informe o número da caixa",
+                message: "Informe o nome da caixa",
                 severity: "warning"
             });
             return;
