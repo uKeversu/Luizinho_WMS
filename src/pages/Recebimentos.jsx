@@ -662,7 +662,7 @@ function Recebimentos() {
                                     whiteSpace: 'nowrap'
                                 }}
                             >
-                                CÓDIGO DE BARRAS
+                                ATUALIZAR CEAN
                                 {<BorderColorIcon />}
                             </Button>
                             <Button

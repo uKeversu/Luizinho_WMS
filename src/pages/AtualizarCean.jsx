@@ -101,7 +101,10 @@ function AtualizarCean() {
             });
             return;
         }
- 
+
+        console.log("URL:", `${API}/api/nfe/atualizarbarras/${item.nfe_id}/${item.id}`);
+        console.log("ITEM:", item);
+        
         try {
             const res = await fetch(
                 `${API}/api/nfe/atualizarbarras/${item.nfe_id}/${item.id}`,
