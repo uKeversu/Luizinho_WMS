@@ -25,6 +25,9 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 
 import LoginFuncionario from "../components/LoginFuncionario";
+
+import '../style/App.css';
+
 import Conferencia from "./Conferencia";
 
 function Dashboard({ tipo }) {
@@ -277,7 +280,7 @@ function Dashboard({ tipo }) {
                 }}
             />
         ) : (
-            <Container maxWidth="100%" sx={{ mt: 4, bgcolor: '#FFFFFF' }}>
+            <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "var(--branco)" }}>
                 {/* Header */}
                 <Box
                     sx={{
@@ -287,10 +290,10 @@ function Dashboard({ tipo }) {
                         alignItems: { xs: 'flex-start', md: 'center' },
                         gap: 2,
                         p: 2,
-                        bgcolor: '#007bff'
+                        bgcolor: 'var(--azul)'
                     }}
                 >
-                    <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: '#FFFFFF' }}>
+                    <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "var(--branco)" }}>
                         <strong>
                             {aba === 0 && "Notas em Trânsito"}
                             {aba === 1 && "Notas Recebidas"}
@@ -300,15 +303,15 @@ function Dashboard({ tipo }) {
                     </Typography>
                     <Box>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '0' }}>
-                            {<PersonIcon sx={{ color: "#FFFFFF", paddingRight: '1vh' }} />}
-                            <Typography sx={{ color: '#FFFFFF', fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>
+                            {<PersonIcon sx={{ color: "var(--branco)", paddingRight: '1vh' }} />}
+                            <Typography sx={{ color: "var(--branco)", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>
                                 {userInfo?.nome}
                             </Typography>
                             {token && (
                                 <Button
                                     size="small"
                                     onClick={logout}
-                                    sx={{ color: '#FFFFFF', display: 'flex', gap: 1 }}
+                                    sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}
                                 >{<LogoutIcon />}
                                 </Button>
                             )}
@@ -316,7 +319,7 @@ function Dashboard({ tipo }) {
                         <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
                             <Button
                                 onClick={() => navigate("/")}
-                                sx={{ color: '#ffffff', display: 'flex', gap: 1 }}
+                                sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}
                             >
                                 Recebimento
                                 {<LocalShippingIcon />}
@@ -325,7 +328,7 @@ function Dashboard({ tipo }) {
                         </Box>
                     </Box>
                 </Box>
-                <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: "#fff" }}>
+                <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: "var(--branco)" }}>
                     <Tabs
                         value={aba}
                         onChange={(e, newValue) => setAba(newValue)}
@@ -346,13 +349,13 @@ function Dashboard({ tipo }) {
                         variant="outlined"
                         size="small"
                         sx={{
-                            mb: 2, width: '100%', bgcolor: '#f3f3f3',
+                            mb: 2, width: '100%', bgcolor: 'var(--fundo-card)',
                             '& .MuiOutlinedInput-root': {
                                 '&:hover fieldset': {
-                                    borderColor: '#007bff',
+                                    borderColor: 'var(--azul)',
                                 },
                                 '&.Mui-focused fieldset': {
-                                    borderColor: '#007bff',
+                                    borderColor: 'var(--azul)',
                                 }
                             }
                         }}
@@ -407,8 +410,8 @@ function Dashboard({ tipo }) {
                                 <Grid size={{ xs: 12, md: 3 }} key={idx}>
                                     <Card variant="outlined" sx={{
                                         borderRadius: '2vh',
-                                        boxShadow: '0vh 0.1vh 0.5vh #000000',
-                                        bgcolor: nota.status === "FORNECEDOR_DIRETO" ? '#e3f2fd' : '#f3f3f3',
+                                        boxShadow: '0vh 0.1vh 0.5vh var(--sombra)',
+                                        bgcolor: nota.status === "FORNECEDOR_DIRETO" ? 'var(--fundo-forn-direto)' : 'var(--card)',
                                         height: '100%',
                                         display: 'flex',
                                         textAlign: 'left',
@@ -460,7 +463,7 @@ function Dashboard({ tipo }) {
                                             <Typography sx={{ fontSize: '0.8rem' }}><strong>Importação:</strong> {nota.data_recebimento}</Typography>
                                             <Typography sx={{ fontSize: '0.8rem' }}><strong>Local:</strong> {nota.pallets?.toUpperCase()}</Typography>
                                             {nota.observacao_palet?.trim() && (
-                                                <Typography sx={{ fontSize: '0.8rem', color: '#696969', fontStyle: 'italic' }}>
+                                                <Typography sx={{ fontSize: '0.8rem', color: 'var(--observacao-texto)', fontStyle: 'italic' }}>
                                                     <strong>Obs:</strong> {nota.observacao_palet}
                                                 </Typography>
                                             )}
@@ -472,8 +475,8 @@ function Dashboard({ tipo }) {
                                                     variant="contained"
                                                     sx={{
                                                         mb: '1vh',
-                                                        bgcolor: '#007bff',
-                                                        '&:hover': { bgcolor: '#0056b3' }
+                                                        bgcolor: 'var(--azul)',
+                                                        '&:hover': { bgcolor: 'var(--azul-hover)' }
                                                     }}
                                                     onClick={() => { buscarItens(nota) }}
                                                 >Ver itens
@@ -484,8 +487,8 @@ function Dashboard({ tipo }) {
                                                         variant="contained"
                                                         disabled={loadingNotasIds.includes(nota.id)}
                                                         sx={{
-                                                            bgcolor: "#02bb31",
-                                                            '&:hover': { bgcolor: "#009425" }
+                                                            bgcolor: "var(--confirmar)",
+                                                            '&:hover': { bgcolor: "var(--confirmar-hover)" }
                                                         }}
                                                         onClick={() => atualizarStatusNota(nota)}
                                                     >
@@ -512,13 +515,13 @@ function Dashboard({ tipo }) {
                         variant="outlined"
                         size="small"
                         sx={{
-                            mb: 2, display: 'flex', margin: 'auto', width: '90%', bgcolor: '#f3f3f3',
+                            mb: 2, display: 'flex', margin: 'auto', width: '90%', bgcolor: 'var(--fundo-card)',
                             '& .MuiOutlinedInput-root': {
                                 '&:hover fieldset': {
-                                    borderColor: '#007bff',
+                                    borderColor: 'var(--azul)',
                                 },
                                 '&.Mui-focused fieldset': {
-                                    borderColor: '#007bff',
+                                    borderColor: 'var(--azul)',
                                 }
                             }
                         }}
@@ -533,7 +536,7 @@ function Dashboard({ tipo }) {
 
                                 return (
 
-                                    <Card key={index} sx={{ mt: 2, mb: 2, p: 2, borderRadius: '1vh', boxShadow: '0vh 0.1vh 0.5vh #000000', bgcolor: '#f3f3f3', }}>
+                                    <Card key={index} sx={{ mt: 2, mb: 2, p: 2, borderRadius: '1vh', boxShadow: '0vh 0.1vh 0.5vh var(--sombra)', bgcolor: 'var(--fundo-card)', }}>
                                         <Typography>
                                             <strong>Produto:</strong> {item.descricao || item.xProd}
                                         </Typography>
@@ -550,11 +553,11 @@ function Dashboard({ tipo }) {
                                         </Typography>
                                         <Typography sx={{
                                             color:
-                                                item.status_item === "ITEM_CONFERIDO" ? "#02bb31" :
-                                                    item.status_item === "PENDENTE" ? "#007bff" :
-                                                        item.status_item === "FORNECEDOR_DIRETO" ? "rgb(231, 153, 49)" :
-                                                            item.status_item === "EM_TRANSITO" ? "#414141" :
-                                                                "#414141"
+                                                item.status_item === "ITEM_CONFERIDO" ? "var(--confirmar)" :
+                                                    item.status_item === "PENDENTE" ? "var(--azul)" :
+                                                        item.status_item === "FORNECEDOR_DIRETO" ? "var(--observacao)" :
+                                                            item.status_item === "EM_TRANSITO" ? "var(--em-transito)" :
+                                                                "var(--em-transito)"
                                         }}>
                                             <strong>Status:</strong> {item.status_item || "SEM STATUS"}
                                         </Typography>
@@ -564,7 +567,7 @@ function Dashboard({ tipo }) {
                         )}
                     </DialogContent>
                     <DialogActions>
-                        <Button sx={{ color: '#FFFFFF', bgcolor: 'rgb(255, 53, 53)', '&:hover': { bgcolor: 'rgb(202, 40, 40)' } }} onClick={() => setOpenModal(false)}>Fechar</Button>
+                        <Button sx={{ color: "var(--branco)", bgcolor: 'var(--cancelar)', '&:hover': { bgcolor: 'var(--cancelar-hover)' } }} onClick={() => setOpenModal(false)}>Fechar</Button>
                     </DialogActions>
                 </Dialog>
             </Container>

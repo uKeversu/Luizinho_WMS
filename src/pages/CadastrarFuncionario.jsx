@@ -17,6 +17,8 @@ import LogoutIcon from '@mui/icons-material/Logout';
 
 import LoginFuncionario from "../components/LoginFuncionario";
 
+import '../style/App.css';
+
 function CadastroFuncionario() {
 
     const navigate = useNavigate();
@@ -134,7 +136,7 @@ function CadastroFuncionario() {
     }
 
     return (
-        <Container maxWidth="100%" sx={{ mt: 4, bgcolor: '#FFFFFF' }}>
+        <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "var(--branco)" }}>
 
             {/* Header */}
             <Box
@@ -145,20 +147,20 @@ function CadastroFuncionario() {
                     alignItems: { xs: 'flex-start', md: 'center' },
                     gap: 2,
                     p: 2,
-                    bgcolor: '#007bff',
+                    bgcolor: 'var(--azul)',
                     mb: 5
                 }}
             >
-                <Typography variant="h4" sx={{ color: "#FFFFFF" }}>
+                <Typography variant="h4" sx={{ color: "var(--branco)" }}>
                     <strong>Cadastro de Funcionário</strong>
                 </Typography>
 
                 <Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '0' }}>
-                        {<PersonIcon sx={{ color: "#FFFFFF", paddingRight: '1vh' }} />}
-                        <Typography sx={{ color: '#FFFFFF', fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>{userInfo?.nome}</Typography>
+                        {<PersonIcon sx={{ color: "var(--branco)", paddingRight: '1vh' }} />}
+                        <Typography sx={{ color: "var(--branco)", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>{userInfo?.nome}</Typography>
                         {token && (
-                            <Button size="small" onClick={logout} sx={{ color: '#FFFFFF', display: 'flex', gap: 1 }}>{<LogoutIcon />}</Button>
+                            <Button size="small" onClick={logout} sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}>{<LogoutIcon />}</Button>
                         )}
                     </Box>
                 </Box>
@@ -169,8 +171,8 @@ function CadastroFuncionario() {
                 mt: 3,
                 mb: 3,
                 borderRadius: '2vh',
-                boxShadow: '0vh 0.1vh 0.5vh #000000',
-                bgcolor: '#f3f3f3',
+                boxShadow: '0vh 0.1vh 0.5vh var(--sombra)',
+                bgcolor: 'var(--fundo-card)',
                 maxWidth: 500,
                 margin: "0 auto"
             }}>
@@ -190,10 +192,10 @@ function CadastroFuncionario() {
                             mt: 2,
                             '& .MuiOutlinedInput-root': {
                                 '&:hover fieldset': {
-                                    borderColor: '#007bff',
+                                    borderColor: 'var(--azul)',
                                 },
                                 '&.Mui-focused fieldset': {
-                                    borderColor: '#007bff',
+                                    borderColor: 'var(--azul)',
                                 }
                             }
                         }}
@@ -209,10 +211,10 @@ function CadastroFuncionario() {
                             mt: 2,
                             '& .MuiOutlinedInput-root': {
                                 '&:hover fieldset': {
-                                    borderColor: '#007bff',
+                                    borderColor: 'var(--azul)',
                                 },
                                 '&.Mui-focused fieldset': {
-                                    borderColor: '#007bff',
+                                    borderColor: 'var(--azul)',
                                 }
                             }
                         }}
@@ -223,8 +225,8 @@ function CadastroFuncionario() {
                         variant="contained"
                         sx={{
                             mt: 3,
-                            bgcolor: '#02bb31',
-                            '&:hover': { bgcolor: '#009425' }
+                            bgcolor: 'var(--confirmar)',
+                            '&:hover': { bgcolor: 'var(--confirmar-hover)' }
                         }}
                         onClick={cadastrarFuncionario}
                     >

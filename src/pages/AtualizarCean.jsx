@@ -19,6 +19,8 @@ import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
+import '../style/App.css';
+
 function AtualizarCean() {
 
 
@@ -148,7 +150,7 @@ function AtualizarCean() {
     };
 
     return (
-        <Container maxWidth="100%" sx={{ mt: 4, bgcolor: '#FFFFFF' }}>
+        <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "var(--branco)" }}>
             {/* Header */}
             <Box
                 sx={{
@@ -158,24 +160,24 @@ function AtualizarCean() {
                     alignItems: { xs: 'flex-start', md: 'center' },
                     gap: 2,
                     p: 2,
-                    bgcolor: '#007bff',
+                    bgcolor: 'var(--azul)',
                     mb: 5
                 }}
             >
-                <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: '#FFFFFF' }}>
+                <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "var(--branco)" }}>
                     <strong>Identificação de código de barras</strong>
                 </Typography>
                 <Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '0' }}>
-                        {<PersonIcon sx={{ color: "#FFFFFF", paddingRight: '1vh' }} />}
-                        <Typography sx={{ color: '#FFFFFF', fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>
+                        {<PersonIcon sx={{ color: "var(--branco)", paddingRight: '1vh' }} />}
+                        <Typography sx={{ color: "var(--branco)", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>
                             {userInfo?.nome}
                         </Typography>
                         {token && (
                             <Button
                                 size="small"
                                 onClick={logout}
-                                sx={{ color: '#FFFFFF', display: 'flex', gap: 1 }}
+                                sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}
                             >{<LogoutIcon />}
                             </Button>
                         )}
@@ -183,7 +185,7 @@ function AtualizarCean() {
                     <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
                         <Button
                             onClick={() => navigate("/")}
-                            sx={{ color: '#ffffff', display: 'flex', gap: 1 }}
+                            sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}
                         >
                             Voltar
                             {< ArrowBackIcon />}
@@ -207,8 +209,8 @@ function AtualizarCean() {
 
                                 <Card sx={{
                                     borderRadius: '2vh',
-                                    boxShadow: '0vh 0.1vh 0.5vh #000000',
-                                    bgcolor: '#f3f3f3'
+                                    boxShadow: '0vh 0.1vh 0.5vh var(--sombra)',
+                                    bgcolor: 'var(--fundo-card)'
                                 }}>
                                     <CardContent>
 
@@ -241,10 +243,10 @@ function AtualizarCean() {
                                             sx={{
                                                 mt: 2, '& .MuiOutlinedInput-root': {
                                                     '&:hover fieldset': {
-                                                        borderColor: '#007bff',
+                                                        borderColor: 'var(--azul)',
                                                     },
                                                     '&.Mui-focused fieldset': {
-                                                        borderColor: '#007bff',
+                                                        borderColor: 'var(--azul)',
                                                     }
                                                 }
                                             }}

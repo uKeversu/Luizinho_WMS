@@ -13,6 +13,8 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 import LoginFuncionario from "../components/LoginFuncionario";
 
+import '../style/App.css';
+
 function Conferencia() {
     const navigate = useNavigate();
 
@@ -688,7 +690,7 @@ function Conferencia() {
     }
 
     return (
-        <Container maxWidth="100%" sx={{ mt: 4, bgcolor: '#FFFFFF' }}>
+        <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "var(--branco)" }}>
             {/* Header */}
             <Box
                 sx={{
@@ -698,10 +700,10 @@ function Conferencia() {
                     alignItems: { xs: 'flex-start', md: 'center' },
                     gap: 2,
                     p: 2,
-                    bgcolor: '#007bff'
+                    bgcolor: 'var(--azul)'
                 }}
             >
-                <Typography variant="h4" sx={{ color: "#FFFFFF" }}>
+                <Typography variant="h4" sx={{ color: "var(--branco)" }}>
                     <strong>
                         {modo === "MULTIPLO"
                             ? "Conferência - Múltiplas Notas)"
@@ -710,14 +712,14 @@ function Conferencia() {
                 </Typography>
                 <Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '0' }}>
-                        {<PersonIcon sx={{ color: "#FFFFFF", paddingRight: '1vh' }} />}
-                        <Typography sx={{ color: '#FFFFFF', fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>{userInfo?.nome}</Typography>
+                        {<PersonIcon sx={{ color: "var(--branco)", paddingRight: '1vh' }} />}
+                        <Typography sx={{ color: "var(--branco)", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>{userInfo?.nome}</Typography>
                         {token && (
-                            <Button size="small" onClick={logout} sx={{ color: '#FFFFFF', display: 'flex', gap: 1 }}>{<LogoutIcon />}</Button>
+                            <Button size="small" onClick={logout} sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}>{<LogoutIcon />}</Button>
                         )}
                     </Box>
                     <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
-                        <Button onClick={() => navigate("/Dashboard")} sx={{ color: '#ffffff', display: 'flex', gap: 1 }}>Voltar {< ArrowBackIcon />}</Button>
+                        <Button onClick={() => navigate("/Dashboard")} sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}>Voltar {< ArrowBackIcon />}</Button>
                     </Box>
                 </Box>
             </Box>
@@ -752,13 +754,13 @@ function Conferencia() {
                     autoFocus
                     fullWidth
                     sx={{
-                        mb: 2, width: '100%', bgcolor: '#f3f3f3',
+                        mb: 2, width: '100%', bgcolor: 'var(--fundo-card)',
                         '& .MuiOutlinedInput-root': {
                             '&:hover fieldset': {
-                                borderColor: '#007bff',
+                                borderColor: 'var(--azul)',
                             },
                             '&.Mui-focused fieldset': {
-                                borderColor: '#007bff',
+                                borderColor: 'var(--azul)',
                             }
                         }
                     }}
@@ -773,20 +775,20 @@ function Conferencia() {
                                 <CircularProgress />
                             </Box> :
                             itens.length === 0 ? <Typography>Nenhum item</Typography> :
-                                <TableContainer component={Paper} sx={{ boxShadow: '0vh 0.1vh 0.5vh #000000' }}>
+                                <TableContainer component={Paper} sx={{ boxShadow: '0vh 0.1vh 0.5vh var(--sombra)' }}>
                                     <Table>
                                         <TableHead>
-                                            <TableRow sx={{ bgcolor: '#007bff' }}>
-                                                <TableCell sx={{ color: '#fff' }}>Localização</TableCell>
-                                                <TableCell sx={{ color: '#fff' }}>Código de Barras</TableCell>
-                                                <TableCell sx={{ color: '#fff' }}>Descrição</TableCell>
-                                                <TableCell sx={{ color: '#fff' }} align="right">Qtd (Conf./Nota)</TableCell>
+                                            <TableRow sx={{ bgcolor: 'var(--azul)' }}>
+                                                <TableCell sx={{ color: 'var(--branco)' }}>Localização</TableCell>
+                                                <TableCell sx={{ color: 'var(--branco)' }}>Código de Barras</TableCell>
+                                                <TableCell sx={{ color: 'var(--branco)' }}>Descrição</TableCell>
+                                                <TableCell sx={{ color: 'var(--branco)' }} align="right">Qtd (Conf./Nota)</TableCell>
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
                                             {itens.map((item, index) => (
                                                 <TableRow key={index} sx={{
-                                                    bgcolor: item.conferido === item.quantidade ? '#a8ecaa' : '#f3f3f3'
+                                                    bgcolor: item.conferido === item.quantidade ? 'var(--item-conferido' : 'var(--fundo-card)'
                                                 }}>
                                                     <TableCell>{item.localizacao}</TableCell>
                                                     <TableCell>{item.codigo_barras}</TableCell>
@@ -802,7 +804,7 @@ function Conferencia() {
 
                     {/* Card de caixas */}
                     <Box sx={{ flex: 1 }}>
-                        <Card sx={{ p: 2, boxShadow: '0vh 0.1vh 0.5vh #000000' }}>
+                        <Card sx={{ p: 2, boxShadow: '0vh 0.1vh 0.5vh var(--sombra)' }}>
                             <Typography variant="h6">Caixas</Typography>
 
                             {/* Caixa aberta */}
@@ -868,7 +870,7 @@ function Conferencia() {
                                 <Typography>Nenhuma caixa fechada ainda</Typography>
                             ) : (
                                 caixas.map((c, i) => (
-                                    <Box key={c.id} sx={{ mb: 1, p: 1, border: '1px solid #ccc', borderRadius: 1 }}>
+                                    <Box key={c.id} sx={{ mb: 1, p: 1, border: '1px solid var(--fundo-card-caixa)', borderRadius: 1 }}>
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <Typography><strong>Caixa: {c.numero}</strong></Typography>
                                             <Button size="small" variant="outlined" onClick={() => setCaixaFechadaDialog(c)}>
@@ -942,7 +944,7 @@ function Conferencia() {
                                 </DialogActions>
                             </Dialog>
                         </Card>
-                        <Card sx={{ p: 2, mt: 2, boxShadow: '0vh 0.1vh 0.5vh #000000' }}>
+                        <Card sx={{ p: 2, mt: 2, boxShadow: '0vh 0.1vh 0.5vh var(--sombra)' }}>
                             <Typography variant="h6">Observações</Typography>
 
                             <TextField
@@ -956,10 +958,10 @@ function Conferencia() {
                                     my: 2,
                                     '& .MuiOutlinedInput-root': {
                                         '&:hover fieldset': {
-                                            borderColor: '#007bff',
+                                            borderColor: 'var(--azul)',
                                         },
                                         '&.Mui-focused fieldset': {
-                                            borderColor: '#007bff',
+                                            borderColor: 'var(--azul)',
                                         }
                                     }
                                 }}

@@ -15,6 +15,8 @@ import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
+import '../style/App.css';
+
 function Alertas() {
 
     const navigate = useNavigate();
@@ -150,7 +152,7 @@ function Alertas() {
     };
 
     return (
-        <Container maxWidth="100%" sx={{ mt: 4, bgcolor: '#FFFFFF' }}>
+        <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "var(--branco)" }}>
             {/* Header */}
             <Box
                 sx={{
@@ -160,24 +162,24 @@ function Alertas() {
                     alignItems: { xs: 'flex-start', md: 'center' },
                     gap: 2,
                     p: 2,
-                    bgcolor: '#007bff',
+                    bgcolor: 'var(--azul)',
                     mb: 5
                 }}
             >
-                <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: '#FFFFFF' }}>
+                <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "var(--branco)" }}>
                     <strong>Alerta de mercadorias</strong>
                 </Typography>
                 <Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '0' }}>
-                        {<PersonIcon sx={{ color: "#FFFFFF", paddingRight: '1vh' }} />}
-                        <Typography sx={{ color: '#FFFFFF', fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>
+                        {<PersonIcon sx={{ color: "var(--branco)", paddingRight: '1vh' }} />}
+                        <Typography sx={{ color: "var(--branco)", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>
                             {userInfo?.nome}
                         </Typography>
                         {token && (
                             <Button
                                 size="small"
                                 onClick={logout}
-                                sx={{ color: '#FFFFFF', display: 'flex', gap: 1 }}
+                                sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}
                             >{<LogoutIcon />}
                             </Button>
                         )}
@@ -185,7 +187,7 @@ function Alertas() {
                     <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
                         <Button
                             onClick={() => navigate("/")}
-                            sx={{ color: '#ffffff', display: 'flex', gap: 1 }}
+                            sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}
                         >
                             Voltar
                             {< ArrowBackIcon />}
@@ -211,7 +213,7 @@ function Alertas() {
                                 sx={{
                                     borderRadius: '2vh',
                                     boxShadow: '0vh 0.1vh 0.5vh #000000',
-                                    bgcolor: '#f3f3f3',
+                                    bgcolor: 'var(--fundo-card)',
                                     height: '100%',
                                     display: 'flex',
                                     flexDirection: 'column',
@@ -220,9 +222,9 @@ function Alertas() {
                                     maxHeight: '30vh',
                                     minWidth: '50vh',
                                     maxWidth: '50vh',
-                                    borderLeft: `6px solid ${alerta.tipo === "ATRASO_CONFERENCIA" ? "#d32f2f" :
-                                        alerta.tipo === "CFOP_GARANTIA" ? "#7b1fa2" :
-                                            alerta.tipo === "GUARDA_PENDENTE" ? "#f57c00" :
+                                    borderLeft: `6px solid ${alerta.tipo === "ATRASO_CONFERENCIA" ? "var(--atraso-conferencia)" :
+                                        alerta.tipo === "CFOP_GARANTIA" ? "var(--garantia)" :
+                                            alerta.tipo === "GUARDA_PENDENTE" ? "var(--atraso-guarda)" :
                                                 "#607d8b"
                                         }`
                                 }}
@@ -270,9 +272,9 @@ function Alertas() {
                                                 fontSize: '0.8rem',
                                                 fontWeight: 'bold',
                                                 color:
-                                                    alerta.tipo === "ATRASO_CONFERENCIA" ? "#d32f2f" :
-                                                        alerta.tipo === "CFOP_GARANTIA" ? "#7b1fa2" :
-                                                            alerta.tipo === "GUARDA_PENDENTE" ? "#f57c00" :
+                                                    alerta.tipo === "ATRASO_CONFERENCIA" ? "var(--atraso-conferencia)" :
+                                                        alerta.tipo === "CFOP_GARANTIA" ? "var(--garantia)" :
+                                                            alerta.tipo === "GUARDA_PENDENTE" ? "var(--atraso-guarda)" :
                                                                 "#607d8b"
                                             }}
                                         >

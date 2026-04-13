@@ -11,6 +11,8 @@ import {
 
 import { fakeRastreio } from "../services/rastreioFakeAPI";
 
+import '../style/App.css';
+
 function Rastreio() {
     const { codigo } = useParams();
 
@@ -62,12 +64,12 @@ function Rastreio() {
 
     const getCor = (tipo) => {
         switch (tipo) {
-            case "PENDENTE": return "#6c757d";
-            case "CONFERIDO": return "#007bff";
-            case "GUARDADO": return "#28a745";
-            case "VENDIDO": return "#a72828";
-            case "DEVOLVIDO": return "#b8dc35";
-            default: return "#007bff";
+            case "PENDENTE": return "var(--pendente)";
+            case "CONFERIDO": return "var(--conferido)";
+            case "GUARDADO": return "var(--guardado)";
+            case "VENDIDO": return "var(--vendido)";
+            case "DEVOLVIDO": return "var(--devolvido)";
+            default: return "var(--default)";
         }
     };
 
@@ -95,13 +97,13 @@ function Rastreio() {
 
     return (
         <Container sx={{ mt: 3 }}>
-            <Box sx={{ gap: 2, p: 2, bgcolor: '#007bff', mb: 5 }}>
-                <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: '#FFFFFF' }}>
+            <Box sx={{ gap: 2, p: 2, bgcolor: 'var(--azul)', mb: 5 }}>
+                <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "var(--branco)" }}>
                     <strong>Rastreio de mercadoria</strong>
                 </Typography>
             </Box>
 
-            <Card sx={{ mb: 2, borderRadius: '1vh', boxShadow: '0vh 0.1vh 0.5vh #7e7e7e', }}>
+            <Card sx={{ mb: 2, borderRadius: '1vh', boxShadow: '0vh 0.1vh 0.5vh var(--default)', }}>
                 <CardContent>
                     <Typography><strong>Código:</strong> {dados.codigo}</Typography>
                     <Typography><strong>Descrição:</strong> {dados.descricao}</Typography>
@@ -126,7 +128,7 @@ function Rastreio() {
                                 width: 12,
                                 height: 12,
                                 borderRadius: "50%",
-                                bgcolor: '#007bff'
+                                bgcolor: 'var(--azul)'
                             }} />
 
                             {index !== eventosOrdenados.length - 0 && (
@@ -143,7 +145,7 @@ function Rastreio() {
                             mb: 2,
                             flex: 1,
                             borderRadius: '1vh',
-                            boxShadow: '0vh 0.1vh 0.5vh #7e7e7e',
+                            boxShadow: '0vh 0.1vh 0.5vh var(--default)',
                         }}>
                             <CardContent sx={{ py: 1 }}>
                                 <Typography sx={{ fontWeight: "bold" }}>

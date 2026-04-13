@@ -43,6 +43,8 @@ import ModalRetira from "../components/ModalRetira";
 import ModalObservacao from "../components/ModalObservacoes";
 import ModalConfirmaRecebimento from "../components/ModalConfirmaRecebimento";
 
+import '../style/App.css';
+
 function Recebimentos() {
 
     // Acessar outras pages
@@ -609,7 +611,7 @@ function Recebimentos() {
                 }}
             />
         ) : (
-            <Container maxWidth="100%" sx={{ mt: 4, bgcolor: '#FFFFFF' }}>
+            <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "var(--branco)" }}>
                 {/* Header */}
                 <Box
                     sx={{
@@ -619,23 +621,23 @@ function Recebimentos() {
                         alignItems: { xs: 'flex-start', md: 'center' },
                         gap: 2,
                         p: 2,
-                        bgcolor: '#007bff'
+                        bgcolor: 'var(--azul)'
                     }}
                 >
-                    <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: '#FFFFFF' }}>
+                    <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "var(--branco)" }}>
                         <strong>Recebimento de mercadorias</strong>
                     </Typography>
                     <Box>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '0' }}>
-                            {<PersonIcon sx={{ color: "#FFFFFF", paddingRight: '1vh' }} />}
-                            <Typography sx={{ color: '#FFFFFF', fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>
+                            {<PersonIcon sx={{ color: "var(--branco)", paddingRight: '1vh' }} />}
+                            <Typography sx={{ color: "var(--branco)", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>
                                 {userInfo?.nome}
                             </Typography>
                             {token && (
                                 <Button
                                     size="small"
                                     onClick={logout}
-                                    sx={{ color: '#FFFFFF', display: 'flex', gap: 1 }}
+                                    sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}
                                 >{<LogoutIcon />}
                                 </Button>
                             )}
@@ -653,7 +655,7 @@ function Recebimentos() {
                             <Button
                                 onClick={() => navigate("/AtualizarCean")}
                                 sx={{
-                                    color: '#ffffff',
+                                    color: "var(--branco)",
                                     display: 'flex',
                                     gap: 0.5,
                                     fontSize: '0.75rem',
@@ -668,7 +670,7 @@ function Recebimentos() {
                             <Button
                                 onClick={() => setOpenDialog(true)}
                                 sx={{
-                                    color: '#ffffff',
+                                    color: "var(--branco)",
                                     display: 'flex',
                                     gap: 0.5,
                                     fontSize: '0.75rem',
@@ -683,7 +685,7 @@ function Recebimentos() {
                             <Button
                                 onClick={() => navigate("/Alertas")}
                                 sx={{
-                                    color: '#ffffff',
+                                    color: "var(--branco)",
                                     display: 'flex',
                                     gap: 0.5,
                                     fontSize: '0.75rem',
@@ -700,7 +702,7 @@ function Recebimentos() {
                                 disabled={loadingSync}
                                 size="small"
                                 sx={{
-                                    color: '#ffffff',
+                                    color: "var(--branco)",
                                     display: 'flex',
                                     gap: 0.5,
                                     fontSize: '0.75rem',
@@ -714,7 +716,7 @@ function Recebimentos() {
                             <Button
                                 onClick={() => navigate("/Dashboard")}
                                 sx={{
-                                    color: '#ffffff',
+                                    color: "var(--branco)",
                                     display: 'flex',
                                     gap: 0.5,
                                     fontSize: '0.75rem',
@@ -737,15 +739,15 @@ function Recebimentos() {
                     sx={{ zIndex: (theme) => theme.zIndex.drawer + 999 }}
                 >
                     <Box textAlign="center">
-                        <CircularProgress sx={{ color: '#FFFFFF' }} color="inherit" />
-                        <Typography mt={2} sx={{ color: '#FFFFFF' }}>
+                        <CircularProgress sx={{ color: "var(--branco)" }} color="inherit" />
+                        <Typography mt={2} sx={{ color: "var(--branco)" }}>
                             Sincronizando com o SS Plus...
                         </Typography>
                     </Box>
                 </Backdrop>
 
                 {/* Importar XML */}
-                <Card sx={{ mt: 3, mb: 3, borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh #000000', bgcolor: '#f3f3f3' }}>
+                <Card sx={{ mt: 3, mb: 3, borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh var(--sombra)', bgcolor: 'var(--fundo-card)' }}>
                     <CardContent>
                         <Typography variant="h6">Importar XML</Typography>
 
@@ -754,8 +756,8 @@ function Recebimentos() {
                             component="label"
                             disabled={loading}
                             sx={{
-                                mt: 2, bgcolor: '#007bff',
-                                '&:hover': { bgcolor: '#0056b3' }
+                                mt: 2, bgcolor: 'var(--azul)',
+                                '&:hover': { bgcolor: 'var(--azul-hover)' }
                             }}
                         ><AttachmentIcon sx={{ mr: '5px' }} />
                             Selecionar XML
@@ -768,7 +770,7 @@ function Recebimentos() {
 
                     {/* Dados da nota */}
                     <Grid item xs={12} md={3} lg={2} sx={{ maxWidth: '50vh' }}>
-                        <Card sx={{ borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh #000000', bgcolor: '#f3f3f3' }}>
+                        <Card sx={{ borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh var(--sombra)', bgcolor: 'var(--fundo-card)' }}>
                             <CardContent>
                                 <Typography variant="h6">Dados da Nota</Typography>
 
@@ -839,7 +841,7 @@ function Recebimentos() {
 
                     {/* Paletes */}
                     <Grid item xs={12} md={9} lg={8}>
-                        <Card sx={{ borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh #000000', bgcolor: '#f3f3f3', width: '100%', minWidth: '40vw' }}>
+                        <Card sx={{ borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh var(--sombra)', bgcolor: 'var(--fundo-card)', width: '100%', minWidth: '40vw' }}>
                             <CardContent>
 
                                 <Typography variant="h6">Organização em Paletes</Typography>
@@ -854,17 +856,17 @@ function Recebimentos() {
                                             sx={{
                                                 '& .MuiOutlinedInput-root': {
                                                     '&:hover fieldset': {
-                                                        borderColor: '#007bff',
+                                                        borderColor: 'var(--azul)',
                                                     },
                                                     '&.Mui-focused fieldset': {
-                                                        borderColor: '#007bff',
+                                                        borderColor: 'var(--azul)',
                                                     }
                                                 }
                                             }}
                                         />
                                         <Button
                                             variant="contained"
-                                            sx={{ bgcolor: 'rgb(255, 53, 53)', '&:hover': { bgcolor: 'rgb(202, 40, 40)' } }}
+                                            sx={{ bgcolor: 'var(--cancelar)', '&:hover': { bgcolor: 'var(--cancelar-hover)' } }}
                                             onClick={() => removerPalete(index)}
                                         >
                                             X
@@ -874,7 +876,7 @@ function Recebimentos() {
                                 <Button
                                     variant="contained"
                                     size="large"
-                                    sx={{ bgcolor: '#007bff', mt: 2, display: 'flex', justifyContent: 'left', '&:hover': { bgcolor: '#0056b3' } }}
+                                    sx={{ bgcolor: 'var(--azul)', mt: 2, display: 'flex', justifyContent: 'left', '&:hover': { bgcolor: 'var(--cancelar-hover)' } }}
                                     onClick={adicionarPalete}
                                 >
                                     Adicionar palete
@@ -886,12 +888,12 @@ function Recebimentos() {
 
                     {/* Botões extras */}
                     <Grid item xs={12} md={12} lg={2}>
-                        <Card sx={{ borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh #000000', bgcolor: '#f3f3f3', maxWidth: '30vh' }}>
+                        <Card sx={{ borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh var(--sombra)', bgcolor: 'var(--fundo-card)', maxWidth: '30vh' }}>
                             <CardContent>
                                 <Button
                                     variant="contained"
                                     size="large"
-                                    sx={{ width: '100%', bgcolor: '#007bff', mb: 2, '&:hover': { bgcolor: '#0056b3' } }}
+                                    sx={{ width: '100%', bgcolor: 'var(--azul)', mb: 2, '&:hover': { bgcolor: 'var(--azul-hover)' } }}
                                     onClick={() => setOpenRetirada(true)}
                                     disabled
                                 >
@@ -900,7 +902,7 @@ function Recebimentos() {
                                 <Button
                                     variant="contained"
                                     size="large"
-                                    sx={{ width: '100%', bgcolor: 'rgb(231, 153, 49)', mb: 2, '&:hover': { bgcolor: 'rgb(199, 129, 38)' } }}
+                                    sx={{ width: '100%', bgcolor: 'var(--observacao)', mb: 2, '&:hover': { bgcolor: 'var(--observacao-hover)' } }}
                                     onClick={() => {
 
                                         setOpenObservacao(true);
@@ -911,7 +913,7 @@ function Recebimentos() {
                                 <Button
                                     variant="contained"
                                     size="large"
-                                    sx={{ width: '100%', bgcolor: 'rgb(255, 53, 53)', '&:hover': { bgcolor: 'rgb(202, 40, 40)' } }}
+                                    sx={{ width: '100%', bgcolor: 'var(--cancelar)', '&:hover': { bgcolor: 'var(--cancelar-hover)' } }}
                                     onClick={() => {
                                         setErro({
                                             codigo: "",
@@ -931,7 +933,7 @@ function Recebimentos() {
                 </Grid>
 
                 {/* Funcionário */}
-                <Card sx={{ mt: 3, borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh #000000', bgcolor: '#f3f3f3' }}>
+                <Card sx={{ mt: 3, borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh var(--sombra)', bgcolor: 'var(--fundo-card)' }}>
                     <CardContent>
                         <Typography variant="h6">Identificação de funcionário</Typography>
 
@@ -945,17 +947,17 @@ function Recebimentos() {
                                 sx={{
                                     mt: 1, width: '80%', '& .MuiOutlinedInput-root': {
                                         '&:hover fieldset': {
-                                            borderColor: '#007bff',
+                                            borderColor: 'var(--azul)',
                                         },
                                         '&.Mui-focused fieldset': {
-                                            borderColor: '#007bff',
+                                            borderColor: 'var(--azul)',
                                         }
                                     }
                                 }}
                             />
                             <Button
                                 variant="contained"
-                                sx={{ mt: 1, ml: 1, bgcolor: '#02bb31', '&:hover': { bgcolor: '#009425' }, height: "7.3vh" }}
+                                sx={{ mt: 1, ml: 1, bgcolor: 'var(--confirmar)', '&:hover': { bgcolor: 'var(--confirmar-hover)' }, height: "7.3vh" }}
                                 onClick={() => {
                                     if (!file) {
                                         setSnackbar({
@@ -1058,10 +1060,10 @@ function Recebimentos() {
                                 mt: 1,
                                 '& .MuiOutlinedInput-root': {
                                     '&:hover fieldset': {
-                                        borderColor: '#007bff',
+                                        borderColor: 'var(--azul)',
                                     },
                                     '&.Mui-focused fieldset': {
-                                        borderColor: '#007bff',
+                                        borderColor: 'var(--azul)',
                                     }
                                 }
                             }}
@@ -1081,7 +1083,7 @@ function Recebimentos() {
                     </DialogContent>
 
                     <DialogActions>
-                        <Button sx={{ color: '#FFFFFF', bgcolor: 'rgb(255, 53, 53)', '&:hover': { bgcolor: 'rgb(202, 40, 40)' } }} onClick={() => setOpenDialog(false)}>
+                        <Button sx={{ color: "var(--branco)", bgcolor: 'var(--cancelar)', '&:hover': { bgcolor: 'var(--cancelar-hover)' } }} onClick={() => setOpenDialog(false)}>
                             Cancelar
                         </Button>
 
@@ -1089,8 +1091,8 @@ function Recebimentos() {
                             variant="contained"
                             onClick={acessarCadastro}
                             sx={{
-                                bgcolor: '#02bb31',
-                                '&:hover': { bgcolor: '#009425' }
+                                bgcolor: 'var(--confirmar)',
+                                '&:hover': { bgcolor: 'var(--confirmar-hover)' }
                             }}
                         >
                             Entrar
