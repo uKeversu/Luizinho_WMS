@@ -4,6 +4,7 @@ import {
     Container, Typography, Card, Box, TextField, Button,
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions,
+    CircularProgress
 } from "@mui/material";
 
 import PersonIcon from '@mui/icons-material/Person';
@@ -767,7 +768,10 @@ function Conferencia() {
                 <Box sx={{ display: 'flex', gap: 2 }}>
                     {/* Tabela de itens */}
                     <Box sx={{ flex: 2 }}>
-                        {loading ? <Typography>Carregando...</Typography> :
+                        {loading ?
+                            <Box textAlign="center">
+                                <CircularProgress />
+                            </Box> :
                             itens.length === 0 ? <Typography>Nenhum item</Typography> :
                                 <TableContainer component={Paper} sx={{ boxShadow: '0vh 0.1vh 0.5vh #000000' }}>
                                     <Table>

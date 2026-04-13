@@ -16,6 +16,7 @@ import {
     Tabs,
     Tab,
     Checkbox,
+    CircularProgress,
     Snackbar
 } from "@mui/material";
 
@@ -393,7 +394,9 @@ function Dashboard({ tipo }) {
                     )}
 
                     {loadingNotas ? (
-                        <Typography>Carregando...</Typography>
+                        <Box textAlign="center">
+                            <CircularProgress />
+                        </Box>
                     ) : notasFiltradasPorAba.length === 0 ? (
                         <Typography>Nenhuma nota encontrada</Typography>
                     ) : (
