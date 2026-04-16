@@ -5,6 +5,7 @@ import {
     DialogActions,
     Button,
     TextField,
+    Typography
 } from "@mui/material";
 
 function ModalObservacoes({
@@ -13,11 +14,26 @@ function ModalObservacoes({
     observacao_palet,
     onChange,
     onConfirm
-}
-) {
+}) {
     return (
-        <Dialog open={open} onClose={onClose} fullWidth>
-            <DialogTitle><strong>Adicionar observação</strong></DialogTitle>
+        <Dialog
+            open={open}
+            onClose={onClose}
+            fullWidth
+            slotProps={{
+                paper: {
+                    sx: {
+                        bgcolor: "background.default",
+                        color: "text.primary",
+                    }
+                }
+            }}
+        >
+            <DialogTitle>
+                <Typography variant="h6" sx={{color: 'text.primary'}}>
+                    <strong>Adicionar observação</strong>
+                </Typography>
+            </DialogTitle>
 
             <DialogContent>
 
@@ -27,31 +43,29 @@ function ModalObservacoes({
                     fullWidth
                     value={observacao_palet}
                     onChange={onChange}
-                    sx={{
-                        mt: 2, '& .MuiOutlinedInput-root': {
-                            '&:hover fieldset': {
-                                borderColor: '#007bff',
-                            },
-                            '&.Mui-focused fieldset': {
-                                borderColor: '#007bff',
-                            }
-                        }
-                    }}
+                    sx={{ mt: 2 }}
                 />
+
             </DialogContent>
 
             <DialogActions>
-                <Button variant="contained" color="error" onClick={onClose}>
+
+                <Button
+                    variant="contained"
+                    sx={{ color: "primary.branco", bgcolor: 'primary.cancelar', '&:hover': { bgcolor: 'primary.cancelarHover' } }}
+                    onClick={onClose}
+                >
                     Cancelar
                 </Button>
 
                 <Button
                     variant="contained"
-                    sx={{ bgcolor: '#00ca32', '&:hover': { bgcolor: '#009425' } }}
+                    sx={{ color: "primary.branco", bgcolor: 'primary.confirmar', '&:hover': { bgcolor: 'primary.confirmarHover' } }}
                     onClick={onConfirm}
                 >
                     Confirmar
                 </Button>
+
             </DialogActions>
         </Dialog>
     );

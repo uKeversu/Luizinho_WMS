@@ -33,7 +33,7 @@ import Conferencia from "./Conferencia";
 function Dashboard({ tipo }) {
 
     // API BASE
-    const API = "http://192.168.1.184:8077";
+    const API = "http://192.168.1.185:8077";
 
     // Acessar outras pages
     const navigate = useNavigate();
@@ -280,7 +280,7 @@ function Dashboard({ tipo }) {
                 }}
             />
         ) : (
-            <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "var(--branco)" }}>
+            <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "background.default" }}>
                 {/* Header */}
                 <Box
                     sx={{
@@ -293,7 +293,7 @@ function Dashboard({ tipo }) {
                         bgcolor: 'var(--azul)'
                     }}
                 >
-                    <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "var(--branco)" }}>
+                    <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "background.paper" }}>
                         <strong>
                             {aba === 0 && "Notas em Trânsito"}
                             {aba === 1 && "Notas Recebidas"}
@@ -328,7 +328,7 @@ function Dashboard({ tipo }) {
                         </Box>
                     </Box>
                 </Box>
-                <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: "var(--branco)" }}>
+                <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: "background.default" }}>
                     <Tabs
                         value={aba}
                         onChange={(e, newValue) => setAba(newValue)}
@@ -349,7 +349,7 @@ function Dashboard({ tipo }) {
                         variant="outlined"
                         size="small"
                         sx={{
-                            mb: 2, width: '100%', bgcolor: 'var(--fundo-card)',
+                            mb: 2, width: '100%', bgcolor: 'background.default',
                             '& .MuiOutlinedInput-root': {
                                 '&:hover fieldset': {
                                     borderColor: 'var(--azul)',
@@ -411,7 +411,7 @@ function Dashboard({ tipo }) {
                                     <Card variant="outlined" sx={{
                                         borderRadius: '2vh',
                                         boxShadow: '0vh 0.1vh 0.5vh var(--sombra)',
-                                        bgcolor: nota.status === "FORNECEDOR_DIRETO" ? 'var(--fundo-forn-direto)' : 'var(--card)',
+                                        bgcolor: nota.status === "FORNECEDOR_DIRETO" ? 'background.forndireto' : 'background.inputBg',
                                         height: '100%',
                                         display: 'flex',
                                         textAlign: 'left',
@@ -506,7 +506,15 @@ function Dashboard({ tipo }) {
                     )}
 
                 </Box>
-                <Dialog open={openModal} onClose={() => setOpenModal(false)} fullWidth maxWidth="md">
+                <Dialog open={openModal} onClose={() => setOpenModal(false)} fullWidth maxWidth="md"
+                    slotProps={{
+                        paper: {
+                            sx: {
+                                bgcolor: "background.card",
+                                color: "text.primary",
+                            }
+                        }
+                    }}>
                     <DialogTitle>
                         Itens da NF {notaSelecionada?.numero}
                     </DialogTitle>
@@ -515,7 +523,7 @@ function Dashboard({ tipo }) {
                         variant="outlined"
                         size="small"
                         sx={{
-                            mb: 2, display: 'flex', margin: 'auto', width: '90%', bgcolor: 'var(--fundo-card)',
+                            mb: 2, display: 'flex', margin: 'auto', width: '90%', bgcolor: 'inputBg',
                             '& .MuiOutlinedInput-root': {
                                 '&:hover fieldset': {
                                     borderColor: 'var(--azul)',
@@ -536,7 +544,7 @@ function Dashboard({ tipo }) {
 
                                 return (
 
-                                    <Card key={index} sx={{ mt: 2, mb: 2, p: 2, borderRadius: '1vh', boxShadow: '0vh 0.1vh 0.5vh var(--sombra)', bgcolor: 'var(--fundo-card)', }}>
+                                    <Card key={index} sx={{ mt: 2, mb: 2, p: 2, borderRadius: '1vh', boxShadow: '0vh 0.1vh 0.5vh background.sombra', bgcolor: 'background.default', }}>
                                         <Typography>
                                             <strong>Produto:</strong> {item.descricao || item.xProd}
                                         </Typography>
@@ -553,10 +561,10 @@ function Dashboard({ tipo }) {
                                         </Typography>
                                         <Typography sx={{
                                             color:
-                                                item.status_item === "ITEM_CONFERIDO" ? "var(--confirmar)" :
-                                                    item.status_item === "PENDENTE" ? "var(--azul)" :
-                                                        item.status_item === "FORNECEDOR_DIRETO" ? "var(--observacao)" :
-                                                            item.status_item === "EM_TRANSITO" ? "var(--em-transito)" :
+                                                item.status_item === "ITEM_CONFERIDO" ? "primary.confirmar" :
+                                                    item.status_item === "PENDENTE" ? "primary.pendente" :
+                                                        item.status_item === "FORNECEDOR_DIRETO" ? "primary.pendente" :
+                                                            item.status_item === "EM_TRANSITO" ? "primary.observacao" :
                                                                 "var(--em-transito)"
                                         }}>
                                             <strong>Status:</strong> {item.status_item || "SEM STATUS"}
@@ -567,7 +575,7 @@ function Dashboard({ tipo }) {
                         )}
                     </DialogContent>
                     <DialogActions>
-                        <Button sx={{ color: "var(--branco)", bgcolor: 'var(--cancelar)', '&:hover': { bgcolor: 'var(--cancelar-hover)' } }} onClick={() => setOpenModal(false)}>Fechar</Button>
+                        <Button sx={{ color: "primary.branco", bgcolor: 'primary.cancelar', '&:hover': { bgcolor: 'primary.cancelarHover' } }} onClick={() => setOpenModal(false)}>Fechar</Button>
                     </DialogActions>
                 </Dialog>
             </Container>

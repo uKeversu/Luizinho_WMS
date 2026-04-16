@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     Container,
@@ -31,6 +31,8 @@ import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
 import WarningIcon from '@mui/icons-material/Warning';
 import BorderColorIcon from '@mui/icons-material/BorderColor';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import LightModeIcon from '@mui/icons-material/LightMode';
 
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
@@ -43,12 +45,19 @@ import ModalRetira from "../components/ModalRetira";
 import ModalObservacao from "../components/ModalObservacoes";
 import ModalConfirmaRecebimento from "../components/ModalConfirmaRecebimento";
 
+import { ThemeContext } from "../context/ThemeContext";
 import '../style/App.css';
 
 function Recebimentos() {
 
+    // Tema noturno
+    const { dark, toggleTheme } = useContext(ThemeContext);
+
     // Acessar outras pages
     const navigate = useNavigate();
+
+    // API BASE
+    const API = "http://192.168.1.185:8077";
 
     // Login
     const [userInfo, setUserInfo] = useState(() => {
@@ -63,6 +72,13 @@ function Recebimentos() {
         }
     }, [userInfo]);
 
+    const logout = () => {
+        setToken("");
+        setUserInfo(null);
+        localStorage.removeItem("nfe_token");
+        localStorage.removeItem("user_info");
+    };
+
     // Cadastro de funcionario
     const [openDialog, setOpenDialog] = useState(false);
     const [senhaAdmin, setSenhaAdmin] = useState("");
@@ -70,7 +86,7 @@ function Recebimentos() {
 
     // Sistema
     const [xmlData, setXmlData] = useState(null);
-    const [paletes, setPaletes] = useState([""]);
+    const [paletes, setPaletes] = useState([{ palete: "", volume: "" }]);
     const [funcionario, setFuncionario] = useState("");
     const [file, setFile] = useState(null);
     const [itensSemGTIN, setItensSemGTIN] = useState([]);
@@ -119,16 +135,6 @@ function Recebimentos() {
     // Modal confirmar recebimento
     const [openConfirmar, setOpenConfirmar] = useState(false);
 
-    // API BASE
-    const API = "http://192.168.1.184:8077";
-
-    const logout = () => {
-        setToken("");
-        setUserInfo(null);
-        localStorage.removeItem("nfe_token");
-        localStorage.removeItem("user_info");
-    };
-
     const handleFornecedorToggle = (event) => {
         setFornecedorDireto(event.target.checked);
         if (event.target.checked) {
@@ -165,7 +171,9 @@ function Recebimentos() {
 
             console.log("UPLOAD NFE STATUS:", res.status);
             console.log("Conferente:", funcionario);
-            console.log("Localização:", paletes.filter(p => p.trim() !== "").join(" | "));
+            console.log("Localização:", paletes
+                .filter(p => p.palete.trim() !== "" || p.volume.trim() !== "")
+                .map(p => `Palete:${p.palete}-${p.volume}`).join(" | "));
             console.log("Observação antes de atualizar:", observacao_palet);
             console.log("Status da nota antes:", fornecedorDireto);
 
@@ -186,7 +194,9 @@ function Recebimentos() {
                     body: JSON.stringify({
                         status: statusFinal,
                         conferente: funcionario,
-                        localizacao: paletes.filter(p => p.trim() !== "").join(" | "),
+                        localizacao: paletes
+                            .filter(p => p.palete.trim() !== "" || p.volume.trim() !== "")
+                            .map(p => `Palete ${p.palete} - Volume ${p.volume}`).join(" | "),
                         observacao_palet: observacao_palet,
                         itens_corrigidos: itensCorrigidos
                     })
@@ -324,20 +334,19 @@ function Recebimentos() {
     }, [xmlData]);
 
     // Paletes
-    function handlePaleteChange(index, value) {
+    function handlePaleteChange(index, field, value) {
         const novos = [...paletes];
-        novos[index] = value;
+        novos[index][field] = value;
         setPaletes(novos);
     }
 
     function adicionarPalete() {
-        setPaletes([...paletes, ""]);
+        setPaletes([...paletes, { palete: "", volume: "" }]);
     }
 
     function removerPalete(index) {
         if (paletes.length === 1) return;
-        const novos = paletes.filter((_, i) => i !== index);
-        setPaletes(novos);
+        setPaletes(paletes.filter((_, i) => i !== index));
     }
 
     // Retirar peças
@@ -541,7 +550,7 @@ function Recebimentos() {
         let snackbarData = null;
 
         try {
-            const response = await fetch('http://192.168.1.184:8077/api/checar_localizacao_lote', {
+            const response = await fetch('http://192.168.1.185:8077/api/checar_localizacao_lote', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ todos: true })
@@ -611,7 +620,7 @@ function Recebimentos() {
                 }}
             />
         ) : (
-            <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "var(--branco)" }}>
+            <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "background.default" }}>
                 {/* Header */}
                 <Box
                     sx={{
@@ -621,26 +630,29 @@ function Recebimentos() {
                         alignItems: { xs: 'flex-start', md: 'center' },
                         gap: 2,
                         p: 2,
-                        bgcolor: 'var(--azul)'
+                        bgcolor: 'primary.main'
                     }}
                 >
-                    <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "var(--branco)" }}>
+                    <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "background.paper" }}>
                         <strong>Recebimento de mercadorias</strong>
                     </Typography>
                     <Box>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '0' }}>
-                            {<PersonIcon sx={{ color: "var(--branco)", paddingRight: '1vh' }} />}
-                            <Typography sx={{ color: "var(--branco)", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>
+                            {<PersonIcon sx={{ color: "background.paper", paddingRight: '1vh' }} />}
+                            <Typography sx={{ color: "background.paper", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>
                                 {userInfo?.nome}
                             </Typography>
                             {token && (
                                 <Button
                                     size="small"
                                     onClick={logout}
-                                    sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}
+                                    sx={{ color: "background.paper", display: 'flex', gap: 1 }}
                                 >{<LogoutIcon />}
                                 </Button>
                             )}
+                            <Button sx={{ color: 'background.paper' }} onClick={toggleTheme}>
+                                {dark ? <LightModeIcon /> : <DarkModeIcon />}
+                            </Button>
                         </Box>
                         <Box
                             sx={{
@@ -655,7 +667,7 @@ function Recebimentos() {
                             <Button
                                 onClick={() => navigate("/AtualizarCean")}
                                 sx={{
-                                    color: "var(--branco)",
+                                    color: "background.paper",
                                     display: 'flex',
                                     gap: 0.5,
                                     fontSize: '0.75rem',
@@ -670,7 +682,7 @@ function Recebimentos() {
                             <Button
                                 onClick={() => setOpenDialog(true)}
                                 sx={{
-                                    color: "var(--branco)",
+                                    color: "background.paper",
                                     display: 'flex',
                                     gap: 0.5,
                                     fontSize: '0.75rem',
@@ -685,7 +697,7 @@ function Recebimentos() {
                             <Button
                                 onClick={() => navigate("/Alertas")}
                                 sx={{
-                                    color: "var(--branco)",
+                                    color: "background.paper",
                                     display: 'flex',
                                     gap: 0.5,
                                     fontSize: '0.75rem',
@@ -702,7 +714,7 @@ function Recebimentos() {
                                 disabled={loadingSync}
                                 size="small"
                                 sx={{
-                                    color: "var(--branco)",
+                                    color: "background.paper",
                                     display: 'flex',
                                     gap: 0.5,
                                     fontSize: '0.75rem',
@@ -716,7 +728,7 @@ function Recebimentos() {
                             <Button
                                 onClick={() => navigate("/Dashboard")}
                                 sx={{
-                                    color: "var(--branco)",
+                                    color: "background.paper",
                                     display: 'flex',
                                     gap: 0.5,
                                     fontSize: '0.75rem',
@@ -739,25 +751,25 @@ function Recebimentos() {
                     sx={{ zIndex: (theme) => theme.zIndex.drawer + 999 }}
                 >
                     <Box textAlign="center">
-                        <CircularProgress sx={{ color: "var(--branco)" }} color="inherit" />
-                        <Typography mt={2} sx={{ color: "var(--branco)" }}>
+                        <CircularProgress sx={{ color: "background.paper" }} color="inherit" />
+                        <Typography mt={2} sx={{ color: "background.paper" }}>
                             Sincronizando com o SS Plus...
                         </Typography>
                     </Box>
                 </Backdrop>
 
                 {/* Importar XML */}
-                <Card sx={{ mt: 3, mb: 3, borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh var(--sombra)', bgcolor: 'var(--fundo-card)' }}>
+                <Card sx={{ mt: 3, mb: 3, borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh var(--sombra)', bgcolor: 'background.card' }}>
                     <CardContent>
-                        <Typography variant="h6">Importar XML</Typography>
+                        <Typography variant="h6" sx={{ color: "text.primary" }}>Importar XML</Typography>
 
                         <Button
                             variant="contained"
                             component="label"
                             disabled={loading}
                             sx={{
-                                mt: 2, bgcolor: 'var(--azul)',
-                                '&:hover': { bgcolor: 'var(--azul-hover)' }
+                                mt: 2, bgcolor: 'primary.main',
+                                '&:hover': { bgcolor: 'primaryHover.main' }
                             }}
                         ><AttachmentIcon sx={{ mr: '5px' }} />
                             Selecionar XML
@@ -770,7 +782,7 @@ function Recebimentos() {
 
                     {/* Dados da nota */}
                     <Grid item xs={12} md={3} lg={2} sx={{ maxWidth: '50vh' }}>
-                        <Card sx={{ borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh var(--sombra)', bgcolor: 'var(--fundo-card)' }}>
+                        <Card sx={{ borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh var(--sombra)', bgcolor: 'background.card' }}>
                             <CardContent>
                                 <Typography variant="h6">Dados da Nota</Typography>
 
@@ -841,7 +853,7 @@ function Recebimentos() {
 
                     {/* Paletes */}
                     <Grid item xs={12} md={9} lg={8}>
-                        <Card sx={{ borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh var(--sombra)', bgcolor: 'var(--fundo-card)', width: '100%', minWidth: '40vw' }}>
+                        <Card sx={{ borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh var(--sombra)', bgcolor: 'background.card', width: '100%', minWidth: '40vw' }}>
                             <CardContent>
 
                                 <Typography variant="h6">Organização em Paletes</Typography>
@@ -850,9 +862,26 @@ function Recebimentos() {
                                     <Box key={index} sx={{ display: 'flex', gap: 1, mt: 2 }}>
                                         <TextField
                                             fullWidth
-                                            placeholder="Ex: Palete 1 -> Volume 1 e 2"
-                                            value={p}
-                                            onChange={(e) => handlePaleteChange(index, e.target.value)}
+                                            placeholder="Palete"
+                                            value={p.palete}
+                                            onChange={(e) => handlePaleteChange(index, 'palete', e.target.value)}
+                                            sx={{
+                                                '& .MuiOutlinedInput-root': {
+                                                    '&:hover fieldset': {
+                                                        borderColor: 'var(--azul)',
+                                                    },
+                                                    '&.Mui-focused fieldset': {
+                                                        borderColor: 'var(--azul)',
+                                                    }
+                                                }
+                                            }}
+                                        />
+
+                                        <TextField
+                                            fullWidth
+                                            placeholder="Volume(s)"
+                                            value={p.volume}
+                                            onChange={(e) => handlePaleteChange(index, 'volume', e.target.value)}
                                             sx={{
                                                 '& .MuiOutlinedInput-root': {
                                                     '&:hover fieldset': {
@@ -876,7 +905,7 @@ function Recebimentos() {
                                 <Button
                                     variant="contained"
                                     size="large"
-                                    sx={{ bgcolor: 'var(--azul)', mt: 2, display: 'flex', justifyContent: 'left', '&:hover': { bgcolor: 'var(--cancelar-hover)' } }}
+                                    sx={{ bgcolor: 'var(--azul)', mt: 2, display: 'flex', justifyContent: 'left', '&:hover': { bgcolor: 'var(--azul-hover)' } }}
                                     onClick={adicionarPalete}
                                 >
                                     Adicionar palete
@@ -888,7 +917,7 @@ function Recebimentos() {
 
                     {/* Botões extras */}
                     <Grid item xs={12} md={12} lg={2}>
-                        <Card sx={{ borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh var(--sombra)', bgcolor: 'var(--fundo-card)', maxWidth: '30vh' }}>
+                        <Card sx={{ borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh var(--sombra)', bgcolor: 'background.card', maxWidth: '30vh' }}>
                             <CardContent>
                                 <Button
                                     variant="contained"
@@ -933,7 +962,7 @@ function Recebimentos() {
                 </Grid>
 
                 {/* Funcionário */}
-                <Card sx={{ mt: 3, borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh var(--sombra)', bgcolor: 'var(--fundo-card)' }}>
+                <Card sx={{ mt: 3, borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh var(--sombra)', bgcolor: 'background.card' }}>
                     <CardContent>
                         <Typography variant="h6">Identificação de funcionário</Typography>
 
@@ -967,7 +996,7 @@ function Recebimentos() {
                                         });
                                         return;
                                     }
-                                    if (paletes.every(p => !p.trim())) {
+                                    if (paletes.every(p => !p.palete.trim() && !p.volume.trim())) {
                                         setSnackbar({
                                             open: true,
                                             message: "Informe pelo menos um palete",
@@ -1045,7 +1074,15 @@ function Recebimentos() {
                     </DialogActions>
                 </Dialog>
 
-                <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+                <Dialog open={openDialog} onClose={() => setOpenDialog(false)}
+                    slotProps={{
+                        paper: {
+                            sx: {
+                                bgcolor: "background.card",
+                                color: "text.primary",
+                            }
+                        }
+                    }}>
                     <DialogTitle>Acesso restrito</DialogTitle>
 
                     <DialogContent>
@@ -1060,10 +1097,10 @@ function Recebimentos() {
                                 mt: 1,
                                 '& .MuiOutlinedInput-root': {
                                     '&:hover fieldset': {
-                                        borderColor: 'var(--azul)',
+                                        borderColor: 'primary.main',
                                     },
                                     '&.Mui-focused fieldset': {
-                                        borderColor: 'var(--azul)',
+                                        borderColor: 'primary.main',
                                     }
                                 }
                             }}
@@ -1083,18 +1120,14 @@ function Recebimentos() {
                     </DialogContent>
 
                     <DialogActions>
-                        <Button sx={{ color: "var(--branco)", bgcolor: 'var(--cancelar)', '&:hover': { bgcolor: 'var(--cancelar-hover)' } }} onClick={() => setOpenDialog(false)}>
+                        <Button sx={{ color: "primary.branco", bgcolor: 'primary.cancelar', '&:hover': { bgcolor: 'primary.cancelarHover' } }} onClick={() => setOpenDialog(false)}>
                             Cancelar
                         </Button>
 
                         <Button
                             variant="contained"
                             onClick={acessarCadastro}
-                            sx={{
-                                bgcolor: 'var(--confirmar)',
-                                '&:hover': { bgcolor: 'var(--confirmar-hover)' }
-                            }}
-                        >
+                            sx={{ color: "primary.branco", bgcolor: 'primary.confirmar', '&:hover': { bgcolor: 'primary.confirmarHover' } }}>
                             Entrar
                         </Button>
                     </DialogActions>

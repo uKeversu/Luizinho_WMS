@@ -27,7 +27,7 @@ function AtualizarCean() {
     const navigate = useNavigate();
 
     // API BASE
-    const API = "http://192.168.1.184:8077";
+    const API = "http://192.168.1.185:8077";
 
     // Login
     const [userInfo, setUserInfo] = useState(() => {
@@ -106,7 +106,7 @@ function AtualizarCean() {
 
         console.log("URL:", `${API}/api/nfe/atualizarbarras/${item.nfe_id}/${item.id}`);
         console.log("ITEM:", item);
-        
+
         try {
             const res = await fetch(
                 `${API}/api/nfe/atualizarbarras/${item.nfe_id}/${item.id}`,
@@ -150,7 +150,7 @@ function AtualizarCean() {
     };
 
     return (
-        <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "var(--branco)" }}>
+        <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "background.default" }}>
             {/* Header */}
             <Box
                 sx={{
@@ -160,24 +160,24 @@ function AtualizarCean() {
                     alignItems: { xs: 'flex-start', md: 'center' },
                     gap: 2,
                     p: 2,
-                    bgcolor: 'var(--azul)',
+                    bgcolor: 'primary.main',
                     mb: 5
                 }}
             >
-                <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "var(--branco)" }}>
+                <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "background.paper" }}>
                     <strong>Identificação de código de barras</strong>
                 </Typography>
                 <Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '0' }}>
-                        {<PersonIcon sx={{ color: "var(--branco)", paddingRight: '1vh' }} />}
-                        <Typography sx={{ color: "var(--branco)", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>
+                        {<PersonIcon sx={{ color: "background.paper", paddingRight: '1vh' }} />}
+                        <Typography sx={{ color: "background.paper", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>
                             {userInfo?.nome}
                         </Typography>
                         {token && (
                             <Button
                                 size="small"
                                 onClick={logout}
-                                sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}
+                                sx={{ color: "background.paper", display: 'flex', gap: 1 }}
                             >{<LogoutIcon />}
                             </Button>
                         )}
@@ -185,7 +185,7 @@ function AtualizarCean() {
                     <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
                         <Button
                             onClick={() => navigate("/")}
-                            sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}
+                            sx={{ color: "background.paper", display: 'flex', gap: 1 }}
                         >
                             Voltar
                             {< ArrowBackIcon />}
@@ -205,16 +205,27 @@ function AtualizarCean() {
                 ) : (
                     <Grid container spacing={2}>
                         {itens.map((item, index) => (
-                            <Grid item xs={12} md={6} lg={4} key={item.id}>
+                            <Grid item xs={12} md={6} lg={4} key={item.id} sx={{ display: "flex", margin: 'auto' }}>
 
                                 <Card sx={{
                                     borderRadius: '2vh',
                                     boxShadow: '0vh 0.1vh 0.5vh var(--sombra)',
-                                    bgcolor: 'var(--fundo-card)'
+                                    bgcolor: 'background.card',
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    width: "100%",
+                                    minHeight: 250,
+                                    minWidth: 300,
+                                    maxWidth: 300
                                 }}>
-                                    <CardContent>
+                                    <CardContent sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
 
-                                        <Typography variant="subtitle1">
+                                        <Typography variant="subtitle1"
+                                            sx={{
+                                                whiteSpace: 'nowrap',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                            }}>
                                             {item.xProd}
                                         </Typography>
 
@@ -243,10 +254,10 @@ function AtualizarCean() {
                                             sx={{
                                                 mt: 2, '& .MuiOutlinedInput-root': {
                                                     '&:hover fieldset': {
-                                                        borderColor: 'var(--azul)',
+                                                        borderColor: 'primary.main',
                                                     },
                                                     '&.Mui-focused fieldset': {
-                                                        borderColor: 'var(--azul)',
+                                                        borderColor: 'primary.main',
                                                     }
                                                 }
                                             }}
@@ -255,7 +266,7 @@ function AtualizarCean() {
                                         <Button
                                             fullWidth
                                             variant="contained"
-                                            sx={{ mt: 2 }}
+                                            sx={{ mt: "auto", color: "primary.branco", bgcolor: 'primary.main', '&:hover': { bgcolor: 'primary.mainHover' } }}
                                             onClick={() => salvarCodigo(item, index)}
                                         >
                                             Salvar

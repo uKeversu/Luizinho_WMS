@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
     Container,
@@ -15,14 +15,19 @@ import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
+import { ThemeContext } from "../context/ThemeContext";
 import '../style/App.css';
 
 function Alertas() {
 
+    // Tema noturno
+    const { dark, toggleTheme } = useContext(ThemeContext);
+
+    // Acessar outras pages
     const navigate = useNavigate();
 
     // API BASE
-    const API = "http://192.168.1.184:8077";
+    const API = "http://192.168.1.185:8077";
 
     // Login
     const [userInfo, setUserInfo] = useState(() => {
@@ -131,8 +136,28 @@ function Alertas() {
                 });
             }
 
-            // CFOP garantia
             const itens = await buscarItensNota(nota.id);
+
+            const atrasoGuarda = diasEntre(nota.data_recebimento) > 3;
+
+            const temItemPendenteGuarda = itens.some(item => {
+                const loc = item.loc_sistema ? item.loc_sistema.trim() : "";
+
+                return (
+                    item.status_item === "ITEM_CONFERIDO" &&
+                    item.status_item !== "ITEM_GUARDADO" &&
+                    loc !== "LOC01" &&
+                    loc !== "LOC 01"
+                );
+            });
+
+            if (atrasoGuarda && temItemPendenteGuarda) {
+                alertas.push({
+                    tipo: "GUARDA_PENDENTE",
+                    mensagem: "Itens pendentes para guarda há mais de 3 dias",
+                    nota
+                });
+            }
 
             const temCfopGarantia = itens.some(item =>
                 item.cfop &&
@@ -152,7 +177,7 @@ function Alertas() {
     };
 
     return (
-        <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "var(--branco)" }}>
+        <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "background.default" }}>
             {/* Header */}
             <Box
                 sx={{
@@ -166,20 +191,20 @@ function Alertas() {
                     mb: 5
                 }}
             >
-                <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "var(--branco)" }}>
+                <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "background.paper" }}>
                     <strong>Alerta de mercadorias</strong>
                 </Typography>
                 <Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '0' }}>
-                        {<PersonIcon sx={{ color: "var(--branco)", paddingRight: '1vh' }} />}
-                        <Typography sx={{ color: "var(--branco)", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>
+                        {<PersonIcon sx={{ color: "background.paper", paddingRight: '1vh' }} />}
+                        <Typography sx={{ color: "background.paper", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>
                             {userInfo?.nome}
                         </Typography>
                         {token && (
                             <Button
                                 size="small"
                                 onClick={logout}
-                                sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}
+                                sx={{ color: "background.paper", display: 'flex', gap: 1 }}
                             >{<LogoutIcon />}
                             </Button>
                         )}
@@ -187,7 +212,7 @@ function Alertas() {
                     <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
                         <Button
                             onClick={() => navigate("/")}
-                            sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}
+                            sx={{ color: "background.paper", display: 'flex', gap: 1 }}
                         >
                             Voltar
                             {< ArrowBackIcon />}
@@ -212,8 +237,8 @@ function Alertas() {
                                 variant="outlined"
                                 sx={{
                                     borderRadius: '2vh',
-                                    boxShadow: '0vh 0.1vh 0.5vh #000000',
-                                    bgcolor: 'var(--fundo-card)',
+                                    boxShadow: '0vh 0.1vh 0.5vh var(--sombra)',
+                                    bgcolor: 'background.alerta',
                                     height: '100%',
                                     display: 'flex',
                                     flexDirection: 'column',

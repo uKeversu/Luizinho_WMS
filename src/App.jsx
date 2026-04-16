@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "./context/ThemeContext";
 import Recebimentos from './pages/Recebimentos';
 import Dashboard from "./pages/Dashboard";
 import Conferencia from "./pages/Conferencia";
@@ -10,20 +11,22 @@ import './index.css';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Recebimentos />} />
-        <Route path="/Dashboard" element={<Dashboard />} />
-        <Route path="/Conferencia" element={<Conferencia />} />
-        <Route path="/CadastrarFuncionario" element={<CadastrarFuncionario />} />
-        <Route path="/Alertas" element={<Alertas />} />
-        <Route path="/transito" element={<Dashboard tipo="transito" />} />
-        <Route path="/recebidas" element={<Dashboard tipo="recebidas" />} />
-        <Route path="/conferidas" element={<Dashboard tipo="conferidas" />} />
-        <Route path="/Rastreio/:codigo" element={<Rastreio />} />
-        <Route path="/AtualizarCean" element={<AtualizarCean />} />
-      </Routes>
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Recebimentos />} />
+          <Route path="/Dashboard" element={<Dashboard />} />
+          <Route path="/Conferencia" element={<Conferencia />} />
+          <Route path="/CadastrarFuncionario" element={<CadastrarFuncionario />} />
+          <Route path="/Alertas" element={<Alertas />} />
+          <Route path="/transito" element={<Dashboard tipo="transito" />} />
+          <Route path="/recebidas" element={<Dashboard tipo="recebidas" />} />
+          <Route path="/conferidas" element={<Dashboard tipo="conferidas" />} />
+          <Route path="/Rastreio/:codigo" element={<Rastreio />} />
+          <Route path="/AtualizarCean" element={<AtualizarCean />} />
+        </Routes>
+      </Router>
+    </ThemeProvider>
   );
 }
 export default App;

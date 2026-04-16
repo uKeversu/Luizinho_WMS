@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
     Container, Typography, Card, Box, TextField, Button,
@@ -13,13 +13,19 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 import LoginFuncionario from "../components/LoginFuncionario";
 
+import { ThemeContext } from "../context/ThemeContext";
 import '../style/App.css';
 
 function Conferencia() {
+
+    // Tema noturno
+    const { dark, toggleTheme } = useContext(ThemeContext);
+
+    // Acessar outras pages        
     const navigate = useNavigate();
 
     // API BASE
-    const API = "http://192.168.1.184:8077";
+    const API = "http://192.168.1.185:8077";
 
     // Login
     const [userInfo, setUserInfo] = useState(() => {
@@ -332,110 +338,46 @@ function Conferencia() {
 
     // Impressão de etiquetas de peça
     const imprimirEtiqueta = (item) => {
-        const codigoBarras =
+        const codigo =
             item.codigo_barras && item.codigo_barras !== "SEM GTIN"
                 ? item.codigo_barras
                 : item.codigo_produto;
 
-        const urlRastreio = `http://192.168.1.184:5173/rastreio/${codigoBarras}`;
+        const url = `${API}/api/nfe/item/etiqueta/argox/${item.notaId}/${codigo}`;
 
-        const dataAtual = new Date().toLocaleDateString("pt-BR");
+        const janela = window.open("", "_blank");
 
-        const conteudo = `
-    <html>
-        <head>
-            <title>Etiqueta</title>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-            <style>
-                @page {
-                    size: 32mm 18mm;
-                    margin: 0;
-                }
-                body {
-                    margin: 0;
-                    padding: 2px;
-                    font-family: Arial;
-                }
-                .container {
-                    display: flex;
-                    align-items: center;
-                    height: 100%;
-                }
-                .qr {
-                    width: 60px;
-                    height: 60px;
-                }
-                .right {
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: space-between;
-                    margin-left: 4px;
-                    flex: 1;
-                    height: 100%;
-                }
-                .codigo {
-                    font-size: 9px;
-                    line-height: 10px;
-                }
-                .loc {
-                    font-size: 9px;
-                    font-weight: bold;
-                    line-height: 10px;
-                }
-                .bottom {
-                    font-size: 7px;
-                    line-height: 9px;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                
-                <!-- QR -->
-                <div id="qrcode" class="qr"></div>
+        janela.document.write(`
+        <html>
+            <head>
+                <title>Etiqueta</title>
+                <style>
+                    @page {
+                        size: landscape;
+                        margin: 0;
+                    }
 
-                <!-- Direita -->
-                <div class="right">
-                    
-                    <!-- Código do produto -->
-                    <div class="codigo">
-                        ${item.codigo_produto}
-                    </div>
+                    html, body {
+                        margin: 0;
+                        padding: 0;
+                        width: 100%;
+                        height: 100%;
+                        overflow: hidden;
+                    }
 
-                    <!-- Localização -->
+                    iframe {
+                        width: 100vw;
+                        height: 100vh;
+                        border: none;
+                    }
+                </style>
+            </head>
+            <body>
+                <iframe src="${url}" onload="setTimeout(() => window.print(), 300)"></iframe>
+            </body>
+        </html>
+    `);
 
-                    <div class="loc">
-                        ${item.localizacao}
-                    </div>
-
-                    <!-- Parte de baixo -->
-                    <div class="bottom">
-                        ${userInfo?.codigo || "-"}<br/>
-                        ${item.notaNumero}-${item.notaSerie}<br/>
-                        ${dataAtual}
-                    </div>
-
-                </div>
-            </div>
-
-            <script>
-                new QRCode(document.getElementById("qrcode"), {
-                    text: "${urlRastreio}",
-                    width: 60,
-                    height: 60
-                });
-
-                setTimeout(() => {
-                    window.print();
-                    window.close();
-                }, 300);
-            </script>
-        </body>
-    </html>
-    `;
-
-        const janela = window.open("", "", "width=220,height=140");
-        janela.document.write(conteudo);
         janela.document.close();
     };
 
@@ -492,6 +434,10 @@ function Conferencia() {
                     font-size: 16px;
                     margin-top: 4px;
                 }
+                    
+                .conf {
+                    font-size: 16px;
+                }
             </style>
         </head>
         <body>
@@ -501,6 +447,7 @@ function Conferencia() {
                 <div class="info">
                     <div class="numero">${codigoCaixa}</div>
                     <div class="data">${dataAtual}</div>
+                    <div class="conf">${userInfo?.nome}</div>
                 </div>
             </div>
 
@@ -690,7 +637,7 @@ function Conferencia() {
     }
 
     return (
-        <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "var(--branco)" }}>
+        <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "background.deafult" }}>
             {/* Header */}
             <Box
                 sx={{
@@ -700,10 +647,10 @@ function Conferencia() {
                     alignItems: { xs: 'flex-start', md: 'center' },
                     gap: 2,
                     p: 2,
-                    bgcolor: 'var(--azul)'
+                    bgcolor: 'primary.main'
                 }}
             >
-                <Typography variant="h4" sx={{ color: "var(--branco)" }}>
+                <Typography variant="h4" sx={{ color: "background.paper" }}>
                     <strong>
                         {modo === "MULTIPLO"
                             ? "Conferência - Múltiplas Notas)"
@@ -712,14 +659,14 @@ function Conferencia() {
                 </Typography>
                 <Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '0' }}>
-                        {<PersonIcon sx={{ color: "var(--branco)", paddingRight: '1vh' }} />}
-                        <Typography sx={{ color: "var(--branco)", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>{userInfo?.nome}</Typography>
+                        {<PersonIcon sx={{ color: "background.paper", paddingRight: '1vh' }} />}
+                        <Typography sx={{ color: "background.paper", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>{userInfo?.nome}</Typography>
                         {token && (
-                            <Button size="small" onClick={logout} sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}>{<LogoutIcon />}</Button>
+                            <Button size="small" onClick={logout} sx={{ color: "background.paper", display: 'flex', gap: 1 }}>{<LogoutIcon />}</Button>
                         )}
                     </Box>
                     <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
-                        <Button onClick={() => navigate("/Dashboard")} sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}>Voltar {< ArrowBackIcon />}</Button>
+                        <Button onClick={() => navigate("/Dashboard")} sx={{ color: "background.paper", display: 'flex', gap: 1 }}>Voltar {< ArrowBackIcon />}</Button>
                     </Box>
                 </Box>
             </Box>
@@ -754,7 +701,7 @@ function Conferencia() {
                     autoFocus
                     fullWidth
                     sx={{
-                        mb: 2, width: '100%', bgcolor: 'var(--fundo-card)',
+                        mb: 2, width: '100%', bgcolor: 'background.card',
                         '& .MuiOutlinedInput-root': {
                             '&:hover fieldset': {
                                 borderColor: 'var(--azul)',
@@ -775,20 +722,20 @@ function Conferencia() {
                                 <CircularProgress />
                             </Box> :
                             itens.length === 0 ? <Typography>Nenhum item</Typography> :
-                                <TableContainer component={Paper} sx={{ boxShadow: '0vh 0.1vh 0.5vh var(--sombra)' }}>
+                                <TableContainer component={Paper} sx={{ boxShadow: '0vh 0.1vh 0.5vh var(--sombra)', color: 'background.alerta' }}>
                                     <Table>
                                         <TableHead>
                                             <TableRow sx={{ bgcolor: 'var(--azul)' }}>
-                                                <TableCell sx={{ color: 'var(--branco)' }}>Localização</TableCell>
-                                                <TableCell sx={{ color: 'var(--branco)' }}>Código de Barras</TableCell>
-                                                <TableCell sx={{ color: 'var(--branco)' }}>Descrição</TableCell>
-                                                <TableCell sx={{ color: 'var(--branco)' }} align="right">Qtd (Conf./Nota)</TableCell>
+                                                <TableCell sx={{ color: 'background.paper' }}>Localização</TableCell>
+                                                <TableCell sx={{ color: 'background.paper' }}>Código de Barras</TableCell>
+                                                <TableCell sx={{ color: 'background.paper' }}>Descrição</TableCell>
+                                                <TableCell sx={{ color: 'background.paper' }} align="right">Qtd (Conf./Nota)</TableCell>
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
                                             {itens.map((item, index) => (
                                                 <TableRow key={index} sx={{
-                                                    bgcolor: item.conferido === item.quantidade ? 'var(--item-conferido' : 'var(--fundo-card)'
+                                                    bgcolor: item.conferido === item.quantidade ? 'primary.conferido' : 'background.alerta'
                                                 }}>
                                                     <TableCell>{item.localizacao}</TableCell>
                                                     <TableCell>{item.codigo_barras}</TableCell>
@@ -804,13 +751,13 @@ function Conferencia() {
 
                     {/* Card de caixas */}
                     <Box sx={{ flex: 1 }}>
-                        <Card sx={{ p: 2, boxShadow: '0vh 0.1vh 0.5vh var(--sombra)' }}>
+                        <Card sx={{ p: 2, boxShadow: '0vh 0.1vh 0.5vh var(--sombra)', bgcolor: 'background.alerta' }}>
                             <Typography variant="h6">Caixas</Typography>
 
                             {/* Caixa aberta */}
                             {caixaAberta ? (
                                 <>
-                                    <Button variant="contained" color="success" fullWidth sx={{ my: 1 }}
+                                    <Button variant="contained" fullWidth sx={{ my: 1, color: "primary.branco", bgcolor: 'primary.confirmar', '&:hover': { bgcolor: 'primary.confirmarHover' } }}
                                         onClick={() => {
                                             if (caixaAberta?.numero) {
                                                 confirmarFechamento();
@@ -824,7 +771,7 @@ function Conferencia() {
                                     <Box sx={{ display: 'flex', gap: 1 }}>
                                         <Button
                                             size="small"
-                                            variant="outlined"
+                                            variant="contained"
                                             onClick={() => setOpenDialog(true)}
                                         >
                                             Ver itens
@@ -832,7 +779,15 @@ function Conferencia() {
                                     </Box>
 
                                     {/* Modal de itens da caixa aberta */}
-                                    <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth maxWidth="sm">
+                                    <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth maxWidth="sm"
+                                        slotProps={{
+                                            paper: {
+                                                sx: {
+                                                    bgcolor: "background.card",
+                                                    color: "text.primary",
+                                                }
+                                            }
+                                        }}>
                                         <DialogTitle>Itens na caixa aberta</DialogTitle>
                                         <DialogContent>
                                             {itens.filter(i => i.caixa === caixaAberta.id).length === 0 ? (
@@ -889,7 +844,15 @@ function Conferencia() {
                             )}
 
                             {/* Modal para ver itens da caixa fechada */}
-                            <Dialog open={!!caixaFechadaDialog} onClose={() => setCaixaFechadaDialog(null)} fullWidth maxWidth="sm">
+                            <Dialog open={!!caixaFechadaDialog} onClose={() => setCaixaFechadaDialog(null)} fullWidth maxWidth="sm"
+                                slotProps={{
+                                    paper: {
+                                        sx: {
+                                            bgcolor: "background.card",
+                                            color: "text.primary",
+                                        }
+                                    }
+                                }}>
                                 <DialogTitle>
                                     Itens na caixa {caixaFechadaDialog?.numero || ""}
                                 </DialogTitle>
@@ -922,7 +885,15 @@ function Conferencia() {
                             </Dialog>
 
                             {/* Modal para nomear caixa*/}
-                            <Dialog open={openFecharDialog} onClose={() => setOpenFecharDialog(false)}>
+                            <Dialog open={openFecharDialog} onClose={() => setOpenFecharDialog(false)}
+                                slotProps={{
+                                    paper: {
+                                        sx: {
+                                            bgcolor: "background.card",
+                                            color: "text.primary",
+                                        }
+                                    }
+                                }}>
                                 <DialogTitle>Informar Caixa</DialogTitle>
                                 <DialogContent>
                                     <TextField
@@ -931,12 +902,34 @@ function Conferencia() {
                                         value={numeroCaixa}
                                         onChange={(e) => setNumeroCaixa(e.target.value)}
                                         autoFocus
+                                        sx={{
+                                            mt: 1,
+                                            '& .MuiOutlinedInput-root': {
+                                                '&:hover fieldset': {
+                                                    borderColor: 'primary.main',
+                                                },
+                                                '&.Mui-focused fieldset': {
+                                                    borderColor: 'primary.main',
+                                                }
+                                            }
+                                        }}
                                     />
                                 </DialogContent>
                                 <DialogActions>
-                                    <Button onClick={() => setOpenFecharDialog(false)}>Cancelar</Button>
                                     <Button
-                                        variant="contained"
+                                        sx={{
+                                            color: "primary.branco",
+                                            bgcolor: 'primary.cancelar',
+                                            '&:hover': { bgcolor: 'primary.cancelarHover' }
+                                        }}
+                                        onClick={() => setOpenFecharDialog(false)}
+                                    >Cancelar</Button>
+                                    <Button
+                                        sx={{
+                                            color: "primary.branco",
+                                            bgcolor: 'primary.confirmar',
+                                            '&:hover': { bgcolor: 'primary.confirmarHover' }
+                                        }}
                                         onClick={() => confirmarFechamento()}
                                     >
                                         Confirmar
@@ -944,7 +937,7 @@ function Conferencia() {
                                 </DialogActions>
                             </Dialog>
                         </Card>
-                        <Card sx={{ p: 2, mt: 2, boxShadow: '0vh 0.1vh 0.5vh var(--sombra)' }}>
+                        <Card sx={{ p: 2, mt: 2, boxShadow: '0vh 0.1vh 0.5vh var(--sombra)', bgcolor: 'background.alerta' }}>
                             <Typography variant="h6">Observações</Typography>
 
                             <TextField
@@ -969,7 +962,7 @@ function Conferencia() {
 
                             <Button
                                 variant="contained"
-                                color="success"
+                                sx={{ color: "primary.branco", bgcolor: 'primary.confirmar', '&:hover': { bgcolor: 'primary.confirmarHover' } }}
                                 fullWidth
                                 onClick={finalizarConferencia}
                             >

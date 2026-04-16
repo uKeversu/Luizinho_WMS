@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useContext } from "react";
 import {
   Container,
   Card,
@@ -6,6 +6,9 @@ import {
   TextField,
   Button
 } from "@mui/material";
+
+import { ThemeContext } from "../context/ThemeContext";
+import '../style/App.css';
 
 function LoginFuncionario({ onLogin }) {
 
@@ -49,7 +52,7 @@ function LoginFuncionario({ onLogin }) {
 
   return (
     <Container maxWidth="sm" sx={{ mt: 10 }}>
-      <Card sx={{ p: 3, boxShadow: '0vh 0.1vh 0.5vh #000000', bgcolor: '#f3f3f3' }}>
+      <Card sx={{ p: 3, boxShadow: '0vh 0.1vh 0.5vh #000000', bgcolor: 'background.card' }}>
         <Typography variant="h5">
           Login do Funcionário
         </Typography>
@@ -60,7 +63,7 @@ function LoginFuncionario({ onLogin }) {
           value={codigo}
           onChange={(e) => setCodigo(e.target.value)}
           sx={{
-            mt: 2, bgcolor: '#FFFFFF', '& .MuiOutlinedInput-root': {
+            mt: 2, bgcolor: 'background.card', '& .MuiOutlinedInput-root': {
               '&:hover fieldset': {
                 borderColor: '#007bff',
               },

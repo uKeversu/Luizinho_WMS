@@ -22,7 +22,7 @@ import '../style/App.css';
 function CadastroFuncionario() {
 
     const navigate = useNavigate();
-    const API = "http://192.168.1.184:8077";
+    const API = "http://192.168.1.185:8077";
 
     // Login
     const [userInfo, setUserInfo] = useState(() => {
@@ -136,7 +136,7 @@ function CadastroFuncionario() {
     }
 
     return (
-        <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "var(--branco)" }}>
+        <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "background.default" }}>
 
             {/* Header */}
             <Box
@@ -147,20 +147,20 @@ function CadastroFuncionario() {
                     alignItems: { xs: 'flex-start', md: 'center' },
                     gap: 2,
                     p: 2,
-                    bgcolor: 'var(--azul)',
+                    bgcolor: 'primary.main',
                     mb: 5
                 }}
             >
-                <Typography variant="h4" sx={{ color: "var(--branco)" }}>
+                <Typography variant="h4" sx={{ color: "background.paper" }}>
                     <strong>Cadastro de Funcionário</strong>
                 </Typography>
 
                 <Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '0' }}>
-                        {<PersonIcon sx={{ color: "var(--branco)", paddingRight: '1vh' }} />}
-                        <Typography sx={{ color: "var(--branco)", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>{userInfo?.nome}</Typography>
+                        {<PersonIcon sx={{ color: "background.paper", paddingRight: '1vh' }} />}
+                        <Typography sx={{ color: "background.paper", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>{userInfo?.nome}</Typography>
                         {token && (
-                            <Button size="small" onClick={logout} sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}>{<LogoutIcon />}</Button>
+                            <Button size="small" onClick={logout} sx={{ color: "background.paper", display: 'flex', gap: 1 }}>{<LogoutIcon />}</Button>
                         )}
                     </Box>
                 </Box>
@@ -172,7 +172,7 @@ function CadastroFuncionario() {
                 mb: 3,
                 borderRadius: '2vh',
                 boxShadow: '0vh 0.1vh 0.5vh var(--sombra)',
-                bgcolor: 'var(--fundo-card)',
+                bgcolor: 'background.card',
                 maxWidth: 500,
                 margin: "0 auto"
             }}>
@@ -225,8 +225,9 @@ function CadastroFuncionario() {
                         variant="contained"
                         sx={{
                             mt: 3,
-                            bgcolor: 'var(--confirmar)',
-                            '&:hover': { bgcolor: 'var(--confirmar-hover)' }
+                            color: "primary.branco",
+                            bgcolor: 'primary.confirmar',
+                            '&:hover': { bgcolor: 'primary.confirmarHover' }
                         }}
                         onClick={cadastrarFuncionario}
                     >

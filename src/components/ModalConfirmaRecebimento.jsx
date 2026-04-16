@@ -13,11 +13,19 @@ function ModalConfirmaRecebimento({
     onConfirm
 }) {
     return (
-        <Dialog open={open} onClose={onClose}>
-            <DialogTitle>Confirmar Recebimento</DialogTitle>
+        <Dialog open={open} onClose={onClose}
+            slotProps={{
+                paper: {
+                    sx: {
+                        bgcolor: "background.default",
+                        color: "text.primary",
+                    }
+                }
+            }}>
+            <DialogTitle sx={{ color: 'text.primary' }}>Confirmar Recebimento</DialogTitle>
 
             <DialogContent>
-                <Typography>
+                <Typography sx={{ color: 'text.primary' }}>
                     Tem certeza que deseja confirmar o recebimento?
                 </Typography>
             </DialogContent>
@@ -25,16 +33,16 @@ function ModalConfirmaRecebimento({
             <DialogActions>
                 <Button
                     variant="contained"
-                    color="error"
                     onClick={onClose}
+                    sx={{ color: "primary.branco", bgcolor: 'primary.cancelar', '&:hover': { bgcolor: 'primary.cancelarHover' } }}
                 >
                     Cancelar
                 </Button>
 
                 <Button
                     variant="contained"
-                    sx={{ bgcolor: '#00ca32' }}
                     onClick={onConfirm}
+                    sx={{ color: "primary.branco", bgcolor: 'primary.confirmar', '&:hover': { bgcolor: 'primary.confirmarHover' } }}
                 >
                     Confirmar
                 </Button>
