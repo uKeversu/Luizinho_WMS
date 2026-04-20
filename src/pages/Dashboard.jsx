@@ -23,6 +23,7 @@ import {
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import SearchIcon from '@mui/icons-material/Search';
 
 import LoginFuncionario from "../components/LoginFuncionario";
 
@@ -316,7 +317,15 @@ function Dashboard({ tipo }) {
                                 </Button>
                             )}
                         </Box>
+
                         <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
+                            <Button
+                                onClick={() => navigate("/ConsultaGeral")}
+                                sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}
+                            >
+                                Consulta Geral
+                                {<SearchIcon />}
+                            </Button>
                             <Button
                                 onClick={() => navigate("/")}
                                 sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}
@@ -362,7 +371,7 @@ function Dashboard({ tipo }) {
                         value={busca}
                         onChange={(e) => setBusca(e.target.value)}
                     />
-                    {aba === 1 && (
+                    {aba === 1 && aba !== 3 && (
                         <Button
                             variant="contained"
                             sx={{ mb: 2 }}
@@ -426,7 +435,7 @@ function Dashboard({ tipo }) {
                                             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                                 <Typography><strong>NF:</strong> {nota.numero}</Typography>
 
-                                                {(nota.status === "FORNECEDOR_DIRETO" || nota.status === "RECEBIDA") && (
+                                                {aba !== 3 && (nota.status === "FORNECEDOR_DIRETO" || nota.status === "RECEBIDA") && (
                                                     <Checkbox
                                                         checked={notasSelecionadas.includes(nota.id)}
                                                         onChange={(e) => {
@@ -481,7 +490,7 @@ function Dashboard({ tipo }) {
                                                     onClick={() => { buscarItens(nota) }}
                                                 >Ver itens
                                                 </Button>
-                                                {nota.status === "EM_TRANSITO" && (
+                                                {aba !== 3 && nota.status === "EM_TRANSITO" && (
                                                     <Button
                                                         fullWidth
                                                         variant="contained"

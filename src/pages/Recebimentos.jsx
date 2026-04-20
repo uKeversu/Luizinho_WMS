@@ -57,7 +57,7 @@ function Recebimentos() {
     const navigate = useNavigate();
 
     // API BASE
-    const API = "http://192.168.1.185:8077";
+    const API = "http://192.168.1.184:8077";
 
     // Login
     const [userInfo, setUserInfo] = useState(() => {
@@ -550,7 +550,7 @@ function Recebimentos() {
         let snackbarData = null;
 
         try {
-            const response = await fetch('http://192.168.1.185:8077/api/checar_localizacao_lote', {
+            const response = await fetch('http://192.168.1.184:8077/api/checar_localizacao_lote', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ todos: true })

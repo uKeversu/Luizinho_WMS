@@ -27,7 +27,7 @@ function Alertas() {
     const navigate = useNavigate();
 
     // API BASE
-    const API = "http://192.168.1.185:8077";
+    const API = "http://192.168.1.184:8077";
 
     // Login
     const [userInfo, setUserInfo] = useState(() => {
@@ -131,7 +131,7 @@ function Alertas() {
             ) {
                 alertas.push({
                     tipo: "ATRASO_CONFERENCIA",
-                    mensagem: "Nota aguardando conferência há mais de 2 dias",
+                    mensagem: "Nota aguardando conferência",
                     nota
                 });
             }
@@ -154,7 +154,7 @@ function Alertas() {
             if (atrasoGuarda && temItemPendenteGuarda) {
                 alertas.push({
                     tipo: "GUARDA_PENDENTE",
-                    mensagem: "Itens pendentes para guarda há mais de 3 dias",
+                    mensagem: "Itens pendentes para guarda",
                     nota
                 });
             }
@@ -222,6 +222,57 @@ function Alertas() {
                 </Box>
             </Box>
 
+            <Box
+                sx={{
+                    display: "flex",
+                    color: 'text.primary',
+                    gap: 3,
+                    flexWrap: "wrap",
+                    alignItems: "center",
+                    mb: 3,
+                    px: 1
+                }}
+            >
+                {/* ATRASO CONFERÊNCIA */}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Box sx={{
+                        width: 16,
+                        height: 16,
+                        borderRadius: "4px",
+                        bgcolor: "var(--atraso-conferencia)"
+                    }} />
+                    <Typography sx={{ fontSize: "0.85rem" }}>
+                        Atraso na conferência há mais de 2 dias
+                    </Typography>
+                </Box>
+
+                {/* GUARDA PENDENTE */}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Box sx={{
+                        width: 16,
+                        height: 16,
+                        borderRadius: "4px",
+                        bgcolor: "var(--atraso-guarda)"
+                    }} />
+                    <Typography sx={{ fontSize: "0.85rem" }}>
+                        Itens não guardados há mais de 3 dias
+                    </Typography>
+                </Box>
+
+                {/* CFOP GARANTIA */}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Box sx={{
+                        width: 16,
+                        height: 16,
+                        borderRadius: "4px",
+                        bgcolor: "var(--garantia)"
+                    }} />
+                    <Typography sx={{ fontSize: "0.85rem" }}>
+                        Nota com CFOP de garantia
+                    </Typography>
+                </Box>
+            </Box>
+
             {loading ? (
                 <Box textAlign="center">
                     <CircularProgress />
@@ -229,7 +280,8 @@ function Alertas() {
             ) : alertas.length === 0 ? (
                 <Typography>Nenhum alerta encontrado</Typography>
             ) : (
-                <Grid container spacing={3}>
+
+                <Grid container spacing={3} sx={{display: 'flex', justifyContent: 'space-between'}}>
 
                     {alertas.map((alerta, idx) => (
                         <Grid item xs={12} md={3} key={idx}>
@@ -243,10 +295,10 @@ function Alertas() {
                                     display: 'flex',
                                     flexDirection: 'column',
                                     textAlign: 'left',
-                                    minHeight: '30vh',
-                                    maxHeight: '30vh',
-                                    minWidth: '50vh',
-                                    maxWidth: '50vh',
+                                    width: 'auto',
+                                    minHeight: 250,
+                                    minWidth: 300,
+                                    maxWidth: 300,
                                     borderLeft: `6px solid ${alerta.tipo === "ATRASO_CONFERENCIA" ? "var(--atraso-conferencia)" :
                                         alerta.tipo === "CFOP_GARANTIA" ? "var(--garantia)" :
                                             alerta.tipo === "GUARDA_PENDENTE" ? "var(--atraso-guarda)" :
@@ -294,7 +346,7 @@ function Alertas() {
                                     <Box sx={{ mt: 'auto' }}>
                                         <Typography
                                             sx={{
-                                                fontSize: '0.8rem',
+                                                fontSize: '0.75rem',
                                                 fontWeight: 'bold',
                                                 color:
                                                     alerta.tipo === "ATRASO_CONFERENCIA" ? "var(--atraso-conferencia)" :
@@ -311,7 +363,6 @@ function Alertas() {
                             </Card>
                         </Grid>
                     ))}
-
                 </Grid>
             )}
         </Container>
