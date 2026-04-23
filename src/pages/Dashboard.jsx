@@ -34,7 +34,7 @@ import Conferencia from "./Conferencia";
 function Dashboard({ tipo }) {
 
     // API BASE
-    const API = "http://192.168.1.185:8077";
+    const API = "http://192.168.1.184:8077";
 
     // Acessar outras pages
     const navigate = useNavigate();
@@ -136,7 +136,7 @@ function Dashboard({ tipo }) {
 
     const notasFiltradasPorAba = notasFiltradas.filter(nota => {
         if (aba === 0) return nota.status === "EM_TRANSITO";
-        if (aba === 1) { return ["RECEBIDA", "FORNECEDOR_DIRETO"].includes(nota.status); }
+        if (aba === 1) { return ["PENDENTE", "FORNECEDOR_DIRETO"].includes(nota.status); }
         if (aba === 2) return nota.status === "CONFERIDA";
         return true;
     });
@@ -215,7 +215,7 @@ function Dashboard({ tipo }) {
                         "X-Auth-Token": token
                     },
                     body: JSON.stringify({
-                        status: "RECEBIDA"
+                        status: "PENDENTE"
                     })
                 }
             );
@@ -238,7 +238,7 @@ function Dashboard({ tipo }) {
             setNotas(prev =>
                 prev.map(n =>
                     n.id === nota.id
-                        ? { ...n, status: "RECEBIDA", data_recebimento: new Date().toISOString() }
+                        ? { ...n, status: "PENDENTE", data_recebimento: new Date().toISOString() }
                         : n
                 )
             );
@@ -379,18 +379,18 @@ function Dashboard({ tipo }) {
                             onClick={() => {
                                 const notasValidas = notasSelecionadas.filter(id => {
                                     const nota = notas.find(n => n.id === id);
-                                    return nota?.status === "FORNECEDOR_DIRETO" || nota?.status === "RECEBIDA";
+                                    return nota?.status === "FORNECEDOR_DIRETO" || nota?.status === "PENDENTE";
                                 });
 
                                 const temRecebida = notasValidas.some(id => {
                                     const nota = notas.find(n => n.id === id);
-                                    return nota?.status === "RECEBIDA";
+                                    return nota?.status === "PENDENTE";
                                 });
 
                                 if (temRecebida && notasValidas.length > 1) {
                                     setSnackbar({
                                         open: true,
-                                        message: "Notas com status 'RECEBIDA' só podem ser conferidas uma por vez!",
+                                        message: "Notas com status 'PENDENTE' só podem ser conferidas uma por vez!",
                                         severity: "success"
                                     });
                                     return;
@@ -435,13 +435,13 @@ function Dashboard({ tipo }) {
                                             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                                 <Typography><strong>NF:</strong> {nota.numero}</Typography>
 
-                                                {aba !== 3 && (nota.status === "FORNECEDOR_DIRETO" || nota.status === "RECEBIDA") && (
+                                                {aba !== 3 && (nota.status === "FORNECEDOR_DIRETO" || nota.status === "PENDENTE") && (
                                                     <Checkbox
                                                         checked={notasSelecionadas.includes(nota.id)}
                                                         onChange={(e) => {
                                                             if (e.target.checked) {
                                                                 const notaAtual = nota;
-                                                                if (notaAtual.status === "RECEBIDA" && notasSelecionadas.length >= 1) {
+                                                                if (notaAtual.status === "PENDENTE" && notasSelecionadas.length >= 1) {
                                                                     setSnackbar({
                                                                         open: true,
                                                                         message: "Só é permitido uma nota por vez",
@@ -503,7 +503,7 @@ function Dashboard({ tipo }) {
                                                     >
                                                         {loadingNotasIds.includes(nota.id)
                                                             ? "Atualizando..."
-                                                            : "Marcar como Recebida"}
+                                                            : "Marcar como Pendente"}
                                                     </Button>
                                                 )}
                                             </Box>

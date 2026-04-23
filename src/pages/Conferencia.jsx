@@ -337,139 +337,190 @@ function Conferencia() {
     };
 
     // Impressão de etiquetas de peça
-    const imprimirEtiqueta = (item) => {
-        const codigo =
-            item.codigo_barras && item.codigo_barras !== "SEM GTIN"
-                ? item.codigo_barras
-                : item.codigo_produto;
+    const gerarZPL = (unidade, qr) => `
+^XA
+^PW520
+^LL192
+^LH0,0
 
-        const url = `${API}/api/nfe/item/etiqueta/argox/${item.notaId}/${codigo}`;
+^PR3
+^MD15
 
-        const janela = window.open("", "_blank");
+^FO3,3
+^BQN,2,6
+^FDLA,${qr.qr_url}^FS
 
-        janela.document.write(`
-        <html>
-            <head>
-                <title>Etiqueta</title>
-                <style>
-                    @page {
-                        size: landscape;
-                        margin: 0;
-                    }
+^FO230,10
+^A0N,40,45
+^FD${unidade.basico}^FS
 
-                    html, body {
-                        margin: 0;
-                        padding: 0;
-                        width: 100%;
-                        height: 100%;
-                        overflow: hidden;
-                    }
+^FO230,60
+^A0N,45,50
+^FD${unidade.loc_sistema}^FS
 
-                    iframe {
-                        width: 100vw;
-                        height: 100vh;
-                        border: none;
-                    }
-                </style>
-            </head>
-            <body>
-                <iframe src="${url}" onload="setTimeout(() => window.print(), 300)"></iframe>
-            </body>
-        </html>
-    `);
+^FO230,115
+^A0N,30,30
+^FD${unidade.numero}/${unidade.serie}^FS
 
-        janela.document.close();
+^FO230,150
+^A0N,25,25
+^FD${new Date().toLocaleString("pt-BR")}^FS
+
+^FO185,30
+^A0B,30,40
+^FD${unidade.id_unico}^FS
+
+^FO460,30
+^A0B,50,40
+^FD${(userInfo?.codigo || "")}^FS
+
+^XZ
+
+`;
+
+    const imprimirViaPython = async (zpl) => {
+        try {
+            const response = await fetch("http://192.168.1.82:5000/print", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    tipo: "windows",
+                    conteudo: zpl,
+                    printer: "ZDesigner GC420t"
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.erro || "Erro ao imprimir");
+            }
+
+        } catch (error) {
+            console.error("Erro impressão Python:", error);
+        }
     };
 
-    const imprimirEtiquetaCaixa = (caixa) => {
-        const codigoCaixa = caixa.numero;
+    const imprimirEtiqueta = async (item) => {
+        try {
+            const codigo =
+                item.codigo_barras && item.codigo_barras !== "SEM GTIN"
+                    ? item.codigo_barras
+                    : item.codigo_produto;
 
+            const res = await fetch(`${API}/api/nfe/unidades/nao_impressas/codire/${codigo}`);
+            const data = await res.json();
+
+            if (!data.unidades || data.unidades.length === 0) {
+                setSnackbar({
+                    open: true,
+                    message: "Nenhuma etiqueta disponível",
+                    severity: "warning"
+                });
+                return;
+            }
+
+            // AQUI ENTRA A FILA LOCAL
+            const chaveFila = `fila_${codigo}`;
+
+            let fila = JSON.parse(localStorage.getItem(chaveFila) || "[]");
+
+            // Se não tiver fila salva, inicializa com API
+            if (fila.length === 0) {
+                fila = data.unidades;
+            }
+
+            // Pega só 1 unidade
+            const unidade = fila.shift();
+
+            // Atualiza fila no storage
+            localStorage.setItem(chaveFila, JSON.stringify(fila));
+
+            // Se não tiver mais nada pra imprimir
+            if (!unidade) {
+                setSnackbar({
+                    open: true,
+                    message: "Fila de impressão finalizada",
+                    severity: "info"
+                });
+                return;
+            }
+
+            const resQr = await fetch(`${API}/api/nfe/unidade/imprimir/${unidade.id_unico}`);
+            const qr = await resQr.json();
+
+            if (!qr.qr_url) return;
+
+            const zpl = gerarZPL(unidade, qr);
+
+            await imprimirViaPython(zpl);
+
+        } catch (error) {
+            console.error(error);
+            setSnackbar({
+                open: true,
+                message: "Erro ao imprimir etiqueta",
+                severity: "error"
+            });
+        }
+    };
+
+    // Impressão etiquetas de caixa
+    const gerarZPLCaixa = (caixa) => {
+        const codigoCaixa = caixa.numero;
         const dataAtual = new Date().toLocaleDateString("pt-BR");
 
-        const conteudo = `
-    <html>
-        <head>
-            <title>Etiqueta Caixa</title>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-            <style>
-                @page {
-                    size: 100mm 34mm;
-                    margin: 0;
-                }
+        return `
+^XA
+^PW400
+^LL200
+^LH0,0
 
-                body {
-                    margin: 0;
-                    padding: 4px;
-                    font-family: Arial;
-                }
+^PR3
+^MD15
 
-                .container {
-                    display: flex;
-                    align-items: center;
-                    height: 100%;
-                }
+^FO1,1
+^BQN,2,8
+^FDLA,${codigoCaixa}^FS
 
-                .qr {
-                    width: 90px;
-                    height: 90px;
-                }
+^FO210,10
+^A0N,60,60
+^FDCaixa^FS
 
-                .info {
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                    align-items: center;
-                    flex: 1;
-                    align-items: flex-start;
-                    padding-left: 60px;
-                }
+^FO210,60
+^A0N,60,60
+^FD${codigoCaixa}^FS
 
-                .numero {
-                    font-size: 42px;
-                    font-weight: bold;
-                    line-height: 40px;
-                }
+^FO210,120
+^A0N,30,30
+^FD${dataAtual}^FS
 
-                .data {
-                    font-size: 16px;
-                    margin-top: 4px;
-                }
-                    
-                .conf {
-                    font-size: 16px;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div id="qrcode" class="qr"></div>
+^FO210,150
+^A0N,30,30
+^FD${userInfo?.codigo || ""}^FS
 
-                <div class="info">
-                    <div class="numero">${codigoCaixa}</div>
-                    <div class="data">${dataAtual}</div>
-                    <div class="conf">${userInfo?.nome}</div>
-                </div>
-            </div>
+^XZ
+`;
+    };
 
-            <script>
-                new QRCode(document.getElementById("qrcode"), {
-                    text: "${codigoCaixa}",
-                    width: 90,
-                    height: 90
-                });
+    // Imprime etiqueta chamando API
+    const imprimirEtiquetaCaixa = async (caixa) => {
+        try {
+            const zpl = gerarZPLCaixa(caixa);
 
-                setTimeout(() => {
-                    window.print();
-                    window.close();
-                }, 400);
-            </script>
-        </body>
-    </html>
-    `;
+            await imprimirViaPython(zpl);
 
-        const janela = window.open("", "", "width=400,height=300");
-        janela.document.write(conteudo);
-        janela.document.close();
+        } catch (error) {
+            console.error("Erro ao imprimir caixa:", error);
+
+            setSnackbar({
+                open: true,
+                message: "Erro ao imprimir etiqueta da caixa",
+                severity: "error"
+            });
+        }
     };
 
     // Finalizar conferência
@@ -637,7 +688,7 @@ function Conferencia() {
     }
 
     return (
-        <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "background.deafult" }}>
+        <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "background.default" }}>
             {/* Header */}
             <Box
                 sx={{

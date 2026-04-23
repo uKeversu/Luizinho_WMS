@@ -177,7 +177,7 @@ function Recebimentos() {
             console.log("Observação antes de atualizar:", observacao_palet);
             console.log("Status da nota antes:", fornecedorDireto);
 
-            let statusFinal = "RECEBIDA";
+            let statusFinal = "PENDENTE";
             if (emTransito) {
                 statusFinal = "EM_TRANSITO";
             } else if (fornecedorDireto) {
@@ -215,7 +215,7 @@ function Recebimentos() {
 
             // Limpa campos
             setXmlData(null);
-            setPaletes([""]);
+            setPaletes([{ palete: "", volume: "" }]);
             setFuncionario("");
             setFile(null);
 
@@ -558,19 +558,20 @@ function Recebimentos() {
 
             const data = await response.json();
 
-            if (response.ok && data.encontrado) {
-                console.log(`Localização atualizada: ${data.localiza} (via ${data.metodo})`);
+            console.log("RESPOSTA API:", data);
+
+            if (response.ok) {
+                const { atualizados, erros, nao_encontrados, total_processados } = data;
+
                 snackbarData = {
                     open: true,
-                    message: "Sincronização com sucesso!",
-                    severity: "success"
+                    message: `Processados: ${total_processados} | Atualizados: ${atualizados} | Erros: ${erros}`,
+                    severity: erros > 0 ? "warning" : "success"
                 };
             } else {
-                console.error(data.mensagem || 'Produto não encontrado no ERP');
-                console.log("RESPOSTA API:", data);
                 snackbarData = {
                     open: true,
-                    message: "Erro ao sincronizar com SS Plus!",
+                    message: "Erro ao buscar localizações no SS Plus!",
                     severity: "error"
                 };
             }
@@ -863,7 +864,7 @@ function Recebimentos() {
                                         <TextField
                                             fullWidth
                                             placeholder="Palete"
-                                            value={p.palete}
+                                            value={p?.palete || ""}
                                             onChange={(e) => handlePaleteChange(index, 'palete', e.target.value)}
                                             sx={{
                                                 '& .MuiOutlinedInput-root': {
@@ -880,7 +881,7 @@ function Recebimentos() {
                                         <TextField
                                             fullWidth
                                             placeholder="Volume(s)"
-                                            value={p.volume}
+                                            value={p?.volume || ""}
                                             onChange={(e) => handlePaleteChange(index, 'volume', e.target.value)}
                                             sx={{
                                                 '& .MuiOutlinedInput-root': {
@@ -996,7 +997,7 @@ function Recebimentos() {
                                         });
                                         return;
                                     }
-                                    if (paletes.every(p => !p.palete.trim() && !p.volume.trim())) {
+                                    if (paletes.every(p => !p?.palete?.trim() && !p?.volume?.trim())) {
                                         setSnackbar({
                                             open: true,
                                             message: "Informe pelo menos um palete",
@@ -1177,7 +1178,7 @@ function Recebimentos() {
                         {snackbar.message}
                     </Alert>
                 </Snackbar>
-            </Container>
+            </Container >
         )
     );
 };
