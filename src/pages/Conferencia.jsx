@@ -400,6 +400,11 @@ function Conferencia() {
 
         } catch (error) {
             console.error("Erro impressão Python:", error);
+            setSnackbar({
+                    open: true,
+                    message: "Falha na impressão, ative o WMS Print!",
+                    severity: "error"
+                });
         }
     };
 
