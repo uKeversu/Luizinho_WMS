@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     Container,
     Typography,
     Card,
     CardContent,
-    Grid,
     TextField,
     Button,
     Box,
@@ -17,27 +16,32 @@ import {
     TableHead,
     TableRow
 } from "@mui/material";
+import Collapse from "@mui/material/Collapse";
+import { Fragment } from "react";
 
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import InventoryIcon from '@mui/icons-material/Inventory';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
 import WarehouseIcon from '@mui/icons-material/Warehouse';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import WarningIcon from '@mui/icons-material/Warning';
 
+import { ThemeContext } from "../context/ThemeContext";
 import '../style/App.css';
 
 function ConsultaGeral() {
 
-    // API BASE
-    const API = "http://192.168.1.185:8077";
+    // Tema noturno
+    const { dark, toggleTheme } = useContext(ThemeContext);
 
     // Acessar outras pages
     const navigate = useNavigate();
 
-    // Login e Logout
+    // API BASE
+    const API = "http://192.168.1.184:8077";
+
+    // Login
     const [userInfo, setUserInfo] = useState(() => {
         const user = localStorage.getItem("user_info");
         return user ? JSON.parse(user) : null;
@@ -51,27 +55,38 @@ function ConsultaGeral() {
         localStorage.removeItem("user_info");
     };
 
+
     const [notas, setNotas] = useState([]);
     const [loading, setLoading] = useState(false);
     const [busca, setBusca] = useState("");
-    const [buscaItemModal, setBuscaItemModal] = useState("");
-    const [itensNota, setItensNota] = useState([]);
-
     const [dataInicio, setDataInicio] = useState("");
     const [dataFim, setDataFim] = useState("");
-    const [aplicarFiltro, setAplicarFiltro] = useState(false);
-    const [timeline, setTimeline] = useState([]);
 
-    useEffect(() => {
-        buscarNotas();
-    }, []);
+    const [expandedNota, setExpandedNota] = useState(null);
+
+    const [expandedItem, setExpandedItem] = useState(null);
+
+    const [unidadesItem, setUnidadesItem] = useState({});
+    const [loadingUnidades, setLoadingUnidades] = useState({});
 
     const buscarNotas = async () => {
-        setLoading(true);
-        try {
-            const response = await fetch(`${API}/api/notas/listar`);
-            const data = await response.json();
 
+        if (!busca && !dataInicio && !dataFim) return;
+
+        setLoading(true);
+
+        try {
+            const params = new URLSearchParams();
+
+            if (busca) params.append("busca", busca);
+            if (dataInicio) params.append("data_inicio", dataInicio);
+            if (dataFim) params.append("data_fim", dataFim);
+
+            const response = await fetch(
+                `${API}/api/notas/listar?${params.toString()}`
+            );
+
+            const data = await response.json();
             const notasArray = Array.isArray(data) ? data : [];
 
             const notasComItens = await Promise.all(
@@ -90,6 +105,10 @@ function ConsultaGeral() {
                 })
             );
 
+            notasComItens.sort(
+                (a, b) => new Date(b.data_recebimento) - new Date(a.data_recebimento)
+            );
+
             setNotas(notasComItens);
 
         } catch (err) {
@@ -99,116 +118,93 @@ function ConsultaGeral() {
         }
     };
 
-    const agruparPorItem = (eventos) => {
-        const grupos = {};
-
-        eventos.forEach(evento => {
-            const chave =
-                evento.item.codigo_barras ||
-                evento.item.codigo_produto;
-
-            if (!grupos[chave]) {
-                grupos[chave] = {
-                    info: evento.item,
-                    eventos: []
-                };
-            }
-
-            grupos[chave].eventos.push(evento);
-        });
-
-        Object.values(grupos).forEach(grupo => {
-            grupo.eventos.sort((a, b) => new Date(a.data) - new Date(b.data));
-        });
-
-        return grupos;
-    };
-
-    const gerarTimelineItem = (termo) => {
-        const t = termo.toLowerCase().trim();
-        if (!t) return [];
-
-        let eventos = [];
-
-        notas.forEach(nota => {
-            nota.itens?.forEach(item => {
-
-                const match =
-                    item.descricao?.toLowerCase().includes(t) ||
-                    item.xProd?.toLowerCase().includes(t) ||
-                    item.cean?.toString().includes(t) ||
-                    item.codigo_barras?.toString().includes(t);
-
-                if (!match) return;
-
-                const dataEvento = new Date(nota.data_recebimento);
-
-                if (aplicarFiltro) {
-                    if (dataInicio && dataEvento < new Date(dataInicio)) return;
-                    if (dataFim && dataEvento > new Date(dataFim)) return;
-                }
-
-                eventos.push({
-                    tipo: item.status_item,
-                    data: nota.data_recebimento,
-                    nota: nota.numero,
-                    fornecedor: nota.fornecedor,
-                    descricao: getDescricaoStatus(item.status_item),
-                    item: item
-                });
-            });
-        });
-
-        return eventos.sort((a, b) => new Date(b.data) - new Date(a.data));
-
-    };
-
     const getDescricaoStatus = (status) => {
         switch (status) {
-            case "PENDENTE":
-                return "Pendente";
-            case "ITEM_CONFERIDO":
-                return "Conferido";
-            case "ITEM_GUARDADO":
-                return "Guardado";
-            case "ITEM_VENDIDO":
-                return "Vendido";
-            case "ITEM_DEVOLVIDO":
-                return "Devolvido";
-            default:
-                return "Status desconhecido";
+            case "PENDENTE": return "Pendente";
+            case "ITEM_CONFERIDO": return "Conferido";
+            case "ITEM_GUARDADO": return "Guardado";
+            case "ITEM_VENDIDO": return "Vendido";
+            case "ITEM_DEVOLVIDO": return "Devolvido";
+            default: return "Desconhecido";
         }
     };
 
     const getIconStatus = (status) => {
         switch (status) {
-            case "PENDENTE":
-                return <WarningIcon color="warning" />;
-            case "ITEM_CONFERIDO":
-                return <FactCheckIcon color="primary" />;
-            case "ITEM_GUARDADO":
-                return <WarehouseIcon color="success" />;
-            case "ITEM_VENDIDO":
-                return <ShoppingCartIcon color="secondary" />;
-            default:
-                return <InventoryIcon />;
+            case "PENDENTE": return <WarningIcon color="warning" />;
+            case "ITEM_CONFERIDO": return <FactCheckIcon color="primary" />;
+            case "ITEM_GUARDADO": return <WarehouseIcon color="success" />;
+            case "ITEM_VENDIDO": return <ShoppingCartIcon color="secondary" />;
+            default: return <WarehouseIcon />;
         }
     };
 
-    const aplicarBusca = () => {
-        setAplicarFiltro(true);
-        const resultado = gerarTimelineItem(busca);
-        setTimeline(resultado);
+    // Busca id único de cada item
+    const buscarUnidades = async (codBarras) => {
+
+        if (unidadesItem[codBarras]) return;
+
+        setLoadingUnidades(prev => ({
+            ...prev,
+            [codBarras]: true
+        }));
+
+        try {
+            const response = await fetch(
+                `${API}/api/nfe/unidades/nao_impressas/codire/${codBarras}`
+            );
+
+            const data = await response.json();
+
+            console.log("API:", data);
+
+            const lista = Array.isArray(data.unidades)
+                ? data.unidades
+                : [];
+
+            setUnidadesItem(prev => ({
+                ...prev,
+                [codBarras]: lista
+            }));
+
+        } catch (error) {
+            console.error(error);
+
+            setUnidadesItem(prev => ({
+                ...prev,
+                [codBarras]: []
+            }));
+
+        } finally {
+            setLoadingUnidades(prev => ({
+                ...prev,
+                [codBarras]: false
+            }));
+        }
     };
 
-    const itensAgrupados = agruparPorItem(timeline);
+    const handleExpandItem = (notaId, codBarras) => {
 
-    const getMarca = (codigo) => {
-        if (!codigo) return '-';
+        const key = `${notaId}-${codBarras}`;
 
-        return codigo
-            .split(/[\s-_]/)[0]
-            .toUpperCase();
+        const novo = expandedItem === key ? null : key;
+        setExpandedItem(novo);
+
+        if (novo) {
+            buscarUnidades(codBarras);
+        }
+    };
+
+    // Destaca item na nota
+    const isItemBuscado = (item) => {
+        if (!busca) return false;
+
+        const termo = busca.toLowerCase();
+
+        return (
+            item.descricao?.toLowerCase().includes(termo) ||
+            item.codigo_barras?.toString().includes(termo)
+        );
     };
 
     return (
@@ -222,7 +218,7 @@ function ConsultaGeral() {
                     alignItems: { xs: 'flex-start', md: 'center' },
                     gap: 2,
                     p: 2,
-                    bgcolor: 'primary.main',
+                    bgcolor: 'var(--azul)',
                     mb: 5
                 }}
             >
@@ -257,220 +253,171 @@ function ConsultaGeral() {
                 </Box>
             </Box>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-
-                <TextField
-                    placeholder="Buscar item"
-                    size="small"
-                    fullWidth
+            {/* FILTRO */}
+            <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                <TextField fullWidth size="small" placeholder="Buscar item"
                     value={busca}
                     onChange={(e) => setBusca(e.target.value)}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter') aplicarBusca();
-                    }}
-                    sx={{
-                        '& .MuiInputBase-root': {
-                            height: 34
-                        },
-                        '& .MuiInputBase-input': {
-                            fontSize: '0.8rem',
-                            padding: '6px 8px'
-                        }
-                    }}
+                    onKeyDown={(e) => e.key === "Enter" && buscarNotas()}
                 />
 
-                <TextField
-                    label="Data início"
-                    type="date"
-                    size="small"
-                    InputLabelProps={{ shrink: true }}
-                    value={dataInicio}
-                    onChange={(e) => setDataInicio(e.target.value)}
-                    sx={{
-                        width: 170,
-                        '& .MuiInputBase-root': { height: 34 },
-                        '& .MuiInputBase-input': { fontSize: '0.7rem' }
-                    }}
-                />
+                <TextField type="date" size="small" sx={{ width: 220 }} value={dataInicio}
+                    onChange={(e) => setDataInicio(e.target.value)} />
 
-                <TextField
-                    label="Data fim"
-                    type="date"
-                    size="small"
-                    InputLabelProps={{ shrink: true }}
-                    value={dataFim}
-                    onChange={(e) => setDataFim(e.target.value)}
-                    sx={{
-                        width: 170,
-                        '& .MuiInputBase-root': { height: 34 },
-                        '& .MuiInputBase-input': { fontSize: '0.7rem' }
-                    }}
-                />
+                <TextField type="date" size="small" sx={{ width: 220 }} value={dataFim}
+                    onChange={(e) => setDataFim(e.target.value)} />
 
-                <Button
-                    size="small"
-                    variant="contained"
-                    onClick={aplicarBusca}
-                    sx={{
-                        height: 34,
-                        fontSize: '0.75rem',
-                        px: 2
-                    }}
-                >
-                    Filtrar
+                <Button variant="contained" onClick={buscarNotas}>
+                    Buscar
                 </Button>
-
-                <Button
-                    size="small"
-                    variant="outlined"
-                    onClick={() => {
-                        setAplicarFiltro(false);
-                        setDataInicio("");
-                        setDataFim("");
-                        setTimeline([]);
-                    }}
-                    sx={{
-                        height: 34,
-                        fontSize: '0.75rem',
-                        px: 2
-                    }}
-                >
-                    Limpar
-                </Button>
-
             </Box>
-            {loading ? (
-                <CircularProgress />
-            ) : (
-                <Box
-                    sx={{
-                        mt: 4,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 3
-                    }}
-                >
-                    {timeline.length === 0 && !loading && (
-                        <Typography sx={{ margin: 'auto', color: 'text.primary' }}>
-                            Nenhum item encontrado para essa busca.
-                        </Typography>
-                    )}
-                    {Object.entries(itensAgrupados).map(([chave, grupo]) => (
-                        <Card
-                            key={chave}
-                            sx={{
-                                borderRadius: '1.5vh',
-                                boxShadow: '0vh 0.1vh 0.5vh var(--sombra)',
-                                bgcolor: 'background.card',
-                                transition: '0.2s',
-                                '&:hover': {
-                                    transform: 'translateY(-2px)',
-                                    boxShadow: 3
-                                }
-                            }}
-                        >
-                            <CardContent sx={{ p: 1.5 }}>
 
-                                {/* HEADER DO ITEM */}
-                                <Box>
-                                    <Typography fontWeight="bold" sx={{ fontSize: '0.9rem' }}>
-                                        📦 {grupo.info.descricao}
+            {loading ? <CircularProgress /> : (
+
+                notas
+                    .filter((nota) => {
+                        if (!busca) return true;
+
+                        const termo = busca.toLowerCase();
+
+                        return nota.itens?.some((item) =>
+                            item.descricao?.toLowerCase().includes(termo) ||
+                            item.codigo_barras?.toString().includes(termo)
+                        );
+                    })
+                    .map((nota) => (
+
+                        <Card key={nota.id} sx={{
+                            mb: 2,
+                            borderRadius: '2vh',
+                            boxShadow: '0vh 0.1vh 0.5vh var(--sombra)',
+                            bgcolor: 'background.alerta',
+                        }}>
+                            <CardContent>
+
+                                {/* NOTA */}
+                                <Box
+                                    onClick={() =>
+                                        setExpandedNota(expandedNota === nota.id ? null : nota.id)
+                                    }
+                                    sx={{ cursor: "pointer" }}
+                                >
+                                    <Typography fontWeight="bold">
+                                        📄 {nota.numero} - {nota.fornecedor}
                                     </Typography>
-
-                                    <Typography sx={{ fontSize: '0.75rem', opacity: 0.7 }}>
-                                        Cod: {grupo.info.cod_produto}
-                                        | CEAN: {grupo.info.codigo_barras || grupo.info.cean}
-                                        | Marca: {getMarca(grupo.info.descricao)}
-                                    </Typography>
-
-                                    <Typography fontWeight="bold" sx={{ fontSize: '0.9rem' }}>
-                                        {grupo.info.loc_sistema}
+                                    <Typography fontSize={'0.8rem'}>
+                                        {nota.data_recebimento}
                                     </Typography>
                                 </Box>
-                                <Box sx={{ display: 'flex', gap: 2, fontSize: '0.75rem', mb: 1 }}>
-                                    <span>📊 Etapas: {grupo.eventos.length}</span>
-                                    <span>🔢 QTD: {Number(grupo.info.quantidade_comercial)}</span>
-                                </Box>
 
-                                {/* TIMELINE */}
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                    <TableContainer>
-                                        <Table size="small">
+                                {/* ITENS */}
+                                <Collapse in={expandedNota === nota.id}>
 
-                                            {/* CABEÇALHO */}
-                                            <TableHead>
-                                                <TableRow>
-                                                    <TableCell>Status</TableCell>
-                                                    <TableCell>Data</TableCell>
-                                                    <TableCell>Hora</TableCell>
-                                                    <TableCell>Fornecedor/Cliente</TableCell>
-                                                    <TableCell>Vendedor</TableCell>
-                                                    <TableCell>Funcionário</TableCell>
-                                                    <TableCell>NF</TableCell>
-                                                    <TableCell>QTD</TableCell>
-                                                </TableRow>
-                                            </TableHead>
+                                    <Table size="small">
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell>LOC</TableCell>
+                                                <TableCell>Item</TableCell>
+                                                <TableCell>Qtd</TableCell>
+                                                <TableCell>Status</TableCell>
+                                            </TableRow>
+                                        </TableHead>
 
-                                            {/* LINHAS */}
-                                            <TableBody>
-                                                {grupo.eventos.map((evento, idx) => (
-                                                    <TableRow key={idx}
-                                                        sx={{
-                                                            backgroundColor: idx % 2 === 0 ? 'background.default' : 'transparent'
-                                                        }} hover>
+                                        <TableBody>
+                                            {nota.itens.map((item, idx) => {
 
-                                                        <TableCell>
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                                {getIconStatus(evento.tipo)}
-                                                                {getDescricaoStatus(evento.tipo)}
-                                                            </Box>
-                                                        </TableCell>
+                                                const cod =
+                                                    item.codigo_barras ??
+                                                    item.cean ??
+                                                    item.cod_produto ??
+                                                    `idx-${idx}`;
 
-                                                        <TableCell>
-                                                            {evento.data}
-                                                        </TableCell>
+                                                const key = `${nota.id}-${cod}`;
 
-                                                        <TableCell>
-                                                            {evento.data}
-                                                        </TableCell>
+                                                return (
+                                                    <Fragment key={key}>
 
-                                                        <TableCell>
-                                                            {evento.fornecedor}
-                                                        </TableCell>
+                                                        {/* ITEM */}
+                                                        <TableRow
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleExpandItem(nota.id, cod);
+                                                            }}
+                                                            sx={{
+                                                                cursor: "pointer",
+                                                                backgroundColor: isItemBuscado(item)
+                                                                    ? 'primary.achouItem'
+                                                                    : 'inherit',
+                                                                transition: '0.2s'
+                                                            }}
+                                                        >
+                                                            <TableCell>{item.loc_sistema}</TableCell>
+                                                            <TableCell>{item.descricao}</TableCell>
+                                                            <TableCell>{Number(item.quantidade_comercial)}</TableCell>
+                                                            <TableCell sx={{ display: 'flex', alignItems: 'center' }}>
+                                                                {getIconStatus(item.status_item)}
+                                                                <Box sx={{ ml: 2 }}>
+                                                                    {getDescricaoStatus(item.status_item)}
+                                                                </Box>
+                                                            </TableCell>
+                                                        </TableRow>
 
-                                                        <TableCell>
-                                                            Vendedor
-                                                        </TableCell>
+                                                        {/* UNIDADES */}
+                                                        <TableRow sx={{ bgcolor: 'background.tabela', boxShadow: '0vh 0vh 1vh primary.sombra' }}>
+                                                            <TableCell colSpan={4} sx={{ p: 0 }}>
+                                                                <Collapse in={expandedItem === key}>
 
-                                                        <TableCell>
-                                                            Funcionário
-                                                        </TableCell>
+                                                                    <Table size="small">
 
-                                                        <TableCell>
-                                                            {evento.nota}
-                                                        </TableCell>
+                                                                        <TableHead>
+                                                                            <TableRow>
+                                                                                <TableCell>ID ÚNICO</TableCell>
+                                                                                <TableCell>ITEM</TableCell>
+                                                                                <TableCell>STATUS ATUAL</TableCell>
+                                                                                <TableCell>DATA / HORA</TableCell>
+                                                                                <TableCell>FUNCIONARIO</TableCell>
+                                                                                <TableCell>RASTREIO DE ITEM</TableCell>
+                                                                            </TableRow>
+                                                                        </TableHead>
 
-                                                        <TableCell>
-                                                            {Number(evento.item.quantidade_comercial)}
-                                                        </TableCell>
+                                                                        <TableBody>
+                                                                            {(unidadesItem[cod] || []).map((un) => (
+                                                                                <TableRow key={un.id_unico}>
 
-                                                    </TableRow>
-                                                ))}
-                                            </TableBody>
+                                                                                    <TableCell>{un.id_unico}</TableCell>
+                                                                                    <TableCell>{un.basico}</TableCell>
+                                                                                    <TableCell>PENDENTE</TableCell>
+                                                                                    <TableCell>24/04/2026 - 10:35</TableCell>
+                                                                                    <TableCell>KELWIN GAMEIRO DOS SANTOS</TableCell>
+                                                                                    <TableCell>
+                                                                                        <Button onClick={() => navigate(`/Rastreio/${un.id_unico}`)}>
+                                                                                            Histórico do item {un.id_unico}
+                                                                                        </Button>
+                                                                                    </TableCell>
+                                                                                </TableRow>
+                                                                            ))}
+                                                                        </TableBody>
 
-                                        </Table>
-                                    </TableContainer>
-                                </Box>
+                                                                    </Table>
+
+                                                                </Collapse>
+                                                            </TableCell>
+                                                        </TableRow>
+
+                                                    </Fragment>
+                                                );
+                                            })}
+                                        </TableBody>
+                                    </Table>
+
+                                </Collapse>
 
                             </CardContent>
                         </Card>
-                    ))}
-                </Box>
+                    ))
             )}
         </Container>
-
     );
 }
-
 
 export default ConsultaGeral;

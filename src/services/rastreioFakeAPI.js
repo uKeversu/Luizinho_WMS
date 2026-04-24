@@ -1,16 +1,16 @@
-export const fakeRastreio = async (codigo) => {
+export const fakeRastreio = async (id_unico) => {
     
     // Simula delay de API
     await new Promise(resolve => setTimeout(resolve, 500));
 
     return {
-        codigo,
-        id: "1B4T8J9K",
-        descricao: "SEMI-EIXO DEVIGILI",
-        localizacao: "030B 009",
-        atual: "Retorno de fornecedor",
+        id_unico,
+        codigo: "2618CPA",
+        numero: "973525",
+        serie: "1",
+        localizacao: "002A  022",
         eventos: [
-            {
+            { 
                 tipo: "COMPRA",
                 data: "19-03-2026 14:12",
                 funcionario: "Kelwin Gameiro",

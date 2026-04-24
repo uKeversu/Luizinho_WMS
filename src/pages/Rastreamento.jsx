@@ -10,6 +10,7 @@ import {
     Modal
 } from "@mui/material";
 
+/*
 import imgCompra from "../assets/img/icone_compra.gif";
 import imgRecebimento from "../assets/img/icone_recebimento.gif";
 import imgConferencia from "../assets/img/icone_conferencia.gif";
@@ -18,6 +19,7 @@ import imgVenda from "../assets/img/icone_venda.gif";
 import imgDevolucao from "../assets/img/icone_devolucao.gif";
 import imgGarantia from "../assets/img/icone_garantia.gif";
 import imgRetorno from "../assets/img/icone_retorno_fornecedor.gif";
+*/
 
 import { fakeRastreio } from "../services/rastreioFakeAPI";
 

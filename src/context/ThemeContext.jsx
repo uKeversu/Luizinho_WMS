@@ -37,6 +37,8 @@ export function ThemeProvider({ children }) {
             sombra: "#000000",
             branco: "#FFFFFF",
             alerta: "#1d1d1d",
+            tabela: "#1d1d1d",
+
             confirmar: "#02bb31",
             confirmarHover: "#009425",
             cancelar: "rgb(255, 53, 53)",
@@ -45,6 +47,17 @@ export function ThemeProvider({ children }) {
             observacao: "rgb(231, 153, 49)",
             observacaoHover: "rgb(199, 129, 38)",
             conferido: "#2b743d",
+            achouItem: "#2b743d93",
+
+            compra: '#44cc61',
+            pendentes: '#e5ff00',
+            conferidos: '#007bff',
+            guardado: '#02bb31',
+            vendido: '#bb0202',
+            devolvido: '#bb6b02',
+            garantia: '#6802bb',
+            retorno: '#02bb74',
+            default: '#7e7e7e',
         }
         : {
             primary: "#007bff",
@@ -58,6 +71,8 @@ export function ThemeProvider({ children }) {
             sombra: "#000000",
             branco: "#FFFFFF",
             alerta: "#f3f3f3",
+            tabela: "#e6e6e6",
+
             confirmar: "#02bb31",
             confirmarHover: "#009425",
             cancelar: "rgb(255, 53, 53)",
@@ -66,6 +81,17 @@ export function ThemeProvider({ children }) {
             observacao: "rgb(231, 153, 49)",
             observacaoHover: "rgb(199, 129, 38)",
             conferido: "#28a745",
+            achouItem: "#28a746a9",
+
+            compra: '#44cc61',
+            pendentes: '#e5ff00',
+            conferidos: '#007bff',
+            guardado: '#02bb31',
+            vendido: '#bb0202',
+            devolvido: '#bb6b02',
+            garantia: '#6802bb',
+            retorno: '#02bb74',
+            default: '#7e7e7e',
         };
 
     const theme = createTheme({
@@ -84,7 +110,17 @@ export function ThemeProvider({ children }) {
                 observacao: colors.observacao,
                 observacaoHover: colors.observacaoHover,
                 conferido: colors.conferido,
+                achouItem: colors.achouItem,
 
+                compra: colors.compra,
+                pendentes: colors.pendentes,
+                conferidos: colors.conferidos,
+                guardado: colors.guardado,
+                vendido: colors.vendido,
+                devolvido: colors.devolvido,
+                garantia: colors.garantia,
+                retorno: colors.retorno,
+                default: colors.default,
             },
 
             background: {
@@ -95,7 +131,8 @@ export function ThemeProvider({ children }) {
                 inputBg: colors.inputBg,
                 dialog: colors.dialog,
                 sombra: colors.sombra,
-                alerta: colors.alerta
+                alerta: colors.alerta,
+                tabela: colors.tabela
             },
 
             text: {

@@ -366,7 +366,7 @@ function Conferencia() {
 ^A0N,25,25
 ^FD${new Date().toLocaleString("pt-BR")}^FS
 
-^FO185,30
+^FO184,30
 ^A0B,30,40
 ^FD${unidade.id_unico}^FS
 
