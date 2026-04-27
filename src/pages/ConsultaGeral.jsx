@@ -39,7 +39,7 @@ function ConsultaGeral() {
     const navigate = useNavigate();
 
     // API BASE
-    const API = "http://192.168.1.184:8077";
+    const API = "http://192.168.1.185:8077";
 
     // Login
     const [userInfo, setUserInfo] = useState(() => {
@@ -106,7 +106,7 @@ function ConsultaGeral() {
             );
 
             notasComItens.sort(
-                (a, b) => new Date(b.data_recebimento) - new Date(a.data_recebimento)
+                (a, b) => parseDataBR(b.data_recebimento) - parseDataBR(a.data_recebimento)
             );
 
             setNotas(notasComItens);
@@ -207,6 +207,14 @@ function ConsultaGeral() {
         );
     };
 
+    // Formata tipo da data
+    const parseDataBR = (dataStr) => {
+        if (!dataStr) return null;
+
+        const [dia, mes, ano] = dataStr.split("-");
+        return new Date(`${ano}-${mes}-${dia}`);
+    };
+
     return (
         <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "background.default" }}>
             {/* Header */}
@@ -267,7 +275,7 @@ function ConsultaGeral() {
                 <TextField type="date" size="small" sx={{ width: 220 }} value={dataFim}
                     onChange={(e) => setDataFim(e.target.value)} />
 
-                <Button variant="contained" onClick={buscarNotas}>
+                <Button variant="contained" sx={{ minWidth: 140 }} onClick={buscarNotas}>
                     Buscar
                 </Button>
             </Box>
@@ -276,14 +284,25 @@ function ConsultaGeral() {
 
                 notas
                     .filter((nota) => {
-                        if (!busca) return true;
 
                         const termo = busca.toLowerCase();
 
-                        return nota.itens?.some((item) =>
+                        const matchBusca = !busca || nota.itens?.some((item) =>
                             item.descricao?.toLowerCase().includes(termo) ||
                             item.codigo_barras?.toString().includes(termo)
                         );
+
+                        const dataNota = parseDataBR(nota.data_recebimento);
+
+                        const inicio = dataInicio ? new Date(dataInicio) : null;
+                        const fim = dataFim ? new Date(dataFim) : null;
+
+                        if (fim) fim.setHours(23, 59, 59, 999);
+
+                        const matchInicio = !inicio || dataNota >= inicio;
+                        const matchFim = !fim || dataNota <= fim;
+
+                        return matchBusca && matchInicio && matchFim;
                     })
                     .map((nota) => (
 
@@ -386,9 +405,9 @@ function ConsultaGeral() {
 
                                                                                     <TableCell>{un.id_unico}</TableCell>
                                                                                     <TableCell>{un.basico}</TableCell>
-                                                                                    <TableCell>PENDENTE</TableCell>
-                                                                                    <TableCell>24/04/2026 - 10:35</TableCell>
-                                                                                    <TableCell>KELWIN GAMEIRO DOS SANTOS</TableCell>
+                                                                                    <TableCell>{item.status_item}</TableCell>
+                                                                                    <TableCell>{nota.data_recebimento}</TableCell>
+                                                                                    <TableCell>{nota.conferente}</TableCell>
                                                                                     <TableCell>
                                                                                         <Button onClick={() => navigate(`/Rastreio/${un.id_unico}`)}>
                                                                                             Histórico do item {un.id_unico}

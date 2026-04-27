@@ -35,7 +35,7 @@ function Rastreio() {
     const navigate = useNavigate();
 
     // API Base
-    const API = "http://192.168.1.184:8077";
+    const API = "http://192.168.1.185:8077";
 
     const { codigo } = useParams();
 
@@ -178,7 +178,7 @@ function Rastreio() {
                             }}>
 
                                 <CardContent sx={{ py: 1 }}>
-                                    <Box sx={{ display: 'flex' }}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                         <Box
                                             component="img"
                                             src={etapa?.img}

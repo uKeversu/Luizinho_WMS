@@ -10,7 +10,7 @@ export const fakeRastreio = async (id_unico) => {
         serie: "1",
         localizacao: "002A  022",
         eventos: [
-            { 
+            {
                 tipo: "COMPRA",
                 data: "19-03-2026 14:12",
                 funcionario: "Kelwin Gameiro",
@@ -55,7 +55,7 @@ export const fakeRastreio = async (id_unico) => {
                 data: "15-04-2026 14:15",
                 funcionario: "Kelwin Gameiro",
             },
-            {
+            /*{
                 tipo: "GARANTIA",
                 data: "20-04-2026 14:15",
                 funcionario: "Kelwin Gameiro",
@@ -64,7 +64,7 @@ export const fakeRastreio = async (id_unico) => {
                 tipo: "RETORNO",
                 data: "4-06-2026 14:15",
                 funcionario: "Kelwin Gameiro",
-            },
+            },*/
 
         ]
     };

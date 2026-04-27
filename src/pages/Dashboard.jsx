@@ -24,6 +24,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import SearchIcon from '@mui/icons-material/Search';
+import SwapVertIcon from '@mui/icons-material/SwapVert';
 
 import LoginFuncionario from "../components/LoginFuncionario";
 
@@ -34,7 +35,7 @@ import Conferencia from "./Conferencia";
 function Dashboard({ tipo }) {
 
     // API BASE
-    const API = "http://192.168.1.184:8077";
+    const API = "http://192.168.1.185:8077";
 
     // Acessar outras pages
     const navigate = useNavigate();
@@ -66,6 +67,7 @@ function Dashboard({ tipo }) {
     const [notasSelecionadas, setNotasSelecionadas] = useState([]);
     const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
     const [loadingNotasIds, setLoadingNotasIds] = useState([]);
+    const [ordemData, setOrdemData] = useState("desc");
 
     useEffect(() => {
         if (token) buscarNotas();
@@ -263,6 +265,29 @@ function Dashboard({ tipo }) {
         }
     };
 
+    // Converte data para ordenar
+    const parseData = (data) => {
+        if (!data) return new Date(0);
+
+        // Se já estiver ISO, funciona direto
+        if (data.includes("T")) return new Date(data);
+
+        // Converter DD-MM-YYYY ou DD/MM/YYYY
+        const [dia, mes, ano] = data.split(/[-/]/);
+
+        return new Date(`${ano}-${mes}-${dia}`);
+    };
+
+    // Ordena notas pela data de recebimento
+    const notasOrdenadas = [...notasFiltradasPorAba].sort((a, b) => {
+        const dataA = parseData(a.data_recebimento);
+        const dataB = parseData(b.data_recebimento);
+
+        return ordemData === "asc"
+            ? dataA - dataB
+            : dataB - dataA;
+    });
+
     return (
         !token ? (
             <LoginFuncionario
@@ -353,24 +378,41 @@ function Dashboard({ tipo }) {
                 </Box>
                 <Box sx={{ mt: 3 }}>
 
-                    <TextField
-                        label="Buscar por NF"
-                        variant="outlined"
-                        size="small"
-                        sx={{
-                            mb: 2, width: '100%', bgcolor: 'background.default',
-                            '& .MuiOutlinedInput-root': {
-                                '&:hover fieldset': {
-                                    borderColor: 'var(--azul)',
-                                },
-                                '&.Mui-focused fieldset': {
-                                    borderColor: 'var(--azul)',
+                    <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                        <TextField
+                            label="Buscar por NF"
+                            variant="outlined"
+                            size="small"
+                            fullWidth
+                            sx={{
+                                bgcolor: 'background.default',
+                                '& .MuiOutlinedInput-root': {
+                                    '&:hover fieldset': {
+                                        borderColor: 'var(--azul)',
+                                    },
+                                    '&.Mui-focused fieldset': {
+                                        borderColor: 'var(--azul)',
+                                    }
                                 }
-                            }
-                        }}
-                        value={busca}
-                        onChange={(e) => setBusca(e.target.value)}
-                    />
+                            }}
+                            value={busca}
+                            onChange={(e) => setBusca(e.target.value)}
+                        />
+
+                        <Button
+                            variant="contained"
+                            onClick={() => setOrdemData(prev => prev === "asc" ? "desc" : "asc")}
+                            size="small"
+                            sx={{
+                                minWidth: "180px",
+                                bgcolor: 'var(--azul)',
+                                '&:hover': { bgcolor: 'var(--azul-hover)' }
+                            }}
+                        >
+                            {ordemData === "asc" ? "Mais recentes" : "Mais antigas"}
+                            <SwapVertIcon />
+                        </Button>
+                    </Box>
                     {aba === 1 && aba !== 3 && (
                         <Button
                             variant="contained"
@@ -409,12 +451,12 @@ function Dashboard({ tipo }) {
                         <Box textAlign="center">
                             <CircularProgress />
                         </Box>
-                    ) : notasFiltradasPorAba.length === 0 ? (
+                    ) : notasOrdenadas.length === 0 ? (
                         <Typography>Nenhuma nota encontrada</Typography>
                     ) : (
                         <Grid container spacing={4}>
 
-                            {notasFiltradasPorAba.map((nota, idx) => (
+                            {notasOrdenadas.map((nota, idx) => (
 
                                 <Grid size={{ xs: 12, md: 3 }} key={idx}>
                                     <Card variant="outlined" sx={{
@@ -570,11 +612,15 @@ function Dashboard({ tipo }) {
                                         </Typography>
                                         <Typography sx={{
                                             color:
-                                                item.status_item === "ITEM_CONFERIDO" ? "primary.confirmar" :
-                                                    item.status_item === "PENDENTE" ? "primary.pendente" :
-                                                        item.status_item === "FORNECEDOR_DIRETO" ? "primary.pendente" :
-                                                            item.status_item === "EM_TRANSITO" ? "primary.observacao" :
-                                                                "var(--em-transito)"
+                                                item.status_item === "PENDENTE" ? "primary.pendentes" :
+                                                    item.status_item === "FORNECEDOR_DIRETO" ? "primary.pendentes" :
+                                                        item.status_item === "ITEM_CONFERIDO" ? "primary.conferidos" :
+                                                            item.status_item === "ITEM_GUARDADO" ? "primary.guardado" :
+                                                                item.status_item === "ITEM_VENDIDO" ? "primary.vendido" :
+                                                                    item.status_item === "ITEM_DEVOLVIDO" ? "primary.devolvido" :
+                                                                    item.status_item === "GARANTIA" ? "primary.garantia" :
+                                                                        item.status_item === "EM_TRANSITO" ? "primary.observacao" :
+                                                                            "var(--em-transito)"
                                         }}>
                                             <strong>Status:</strong> {item.status_item || "SEM STATUS"}
                                         </Typography>

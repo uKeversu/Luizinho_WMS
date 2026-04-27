@@ -25,7 +25,7 @@ function Conferencia() {
     const navigate = useNavigate();
 
     // API BASE
-    const API = "http://192.168.1.184:8077";
+    const API = "http://192.168.1.185:8077";
 
     // Login
     const [userInfo, setUserInfo] = useState(() => {
@@ -337,7 +337,10 @@ function Conferencia() {
     };
 
     // Impressão de etiquetas de peça
-    const gerarZPL = (unidade, qr) => `
+    const gerarZPL = (unidade, qr) => {
+        const url = `http://192.168.1.82:4173/Rastreio/${unidade.id_unico}`;
+
+        return `
 ^XA
 ^PW520
 ^LL192
@@ -348,7 +351,7 @@ function Conferencia() {
 
 ^FO3,3
 ^BQN,2,6
-^FDLA,${qr.qr_url}^FS
+^FDLA,${url}^FS
 
 ^FO230,10
 ^A0N,40,45
@@ -366,7 +369,7 @@ function Conferencia() {
 ^A0N,25,25
 ^FD${new Date().toLocaleString("pt-BR")}^FS
 
-^FO184,30
+^FO185,30
 ^A0B,30,40
 ^FD${unidade.id_unico}^FS
 
@@ -377,6 +380,7 @@ function Conferencia() {
 ^XZ
 
 `;
+    }
 
     const imprimirViaPython = async (zpl) => {
         try {
@@ -401,10 +405,10 @@ function Conferencia() {
         } catch (error) {
             console.error("Erro impressão Python:", error);
             setSnackbar({
-                    open: true,
-                    message: "Falha na impressão, ative o WMS Print!",
-                    severity: "error"
-                });
+                open: true,
+                message: "Falha na impressão, ative o WMS Print!",
+                severity: "error"
+            });
         }
     };
 
@@ -490,19 +494,19 @@ function Conferencia() {
 ^BQN,2,8
 ^FDLA,${codigoCaixa}^FS
 
-^FO210,10
-^A0N,60,60
+^FO190,10
+^A0N,45,45
 ^FDCaixa^FS
 
-^FO210,60
-^A0N,60,60
+^FO190,60
+^A0N,45,45
 ^FD${codigoCaixa}^FS
 
-^FO210,120
+^FO190,120
 ^A0N,30,30
 ^FD${dataAtual}^FS
 
-^FO210,150
+^FO190,150
 ^A0N,30,30
 ^FD${userInfo?.codigo || ""}^FS
 
