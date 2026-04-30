@@ -17,7 +17,9 @@ import {
     Tab,
     Checkbox,
     CircularProgress,
-    Snackbar
+    Backdrop,
+    Snackbar,
+    Alert
 } from "@mui/material";
 
 import PersonIcon from '@mui/icons-material/Person';
@@ -25,6 +27,8 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import SearchIcon from '@mui/icons-material/Search';
 import SwapVertIcon from '@mui/icons-material/SwapVert';
+import BorderColorIcon from '@mui/icons-material/BorderColor';
+import SyncIcon from '@mui/icons-material/Sync';
 
 import LoginFuncionario from "../components/LoginFuncionario";
 
@@ -68,6 +72,9 @@ function Dashboard({ tipo }) {
     const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
     const [loadingNotasIds, setLoadingNotasIds] = useState([]);
     const [ordemData, setOrdemData] = useState("desc");
+
+    // SS Plus Sync
+    const [loadingSync, setLoadingSync] = useState(false);
 
     useEffect(() => {
         if (token) buscarNotas();
@@ -143,6 +150,10 @@ function Dashboard({ tipo }) {
         return true;
     });
 
+    const caixaInvalida = (caixa) => {
+        return caixa === "0" || caixa === 0 || caixa === null || caixa === "" || caixa === undefined;
+    };
+
     // Busca itens das notas
     const buscarItens = async (nota) => {
         try {
@@ -159,8 +170,26 @@ function Dashboard({ tipo }) {
 
             if (response.ok) {
                 console.log("RESPOSTA ITENS:", data);
+
                 const todosItens = data.items || [];
-                setItensNota(todosItens);
+
+                const itensComDados = todosItens.map((item) => {
+
+                    const caixa = caixaInvalida(item.caixa)
+                        ? null
+                        : item.caixa;
+
+                    return {
+                        ...item,
+                        caixa,
+                        basico: item.basico || "-",
+                        localizacao: item.loc_sistema || "-",
+                        qtd_conferida: Number(item.qtd_conferida) || 0
+                    };
+                });
+
+                setItensNota(itensComDados);
+
                 console.log("Buscando itens da nota:", nota.id);
                 console.log("URL:", `${API}/api/itens_nfe/${nota.id}`);
             }
@@ -177,7 +206,9 @@ function Dashboard({ tipo }) {
             item?.descricao?.toLowerCase().includes(termo) ||
             item?.xProd?.toLowerCase().includes(termo) ||
             item?.cean?.toString().includes(termo) ||
-            item?.codigo_barras?.toString().includes(termo)
+            item?.codigo_barras?.toString().includes(termo) ||
+            item?.basico?.toString().includes(termo) ||
+            item?.loc_sistema?.toString().includes(termo)
         );
     });
 
@@ -288,6 +319,93 @@ function Dashboard({ tipo }) {
             : dataB - dataA;
     });
 
+    // Sincroniza com SS PLUS
+    const pegarLocal = async () => {
+        setLoadingSync(true);
+
+        const tempoMinimo = 2000;
+        const inicio = Date.now();
+
+        let snackbarData = null;
+
+        try {
+            const response = await fetch('http://192.168.1.185:8077/api/checar_localizacao_lote', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ todos: true })
+            });
+
+            const data = await response.json();
+
+            console.log("RESPOSTA API:", data);
+
+            if (response.ok) {
+                const {
+                    atualizados = 0,
+                    erros = 0,
+                    nao_encontrados = 0,
+                    total_processados = 0
+                } = data || {};
+                
+                console.log("Total processados:", total_processados)
+                console.log("Atualizados:", atualizados)
+                console.log("Erros:", erros)
+                console.log("Não encontrados:", nao_encontrados)
+
+                const semDados =
+                    total_processados === 0 &&
+                    atualizados === 0 &&
+                    nao_encontrados === 0 &&
+                    erros === 0;
+
+                if (semDados) {
+                    snackbarData = {
+                        open: true,
+                        message: "Nenhum item para sincronizar",
+                        severity: "info"
+                    };
+                } else {
+                    snackbarData = {
+                        open: true,
+                        message: `Processados: ${total_processados} | Atualizados: ${atualizados} | Não encontrados: ${nao_encontrados}`,
+                        severity: erros > 0 ? "warning" : "success"
+                    };
+                }
+            } else {
+                snackbarData = {
+                    open: true,
+                    message: "Erro ao buscar localizações no SS Plus!",
+                    severity: "error"
+                };
+            }
+
+        } catch (err) {
+            console.error('Erro na requisição:', err);
+            snackbarData = {
+                open: true,
+                message: "Erro ao sincronizar com SS Plus!",
+                severity: "error"
+            };
+
+        } finally {
+            const tempoPassado = Date.now() - inicio;
+            const tempoRestante = tempoMinimo - tempoPassado;
+
+            const finalizar = () => {
+                setLoadingSync(false);
+                if (snackbarData) {
+                    setSnackbar(snackbarData);
+                }
+            };
+
+            if (tempoRestante > 0) {
+                setTimeout(finalizar, tempoRestante);
+            } else {
+                finalizar();
+            }
+        }
+    };
+
     return (
         !token ? (
             <LoginFuncionario
@@ -342,8 +460,39 @@ function Dashboard({ tipo }) {
                                 </Button>
                             )}
                         </Box>
-
                         <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
+
+                            <Button
+                                id="btnAtualizar" onClick={pegarLocal}
+                                disabled={loadingSync}
+                                size="small"
+                                sx={{
+                                    color: "background.paper",
+                                    display: 'flex',
+                                    gap: 0.5,
+                                    fontSize: '0.75rem',
+                                    minWidth: 'auto',
+                                    padding: '4px 8px',
+                                    whiteSpace: 'nowrap'
+                                }}>
+                                SS Plus Sync
+                                {<SyncIcon />}
+                            </Button>
+                            <Button
+                                onClick={() => navigate("/AtualizarCean")}
+                                sx={{
+                                    color: "background.paper",
+                                    display: 'flex',
+                                    gap: 0.5,
+                                    fontSize: '0.75rem',
+                                    minWidth: 'auto',
+                                    padding: '4px 8px',
+                                    whiteSpace: 'nowrap'
+                                }}
+                            >
+                                ATUALIZAR CEAN
+                                {<BorderColorIcon />}
+                            </Button>
                             <Button
                                 onClick={() => navigate("/ConsultaGeral")}
                                 sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}
@@ -362,6 +511,20 @@ function Dashboard({ tipo }) {
                         </Box>
                     </Box>
                 </Box>
+
+                {/* Loading de sincronização SS Plus*/}
+                <Backdrop
+                    open={loadingSync}
+                    sx={{ zIndex: (theme) => theme.zIndex.drawer + 999 }}
+                >
+                    <Box textAlign="center">
+                        <CircularProgress sx={{ color: "background.paper" }} color="inherit" />
+                        <Typography mt={2} sx={{ color: "background.paper" }}>
+                            Sincronizando com o SS Plus...
+                        </Typography>
+                    </Box>
+                </Backdrop>
+
                 <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: "background.default" }}>
                     <Tabs
                         value={aba}
@@ -371,7 +534,7 @@ function Dashboard({ tipo }) {
                         centered
                     >
                         <Tab label="Em Trânsito" />
-                        <Tab label="Recebidas" />
+                        <Tab label="Conferência pendente" />
                         <Tab label="Guarda pendente" />
                         <Tab label="Histórico" />
                     </Tabs>
@@ -419,21 +582,17 @@ function Dashboard({ tipo }) {
                             sx={{ mb: 2 }}
                             disabled={notasSelecionadas.length === 0}
                             onClick={() => {
-                                const notasValidas = notasSelecionadas.filter(id => {
-                                    const nota = notas.find(n => n.id === id);
-                                    return nota?.status === "FORNECEDOR_DIRETO" || nota?.status === "PENDENTE";
-                                });
+                                const notasValidas = notasSelecionadas.map(id =>
+                                    notas.find(n => n.id === id)
+                                );
 
-                                const temRecebida = notasValidas.some(id => {
-                                    const nota = notas.find(n => n.id === id);
-                                    return nota?.status === "PENDENTE";
-                                });
+                                const temRecebida = notasValidas.some(nota => nota.status === "PENDENTE");
 
                                 if (temRecebida && notasValidas.length > 1) {
                                     setSnackbar({
                                         open: true,
                                         message: "Notas com status 'PENDENTE' só podem ser conferidas uma por vez!",
-                                        severity: "success"
+                                        severity: "warning"
                                     });
                                     return;
                                 }
@@ -491,7 +650,6 @@ function Dashboard({ tipo }) {
                                                                     });
                                                                     return;
                                                                 }
-
                                                                 setNotasSelecionadas(prev => [...prev, nota.id]);
                                                             } else {
                                                                 setNotasSelecionadas(prev => prev.filter(id => id !== nota.id));
@@ -577,10 +735,10 @@ function Dashboard({ tipo }) {
                             mb: 2, display: 'flex', margin: 'auto', width: '90%', bgcolor: 'inputBg',
                             '& .MuiOutlinedInput-root': {
                                 '&:hover fieldset': {
-                                    borderColor: 'var(--azul)',
+                                    borderColor: 'primary.main',
                                 },
                                 '&.Mui-focused fieldset': {
-                                    borderColor: 'var(--azul)',
+                                    borderColor: 'primary.main',
                                 }
                             }
                         }}
@@ -595,35 +753,68 @@ function Dashboard({ tipo }) {
 
                                 return (
 
-                                    <Card key={index} sx={{ mt: 2, mb: 2, p: 2, borderRadius: '1vh', boxShadow: '0vh 0.1vh 0.5vh background.sombra', bgcolor: 'background.default', }}>
-                                        <Typography>
-                                            <strong>Produto:</strong> {item.descricao || item.xProd}
+                                    <Card
+                                        key={index}
+                                        sx={{
+                                            mt: 1,
+                                            mb: 1,
+                                            p: 1.5,
+                                            borderRadius: '1vh',
+                                            boxShadow: '0vh 0.1vh 0.5vh background.sombra',
+                                            bgcolor: 'background.default',
+                                            fontSize: '0.85rem'
+                                        }}
+                                    >
+                                        {/* Linha 1 */}
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <Typography><strong>{item.basico || item.cod_produto || "-"}</strong></Typography>
+                                            <Typography sx={{
+                                                color:
+                                                    item.status_item === "PENDENTE" ? "primary.pendentes" :
+                                                        item.status_item === "FORNECEDOR_DIRETO" ? "primary.pendentes" :
+                                                            item.status_item === "ITEM_CONFERIDO" ? "primary.conferidos" :
+                                                                item.status_item === "CONFERIDO_PARCIAL" ? "primary.parcial" :
+                                                                    item.status_item === "ITEM_GUARDADO" ? "primary.guardado" :
+                                                                        item.status_item === "ITEM_VENDIDO" ? "primary.vendido" :
+                                                                            item.status_item === "ITEM_DEVOLVIDO" ? "primary.devolvido" :
+                                                                                item.status_item === "GARANTIA" ? "primary.garantia" :
+                                                                                    item.status_item === "EM_TRANSITO" ? "primary.observacao" :
+                                                                                        "var(--em-transito)"
+                                            }}>
+                                                <strong>Status:</strong> {item.status_item || "SEM STATUS"}
+                                            </Typography>
+                                        </Box>
+
+                                        {/* Linha 2 */}
+                                        <Typography
+                                            sx={{
+                                                fontSize: '0.8rem',
+                                                whiteSpace: 'nowrap',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis'
+                                            }}
+                                        >
+                                            {item.descricao || item.xProd}
                                         </Typography>
 
-                                        <Typography>
-                                            <strong>Quantidade:</strong> {Number(item.quantidade_comercial)}
-                                        </Typography>
+                                        {/* Linha 3 */}
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
+                                            <Typography>{item.loc_sistema || "-"}</Typography>
+                                            <Typography>{item.qtd_conferida} / {Number(item.quantidade_comercial)}</Typography>
+                                        </Box>
 
-                                        <Typography>
-                                            <strong>Código de barras:</strong> {item.cean || item.codigo_barras || "-"}
-                                        </Typography>
-                                        <Typography>
-                                            <strong>Caixa:</strong> {item.caixa !== "0" ? item.caixa : "SEM CAIXA"}
-                                        </Typography>
-                                        <Typography sx={{
-                                            color:
-                                                item.status_item === "PENDENTE" ? "primary.pendentes" :
-                                                    item.status_item === "FORNECEDOR_DIRETO" ? "primary.pendentes" :
-                                                        item.status_item === "ITEM_CONFERIDO" ? "primary.conferidos" :
-                                                            item.status_item === "ITEM_GUARDADO" ? "primary.guardado" :
-                                                                item.status_item === "ITEM_VENDIDO" ? "primary.vendido" :
-                                                                    item.status_item === "ITEM_DEVOLVIDO" ? "primary.devolvido" :
-                                                                    item.status_item === "GARANTIA" ? "primary.garantia" :
-                                                                        item.status_item === "EM_TRANSITO" ? "primary.observacao" :
-                                                                            "var(--em-transito)"
-                                        }}>
-                                            <strong>Status:</strong> {item.status_item || "SEM STATUS"}
-                                        </Typography>
+                                        {/* Linha 4 */}
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
+                                            <Typography sx={{ fontSize: '0.75rem' }}>
+                                                {item.cean || item.codigo_barras || "-"}
+                                            </Typography>
+                                            <Typography sx={{ fontSize: '0.75rem' }}>
+                                                {caixaInvalida(item.caixa)
+                                                    ? "SEM CAIXA"
+                                                    : `Caixa ${item.caixa}`
+                                                }
+                                            </Typography>
+                                        </Box>
                                     </Card>
                                 );
                             })
@@ -633,6 +824,18 @@ function Dashboard({ tipo }) {
                         <Button sx={{ color: "primary.branco", bgcolor: 'primary.cancelar', '&:hover': { bgcolor: 'primary.cancelarHover' } }} onClick={() => setOpenModal(false)}>Fechar</Button>
                     </DialogActions>
                 </Dialog>
+
+                {/* Snackbar */}
+                <Snackbar
+                    open={snackbar.open}
+                    autoHideDuration={3000}
+                    onClose={() => setSnackbar({ ...snackbar, open: false })}
+                >
+                    <Alert variant="filled" severity={snackbar.severity}>
+                        {snackbar.message}
+                    </Alert>
+                </Snackbar>
+
             </Container>
         )
     )

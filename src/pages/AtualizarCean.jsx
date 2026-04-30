@@ -184,7 +184,7 @@ function AtualizarCean() {
                     </Box>
                     <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
                         <Button
-                            onClick={() => navigate("/")}
+                            onClick={() => navigate("/Dashboard")}
                             sx={{ color: "background.paper", display: 'flex', gap: 1 }}
                         >
                             Voltar

@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     Container,
@@ -63,11 +63,10 @@ function ConsultaGeral() {
     const [dataFim, setDataFim] = useState("");
 
     const [expandedNota, setExpandedNota] = useState(null);
-
     const [expandedItem, setExpandedItem] = useState(null);
-
     const [unidadesItem, setUnidadesItem] = useState({});
     const [loadingUnidades, setLoadingUnidades] = useState({});
+    const cacheBasico = useRef({});
 
     const buscarNotas = async () => {
 
@@ -95,9 +94,22 @@ function ConsultaGeral() {
                         const respItens = await fetch(`${API}/api/itens_nfe/${nota.id}`);
                         const dataItens = await respItens.json();
 
+                        const itensComBasico = await Promise.all(
+                            (dataItens.items || []).map(async (item) => {
+                                const codigo = item.codigo_barras || item.cean || item.cod_produto;
+
+                                const basico = await buscarBasico(codigo);
+
+                                return {
+                                    ...item,
+                                    basico
+                                };
+                            })
+                        );
+
                         return {
                             ...nota,
-                            itens: dataItens.items || []
+                            itens: itensComBasico
                         };
                     } catch {
                         return { ...nota, itens: [] };
@@ -115,6 +127,27 @@ function ConsultaGeral() {
             console.error(err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const buscarBasico = async (codigo) => {
+        if (!codigo) return "-";
+
+        if (cacheBasico.current[codigo]) {
+            return cacheBasico.current[codigo];
+        }
+
+        try {
+            const res = await fetch(`${API}/api/nfe/unidades/nao_impressas/codire/${codigo}`);
+            const data = await res.json();
+
+            const basico = data.unidades?.[0]?.basico || "-";
+
+            cacheBasico.current[codigo] = basico;
+
+            return basico;
+        } catch {
+            return "-";
         }
     };
 
@@ -156,8 +189,6 @@ function ConsultaGeral() {
 
             const data = await response.json();
 
-            console.log("API:", data);
-
             const lista = Array.isArray(data.unidades)
                 ? data.unidades
                 : [];
@@ -196,14 +227,21 @@ function ConsultaGeral() {
     };
 
     // Destaca item na nota
+    const contains = (valor, termo) => {
+        if (!valor) return false;
+        return valor.toString().toLowerCase().includes(termo);
+    };
+
     const isItemBuscado = (item) => {
         if (!busca) return false;
 
         const termo = busca.toLowerCase();
 
         return (
-            item.descricao?.toLowerCase().includes(termo) ||
-            item.codigo_barras?.toString().includes(termo)
+            contains(item.descricao, termo) ||
+            contains(item.codigo_barras, termo) ||
+            contains(item.cod_produto, termo) ||
+            contains(item.basico, termo)
         );
     };
 
@@ -285,12 +323,16 @@ function ConsultaGeral() {
                 notas
                     .filter((nota) => {
 
-                        const termo = busca.toLowerCase();
+                        const matchBusca = !busca || nota.itens?.some((item) => {
+                            const termo = busca.toLowerCase();
 
-                        const matchBusca = !busca || nota.itens?.some((item) =>
-                            item.descricao?.toLowerCase().includes(termo) ||
-                            item.codigo_barras?.toString().includes(termo)
-                        );
+                            return (
+                                contains(item.descricao, termo) ||
+                                contains(item.codigo_barras, termo) ||
+                                contains(item.cod_produto, termo) ||
+                                contains(item.basico, termo)
+                            );
+                        });
 
                         const dataNota = parseDataBR(nota.data_recebimento);
 
@@ -336,7 +378,8 @@ function ConsultaGeral() {
                                         <TableHead>
                                             <TableRow>
                                                 <TableCell>LOC</TableCell>
-                                                <TableCell>Item</TableCell>
+                                                <TableCell>Código</TableCell>
+                                                <TableCell>Descrição</TableCell>
                                                 <TableCell>Qtd</TableCell>
                                                 <TableCell>Status</TableCell>
                                             </TableRow>
@@ -371,6 +414,7 @@ function ConsultaGeral() {
                                                             }}
                                                         >
                                                             <TableCell>{item.loc_sistema}</TableCell>
+                                                            <TableCell>{item.basico}</TableCell>
                                                             <TableCell>{item.descricao}</TableCell>
                                                             <TableCell>{Number(item.quantidade_comercial)}</TableCell>
                                                             <TableCell sx={{ display: 'flex', alignItems: 'center' }}>
@@ -383,7 +427,7 @@ function ConsultaGeral() {
 
                                                         {/* UNIDADES */}
                                                         <TableRow sx={{ bgcolor: 'background.tabela', boxShadow: '0vh 0vh 1vh primary.sombra' }}>
-                                                            <TableCell colSpan={4} sx={{ p: 0 }}>
+                                                            <TableCell colSpan={5} sx={{ p: 0 }}>
                                                                 <Collapse in={expandedItem === key}>
 
                                                                     <Table size="small">

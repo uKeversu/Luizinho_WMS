@@ -1,15 +1,17 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useMemo } from "react";
 import {
     Container, Typography, Card, Box, TextField, Button,
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions,
-    CircularProgress
+    CircularProgress, Backdrop
 } from "@mui/material";
 
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import SyncIcon from '@mui/icons-material/Sync';
 
 import LoginFuncionario from "../components/LoginFuncionario";
 
@@ -39,6 +41,11 @@ function Conferencia() {
         setUserInfo(null);
         localStorage.removeItem("nfe_token");
         localStorage.removeItem("user_info");
+        Object.keys(localStorage).forEach(key => {
+            if (key.startsWith("itens_conferencia") || key.startsWith("caixas_conferencia")) {
+                localStorage.removeItem(key);
+            }
+        });
     };
 
     // Conferência
@@ -54,7 +61,27 @@ function Conferencia() {
     const [notaInfo, setNotaInfo] = useState(null);
     const location = useLocation();
     const notas = location.state?.notas || [];
-    const modo = notas.some(n => n.status === "FORNECEDOR_DIRETO") ? "MULTIPLO" : "UNICO";
+
+    const notaAtual = useMemo(() => {
+        return notas.find(n => n?.id);
+    }, [notas]);
+
+    const notasIds = useMemo(() => {
+        return notas.map(n => typeof n === "object" ? n.id : n);
+    }, [notas]);
+
+    const modo = notas.some(n =>
+        typeof n === "object" && n.status === "FORNECEDOR_DIRETO"
+    )
+        ? "MULTIPLO"
+        : "UNICO";
+
+    // Atalhos
+    const inputRef = useRef(null);
+    const qtdRef = useRef(null);
+    const [modoQuantidade, setModoQuantidade] = useState(false);
+    const [ultimoItemScaneado, setUltimoItemScaneado] = useState(null);
+    const [quantidadeInput, setQuantidadeInput] = useState("");
 
     // Caixa aberta e fechadas
     const [caixaAberta, setCaixaAberta] = useState(null);
@@ -64,107 +91,286 @@ function Conferencia() {
     const [openFecharDialog, setOpenFecharDialog] = useState(false);
     const [numeroCaixa, setNumeroCaixa] = useState("");
 
+    // SS Plus Sync
+    const [loadingSync, setLoadingSync] = useState(false);
+
     useEffect(() => {
-        if (notas.length > 0) {
+        inputRef.current?.focus();
+    }, []);
+
+    useEffect(() => {
+        if (!notasIds || notasIds.length === 0) return;
+
+        const chaveItens = `itens_conferencia_${notasIds.join("_")}`;
+        const chaveCaixas = `caixas_conferencia_${notasIds.join("_")}`;
+
+        const itensSalvos = localStorage.getItem(chaveItens);
+        const caixasSalvas = localStorage.getItem(chaveCaixas);
+
+        const itensParse = itensSalvos ? JSON.parse(itensSalvos) : [];
+        const itensCorrigidos = itensParse.map(i => ({
+            ...i,
+            caixaId: i.caixaId ?? i.caixa ?? null
+        }));
+
+        const caixasParse = caixasSalvas ? JSON.parse(caixasSalvas) : [];
+
+        const cacheValido =
+            itensCorrigidos.length > 0 &&
+            itensCorrigidos.some(i => notasIds.includes(i.notaId));
+
+        if (cacheValido) {
+            console.log("USANDO CACHE");
+
+            setItens(itensCorrigidos);
+            setCaixas(caixasParse);
+
+            return;
+        } else {
+            console.log("CACHE INVALIDO → BUSCANDO API");
+
             carregarTudo();
         }
-    }, [notas]);
+
+    }, [notasIds]);
+
+    // Sempre que caixas mudar, salva no local storage
+    useEffect(() => {
+        if (!notasIds || notasIds.length === 0) return;
+
+        const chaveCaixas = `caixas_conferencia_${notasIds.join("_")}`;
+        localStorage.setItem(chaveCaixas, JSON.stringify(caixas));
+    }, [caixas, notasIds]);
+
+    // Sempre que itens mudar, salva no local storage
+    useEffect(() => {
+        if (!notasIds || notasIds.length === 0) return;
+
+        const chaveItens = `itens_conferencia_${notasIds.join("_")}`;
+        localStorage.setItem(chaveItens, JSON.stringify(itens));
+    }, [itens, notasIds]);
+
+    // Sincroniza com SSPLUS pelo ID da nota
+    const syncSSPlus = async () => {
+        if (!notaAtual?.id) {
+            setSnackbar({
+                open: true,
+                message: "Nota não encontrada",
+                severity: "warning"
+            });
+            return;
+        }
+
+        setLoadingSync(true);
+
+        console.log("SINCRONIZANDO A NOTA:",notaAtual.id)
+
+        try {
+            const response = await fetch(`${API}/api/sync_nfe`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ 
+                    nfe_id: notaAtual.id
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data?.erro || "Erro ao sincronizar");
+            }
+
+            setSnackbar({
+                open: true,
+                message: `Sincronização concluída`,
+                severity: "success"
+            });
+
+            await carregarTudo();
+
+        } catch (err) {
+            console.error("Erro sync:", err);
+
+            setSnackbar({
+                open: true,
+                message: "Erro ao conectar com API",
+                severity: "error"
+            });
+
+        } finally {
+            setLoadingSync(false);
+        }
+    };
+
+    // Teclas de atalho
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+
+            const isInput = document.activeElement.tagName === "INPUT";
+
+            if ((e.ctrlKey || e.metaKey) && e.code === "Space") {
+                e.preventDefault();
+
+                setCodigo("");
+                setQuantidadeInput("");
+                return;
+            }
+
+            // Permitir alguns atalhos mesmo no input
+            if (isInput && !["F2", "F3", "F4", "F7", "F8", "F9", "Escape"].includes(e.key)) {
+                return;
+            }
+
+            switch (e.key) {
+
+                case "F2":
+                    e.preventDefault();
+                    abrirCaixa();
+                    break;
+
+                case "F3":
+                    e.preventDefault();
+                    if (caixaAberta) {
+                        setOpenFecharDialog(true);
+                    }
+                    break;
+
+                case "F4":
+                    e.preventDefault();
+                    finalizarConferencia();
+                    break;
+
+                case "F6":
+                    e.preventDefault();
+
+                    if (caixaAberta) {
+                        setSnackbar({
+                            open: true,
+                            message: "Feche a caixa atual antes de reabrir outra",
+                            severity: "warning"
+                        });
+                        return;
+                    }
+
+                    if (caixas.length > 0) {
+                        reabrirCaixa(caixas[caixas.length - 1]);
+                    }
+                    break;
+
+                case "F7":
+                    e.preventDefault();
+                    setModoQuantidade(prev => {
+                        const novo = !prev;
+
+                        setSnackbar({
+                            open: true,
+                            message: novo ? "Modo quantidade ATIVADO" : "Modo quantidade DESATIVADO",
+                            severity: "info"
+                        });
+
+                        if (novo) {
+                            setTimeout(() => {
+                                qtdRef.current?.focus();
+                            }, 100);
+                        }
+
+                        return novo;
+                    });
+                    break;
+
+                case "F8":
+                    e.preventDefault();
+                    if (ultimoItemScaneado) {
+                        imprimirEtiqueta(ultimoItemScaneado);
+                    }
+                    break;
+
+                case "F9":
+                    e.preventDefault();
+                    inputRef.current?.focus();
+                    break;
+
+                case "Escape":
+                    setCodigo("");
+                    break;
+
+                default:
+                    break;
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [caixaAberta, ultimoItemScaneado]);
 
     const carregarTudo = async () => {
         try {
             setLoading(true);
 
-            // Busca notas
-            const res = await fetch(`${API}/api/notas/listar`);
-            const data = await res.json();
+            if (!notas || notas.length === 0) return;
 
-            const selecionadas = data.filter(n => notas.includes(n.id));
-            setNotaInfo(selecionadas);
+            console.log("NOTAS RECEBIDAS:", notas);
+            setNotaInfo(notas);
 
-            // Busca itens usando as notas carregadas
             let todosItens = [];
 
-            for (const n of notas) {
-                const notaId = typeof n === "object" ? n.id : n;
+            for (const nota of notas) {
 
-                const response = await fetch(`${API}/api/itens_nfe/${notaId}`);
+                const response = await fetch(`${API}/api/itens_nfe/${nota.id}`, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Auth-Token": token
+                    }
+                });
+
                 const dataItens = await response.json();
 
-                if (response.ok) {
-                    const notaAtual = selecionadas.find(n => n.id === notaId);
+                if (!response.ok) {
+                    console.error("Erro ao buscar itens da nota:", nota.id, dataItens);
+                    continue;
+                }
 
-                    const itensFormatados = (dataItens.items || []).map(item => ({
+                const chaveItens = `itens_conferencia_${notasIds.join("_")}`;
+                const itensSalvos = JSON.parse(localStorage.getItem(chaveItens) || "[]");
+
+                const itensFormatados = (dataItens.items || []).map((item) => {
+
+                    const itemSalvo = itensSalvos.find(i =>
+                        i.codigo_barras === item.cean &&
+                        i.notaId === nota.id
+                    );
+
+                    return {
                         descricao: item.descricao || "Item sem identificação",
                         codigo_barras: item.cean || "",
                         codigo_produto: item.cod_produto || "",
-                        quantidade: Number(item.quantidade_comercial) || 0,
+                        basico: item.basico || "-",
                         localizacao: item.loc_sistema || "Sem localização",
-                        conferido: 0,
-                        caixa: null,
-                        notaId: notaId,
-                        notaNumero: notaAtual?.numero || "-",
-                        notaSerie: notaAtual?.serie || "-"
-                    }));
+                        quantidade: Number(item.quantidade_comercial) || 0,
 
-                    todosItens = [...todosItens, ...itensFormatados];
-                }
+                        conferido: itemSalvo?.conferido ?? (Number(item.qtd_conferida) || 0),
+                        caixaId: itemSalvo?.caixaId ?? (item.caixa || null),
+
+                        status: item.status_item,
+                        notaId: nota.id,
+                        notaNumero: nota.numero || "-",
+                        notaSerie: nota.serie || "-"
+                    };
+                });
+
+                todosItens = [...todosItens, ...itensFormatados];
             }
 
+            console.log("ITENS CARREGADOS:", todosItens);
             setItens(todosItens);
 
         } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const buscarNota = async () => {
-        const res = await fetch(`${API}/api/notas/listar`);
-        const data = await res.json();
-
-        const selecionadas = data.filter(n => notas.includes(n.id));
-        setNotaInfo(selecionadas);
-    };
-
-    const buscarItens = async () => {
-        try {
-            setLoading(true);
-
-            let todosItens = [];
-
-            for (const n of notas) {
-                const notaId = typeof n === "object" ? n.id : n;
-
-                const response = await fetch(`${API}/api/itens_nfe/${notaId}`);
-                const data = await response.json();
-
-                console.log("BUSCANDO ITENS:", data.items);
-
-                if (response.ok) {
-                    const notaAtual = notaInfo?.find(n => n.id === notaId);
-
-                    const itensFormatados = (data.items || []).map(item => ({
-                        descricao: item.descricao || "Item sem identificação",
-                        codigo_barras: item.cean || "",
-                        codigo_produto: item.cod_produto || "",
-                        quantidade: Number(item.quantidade_comercial) || 0,
-                        localizacao: item.loc_sistema || "Sem localização",
-                        conferido: 0,
-                        caixa: null,
-                        notaId: notaId,
-                        notaNumero: notaAtual?.numero || "-",
-                        notaSerie: notaAtual?.serie || "-"
-                    }));
-
-                    todosItens = [...todosItens, ...itensFormatados];
-                }
-            }
-
-            setItens(todosItens);
-
-        } catch (error) {
-            console.error(error);
+            console.error("Erro no carregarTudo:", error);
         } finally {
             setLoading(false);
         }
@@ -183,7 +389,7 @@ function Conferencia() {
         setCaixaAberta(null);
     };
 
-    const confirmarFechamento = () => {
+    const confirmarFechamento = async () => {
         if (!caixaAberta?.numero && !numeroCaixa.trim()) {
             setSnackbar({
                 open: true,
@@ -196,39 +402,105 @@ function Conferencia() {
         const caixaFinal = {
             ...caixaAberta,
             numero: caixaAberta.numero || numeroCaixa,
-            jaImprimiu: caixaAberta.jaImprimiu || false
+            jaImprimiu: caixaAberta.jaImprimiu || false,
+            reaberta: false
         };
-
-        setCaixas(prev => [...prev, caixaFinal]);
 
         if (!caixaFinal.jaImprimiu) {
             imprimirEtiquetaCaixa(caixaFinal);
-
             caixaFinal.jaImprimiu = true;
         }
 
-        setCaixas([...caixas, caixaFinal]);
+        const sucesso = await enviarItensDaCaixa(caixaFinal);
+
+        if (!sucesso) {
+            return; // Não fecha se deu erro
+        }
+
+        setCaixas(prev => [...prev, caixaFinal]);
+
         setCaixaAberta(null);
         setNumeroCaixa("");
         setOpenFecharDialog(false);
+
+        setSnackbar({
+            open: true,
+            message: `Caixa ${caixaFinal.numero} fechada`,
+            severity: "success"
+        });
     };
 
     // Reabre caixa para adicionar mais itens
     const reabrirCaixa = (caixa) => {
+
+        // Bloqueia se usuário estiver com caixa aberta
+        if (caixaAberta) {
+            setSnackbar({
+                open: true,
+                message: "Feche a caixa atual antes de reabrir outra",
+                severity: "warning"
+            });
+            return;
+        }
+
         // Remove das fechadas
         setCaixas(prev => prev.filter(c => c.id !== caixa.id));
 
         // Recalcula os itens com base no estado atual
-        const itensAtualizados = itens.filter(i => i.caixa === caixa.id);
+        const itensAtualizados = itens
+            .filter(i => i.caixaId === caixa.id)
+            .map(i => ({ ...i, caixaId: caixa.id }));
 
         setCaixaAberta({
             ...caixa,
-            itens: itensAtualizados
+            itens: itensAtualizados,
+            reaberta: true,
         });
 
         setSnackbar({
             open: true,
             message: `Caixa ${caixa.numero} reaberta`,
+            severity: "info"
+        });
+    };
+
+    const removerItemDaCaixa = (itemAlvo) => {
+        const novosItens = [...itens];
+
+        const index = novosItens.findIndex(i =>
+            i.codigo_barras === itemAlvo.codigo_barras &&
+            i.notaId === itemAlvo.notaId
+        );
+
+        if (index === -1) return;
+
+        const item = novosItens[index];
+
+        if (item.conferido <= 0) return;
+
+        item.conferido -= 1;
+
+        // Se zerou, remove da caixa
+        if (item.conferido === 0) {
+            item.caixaId = null;
+        }
+
+        novosItens.splice(index, 1);
+        novosItens.unshift(item);
+
+        setItens(novosItens);
+
+        // Atualiza caixa aberta
+        if (caixaAberta) {
+            setCaixaAberta(prev => ({
+                ...prev,
+                itens: novosItens.filter(i => i.caixaId === prev.id)
+            }));
+        }
+
+        setSnackbar({
+            open: true,
+            message: "Item removido da caixa",
             severity: "info"
         });
     };
@@ -250,8 +522,19 @@ function Conferencia() {
         }
     };
 
+    // Valida caixa
+    const caixaInvalida = (caixa) => {
+        return (
+            !caixa ||
+            caixa === "0" ||
+            caixa === 0 ||
+            caixa === "" ||
+            caixa === "DESCONHECIDA"
+        );
+    };
+
     // Scanner
-    const scanner = () => {
+    const scanner = async () => {
         const codigoLimpo = codigo.trim();
 
         if (!codigoLimpo) return;
@@ -291,6 +574,10 @@ function Conferencia() {
         const novosItens = [...itens];
         const item = novosItens[index];
 
+        if (caixaInvalida(item.caixaId)) {
+            item.caixaId = null;
+        }
+
         const codigoExibicao =
             item.codigo_barras && item.codigo_barras !== "SEM GTIN"
                 ? item.codigo_barras
@@ -308,20 +595,65 @@ function Conferencia() {
             return;
         }
 
-        if (item.caixa && item.caixa !== caixaAberta.id) {
+        if (!caixaInvalida(item.caixaId) && item.caixaId !== caixaAberta.id) {
+
+            const caixaEncontrada = caixas.find(c => c.id === item.caixaId);
+
+            const numeroCaixa =
+                caixaEncontrada?.numero ??
+                (item.caixaId ? `#${item.caixaId}` : "DESCONHECIDA");
+
             setSnackbar({
                 open: true,
-                message: "Item já pertence a outra caixa",
+                message: `Item já está na caixa ${numeroCaixa}`,
                 severity: "warning"
             });
+
+            setCodigo("");
+
             return;
         }
 
-        item.conferido += 1;
-        item.caixa = caixaAberta.id;
+        item.caixaId = caixaAberta.id;
 
-        // Chama função que imprime a etiqueta da peça
-        imprimirEtiqueta(item);
+        // Impressão e conferência
+        if (modoQuantidade) {
+
+            let qtd = Number(quantidadeInput);
+
+            if (!qtd || qtd <= 0) {
+                setSnackbar({
+                    open: true,
+                    message: "Informe uma quantidade válida",
+                    severity: "warning"
+                });
+                return;
+            }
+
+            const restante = item.quantidade - item.conferido;
+
+            if (qtd > restante) {
+                qtd = restante;
+
+                setSnackbar({
+                    open: true,
+                    message: `Quantidade ajustada para ${restante}`,
+                    severity: "warning"
+                });
+            }
+
+            for (let i = 0; i < qtd; i++) {
+                // await imprimirEtiqueta(item);
+                item.conferido += 1;
+            }
+
+            setQuantidadeInput("");
+
+        } else {
+            // Modo normal
+            item.conferido += 1;
+            // await imprimirEtiqueta(item);
+        }
 
         novosItens.splice(index, 1);
         novosItens.unshift(item);
@@ -330,10 +662,12 @@ function Conferencia() {
 
         setCaixaAberta(prev => ({
             ...prev,
-            itens: novosItens.filter(i => i.caixa === prev.id)
+            itens: novosItens.filter(i => i.caixaId === prev.id)
         }));
 
         setCodigo("");
+
+        setUltimoItemScaneado(item);
     };
 
     // Impressão de etiquetas de peça
@@ -519,7 +853,7 @@ function Conferencia() {
         try {
             const zpl = gerarZPLCaixa(caixa);
 
-            await imprimirViaPython(zpl);
+            // await imprimirViaPython(zpl);
 
         } catch (error) {
             console.error("Erro ao imprimir caixa:", error);
@@ -529,6 +863,79 @@ function Conferencia() {
                 message: "Erro ao imprimir etiqueta da caixa",
                 severity: "error"
             });
+        }
+    };
+
+    // Fecha caixa e envia para API
+    const enviarItensDaCaixa = async (caixa) => {
+        try {
+
+            const itensDaCaixa = itens.filter(i =>
+                i.caixaId === caixa.id
+            );
+
+            if (itensDaCaixa.length === 0) return true;
+
+            for (const item of itensDaCaixa) {
+
+                const codigoEnvio =
+                    item.codigo_barras && item.codigo_barras !== "SEM GTIN"
+                        ? item.codigo_barras
+                        : item.codigo_produto;
+
+                if (!codigoEnvio) {
+                    setSnackbar({
+                        open: true,
+                        message: "Código inválido para envio",
+                        severity: "error"
+                    });
+                    return false;
+                }
+
+                console.log("ENVIANDO PARA API A CAIXA: ", caixa.numero)
+
+                const response = await fetch(
+                    `${API}/api/atualizar_item/${item.notaId}/${codigoEnvio}`,
+                    {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            status_item: item.conferido === item.quantidade
+                                ? "ITEM_CONFERIDO"
+                                : "CONFERIDO_PARCIAL",
+                            caixa: caixa.numero,
+                            conferente: userInfo?.codigo,
+                            qtd_conferida: item.conferido
+                        })
+                    }
+                );
+
+                if (response.status === 401) {
+                    logout();
+                    return false;
+                }
+
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(text);
+                }
+            }
+
+            return true;
+
+        } catch (error) {
+            console.error(error);
+
+            setSnackbar({
+                open: true,
+                message: `Erro ao enviar itens da caixa ${caixa.numero}`,
+                severity: "error"
+            });
+
+            return false;
         }
     };
 
@@ -566,7 +973,7 @@ function Conferencia() {
 
             setFinalizando(true);
 
-            const itensSemCaixa = itens.filter(i => i.conferido > 0 && !i.caixa);
+            const itensSemCaixa = itens.filter(i => i.conferido > 0 && !i.caixaId);
 
             if (itensSemCaixa.length > 0) {
                 setSnackbar({
@@ -577,65 +984,9 @@ function Conferencia() {
                 return;
             }
 
-            for (const item of itens) {
-
-                const itemCompleto = item.conferido === item.quantidade;
-                const itemEmCaixa = !!item.caixa;
-
-                if (itemCompleto && itemEmCaixa) {
-
-                    console.log("TOKEN:", token);
-                    console.log("ENVIANDO ITEM:", {
-                        notaId: item.notaId,
-                        codigo: item.codigo_barras,
-                        status_item: "ITEM_CONFERIDO",
-                        itemCompleto: item
-                    });
-
-                    try {
-                        const response = await fetch(
-                            `${API}/api/nfe/item/${item.notaId}/${item.codigo_barras}`,
-                            {
-                                method: "PUT",
-                                headers: {
-                                    "Content-Type": "application/json",
-                                    "Authorization": `Bearer ${token}`
-                                },
-                                body: JSON.stringify({
-                                    status_item: "ITEM_CONFERIDO",
-                                    caixa: caixas.find(c => c.id === item.caixa)?.numero || null
-                                })
-                            }
-                        );
-
-                        if (response.status === 401) {
-                            logout();
-                            setSnackbar({
-                                open: true,
-                                message: "Sessão expirada, faça login novamente!",
-                                severity: "error"
-                            });
-                            return;
-                        }
-
-                        const text = await response.text();
-
-                        if (!response.ok) {
-                            throw new Error(`Erro item ${item.codigo_barras}: ${text}`);
-                        }
-
-                    } catch (error) {
-                        console.error(error);
-
-                        setSnackbar({
-                            open: true,
-                            message: `Erro ao enviar item ${codigo}`,
-                            severity: "error"
-                        });
-
-                        return;
-                    }
-                }
+            for (const caixa of caixas) {
+                const sucesso = await enviarItensDaCaixa(caixa);
+                if (!sucesso) return;
             }
 
             for (const nota of notaInfo) {
@@ -667,6 +1018,11 @@ function Conferencia() {
                 message: "Conferência finalizada com sucesso!",
                 severity: "success"
             });
+
+            const notasKey = [...notasIds].sort().join("_");
+
+            localStorage.removeItem(`itens_conferencia_${notasKey}`);
+            localStorage.removeItem(`caixas_conferencia_${notasKey}`);
 
             navigate("/Dashboard");
 
@@ -726,13 +1082,91 @@ function Conferencia() {
                         )}
                     </Box>
                     <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
+                        <Button
+                            id="btnAtualizar" onClick={syncSSPlus}
+                            disabled={loadingSync}
+                            size="small"
+                            sx={{
+                                color: "background.paper",
+                                display: 'flex',
+                                gap: 0.5,
+                                fontSize: '0.75rem',
+                                minWidth: 'auto',
+                                padding: '4px 8px',
+                                whiteSpace: 'nowrap'
+                            }}>
+                            SS Plus Sync
+                            {<SyncIcon />}
+                        </Button>
                         <Button onClick={() => navigate("/Dashboard")} sx={{ color: "background.paper", display: 'flex', gap: 1 }}>Voltar {< ArrowBackIcon />}</Button>
                     </Box>
                 </Box>
             </Box>
 
+            {/* Loading de sincronização SS Plus*/}
+            <Backdrop
+                open={loadingSync}
+                sx={{ zIndex: (theme) => theme.zIndex.drawer + 999 }}
+            >
+                <Box textAlign="center">
+                    <CircularProgress sx={{ color: "background.paper" }} color="inherit" />
+                    <Typography mt={2} sx={{ color: "background.paper" }}>
+                        Sincronizando nota com o SS Plus...
+                    </Typography>
+                </Box>
+            </Backdrop>
+
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: 1,
+                    justifyContent: 'center',
+                    fontSize: '0.7rem',
+                    mt: 1,
+                    color: 'primary.main'
+                }}
+            >
+                {[
+                    { tecla: "F2", acao: "Abrir caixa" },
+                    { tecla: "F3", acao: "Fechar caixa" },
+                    { tecla: "F4", acao: "Finalizar conferência" },
+                    { tecla: "F6", acao: "Reabrir caixa" },
+                    { tecla: "F7", acao: "Modo quantidade" },
+                    { tecla: "F8", acao: "Reimprimir" },
+                    { tecla: "F9", acao: "Focar leitor" },
+                    { tecla: "ESC", acao: "Limpar leitor" },
+                    { tecla: "Ctrl + Space", acao: "Limpar campos" }
+                ].map((a, i) => (
+                    <Box
+                        key={i}
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 0.5,
+                            px: 1,
+                            py: 0.5,
+                            borderRadius: 1,
+                            bgcolor: 'background.alerta',
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                fontWeight: 'bold',
+                                px: 0.5,
+                                borderRadius: 0.5
+                            }}
+                        >
+                            {a.tecla}
+                        </Box>
+                        <Typography sx={{ fontSize: '0.75rem' }}>
+                            {a.acao}
+                        </Typography>
+                    </Box>
+                ))}
+            </Box>
             {/* Informações da nota e scanner */}
-            <Box sx={{ mt: 3 }}>
+            <Box sx={{ mt: 1 }}>
                 {modo === "MULTIPLO" ? (
                     <Box>
                         {notaInfo?.map((n, i) => (
@@ -751,27 +1185,40 @@ function Conferencia() {
                         </Typography>
                     </Box>
                 )}
-                <TextField
-                    label="Código de barras"
-                    variant="outlined"
-                    size="small"
-                    value={codigo}
-                    onChange={(e) => setCodigo(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter") scanner(); }}
-                    autoFocus
-                    fullWidth
-                    sx={{
-                        mb: 2, width: '100%', bgcolor: 'background.card',
-                        '& .MuiOutlinedInput-root': {
-                            '&:hover fieldset': {
-                                borderColor: 'var(--azul)',
-                            },
-                            '&.Mui-focused fieldset': {
-                                borderColor: 'var(--azul)',
+                <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                    <TextField
+                        label="Código de barras"
+                        variant="outlined"
+                        size="small"
+                        value={codigo}
+                        onChange={(e) => setCodigo(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === "Enter") scanner(); }}
+                        inputRef={inputRef}
+                        autoFocus
+                        fullWidth
+                        sx={{
+                            mb: 2, width: '100%', bgcolor: 'background.card',
+                            '& .MuiOutlinedInput-root': {
+                                '&:hover fieldset': {
+                                    borderColor: 'var(--azul)',
+                                },
+                                '&.Mui-focused fieldset': {
+                                    borderColor: 'var(--azul)',
+                                }
                             }
-                        }
-                    }}
-                />
+                        }}
+                    />
+                    {modoQuantidade && (
+                        <TextField
+                            label="Qtd"
+                            size="small"
+                            value={quantidadeInput}
+                            onChange={(e) => setQuantidadeInput(e.target.value)}
+                            inputRef={qtdRef}
+                            sx={{ ml: 2, mb: 2 }}
+                        />
+                    )}
+                </Box>
 
                 {/* Tabela de conferência + caixas*/}
                 <Box sx={{ display: 'flex', gap: 2 }}>
@@ -787,8 +1234,9 @@ function Conferencia() {
                                         <TableHead>
                                             <TableRow sx={{ bgcolor: 'var(--azul)' }}>
                                                 <TableCell sx={{ color: 'background.paper' }}>Localização</TableCell>
-                                                <TableCell sx={{ color: 'background.paper' }}>Código de Barras</TableCell>
+                                                <TableCell sx={{ color: 'background.paper' }}>Código</TableCell>
                                                 <TableCell sx={{ color: 'background.paper' }}>Descrição</TableCell>
+                                                <TableCell sx={{ color: 'background.paper' }}>Código de Barras</TableCell>
                                                 <TableCell sx={{ color: 'background.paper' }} align="right">Qtd (Conf./Nota)</TableCell>
                                             </TableRow>
                                         </TableHead>
@@ -798,8 +1246,9 @@ function Conferencia() {
                                                     bgcolor: item.conferido === item.quantidade ? 'primary.conferido' : 'background.alerta'
                                                 }}>
                                                     <TableCell>{item.localizacao}</TableCell>
-                                                    <TableCell>{item.codigo_barras}</TableCell>
+                                                    <TableCell>{item.basico}</TableCell>
                                                     <TableCell>{item.descricao}</TableCell>
+                                                    <TableCell>{item.codigo_barras}</TableCell>
                                                     <TableCell align="right">{item.conferido} / {item.quantidade}</TableCell>
                                                 </TableRow>
                                             ))}
@@ -850,18 +1299,28 @@ function Conferencia() {
                                         }}>
                                         <DialogTitle>Itens na caixa aberta</DialogTitle>
                                         <DialogContent>
-                                            {itens.filter(i => i.caixa === caixaAberta.id).length === 0 ? (
+                                            {itens.filter(i => i.caixaId === caixaAberta.id).length === 0 ? (
                                                 <Typography>Nenhum item conferido ainda</Typography>
                                             ) : (
                                                 <Table size="small">
                                                     <TableBody>
                                                         {itens
-                                                            .filter(i => i.caixa === caixaAberta.id)
+                                                            .filter(i => i.caixaId === caixaAberta.id)
                                                             .map((item, i) => (
                                                                 <TableRow key={i}>
                                                                     <TableCell>{item.localizacao}</TableCell>
+                                                                    <TableCell>{item.basico}</TableCell>
                                                                     <TableCell>{item.descricao}</TableCell>
                                                                     <TableCell align="right">{item.conferido}</TableCell>
+                                                                    <TableCell>
+                                                                        <Button
+                                                                            size="small"
+                                                                            color="error"
+                                                                            onClick={() => removerItemDaCaixa(item)}
+                                                                        >
+                                                                            Remover
+                                                                        </Button>
+                                                                    </TableCell>
                                                                 </TableRow>
                                                             ))}
                                                     </TableBody>
@@ -919,15 +1378,16 @@ function Conferencia() {
 
                                 <DialogContent>
                                     {caixaFechadaDialog &&
-                                        itens.filter(i => i.caixa === caixaFechadaDialog.id).length > 0 ? (
+                                        itens.filter(i => i.caixaId === caixaFechadaDialog.id).length > 0 ? (
 
                                         <Table size="small">
                                             <TableBody>
                                                 {itens
-                                                    .filter(i => i.caixa === caixaFechadaDialog.id)
+                                                    .filter(i => i.caixaId === caixaFechadaDialog.id)
                                                     .map((item, i) => (
                                                         <TableRow key={i}>
                                                             <TableCell>{item.localizacao}</TableCell>
+                                                            <TableCell>{item.basico}</TableCell>
                                                             <TableCell>{item.descricao}</TableCell>
                                                             <TableCell align="right">{item.conferido}</TableCell>
                                                         </TableRow>
@@ -973,6 +1433,7 @@ function Conferencia() {
                                                 }
                                             }
                                         }}
+                                        onKeyDown={(e) => e.key === "Enter" && confirmarFechamento()}
                                     />
                                 </DialogContent>
                                 <DialogActions>

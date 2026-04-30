@@ -23,14 +23,12 @@ import {
 
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
-import SyncIcon from '@mui/icons-material/Sync';
 import ArticleIcon from '@mui/icons-material/Article';
 import AttachmentIcon from '@mui/icons-material/Attachment';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
 import WarningIcon from '@mui/icons-material/Warning';
-import BorderColorIcon from '@mui/icons-material/BorderColor';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 
@@ -540,69 +538,6 @@ function Recebimentos() {
         navigate("/CadastrarFuncionario");
     };
 
-    // Sincroniza com SS PLUS
-    const pegarLocal = async () => {
-        setLoadingSync(true);
-
-        const tempoMinimo = 2000;
-        const inicio = Date.now();
-
-        let snackbarData = null;
-
-        try {
-            const response = await fetch('http://192.168.1.185:8077/api/checar_localizacao_lote', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ todos: true })
-            });
-
-            const data = await response.json();
-
-            console.log("RESPOSTA API:", data);
-
-            if (response.ok) {
-                const { atualizados, erros, nao_encontrados, total_processados } = data;
-
-                snackbarData = {
-                    open: true,
-                    message: `Processados: ${total_processados} | Atualizados: ${atualizados} | Erros: ${erros}`,
-                    severity: erros > 0 ? "warning" : "success"
-                };
-            } else {
-                snackbarData = {
-                    open: true,
-                    message: "Erro ao buscar localizações no SS Plus!",
-                    severity: "error"
-                };
-            }
-
-        } catch (err) {
-            console.error('Erro na requisição:', err);
-            snackbarData = {
-                open: true,
-                message: "Erro ao sincronizar com SS Plus!",
-                severity: "error"
-            };
-
-        } finally {
-            const tempoPassado = Date.now() - inicio;
-            const tempoRestante = tempoMinimo - tempoPassado;
-
-            const finalizar = () => {
-                setLoadingSync(false);
-                if (snackbarData) {
-                    setSnackbar(snackbarData);
-                }
-            };
-
-            if (tempoRestante > 0) {
-                setTimeout(finalizar, tempoRestante);
-            } else {
-                finalizar();
-            }
-        }
-    };
-
     return (
         !token ? (
             <LoginFuncionario
@@ -666,21 +601,6 @@ function Recebimentos() {
                                 overflow: 'hidden'
                             }}>
                             <Button
-                                onClick={() => navigate("/AtualizarCean")}
-                                sx={{
-                                    color: "background.paper",
-                                    display: 'flex',
-                                    gap: 0.5,
-                                    fontSize: '0.75rem',
-                                    minWidth: 'auto',
-                                    padding: '4px 8px',
-                                    whiteSpace: 'nowrap'
-                                }}
-                            >
-                                ATUALIZAR CEAN
-                                {<BorderColorIcon />}
-                            </Button>
-                            <Button
                                 onClick={() => setOpenDialog(true)}
                                 sx={{
                                     color: "background.paper",
@@ -711,22 +631,6 @@ function Recebimentos() {
                                 {< WarningIcon />}
                             </Button>
                             <Button
-                                id="btnAtualizar" onClick={pegarLocal}
-                                disabled={loadingSync}
-                                size="small"
-                                sx={{
-                                    color: "background.paper",
-                                    display: 'flex',
-                                    gap: 0.5,
-                                    fontSize: '0.75rem',
-                                    minWidth: 'auto',
-                                    padding: '4px 8px',
-                                    whiteSpace: 'nowrap'
-                                }}>
-                                SS Plus Sync
-                                {<SyncIcon />}
-                            </Button>
-                            <Button
                                 onClick={() => navigate("/Dashboard")}
                                 sx={{
                                     color: "background.paper",
@@ -738,26 +642,13 @@ function Recebimentos() {
                                     whiteSpace: 'nowrap'
                                 }}
                             >
-                                NOTAS PENDENTES
+                                NOTAS RECEBIDAS
                                 {< ArticleIcon />}
                             </Button>
                             <pre id="resultado"></pre>
                         </Box>
                     </Box>
                 </Box>
-
-                {/* Loading de sincronização SS Plus*/}
-                <Backdrop
-                    open={loadingSync}
-                    sx={{ zIndex: (theme) => theme.zIndex.drawer + 999 }}
-                >
-                    <Box textAlign="center">
-                        <CircularProgress sx={{ color: "background.paper" }} color="inherit" />
-                        <Typography mt={2} sx={{ color: "background.paper" }}>
-                            Sincronizando com o SS Plus...
-                        </Typography>
-                    </Box>
-                </Backdrop>
 
                 {/* Importar XML */}
                 <Card sx={{ mt: 3, mb: 3, borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh var(--sombra)', bgcolor: 'background.card' }}>
@@ -1026,54 +917,6 @@ function Recebimentos() {
                         </Box>
                     </CardContent>
                 </Card>
-
-                <Dialog open={openGTINDialog} onClose={() => { }}>
-                    <DialogTitle>Itens sem código de barras</DialogTitle>
-
-                    <DialogContent>
-                        <Typography sx={{ mb: 2 }}>
-                            Existem itens sem código de barras. Informe manualmente:
-                        </Typography>
-
-                        {itensSemGTIN.map((item, index) => (
-                            <TextField
-                                key={index}
-                                fullWidth
-                                label={`Item ${item.index + 1}`}
-                                value={item.codigo}
-                                onChange={(e) => {
-                                    const novos = [...itensSemGTIN];
-                                    novos[index].codigo = e.target.value;
-                                    setItensSemGTIN(novos);
-                                }}
-                                sx={{ mb: 2 }}
-                            />
-                        ))}
-                    </DialogContent>
-
-                    <DialogActions>
-                        <Button
-                            variant="contained"
-                            onClick={() => {
-                                const invalido = itensSemGTIN.some(i => !i.codigo.trim());
-
-                                if (invalido) {
-                                    setSnackbar({
-                                        open: true,
-                                        message: "Preencha todos os códigos de barras",
-                                        severity: "warning"
-                                    });
-                                    return;
-                                }
-
-                                setOpenGTINDialog(false);
-                                setOpenConfirmar(true);
-                            }}
-                        >
-                            Confirmar
-                        </Button>
-                    </DialogActions>
-                </Dialog>
 
                 <Dialog open={openDialog} onClose={() => setOpenDialog(false)}
                     slotProps={{
