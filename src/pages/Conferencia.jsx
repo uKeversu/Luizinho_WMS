@@ -163,7 +163,7 @@ function Conferencia() {
 
         setLoadingSync(true);
 
-        console.log("SINCRONIZANDO A NOTA:",notaAtual.id)
+        console.log("SINCRONIZANDO A NOTA:", notaAtual.id)
 
         try {
             const response = await fetch(`${API}/api/sync_nfe`, {
@@ -171,7 +171,7 @@ function Conferencia() {
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     nfe_id: notaAtual.id
                 })
             });
@@ -643,7 +643,7 @@ function Conferencia() {
             }
 
             for (let i = 0; i < qtd; i++) {
-                // await imprimirEtiqueta(item);
+                await imprimirEtiqueta(item);
                 item.conferido += 1;
             }
 
@@ -652,7 +652,7 @@ function Conferencia() {
         } else {
             // Modo normal
             item.conferido += 1;
-            // await imprimirEtiqueta(item);
+            await imprimirEtiqueta(item);
         }
 
         novosItens.splice(index, 1);
@@ -853,7 +853,7 @@ function Conferencia() {
         try {
             const zpl = gerarZPLCaixa(caixa);
 
-            // await imprimirViaPython(zpl);
+            await imprimirViaPython(zpl);
 
         } catch (error) {
             console.error("Erro ao imprimir caixa:", error);
@@ -1496,7 +1496,7 @@ function Conferencia() {
 
             {/* Snackbar */}
             <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
-                <Alert variant="filled" severity={snackbar.severity}>{snackbar.message}</Alert>
+                <Alert sx={{ color: 'text.primary' }} variant="filled" severity={snackbar.severity}>{snackbar.message}</Alert>
             </Snackbar>
         </Container>
     );

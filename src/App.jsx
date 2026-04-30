@@ -8,6 +8,7 @@ import Alertas from "./pages/Alertas"
 import Rastreio from "./pages/Rastreio";
 import AtualizarCean from "./pages/AtualizarCean"
 import ConsultaGeral from "./pages/ConsultaGeral"
+import PainelReimpressao from "./pages/PainelReimpressao";
 
 import './index.css';
 
@@ -27,6 +28,7 @@ function App() {
           <Route path="/Rastreio/:codigo" element={<Rastreio />} />
           <Route path="/AtualizarCean" element={<AtualizarCean />} />
           <Route path="/ConsultaGeral" element={<ConsultaGeral />} />
+          <Route path="/PainelReimpressao" element={<PainelReimpressao />} />
         </Routes>
       </Router>
     </ThemeProvider>

@@ -50,7 +50,7 @@ export function ThemeProvider({ children }) {
             achouItem: "#2b743d93",
 
             compra: '#44cc61',
-            pendentes: '#ccdf20',
+            pendentes: '#dfdc20',
             conferidos: '#007bff',
             parcial: '#ff9800',
             guardado: '#28a745',
@@ -85,7 +85,7 @@ export function ThemeProvider({ children }) {
             achouItem: "#28a746a9",
 
             compra: '#44cc61',
-            pendentes: '#b5c900',
+            pendentes: '#c9c600',
             conferidos: '#007bff',
             parcial: '#f57c00',
             guardado: '#28a745',

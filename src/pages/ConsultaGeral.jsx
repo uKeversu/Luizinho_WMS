@@ -23,6 +23,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
+import RuleIcon from '@mui/icons-material/Rule';
 import WarehouseIcon from '@mui/icons-material/Warehouse';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import WarningIcon from '@mui/icons-material/Warning';
@@ -55,7 +56,7 @@ function ConsultaGeral() {
         localStorage.removeItem("user_info");
     };
 
-
+    // Sistema
     const [notas, setNotas] = useState([]);
     const [loading, setLoading] = useState(false);
     const [busca, setBusca] = useState("");
@@ -165,9 +166,9 @@ function ConsultaGeral() {
 
     const getIconStatus = (status) => {
         switch (status) {
-            case "PENDENTE": return <WarningIcon color="warning" />;
+            case "PENDENTE": return <WarningIcon sx={{color: 'primary.pendentes'}} />;
             case "ITEM_CONFERIDO": return <FactCheckIcon color="primary" />;
-            case "CONFERIDO_PARCIAL": return <FactCheckIcon color="primary" />;
+            case "CONFERIDO_PARCIAL": return <RuleIcon sx={{ color: 'primary.parcial' }} />;
             case "ITEM_GUARDADO": return <WarehouseIcon color="success" />;
             case "ITEM_VENDIDO": return <ShoppingCartIcon color="secondary" />;
             default: return <WarehouseIcon />;
