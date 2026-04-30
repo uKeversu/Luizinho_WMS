@@ -72,6 +72,8 @@ function Dashboard({ tipo }) {
     const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
     const [loadingNotasIds, setLoadingNotasIds] = useState([]);
     const [ordemData, setOrdemData] = useState("desc");
+    const [dataInicio, setDataInicio] = useState("");
+    const [dataFim, setDataFim] = useState("");
 
     // SS Plus Sync
     const [loadingSync, setLoadingSync] = useState(false);
@@ -141,13 +143,6 @@ function Dashboard({ tipo }) {
             nota?.numero?.toString().includes(termo) ||
             nota?.serie?.toString().includes(termo)
         );
-    });
-
-    const notasFiltradasPorAba = notasFiltradas.filter(nota => {
-        if (aba === 0) return nota.status === "EM_TRANSITO";
-        if (aba === 1) { return ["PENDENTE", "FORNECEDOR_DIRETO"].includes(nota.status); }
-        if (aba === 2) return nota.status === "CONFERIDA";
-        return true;
     });
 
     const caixaInvalida = (caixa) => {
@@ -309,6 +304,32 @@ function Dashboard({ tipo }) {
         return new Date(`${ano}-${mes}-${dia}`);
     };
 
+    const notasFiltradasPorAba = notasFiltradas.filter(nota => {
+        if (aba === 0) return nota.status === "EM_TRANSITO";
+        if (aba === 1) return ["PENDENTE", "FORNECEDOR_DIRETO"].includes(nota.status);
+        if (aba === 2) return nota.status === "CONFERIDA";
+
+        // HISTÓRICO (aba 3)
+        if (aba === 3) {
+            const dataNota = parseData(nota.data_recebimento);
+
+            if (dataInicio) {
+                const inicio = new Date(dataInicio);
+                if (dataNota < inicio) return false;
+            }
+
+            if (dataFim) {
+                const fim = new Date(dataFim);
+                fim.setHours(23, 59, 59, 999);
+                if (dataNota > fim) return false;
+            }
+
+            return true;
+        }
+
+        return true;
+    });
+
     // Ordena notas pela data de recebimento
     const notasOrdenadas = [...notasFiltradasPorAba].sort((a, b) => {
         const dataA = parseData(a.data_recebimento);
@@ -346,7 +367,7 @@ function Dashboard({ tipo }) {
                     nao_encontrados = 0,
                     total_processados = 0
                 } = data || {};
-                
+
                 console.log("Total processados:", total_processados)
                 console.log("Atualizados:", atualizados)
                 console.log("Erros:", erros)
@@ -562,12 +583,47 @@ function Dashboard({ tipo }) {
                             onChange={(e) => setBusca(e.target.value)}
                         />
 
+                        {aba === 3 && (
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                <TextField
+                                    type="date"
+                                    label="Data início"
+                                    size="small"
+                                    InputLabelProps={{ shrink: true }}
+                                    value={dataInicio}
+                                    onChange={(e) => setDataInicio(e.target.value)}
+                                    sx={{ bgcolor: 'background.default' }}
+                                />
+
+                                <TextField
+                                    type="date"
+                                    label="Data fim"
+                                    size="small"
+                                    InputLabelProps={{ shrink: true }}
+                                    value={dataFim}
+                                    onChange={(e) => setDataFim(e.target.value)}
+                                    sx={{ bgcolor: 'background.default' }}
+                                />
+
+                                <Button
+                                    variant="outlined"
+                                    onClick={() => {
+                                        setDataInicio("");
+                                        setDataFim("");
+                                    }}
+                                >
+                                    Limpar
+                                </Button>
+                            </Box>
+                        )}
+
                         <Button
                             variant="contained"
                             onClick={() => setOrdemData(prev => prev === "asc" ? "desc" : "asc")}
                             size="small"
                             sx={{
                                 minWidth: "180px",
+                                maxHeight: "100%",
                                 bgcolor: 'var(--azul)',
                                 '&:hover': { bgcolor: 'var(--azul-hover)' }
                             }}
@@ -576,6 +632,7 @@ function Dashboard({ tipo }) {
                             <SwapVertIcon />
                         </Button>
                     </Box>
+                    
                     {aba === 1 && aba !== 3 && (
                         <Button
                             variant="contained"
@@ -713,7 +770,6 @@ function Dashboard({ tipo }) {
                             ))}
                         </Grid>
                     )}
-
                 </Box>
                 <Dialog open={openModal} onClose={() => setOpenModal(false)} fullWidth maxWidth="md"
                     slotProps={{

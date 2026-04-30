@@ -155,6 +155,7 @@ function ConsultaGeral() {
         switch (status) {
             case "PENDENTE": return "Pendente";
             case "ITEM_CONFERIDO": return "Conferido";
+            case "CONFERIDO_PARCIAL": return "Parcial";
             case "ITEM_GUARDADO": return "Guardado";
             case "ITEM_VENDIDO": return "Vendido";
             case "ITEM_DEVOLVIDO": return "Devolvido";
@@ -166,6 +167,7 @@ function ConsultaGeral() {
         switch (status) {
             case "PENDENTE": return <WarningIcon color="warning" />;
             case "ITEM_CONFERIDO": return <FactCheckIcon color="primary" />;
+            case "CONFERIDO_PARCIAL": return <FactCheckIcon color="primary" />;
             case "ITEM_GUARDADO": return <WarehouseIcon color="success" />;
             case "ITEM_VENDIDO": return <ShoppingCartIcon color="secondary" />;
             default: return <WarehouseIcon />;
