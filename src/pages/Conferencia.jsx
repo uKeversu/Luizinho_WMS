@@ -5,13 +5,19 @@ import {
     Container, Typography, Card, Box, TextField, Button,
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions,
-    CircularProgress, Backdrop
+    CircularProgress, Backdrop, IconButton, Tooltip
 } from "@mui/material";
 
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SyncIcon from '@mui/icons-material/Sync';
+
+//Icones caixa
+import DeleteIcon from '@mui/icons-material/Delete';
+import Inventory2Icon from '@mui/icons-material/Inventory2';
+import ListIcon from "@mui/icons-material/List";
+import ReplayIcon from "@mui/icons-material/Replay";
 
 import LoginFuncionario from "../components/LoginFuncionario";
 
@@ -76,6 +82,20 @@ function Conferencia() {
         ? "MULTIPLO"
         : "UNICO";
 
+    // Impressora
+    const [printer, setPrinter] = useState("");
+
+    useEffect(() => {
+        const salva = localStorage.getItem("printer");
+        if (salva) setPrinter(salva);
+    }, []);
+
+    const salvarImpressora = () => {
+        localStorage.setItem("printer", printer);
+
+        alert("Impressora salva!");
+    };
+
     // Atalhos
     const inputRef = useRef(null);
     const qtdRef = useRef(null);
@@ -90,6 +110,33 @@ function Conferencia() {
     const [caixaFechadaDialog, setCaixaFechadaDialog] = useState(null);
     const [openFecharDialog, setOpenFecharDialog] = useState(false);
     const [numeroCaixa, setNumeroCaixa] = useState("");
+    const caixasRef = useRef(caixas);
+    const [modalMoverItem, setModalMoverItem] = useState({
+        open: false,
+        item: null,
+        caixaOrigem: null,
+        caixaDestino: null,
+        acao: null
+    });
+
+    const addCaixaSafe = (nova) => {
+        setCaixas(prev => {
+            const existe = prev.some(c => c.id === nova.id);
+            if (existe) return prev;
+            return [...prev, nova];
+        });
+    };
+
+    useEffect(() => {
+        caixasRef.current = caixas;
+    }, [caixas]);
+
+    // Modal de confirmação
+    const [confirmDialog, setConfirmDialog] = useState({
+        open: false,
+        type: null, // "remover_item" | "remover_caixa"
+        payload: null
+    });
 
     // SS Plus Sync
     const [loadingSync, setLoadingSync] = useState(false);
@@ -317,7 +364,13 @@ function Conferencia() {
             console.log("NOTAS RECEBIDAS:", notas);
             setNotaInfo(notas);
 
+            const chaveItens = `itens_conferencia_${notasIds.join("_")}`;
+            const itensSalvos = JSON.parse(localStorage.getItem(chaveItens) || "[]");
+
             let todosItens = [];
+
+            // Gera codigo da caixa vindo da API
+            const gerarIdCaixa = (nome) => nome;
 
             for (const nota of notas) {
 
@@ -335,9 +388,6 @@ function Conferencia() {
                     continue;
                 }
 
-                const chaveItens = `itens_conferencia_${notasIds.join("_")}`;
-                const itensSalvos = JSON.parse(localStorage.getItem(chaveItens) || "[]");
-
                 const itensFormatados = (dataItens.items || []).map((item) => {
 
                     const itemSalvo = itensSalvos.find(i =>
@@ -345,7 +395,7 @@ function Conferencia() {
                         i.notaId === nota.id
                     );
 
-                    return {
+                    const itemBase = {
                         descricao: item.descricao || "Item sem identificação",
                         codigo_barras: item.cean || "",
                         codigo_produto: item.cod_produto || "",
@@ -354,26 +404,161 @@ function Conferencia() {
                         quantidade: Number(item.quantidade_comercial) || 0,
 
                         conferido: itemSalvo?.conferido ?? (Number(item.qtd_conferida) || 0),
-                        caixaId: itemSalvo?.caixaId ?? (item.caixa || null),
+
+                        // Separa caixa de API / LocalStorage
+                        caixaId: itemSalvo?.caixaId ?? null,
+                        caixaApi: item.caixa || null,
 
                         status: item.status_item,
                         notaId: nota.id,
                         notaNumero: nota.numero || "-",
                         notaSerie: nota.serie || "-"
                     };
+
+                    return itemBase;
                 });
 
                 todosItens = [...todosItens, ...itensFormatados];
             }
 
-            console.log("ITENS CARREGADOS:", todosItens);
-            setItens(todosItens);
+            // Agrupa as caixas da API
+            const mapaCaixas = {};
+            let novasCaixas = [];
+
+            todosItens.forEach(item => {
+                const nomeCaixa = item.caixaApi;
+                if (!nomeCaixa || nomeCaixa === "0") return;
+
+                if (!mapaCaixas[nomeCaixa]) {
+                    const novaCaixa = {
+                        id: nomeCaixa,
+                        numero: nomeCaixa,
+                        itens: [],
+                        jaImprimiu: true,
+                        origem: "API"
+                    };
+
+                    mapaCaixas[nomeCaixa] = novaCaixa;
+                    novasCaixas.push(novaCaixa);
+                }
+            });
+
+            const itensComCaixaCorrigida = todosItens.map(item => {
+
+                // Prioriza as caixas do localStorage
+                if (item.caixaId) return item;
+
+                // Se não achar, usa API
+                if (item.caixaApi) {
+                    const caixaObj = mapaCaixas[item.caixaApi];
+
+                    if (caixaObj) {
+                        return {
+                            ...item,
+                            caixaId: caixaObj.id
+                        };
+                    }
+                }
+
+                return item;
+            });
+
+            // Preenche as caixas da api com os itens
+            novasCaixas = novasCaixas.map(caixa => ({
+                ...caixa,
+                itens: itensComCaixaCorrigida.filter(i => i.caixaId === caixa.id)
+            }));
+
+            console.log("ITENS CARREGADOS:", itensComCaixaCorrigida);
+            console.log("CAIXAS CARREGADAS:", novasCaixas);
+
+            setItens(itensComCaixaCorrigida);
+            setCaixas(novasCaixas);
 
         } catch (error) {
             console.error("Erro no carregarTudo:", error);
         } finally {
             setLoading(false);
         }
+    };
+
+    const getPrateleira = (localizacao) => {
+        if (!localizacao) return "SEM_LOC";
+
+        // Pega só a primeira parte das localizações, antes do espaço
+        return localizacao.split(" ")[0];
+    };
+
+    const obterOuCriarCaixa = (localizacao) => {
+        const prateleira = getPrateleira(localizacao);
+
+        const caixaExistente = caixasRef.current.find(c =>
+            c.prateleira === prateleira && !c.cheia
+        );
+
+        if (caixaExistente) return caixaExistente;
+
+        const caixasMesmaPrateleira = caixasRef.current.filter(c =>
+            c.prateleira === prateleira
+        );
+
+        const maiorSequencia = caixasMesmaPrateleira.length > 0
+            ? Math.max(...caixasMesmaPrateleira.map(c => c.sequencia || 1))
+            : 0;
+
+        const novaSequencia = maiorSequencia + 1;
+
+        const numero = `${prateleira} - ${novaSequencia}`;
+
+        return {
+            id: numero,
+            numero,
+            prateleira,
+            sequencia: novaSequencia,
+            cheia: false,
+            itens: []
+        };
+    };
+
+    const resolverCaixa = (item) => {
+        const prateleira = getPrateleira(item.localizacao);
+
+        // Se existe caixa aberta de outra LOC -> fecha ela
+        if (
+            caixaAberta &&
+            caixaAberta.prateleira !== prateleira
+        ) {
+            fecharCaixa();
+        }
+
+        // Se item já tem caixa → usa ela (se não estiver cheia)
+        if (item.caixaId) {
+            const caixaItem = caixasRef.current.find(c => c.id === item.caixaId);
+
+            if (caixaItem && !caixaItem.cheia) {
+                return caixaItem;
+            }
+        }
+
+        // Caixa aberta válida
+        if (
+            caixaAberta &&
+            caixaAberta.prateleira === prateleira &&
+            !caixaAberta.cheia
+        ) {
+            return caixaAberta;
+        }
+
+        // Caixa existente disponível
+        const caixaDisponivel = caixasRef.current.find(c =>
+            c.prateleira === prateleira && !c.cheia
+        );
+
+        if (caixaDisponivel) return caixaDisponivel;
+
+        // Criar nova
+        const nova = obterOuCriarCaixa(item.localizacao);
+        return nova;
     };
 
     // Abrir nova caixa
@@ -403,7 +588,8 @@ function Conferencia() {
             ...caixaAberta,
             numero: caixaAberta.numero || numeroCaixa,
             jaImprimiu: caixaAberta.jaImprimiu || false,
-            reaberta: false
+            reaberta: false,
+            cheia: caixaAberta.cheia || false
         };
 
         if (!caixaFinal.jaImprimiu) {
@@ -417,7 +603,13 @@ function Conferencia() {
             return; // Não fecha se deu erro
         }
 
-        setCaixas(prev => [...prev, caixaFinal]);
+        setCaixas(prev => {
+            const existe = prev.some(c => c.id === caixaFinal.id);
+            if (existe) {
+                return prev.map(c => c.id === caixaFinal.id ? caixaFinal : c);
+            }
+            return [...prev, caixaFinal];
+        });
 
         setCaixaAberta(null);
         setNumeroCaixa("");
@@ -432,6 +624,16 @@ function Conferencia() {
 
     // Reabre caixa para adicionar mais itens
     const reabrirCaixa = (caixa) => {
+
+        // Bloqueia se caixa estiver cheia
+        if (caixa.cheia) {
+            setSnackbar({
+                open: true,
+                message: "Caixa está marcada como cheia",
+                severity: "warning"
+            });
+            return;
+        }
 
         // Bloqueia se usuário estiver com caixa aberta
         if (caixaAberta) {
@@ -464,6 +666,42 @@ function Conferencia() {
         });
     };
 
+    const abrirConfirmacaoRemoverItem = (item) => {
+        setConfirmDialog({
+            open: true,
+            type: "remover_item",
+            payload: item
+        });
+    };
+
+    const abrirConfirmacaoRemoverCaixa = (caixa) => {
+        setConfirmDialog({
+            open: true,
+            type: "remover_caixa",
+            payload: caixa
+        });
+    };
+
+    const confirmarAcao = () => {
+        const { type, payload } = confirmDialog;
+
+        if (type === "remover_item") {
+            removerItemDaCaixa(payload);
+        }
+
+        if (type === "remover_caixa") {
+            setCaixas(prev => prev.filter(c => c.id !== payload.id));
+
+            setSnackbar({
+                open: true,
+                message: `Caixa ${payload.numero} removida com sucesso!`,
+                severity: "success"
+            });
+        }
+
+        setConfirmDialog({ open: false, type: null, payload: null });
+    };
+
     const removerItemDaCaixa = (itemAlvo) => {
         const novosItens = [...itens];
 
@@ -474,7 +712,11 @@ function Conferencia() {
 
         if (index === -1) return;
 
-        const item = novosItens[index];
+        const itemOriginal = itens[index];
+
+        const item = {
+            ...itemOriginal,
+        };
 
         if (item.conferido <= 0) return;
 
@@ -536,23 +778,11 @@ function Conferencia() {
     // Scanner
     const scanner = async () => {
         const codigoLimpo = codigo.trim();
-
         if (!codigoLimpo) return;
-
-        if (!caixaAberta) {
-            setSnackbar({
-                open: true,
-                message: "Abra uma caixa antes de conferir itens",
-                severity: "warning"
-            });
-            setCodigo("");
-            return;
-        }
 
         const index = itens.findIndex(item => {
             const codigoBarrasValido =
-                item.codigo_barras &&
-                item.codigo_barras !== "SEM GTIN";
+                item.codigo_barras && item.codigo_barras !== "SEM GTIN";
 
             return (
                 (codigoBarrasValido && item.codigo_barras === codigoLimpo) ||
@@ -571,21 +801,9 @@ function Conferencia() {
             return;
         }
 
-        const novosItens = [...itens];
-        const item = novosItens[index];
+        const itemAtual = itens[index];
 
-        if (caixaInvalida(item.caixaId)) {
-            item.caixaId = null;
-        }
-
-        const codigoExibicao =
-            item.codigo_barras && item.codigo_barras !== "SEM GTIN"
-                ? item.codigo_barras
-                : item.codigo_produto;
-
-        setUltimoItem(codigoExibicao);
-
-        if (item.conferido >= item.quantidade) {
+        if (itemAtual.conferido >= itemAtual.quantidade) {
             setSnackbar({
                 open: true,
                 message: "Quantidade total já conferida",
@@ -595,30 +813,75 @@ function Conferencia() {
             return;
         }
 
-        if (!caixaInvalida(item.caixaId) && item.caixaId !== caixaAberta.id) {
+        if (itemAtual.caixaId) {
+            const caixaDoItem = caixas.find(c => c.id === itemAtual.caixaId);
 
-            const caixaEncontrada = caixas.find(c => c.id === item.caixaId);
+            if (caixaDoItem?.cheia) {
+                setModalMoverItem({
+                    open: true,
+                    item: itemAtual,
+                    caixaOrigem: caixaDoItem,
+                    caixaDestino: obterOuCriarCaixa(itemAtual.localizacao),
+                    acao: "ITEM"
+                });
 
-            const numeroCaixa =
-                caixaEncontrada?.numero ??
-                (item.caixaId ? `#${item.caixaId}` : "DESCONHECIDA");
+                setCodigo("");
+                return;
+            }
+        }
 
-            setSnackbar({
+        let caixaDestino = resolverCaixa(itemAtual);
+
+        // ITEM JÁ ESTÁ NA CAIXA CHEIA
+        if (
+            itemAtual.caixaId &&
+            itemAtual.caixaId === caixaDestino.id &&
+            caixaDestino.cheia
+        ) {
+            setModalMoverItem({
                 open: true,
-                message: `Item já está na caixa ${numeroCaixa}`,
-                severity: "warning"
+                item: itemAtual,
+                caixaOrigem: caixaDestino,
+                caixaDestino: null,
+                acao: "ITEM"
             });
 
             setCodigo("");
-
             return;
         }
 
-        item.caixaId = caixaAberta.id;
+        // Bloqueia caixa cheia
+        if (caixaDestino.cheia && !itemAtual.caixaId) {
 
-        // Impressão e conferência
+            setModalMoverItem({
+                open: true,
+                item: itemAtual,
+                caixaOrigem: caixaDestino,
+                caixaDestino: obterOuCriarCaixa(itemAtual.localizacao),
+                acao: "TODOS"
+            });
+
+            setCodigo("");
+            return;
+        }
+
+        setCaixas(prev => {
+            const existe = prev.some(c => c.id === caixaDestino.id);
+
+            if (existe) return prev;
+
+            return [...prev, caixaDestino];
+        });
+
+        setCaixaAberta(prev => {
+            if (prev && prev.id === caixaDestino.id) return prev;
+            return caixaDestino;
+        });
+
+        // 🔹 MODO QUANTIDADE
+        let incremento = 1;
+
         if (modoQuantidade) {
-
             let qtd = Number(quantidadeInput);
 
             if (!qtd || qtd <= 0) {
@@ -630,44 +893,139 @@ function Conferencia() {
                 return;
             }
 
-            const restante = item.quantidade - item.conferido;
+            const restante = itemAtual.quantidade - itemAtual.conferido;
 
             if (qtd > restante) {
                 qtd = restante;
 
                 setSnackbar({
                     open: true,
-                    message: `Quantidade ajustada para ${restante}`,
+                    message: `Quantidade ajustada para o limite disponível (${restante})`,
                     severity: "warning"
                 });
             }
 
-            for (let i = 0; i < qtd; i++) {
-                await imprimirEtiqueta(item);
-                item.conferido += 1;
-            }
-
+            incremento = qtd;
             setQuantidadeInput("");
-
-        } else {
-            // Modo normal
-            item.conferido += 1;
-            await imprimirEtiqueta(item);
         }
 
-        novosItens.splice(index, 1);
-        novosItens.unshift(item);
+        try {
+            // 🔹 imprime
+            for (let i = 0; i < incremento; i++) {
+                await imprimirEtiqueta(itemAtual);
+            }
+
+            // 🔹 atualiza itens (imutável)
+            const novosItensBase = itens.map((i, idx) => {
+                if (idx !== index) return i;
+
+                return {
+                    ...i,
+                    conferido: i.conferido + incremento,
+                    caixaId: caixaDestino.id
+                };
+            });
+
+            // Move pro topo
+            const itemAtualizado = novosItensBase[index];
+            const listaFinal = [
+                itemAtualizado,
+                ...novosItensBase.filter((_, idx) => idx !== index)
+            ];
+
+            setItens(listaFinal);
+
+            // Atualiza TODAS as caixas corretamente (sem perder itens)
+            setCaixas(prev =>
+                prev.map(c => ({
+                    ...c,
+                    itens: listaFinal.filter(i => i.caixaId === c.id)
+                }))
+            );
+
+            // Atualiza caixa aberta
+            setCaixaAberta(prev => {
+                if (!prev || prev.id !== caixaDestino.id) return prev;
+
+                return {
+                    ...prev,
+                    itens: listaFinal.filter(i => i.caixaId === caixaDestino.id)
+                };
+            });
+
+            setUltimoItemScaneado(itemAtualizado);
+            setCodigo("");
+
+        } catch (error) {
+            console.error(error);
+
+            setSnackbar({
+                open: true,
+                message: "Erro ao ler código de barras",
+                severity: "error"
+            });
+        }
+    };
+
+    const confirmarMoverCaixa = async () => {
+        const { item, caixaOrigem, acao } = modalMoverItem;
+
+        if (!item || !caixaOrigem) return;
+
+        const novaCaixa = obterOuCriarCaixa(item.localizacao);
+
+        // MOVE ITEM OU TODOS
+        const novosItens = itens.map(i => {
+            if (acao === "ITEM") {
+                if (
+                    i.codigo_barras === item.codigo_barras &&
+                    i.notaId === item.notaId
+                ) {
+                    return {
+                        ...i,
+                        caixaId: novaCaixa.id
+                    };
+                }
+                return i;
+            }
+
+            // TODOS DA CAIXA
+            if (i.caixaId === caixaOrigem.id) {
+                return {
+                    ...i,
+                    caixaId: novaCaixa.id
+                };
+            }
+
+            return i;
+        });
 
         setItens(novosItens);
 
-        setCaixaAberta(prev => ({
-            ...prev,
-            itens: novosItens.filter(i => i.caixaId === prev.id)
-        }));
+        setCaixas(prev => {
+            const filtradas = prev.filter(c => c.id !== caixaOrigem.id);
 
-        setCodigo("");
+            return [...filtradas, novaCaixa];
+        });
 
-        setUltimoItemScaneado(item);
+        setCaixaAberta(novaCaixa);
+
+        setModalMoverItem({
+            open: false,
+            item: null,
+            caixaOrigem: null,
+            caixaDestino: null,
+            acao: null
+        });
+
+        setSnackbar({
+            open: true,
+            message:
+                acao === "ITEM"
+                    ? "Item movido para nova caixa"
+                    : "Todos os itens movidos para nova caixa",
+            severity: "success"
+        });
     };
 
     // Impressão de etiquetas de peça
@@ -688,7 +1046,7 @@ function Conferencia() {
 ^FDLA,${url}^FS
 
 ^FO230,10
-^A0N,40,45
+^A0N,32,35
 ^FD${unidade.basico}^FS
 
 ^FO230,60
@@ -708,7 +1066,7 @@ function Conferencia() {
 ^FD${unidade.id_unico}^FS
 
 ^FO460,30
-^A0B,50,40
+^A0B,32,26
 ^FD${(userInfo?.codigo || "")}^FS
 
 ^XZ
@@ -718,7 +1076,18 @@ function Conferencia() {
 
     const imprimirViaPython = async (zpl) => {
         try {
-            const response = await fetch("http://192.168.1.82:5000/print", {
+            const printerSalva = localStorage.getItem("printer");
+
+            if (!printerSalva) {
+                setSnackbar({
+                    open: true,
+                    message: "Defina uma impressora antes de imprimir!",
+                    severity: "warning"
+                });
+                return;
+            }
+
+            const response = await fetch(`http://127.0.0.1:5000/print`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -726,7 +1095,7 @@ function Conferencia() {
                 body: JSON.stringify({
                     tipo: "windows",
                     conteudo: zpl,
-                    printer: "ZDesigner GC420t"
+                    printer: printerSalva
                 })
             });
 
@@ -892,7 +1261,7 @@ function Conferencia() {
                     return false;
                 }
 
-                console.log("ENVIANDO PARA API A CAIXA: ", caixa.numero)
+                console.log("ENVIANDO PARA API A CAIXA: ", item.caixaId || caixa.numero)
 
                 const response = await fetch(
                     `${API}/api/atualizar_item/${item.notaId}/${codigoEnvio}`,
@@ -906,7 +1275,9 @@ function Conferencia() {
                             status_item: item.conferido === item.quantidade
                                 ? "ITEM_CONFERIDO"
                                 : "CONFERIDO_PARCIAL",
-                            caixa: caixa.numero,
+
+                            caixa: item.caixaId || caixa.numero,
+
                             conferente: userInfo?.codigo,
                             qtd_conferida: item.conferido
                         })
@@ -1266,6 +1637,7 @@ function Conferencia() {
                             {/* Caixa aberta */}
                             {caixaAberta ? (
                                 <>
+                                    <Typography>Caixa aberta: {caixaAberta?.numero}</Typography>
                                     <Button variant="contained" fullWidth sx={{ my: 1, color: "primary.branco", bgcolor: 'primary.confirmar', '&:hover': { bgcolor: 'primary.confirmarHover' } }}
                                         onClick={() => {
                                             if (caixaAberta?.numero) {
@@ -1283,7 +1655,7 @@ function Conferencia() {
                                             variant="contained"
                                             onClick={() => setOpenDialog(true)}
                                         >
-                                            Ver itens
+                                            Itens
                                         </Button>
                                     </Box>
 
@@ -1316,7 +1688,7 @@ function Conferencia() {
                                                                         <Button
                                                                             size="small"
                                                                             color="error"
-                                                                            onClick={() => removerItemDaCaixa(item)}
+                                                                            onClick={() => abrirConfirmacaoRemoverItem(item)}
                                                                         >
                                                                             Remover
                                                                         </Button>
@@ -1347,16 +1719,67 @@ function Conferencia() {
                                     <Box key={c.id} sx={{ mb: 1, p: 1, border: '1px solid var(--fundo-card-caixa)', borderRadius: 1 }}>
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <Typography><strong>Caixa: {c.numero}</strong></Typography>
-                                            <Button size="small" variant="outlined" onClick={() => setCaixaFechadaDialog(c)}>
-                                                Ver itens
-                                            </Button>
-                                            <Button
-                                                size="small"
-                                                variant="outlined"
-                                                onClick={() => reabrirCaixa(c)}
-                                            >
-                                                Reabrir
-                                            </Button>
+                                            <Box sx={{ display: 'flex', justifyContent: 'right', gap: 1 }}>
+
+                                                {/* Ver itens */}
+                                                <Tooltip title="Ver itens da caixa">
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => setCaixaFechadaDialog(c)}
+                                                    >
+                                                        <ListIcon />
+                                                    </IconButton>
+                                                </Tooltip>
+
+                                                {/* Reabrir */}
+                                                <Tooltip title="Reabrir caixa">
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => reabrirCaixa(c)}
+                                                    >
+                                                        <ReplayIcon />
+                                                    </IconButton>
+                                                </Tooltip>
+
+                                                {/* Caixa cheia / disponível */}
+                                                <Tooltip title={c.cheia ? "Caixa cheia" : "Caixa disponível"}>
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => {
+                                                            setCaixas(prev =>
+                                                                prev.map(cx => {
+                                                                    if (cx.id !== c.id) return cx;
+
+                                                                    const nova = { ...cx, cheia: !cx.cheia };
+
+                                                                    setCaixaAberta(aberta => {
+                                                                        if (!aberta || aberta.id !== cx.id) return aberta;
+                                                                        return nova;
+                                                                    });
+
+                                                                    return nova;
+                                                                })
+                                                            );
+                                                        }}
+                                                    >
+                                                        <Inventory2Icon color={c.cheia ? "error" : "success"} />
+                                                    </IconButton>
+                                                </Tooltip>
+
+                                                {/* Remover (só se vazio) */}
+                                                {itens.filter(i => i.caixaId === c.id).length === 0 && (
+                                                    <Tooltip title="Remover caixa">
+                                                        <IconButton
+                                                            size="small"
+                                                            color="error"
+                                                            onClick={() => abrirConfirmacaoRemoverCaixa(c)}
+                                                        >
+                                                            <DeleteIcon />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                )}
+
+                                            </Box>
                                         </Box>
                                     </Box>
                                 ))
@@ -1483,20 +1906,119 @@ function Conferencia() {
 
                             <Button
                                 variant="contained"
-                                sx={{ color: "primary.branco", bgcolor: 'primary.confirmar', '&:hover': { bgcolor: 'primary.confirmarHover' } }}
+                                sx={{ marginBottom: 2, color: "primary.branco", bgcolor: 'primary.confirmar', '&:hover': { bgcolor: 'primary.confirmarHover' } }}
                                 fullWidth
                                 onClick={finalizarConferencia}
                             >
                                 {finalizando ? "Finalizando..." : "Finalizar Conferência"}
                             </Button>
+                            <Box display="flex" gap={2}>
+                                <TextField
+                                    label="Nome da impressora"
+                                    value={printer}
+                                    onChange={(e) => setPrinter(e.target.value)}
+                                    fullWidth
+                                />
+
+                                <Button variant="contained" sx={{ color: 'primary.branco' }} onClick={salvarImpressora}>
+                                    Salvar
+                                </Button>
+                            </Box>
                         </Card>
                     </Box>
                 </Box>
             </Box>
 
+            {/* Modal de confirmar remoção */}
+            <Dialog
+                open={confirmDialog.open}
+                onClose={() => setConfirmDialog({ open: false, type: null, payload: null })}
+                slotProps={{
+                    paper: {
+                        sx: {
+                            bgcolor: "background.card",
+                            color: "text.primary",
+                        }
+                    }
+                }}
+            >
+                <DialogTitle>
+                    Confirmar remoção
+                </DialogTitle>
+
+                <DialogContent>
+                    <Typography>
+                        {confirmDialog.type === "remover_item" &&
+                            "Tem certeza que deseja remover este item da caixa?"}
+
+                        {confirmDialog.type === "remover_caixa" &&
+                            "Tem certeza que deseja remover esta caixa vazia?"}
+                    </Typography>
+                </DialogContent>
+
+                <DialogActions>
+                    <Button sx={{ color: "primary.branco", bgcolor: 'primary.cancelar', '&:hover': { bgcolor: 'primary.cancelarHover' } }}
+                        onClick={() => setConfirmDialog({ open: false, type: null, payload: null })}
+                    >
+                        Cancelar
+                    </Button>
+
+                    <Button
+                        sx={{ color: "primary.branco", bgcolor: 'primary.confirmar', '&:hover': { bgcolor: 'primary.confirmarHover' } }}
+                        onClick={confirmarAcao}
+                    >
+                        Confirmar
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog open={modalMoverItem.open}
+                slotProps={{
+                    paper: {
+                        sx: {
+                            bgcolor: "background.card",
+                            color: "text.primary",
+                        }
+                    }
+                }}>
+                <DialogTitle>Caixa cheia</DialogTitle>
+
+                <DialogContent>
+                    {modalMoverItem.acao === "ITEM" ? (
+                        <Typography>
+                            Esse item já está em uma caixa cheia. Deseja mover APENAS esse item para uma nova caixa?
+                        </Typography>
+                    ) : (
+                        <Typography>
+                            Essa caixa está cheia. Deseja mover TODOS os itens para uma nova caixa?
+                        </Typography>
+                    )}
+                </DialogContent>
+
+                <DialogActions>
+                    <Button
+                        onClick={() =>
+                            setModalMoverItem(prev => ({ ...prev, open: false }))
+                        }
+                        sx={{ color: "primary.branco", bgcolor: 'primary.cancelar', '&:hover': { bgcolor: 'primary.cancelarHover' } }}
+                    >
+                        Cancelar
+                    </Button>
+
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={confirmarMoverCaixa}
+                        sx={{ color: "primary.branco", bgcolor: 'primary.confirmar', '&:hover': { bgcolor: 'primary.confirmarHover' } }}
+                    >
+                        Confirmar
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
             {/* Snackbar */}
             <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
-                <Alert sx={{ color: 'text.primary' }} variant="filled" severity={snackbar.severity}>{snackbar.message}</Alert>
+                <Alert variant="filled" severity={snackbar.severity}>{snackbar.message}</Alert>
             </Snackbar>
         </Container>
     );

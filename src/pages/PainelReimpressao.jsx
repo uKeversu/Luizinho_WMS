@@ -1,12 +1,17 @@
-import { useState, useContext, useRef, Fragment } from "react";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-    Container, Typography, Card, CardContent, TextField, Button, Box,
-    CircularProgress, Table, TableBody, TableCell, TableHead, TableRow
+    Container, Typography, Card, CardContent, TextField, Button,
+    Box, CircularProgress, Table, TableBody, TableCell,
+    TableContainer, TableHead, TableRow
 } from "@mui/material";
 import Collapse from "@mui/material/Collapse";
+import { Fragment } from "react";
 
+import PersonIcon from '@mui/icons-material/Person';
+import LogoutIcon from '@mui/icons-material/Logout';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import PrintIcon from '@mui/icons-material/Print';
 
 import { ThemeContext } from "../context/ThemeContext";
 
@@ -16,6 +21,20 @@ function PainelReimpressao() {
     const navigate = useNavigate();
 
     const API = "http://192.168.1.185:8077";
+
+    const [userInfo, setUserInfo] = useState(() => {
+        const user = localStorage.getItem("user_info");
+        return user ? JSON.parse(user) : null;
+    });
+
+    const [token, setToken] = useState(() => localStorage.getItem("nfe_token") || "");
+
+    const logout = () => {
+        setToken("");
+        setUserInfo(null);
+        localStorage.removeItem("nfe_token");
+        localStorage.removeItem("user_info");
+    };
 
     const [notas, setNotas] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -27,43 +46,45 @@ function PainelReimpressao() {
     const [unidadesItem, setUnidadesItem] = useState({});
     const [loadingUnidades, setLoadingUnidades] = useState({});
 
-    const cacheBasico = useRef({});
+    // ---------------- BUSCA ----------------
 
-    //  Buscar notas
     const buscarNotas = async () => {
         if (!busca) return;
 
         setLoading(true);
 
         try {
-            const response = await fetch(`${API}/api/notas/listar?busca=${busca}`);
+            const response = await fetch(`${API}/api/notas/listar`);
             const data = await response.json();
 
-            const notasComItens = await Promise.all(
-                data.map(async (nota) => {
+            const termo = busca.toLowerCase();
+
+            const notasFiltradas = await Promise.all(
+                (data || []).map(async (nota) => {
 
                     const respItens = await fetch(`${API}/api/itens_nfe/${nota.id}`);
                     const dataItens = await respItens.json();
 
-                    const itens = await Promise.all(
-                        (dataItens.items || []).map(async (item) => {
+                    const itensFiltrados = (dataItens.items || []).filter(item => {
 
-                            const codigo =
-                                item.codigo_barras ||
-                                item.cean ||
-                                item.cod_produto;
+                        return (
+                            item.descricao?.toLowerCase().includes(termo) ||
+                            item.basico?.toLowerCase().includes(termo) ||
+                            item.cean?.toLowerCase().includes(termo) ||
+                            item.cod_produto?.toLowerCase().includes(termo)
+                        );
+                    });
 
-                            const basico = await buscarBasico(codigo);
-
-                            return { ...item, basico };
-                        })
-                    );
-
-                    return { ...nota, itens };
+                    return {
+                        ...nota,
+                        itens: itensFiltrados
+                    };
                 })
             );
 
-            setNotas(notasComItens);
+            const resultadoFinal = notasFiltradas.filter(n => n.itens.length > 0);
+
+            setNotas(resultadoFinal);
 
         } catch (err) {
             console.error(err);
@@ -72,65 +93,64 @@ function PainelReimpressao() {
         }
     };
 
-    const buscarBasico = async (codigo) => {
-        if (!codigo) return "-";
+    // ---------------- UNIDADES ----------------
 
-        if (cacheBasico.current[codigo]) {
-            return cacheBasico.current[codigo];
-        }
+    const buscarUnidades = async (item) => {
 
-        try {
-            const res = await fetch(`${API}/api/nfe/unidades/nao_impressas/codire/${codigo}`);
-            const data = await res.json();
+        const codigo =
+            item.cean ||
+            item.codigo_barras ||
+            item.cod_produto;
 
-            const basico = data.unidades?.[0]?.basico || "-";
+        if (!codigo) return;
 
-            cacheBasico.current[codigo] = basico;
+        if (unidadesItem[codigo]) return;
 
-            return basico;
-        } catch {
-            return "-";
-        }
-    };
-
-    //  Buscar unidades por item
-    const buscarUnidades = async (cod) => {
-
-        if (unidadesItem[cod]) return;
-
-        setLoadingUnidades(prev => ({ ...prev, [cod]: true }));
+        setLoadingUnidades(prev => ({
+            ...prev,
+            [codigo]: true
+        }));
 
         try {
-            const res = await fetch(`${API}/api/nfe/unidades/nao_impressas/codire/${cod}`);
-            const data = await res.json();
+            const response = await fetch(
+                `${API}/api/nfe/unidades/nao_impressas/codire/${codigo}`
+            );
+
+            const data = await response.json();
 
             setUnidadesItem(prev => ({
                 ...prev,
-                [cod]: data.unidades || []
+                [codigo]: data.unidades || []
             }));
 
-        } catch {
-            setUnidadesItem(prev => ({
-                ...prev,
-                [cod]: []
-            }));
+        } catch (error) {
+            console.error(error);
         } finally {
-            setLoadingUnidades(prev => ({ ...prev, [cod]: false }));
+            setLoadingUnidades(prev => ({
+                ...prev,
+                [codigo]: false
+            }));
         }
     };
 
-    const handleExpandItem = (notaId, cod) => {
-        const key = `${notaId}-${cod}`;
-        const novo = expandedItem === key ? null : key;
+    const handleExpandItem = (notaId, item) => {
 
+        const codigo =
+            item.cean ||
+            item.cod_produto;
+
+        const key = `${notaId}-${codigo}`;
+
+        const novo = expandedItem === key ? null : key;
         setExpandedItem(novo);
 
         if (novo) {
-            buscarUnidades(cod);
+            buscarUnidades(item);
         }
     };
 
-    //  ZPL
+    // ---------------- IMPRESSÃO ----------------
+
     const gerarZPL = (unidade) => {
         const url = `http://192.168.1.82:4173/Rastreio/${unidade.id_unico}`;
 
@@ -138,6 +158,10 @@ function PainelReimpressao() {
 ^XA
 ^PW520
 ^LL192
+^LH0,0
+
+^PR3
+^MD15
 
 ^FO3,3
 ^BQN,2,6
@@ -151,17 +175,32 @@ function PainelReimpressao() {
 ^A0N,45,50
 ^FD${unidade.loc_sistema}^FS
 
+^FO230,115
+^A0N,30,30
+^FD${unidade.numero}/${unidade.serie}^FS
+
+^FO230,150
+^A0N,25,25
+^FD${new Date().toLocaleString("pt-BR")}^FS
+
 ^FO185,30
 ^A0B,30,40
 ^FD${unidade.id_unico}^FS
 
+^FO460,30
+^A0B,50,40
+^FD${(userInfo?.codigo || "")}^FS
+
 ^XZ
+
 `;
     };
 
-    const imprimir = async (zpl) => {
+    const imprimirViaPython = async (zpl) => {
         try {
-            await fetch("http://192.168.1.82:5000/print", {
+            const host = window.location.hostname;
+
+            await fetch(`http://${host}:5000/print`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -170,43 +209,89 @@ function PainelReimpressao() {
                     printer: "ZDesigner GC420t"
                 })
             });
-        } catch (err) {
-            console.error(err);
+
+        } catch (error) {
+            console.error("Erro impressão:", error);
         }
     };
 
-    const imprimirItem = async (unidade) => {
+    const imprimirUnidade = async (unidade) => {
+        try {
+            await fetch(`${API}/api/nfe/unidade/imprimir/${unidade.id_unico}`);
 
-        const resQr = await fetch(`${API}/api/nfe/unidade/imprimir/${unidade.id_unico}`);
-        const qr = await resQr.json();
+            const zpl = gerarZPL(unidade);
 
-        if (!qr.qr_url) return;
+            await imprimirViaPython(zpl);
 
-        const zpl = gerarZPL(unidade);
-        imprimir(zpl);
+        } catch (error) {
+            console.error(error);
+        }
     };
 
-    return (
-        <Container maxWidth="100%" sx={{ mt: 4 }}>
+    const imprimirLote = async (lista) => {
+        for (const u of lista) {
+            await imprimirUnidade(u);
+        }
+    };
 
+    // ---------------- UI ----------------
+
+    return (
+        <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "background.default" }}>
             {/* Header */}
-            <Box display="flex" justifyContent="space-between" mb={3}>
-                <Typography variant="h4">Painel de Reimpressão</Typography>
-                <Button onClick={() => navigate("/Dashboard")}>
-                    Voltar <ArrowBackIcon />
-                </Button>
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', md: 'row' },
+                    justifyContent: 'space-between',
+                    alignItems: { xs: 'flex-start', md: 'center' },
+                    gap: 2,
+                    p: 2,
+                    bgcolor: 'var(--azul)',
+                    mb: 5
+                }}
+            >
+                <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "background.paper" }}>
+                    <strong>Painel de reimpressão de etiquetas</strong>
+                </Typography>
+                <Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '0' }}>
+                        {<PersonIcon sx={{ color: "background.paper", paddingRight: '1vh' }} />}
+                        <Typography sx={{ color: "background.paper", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>
+                            {userInfo?.nome}
+                        </Typography>
+                        {token && (
+                            <Button
+                                size="small"
+                                onClick={logout}
+                                sx={{ color: "background.paper", display: 'flex', gap: 1 }}
+                            >{<LogoutIcon />}
+                            </Button>
+                        )}
+                    </Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
+                        <Button
+                            onClick={() => navigate("/Dashboard")}
+                            sx={{ color: "background.paper", display: 'flex', gap: 1 }}
+                        >
+                            Voltar
+                            {< ArrowBackIcon />}
+                        </Button>
+                        <pre id="resultado"></pre>
+                    </Box>
+                </Box>
             </Box>
 
-            {/* Busca */}
-            <Box display="flex" gap={2} mb={3}>
+            {/* BUSCA */}
+            <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
                 <TextField
                     fullWidth
-                    size="small"
-                    placeholder="Buscar nota / item / id"
+                    placeholder="Buscar por código ou descrição do item"
                     value={busca}
                     onChange={(e) => setBusca(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && buscarNotas()}
                 />
+
                 <Button variant="contained" onClick={buscarNotas}>
                     Buscar
                 </Button>
@@ -216,7 +301,7 @@ function PainelReimpressao() {
 
                 notas.map((nota) => (
 
-                    <Card key={nota.id} sx={{ mb: 2 }}>
+                    <Card key={nota.id} sx={{ mb: 2, bgcolor: 'background.default' }}>
                         <CardContent>
 
                             {/* NOTA */}
@@ -231,76 +316,89 @@ function PainelReimpressao() {
                                 </Typography>
                             </Box>
 
-                            {/* ITENS */}
                             <Collapse in={expandedNota === nota.id}>
 
                                 <Table size="small">
-                                    <TableHead>
-                                        <TableRow>
-                                            <TableCell>LOC</TableCell>
-                                            <TableCell>Código</TableCell>
-                                            <TableCell>Descrição</TableCell>
-                                            <TableCell>Qtd</TableCell>
-                                        </TableRow>
-                                    </TableHead>
-
                                     <TableBody>
+
                                         {nota.itens.map((item, idx) => {
 
-                                            const cod =
-                                                item.codigo_barras ??
-                                                item.cean ??
-                                                item.cod_produto ??
+                                            const codigo =
+                                                item.cean ||
+                                                item.cod_produto ||
                                                 `idx-${idx}`;
 
-                                            const key = `${nota.id}-${cod}`;
+                                            const key = `${nota.id}-${codigo}`;
 
                                             return (
                                                 <Fragment key={key}>
 
                                                     {/* ITEM */}
                                                     <TableRow
-                                                        onClick={() => handleExpandItem(nota.id, cod)}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleExpandItem(nota.id, item);
+                                                        }}
                                                         sx={{ cursor: "pointer" }}
                                                     >
-                                                        <TableCell>{item.loc_sistema}</TableCell>
                                                         <TableCell>{item.basico}</TableCell>
                                                         <TableCell>{item.descricao}</TableCell>
-                                                        <TableCell>{item.quantidade_comercial}</TableCell>
+                                                        <TableCell>{item.loc_sistema}</TableCell>
                                                     </TableRow>
 
                                                     {/* UNIDADES */}
                                                     <TableRow>
-                                                        <TableCell colSpan={4} sx={{ p: 0 }}>
+                                                        <TableCell colSpan={5}>
+
                                                             <Collapse in={expandedItem === key}>
 
-                                                                <Table size="small">
-                                                                    <TableHead>
-                                                                        <TableRow>
-                                                                            <TableCell>ID ÚNICO</TableCell>
-                                                                            <TableCell>LOCAL</TableCell>
-                                                                            <TableCell>AÇÃO</TableCell>
-                                                                        </TableRow>
-                                                                    </TableHead>
+                                                                {loadingUnidades[codigo] ? (
+                                                                    <CircularProgress size={20} />
+                                                                ) : (
 
-                                                                    <TableBody>
-                                                                        {(unidadesItem[cod] || []).map((un) => (
-                                                                            <TableRow key={un.id_unico}>
-                                                                                <TableCell>{un.id_unico}</TableCell>
-                                                                                <TableCell>{un.loc_sistema}</TableCell>
-                                                                                <TableCell>
-                                                                                    <Button
-                                                                                        variant="contained"
-                                                                                        onClick={() => imprimirItem(un)}
-                                                                                    >
-                                                                                        Imprimir
-                                                                                    </Button>
-                                                                                </TableCell>
-                                                                            </TableRow>
-                                                                        ))}
-                                                                    </TableBody>
+                                                                    <>
+                                                                        <Typography fontSize={12}>
+                                                                            {unidadesItem[codigo]?.length || 0} etiquetas disponíveis
+                                                                        </Typography>
 
-                                                                </Table>
+                                                                        <Button
+                                                                            startIcon={<PrintIcon />}
+                                                                            sx={{ mb: 1 }}
+                                                                            onClick={() =>
+                                                                                imprimirLote(unidadesItem[codigo] || [])
+                                                                            }
+                                                                        >
+                                                                            Imprimir todos
+                                                                        </Button>
+
+                                                                        <Table size="small">
+                                                                            <TableHead>
+                                                                                <TableRow>
+                                                                                    <TableCell>ID ÚNICO</TableCell>
+                                                                                    <TableCell>Ação</TableCell>
+                                                                                </TableRow>
+                                                                            </TableHead>
+
+                                                                            <TableBody>
+                                                                                {(unidadesItem[codigo] || []).map((un) => (
+                                                                                    <TableRow key={un.id_unico}>
+                                                                                        <TableCell>{un.id_unico}</TableCell>
+
+                                                                                        <TableCell>
+                                                                                            <Button
+                                                                                                size="small"
+                                                                                                variant="contained"
+                                                                                                onClick={() => imprimirUnidade(un)}
+                                                                                            >
+                                                                                                Reimprimir
+                                                                                            </Button>
+                                                                                        </TableCell>
+                                                                                    </TableRow>
+                                                                                ))}
+                                                                            </TableBody>
+                                                                        </Table>
+                                                                    </>
+                                                                )}
 
                                                             </Collapse>
                                                         </TableCell>
@@ -318,7 +416,6 @@ function PainelReimpressao() {
                     </Card>
                 ))
             )}
-
         </Container>
     );
 }

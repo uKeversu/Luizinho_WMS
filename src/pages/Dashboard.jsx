@@ -29,6 +29,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import SwapVertIcon from '@mui/icons-material/SwapVert';
 import BorderColorIcon from '@mui/icons-material/BorderColor';
 import SyncIcon from '@mui/icons-material/Sync';
+import LocalPrintshopIcon from '@mui/icons-material/LocalPrintshop';
+import ReplayIcon from '@mui/icons-material/Replay';
 
 import LoginFuncionario from "../components/LoginFuncionario";
 
@@ -484,6 +486,24 @@ function Dashboard({ tipo }) {
                         <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
 
                             <Button
+                                onClick={() => navigate("/PainelReimpressao")}
+                                sx={{
+                                    color: "background.paper",
+                                    display: 'flex',
+                                    gap: 0.5,
+                                    fontSize: '0.75rem',
+                                    minWidth: 'auto',
+                                    padding: '4px 8px',
+                                    whiteSpace: 'nowrap'
+                                }}
+                            >
+                                Reimpressão
+                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                    <LocalPrintshopIcon fontSize="small" />
+                                    <ReplayIcon fontSize="small" sx={{ fontSize: 14 }} />
+                                </Box>
+                            </Button>
+                            <Button
                                 id="btnAtualizar" onClick={pegarLocal}
                                 disabled={loadingSync}
                                 size="small"
@@ -632,7 +652,7 @@ function Dashboard({ tipo }) {
                             <SwapVertIcon />
                         </Button>
                     </Box>
-                    
+
                     {aba === 1 && aba !== 3 && (
                         <Button
                             variant="contained"
