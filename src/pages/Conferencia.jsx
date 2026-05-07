@@ -118,6 +118,7 @@ function Conferencia() {
         caixaDestino: null,
         acao: null
     });
+    const [processandoScanner, setProcessandoScanner] = useState(false);
 
     const addCaixaSafe = (nova) => {
         setCaixas(prev => {
@@ -777,146 +778,133 @@ function Conferencia() {
 
     // Scanner
     const scanner = async () => {
-        const codigoLimpo = codigo.trim();
-        if (!codigoLimpo) return;
 
-        const index = itens.findIndex(item => {
-            const codigoBarrasValido =
-                item.codigo_barras && item.codigo_barras !== "SEM GTIN";
+        if (processandoScanner) return;
 
-            return (
-                (codigoBarrasValido && item.codigo_barras === codigoLimpo) ||
-                item.codigo_produto === codigoLimpo
-            );
-        });
+        setProcessandoScanner(true);
 
-        if (index === -1) {
-            setUltimoItem(codigoLimpo);
-            setSnackbar({
-                open: true,
-                message: `Produto não encontrado: ${codigoLimpo}`,
-                severity: "warning"
+        try {
+
+            const codigoLimpo = codigo.trim();
+
+            if (!codigoLimpo) return;
+
+            // BUSCA ITEM
+
+            const index = itens.findIndex(item => {
+
+                const codigoBarrasValido =
+                    item.codigo_barras &&
+                    item.codigo_barras !== "SEM GTIN";
+
+                return (
+                    (codigoBarrasValido &&
+                        item.codigo_barras === codigoLimpo) ||
+                    item.codigo_produto === codigoLimpo
+                );
             });
-            setCodigo("");
-            return;
-        }
 
-        const itemAtual = itens[index];
+            // NÃO ENCONTRADO
+            if (index === -1) {
 
-        if (itemAtual.conferido >= itemAtual.quantidade) {
-            setSnackbar({
-                open: true,
-                message: "Quantidade total já conferida",
-                severity: "info"
-            });
-            setCodigo("");
-            return;
-        }
+                setUltimoItem(codigoLimpo);
 
-        if (itemAtual.caixaId) {
-            const caixaDoItem = caixas.find(c => c.id === itemAtual.caixaId);
-
-            if (caixaDoItem?.cheia) {
-                setModalMoverItem({
+                setSnackbar({
                     open: true,
-                    item: itemAtual,
-                    caixaOrigem: caixaDoItem,
-                    caixaDestino: obterOuCriarCaixa(itemAtual.localizacao),
-                    acao: "ITEM"
+                    message: `Produto não encontrado: ${codigoLimpo}`,
+                    severity: "warning"
                 });
 
                 setCodigo("");
                 return;
             }
-        }
 
-        let caixaDestino = resolverCaixa(itemAtual);
+            const itemAtual = itens[index];
 
-        // ITEM JÁ ESTÁ NA CAIXA CHEIA
-        if (
-            itemAtual.caixaId &&
-            itemAtual.caixaId === caixaDestino.id &&
-            caixaDestino.cheia
-        ) {
-            setModalMoverItem({
-                open: true,
-                item: itemAtual,
-                caixaOrigem: caixaDestino,
-                caixaDestino: null,
-                acao: "ITEM"
-            });
+            // QUANTIDADE TOTAL JÁ CONFERIDA
+            if (itemAtual.conferido >= itemAtual.quantidade) {
 
-            setCodigo("");
-            return;
-        }
-
-        // Bloqueia caixa cheia
-        if (caixaDestino.cheia && !itemAtual.caixaId) {
-
-            setModalMoverItem({
-                open: true,
-                item: itemAtual,
-                caixaOrigem: caixaDestino,
-                caixaDestino: obterOuCriarCaixa(itemAtual.localizacao),
-                acao: "TODOS"
-            });
-
-            setCodigo("");
-            return;
-        }
-
-        setCaixas(prev => {
-            const existe = prev.some(c => c.id === caixaDestino.id);
-
-            if (existe) return prev;
-
-            return [...prev, caixaDestino];
-        });
-
-        setCaixaAberta(prev => {
-            if (prev && prev.id === caixaDestino.id) return prev;
-            return caixaDestino;
-        });
-
-        // 🔹 MODO QUANTIDADE
-        let incremento = 1;
-
-        if (modoQuantidade) {
-            let qtd = Number(quantidadeInput);
-
-            if (!qtd || qtd <= 0) {
                 setSnackbar({
                     open: true,
-                    message: "Informe uma quantidade válida",
-                    severity: "warning"
+                    message: "Quantidade total já conferida",
+                    severity: "info"
                 });
+
+                setCodigo("");
                 return;
             }
 
-            const restante = itemAtual.quantidade - itemAtual.conferido;
+            // RESOLVE CAIXA
 
-            if (qtd > restante) {
-                qtd = restante;
+            let caixaDestino = resolverCaixa(itemAtual);
+
+            // CAIXA CHEIA
+            if (caixaDestino?.cheia) {
 
                 setSnackbar({
                     open: true,
-                    message: `Quantidade ajustada para o limite disponível (${restante})`,
+                    message: `Caixa ${caixaDestino.numero} está cheia`,
                     severity: "warning"
                 });
+
+                setCodigo("");
+                return;
             }
 
-            incremento = qtd;
-            setQuantidadeInput("");
-        }
+            // GARANTE EXISTÊNCIA DA CAIXA
+            addCaixaSafe({
+                ...caixaDestino,
+                itens: caixaDestino.itens || []
+            });
 
-        try {
-            // 🔹 imprime
+            // MODO QUANTIDADE
+
+            let incremento = 1;
+
+            if (modoQuantidade) {
+
+                let qtd = Number(quantidadeInput);
+
+                if (!qtd || qtd <= 0) {
+
+                    setSnackbar({
+                        open: true,
+                        message: "Informe uma quantidade válida",
+                        severity: "warning"
+                    });
+
+                    return;
+                }
+
+                const restante =
+                    itemAtual.quantidade - itemAtual.conferido;
+
+                if (qtd > restante) {
+
+                    qtd = restante;
+
+                    setSnackbar({
+                        open: true,
+                        message: `Quantidade ajustada para ${restante}`,
+                        severity: "warning"
+                    });
+                }
+
+                incremento = qtd;
+
+                setQuantidadeInput("");
+            }
+
+            // IMPRIME ETIQUETAS ITEM
+
             for (let i = 0; i < incremento; i++) {
                 await imprimirEtiqueta(itemAtual);
             }
 
-            // 🔹 atualiza itens (imutável)
+            // ATUALIZA ITENS
+
             const novosItensBase = itens.map((i, idx) => {
+
                 if (idx !== index) return i;
 
                 return {
@@ -926,8 +914,9 @@ function Conferencia() {
                 };
             });
 
-            // Move pro topo
+            // MOVE ITEM TOPO
             const itemAtualizado = novosItensBase[index];
+
             const listaFinal = [
                 itemAtualizado,
                 ...novosItensBase.filter((_, idx) => idx !== index)
@@ -935,28 +924,78 @@ function Conferencia() {
 
             setItens(listaFinal);
 
-            // Atualiza TODAS as caixas corretamente (sem perder itens)
-            setCaixas(prev =>
-                prev.map(c => ({
-                    ...c,
-                    itens: listaFinal.filter(i => i.caixaId === c.id)
-                }))
-            );
+            // ATUALIZA CAIXAS
+            const caixasAtualizadas = caixasRef.current.map(c => {
 
-            // Atualiza caixa aberta
-            setCaixaAberta(prev => {
-                if (!prev || prev.id !== caixaDestino.id) return prev;
+                if (c.id !== caixaDestino.id) {
+
+                    return {
+                        ...c,
+                        itens: listaFinal.filter(i => i.caixaId === c.id)
+                    };
+                }
 
                 return {
-                    ...prev,
-                    itens: listaFinal.filter(i => i.caixaId === caixaDestino.id)
+                    ...c,
+                    itens: listaFinal.filter(i => i.caixaId === caixaDestino.id),
+
+                    jaImprimiu: c.jaImprimiu || false
                 };
             });
 
+            setCaixas(caixasAtualizadas);
+
+            // CAIXA FINAL
+
+            const caixaFinal = {
+                ...caixaDestino,
+                itens: listaFinal.filter(
+                    i => i.caixaId === caixaDestino.id
+                ),
+                jaImprimiu: true
+            };
+
+            // ENVIA API
+            const sucesso = await enviarItensDaCaixa(caixaFinal);
+
+            if (!sucesso) {
+                return;
+            }
+
+            // IMPRIME ETIQUETA CAIXA
+            const caixaExistente = caixasRef.current.find(
+                c => c.id === caixaDestino.id
+            );
+
+            const jaImprimiu = caixaExistente?.jaImprimiu;
+
+            if (!jaImprimiu) {
+
+                await imprimirEtiquetaCaixa(caixaFinal);
+
+                // MARCA COMO IMPRESSA
+                setCaixas(prev =>
+                    prev.map(c =>
+                        c.id === caixaDestino.id
+                            ? { ...c, jaImprimiu: true }
+                            : c
+                    )
+                );
+            }
+
+            // FEEDBACK
             setUltimoItemScaneado(itemAtualizado);
+
+            setSnackbar({
+                open: true,
+                message: `Item adicionado na caixa ${caixaFinal.numero}`,
+                severity: "success"
+            });
+
             setCodigo("");
 
         } catch (error) {
+
             console.error(error);
 
             setSnackbar({
@@ -964,6 +1003,14 @@ function Conferencia() {
                 message: "Erro ao ler código de barras",
                 severity: "error"
             });
+
+        } finally {
+
+            setProcessandoScanner(false);
+
+            setTimeout(() => {
+                inputRef.current?.focus();
+            }, 50);
         }
     };
 
@@ -1411,6 +1458,47 @@ function Conferencia() {
 
     const itensPendentes = itens.some(i => i.conferido < i.quantidade);
 
+    // Ordena de forma crescente as caixas fechadas
+    const ordenarCaixas = (lista) => {
+        return [...lista].sort((a, b) => {
+
+            const parseCaixa = (numero) => {
+
+                const match = numero?.match(/^([A-Z0-9]+)\s*-\s*(\d+)$/i);
+
+                if (!match) {
+                    return {
+                        prateleira: numero || "",
+                        sequencia: 0
+                    };
+                }
+
+                return {
+                    prateleira: match[1],
+                    sequencia: Number(match[2])
+                };
+            };
+
+            const caixaA = parseCaixa(a.numero);
+            const caixaB = parseCaixa(b.numero);
+
+            // Ordena pela prateleira
+            const prateleiraCompare =
+                caixaA.prateleira.localeCompare(
+                    caixaB.prateleira,
+                    undefined,
+                    { numeric: true }
+                );
+
+            if (prateleiraCompare !== 0) {
+                return prateleiraCompare;
+            }
+
+            // Ordena pela sequência
+            return caixaA.sequencia - caixaB.sequencia;
+        });
+    };
+
     if (!token) {
         return (
             <LoginFuncionario onLogin={(data) => {
@@ -1715,7 +1803,7 @@ function Conferencia() {
                             {caixas.length === 0 ? (
                                 <Typography>Nenhuma caixa fechada ainda</Typography>
                             ) : (
-                                caixas.map((c, i) => (
+                                ordenarCaixas(caixas).map((c, i) => (
                                     <Box key={c.id} sx={{ mb: 1, p: 1, border: '1px solid var(--fundo-card-caixa)', borderRadius: 1 }}>
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <Typography><strong>Caixa: {c.numero}</strong></Typography>

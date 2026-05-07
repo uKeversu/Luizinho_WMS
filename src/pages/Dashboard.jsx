@@ -747,7 +747,12 @@ function Dashboard({ tipo }) {
 
                                             <Typography sx={{ fontSize: '0.8rem' }}><strong>Emissão:</strong> {nota.data_emissao}</Typography>
                                             <Typography sx={{ fontSize: '0.8rem' }}><strong>Importação:</strong> {nota.data_recebimento}</Typography>
-                                            <Typography sx={{ fontSize: '0.8rem' }}><strong>Local:</strong> {nota.pallets?.toUpperCase()}</Typography>
+                                            <Typography sx={{
+                                                fontSize: '0.8rem', 
+                                                whiteSpace: 'nowrap',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                            }}><strong>Local:</strong> {nota.pallets?.toUpperCase()}</Typography>
                                             {nota.observacao_palet?.trim() && (
                                                 <Typography sx={{ fontSize: '0.8rem', color: 'var(--observacao-texto)', fontStyle: 'italic' }}>
                                                     <strong>Obs:</strong> {nota.observacao_palet}
