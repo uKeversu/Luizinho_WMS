@@ -5,7 +5,8 @@ import {
     Container, Typography, Card, Box, TextField, Button,
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions,
-    CircularProgress, Backdrop, IconButton, Tooltip
+    CircularProgress, Backdrop, IconButton, Tooltip, FormControl, InputLabel,
+    Select, MenuItem
 } from "@mui/material";
 
 import PersonIcon from '@mui/icons-material/Person';
@@ -84,16 +85,55 @@ function Conferencia() {
 
     // Impressora
     const [printer, setPrinter] = useState("");
+    const [printers, setPrinters] = useState([]);
 
     useEffect(() => {
+
+        const carregarImpressoras = async () => {
+
+            try {
+
+                const response = await fetch("http://127.0.0.1:5000/printers");
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    setPrinters(data.printers || []);
+                }
+
+            } catch (error) {
+
+                console.error("Erro ao buscar impressoras:", error);
+
+                setSnackbar({
+                    open: true,
+                    message: "SIGEL Print não encontrado",
+                    severity: "error"
+                });
+            }
+        };
+
+        carregarImpressoras();
+
         const salva = localStorage.getItem("printer");
-        if (salva) setPrinter(salva);
+
+        if (salva) {
+            setPrinter(salva);
+        }
+
     }, []);
 
-    const salvarImpressora = () => {
-        localStorage.setItem("printer", printer);
+    const selecionarImpressora = (novaPrinter) => {
 
-        alert("Impressora salva!");
+        setPrinter(novaPrinter);
+
+        localStorage.setItem("printer", novaPrinter);
+
+        setSnackbar({
+            open: true,
+            message: `Impressora alterada para ${novaPrinter}`,
+            severity: "success"
+        });
     };
 
     // Atalhos
@@ -1282,6 +1322,19 @@ function Conferencia() {
         }
     };
 
+    const atualizarCaixas = (updater) => {
+        setCaixas(prev => {
+            const novo =
+                typeof updater === "function"
+                    ? updater(prev)
+                    : updater;
+
+            caixasRef.current = novo;
+
+            return novo;
+        });
+    };
+
     // Fecha caixa e envia para API
     const enviarItensDaCaixa = async (caixa) => {
         try {
@@ -2000,18 +2053,25 @@ function Conferencia() {
                             >
                                 {finalizando ? "Finalizando..." : "Finalizar Conferência"}
                             </Button>
-                            <Box display="flex" gap={2}>
-                                <TextField
-                                    label="Nome da impressora"
-                                    value={printer}
-                                    onChange={(e) => setPrinter(e.target.value)}
-                                    fullWidth
-                                />
+                            <FormControl fullWidth size="small">
+                                <InputLabel>Impressora</InputLabel>
 
-                                <Button variant="contained" sx={{ color: 'primary.branco' }} onClick={salvarImpressora}>
-                                    Salvar
-                                </Button>
-                            </Box>
+                                <Select
+                                    value={printer}
+                                    label="Impressora"
+                                    onChange={(e) => selecionarImpressora(e.target.value)}
+                                    sx={{
+                                        bgcolor: "background.card",
+                                        color: 'text.primary'
+                                    }}
+                                >
+                                    {printers.map((p) => (
+                                        <MenuItem key={p} value={p}>
+                                            {p}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
                         </Card>
                     </Box>
                 </Box>
