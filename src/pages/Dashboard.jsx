@@ -19,7 +19,8 @@ import {
     CircularProgress,
     Backdrop,
     Snackbar,
-    Alert
+    Alert,
+    MenuItem
 } from "@mui/material";
 
 import PersonIcon from '@mui/icons-material/Person';
@@ -76,6 +77,7 @@ function Dashboard({ tipo }) {
     const [ordemData, setOrdemData] = useState("desc");
     const [dataInicio, setDataInicio] = useState("");
     const [dataFim, setDataFim] = useState("");
+    const [tipoDataFiltro, setTipoDataFiltro] = useState("recebimento");
 
     // SS Plus Sync
     const [loadingSync, setLoadingSync] = useState(false);
@@ -307,13 +309,23 @@ function Dashboard({ tipo }) {
     };
 
     const notasFiltradasPorAba = notasFiltradas.filter(nota => {
+
+        const campoData =
+            tipoDataFiltro === "emissao"
+                ? nota.data_emissao
+                : nota.data_recebimento;
+
         if (aba === 0) return nota.status === "EM_TRANSITO";
-        if (aba === 1) return ["PENDENTE", "FORNECEDOR_DIRETO"].includes(nota.status);
+
+        if (aba === 1)
+            return ["PENDENTE", "FORNECEDOR_DIRETO"].includes(nota.status);
+
         if (aba === 2) return nota.status === "CONFERIDA";
 
-        // HISTÓRICO (aba 3)
+        // HISTÓRICO
         if (aba === 3) {
-            const dataNota = parseData(nota.data_recebimento);
+
+            const dataNota = parseData(campoData);
 
             if (dataInicio) {
                 const inicio = new Date(dataInicio);
@@ -323,6 +335,7 @@ function Dashboard({ tipo }) {
             if (dataFim) {
                 const fim = new Date(dataFim);
                 fim.setHours(23, 59, 59, 999);
+
                 if (dataNota > fim) return false;
             }
 
@@ -334,8 +347,19 @@ function Dashboard({ tipo }) {
 
     // Ordena notas pela data de recebimento
     const notasOrdenadas = [...notasFiltradasPorAba].sort((a, b) => {
-        const dataA = parseData(a.data_recebimento);
-        const dataB = parseData(b.data_recebimento);
+
+        const campoDataA =
+            tipoDataFiltro === "emissao"
+                ? a.data_emissao
+                : a.data_recebimento;
+
+        const campoDataB =
+            tipoDataFiltro === "emissao"
+                ? b.data_emissao
+                : b.data_recebimento;
+
+        const dataA = parseData(campoDataA);
+        const dataB = parseData(campoDataB);
 
         return ordemData === "asc"
             ? dataA - dataB
@@ -603,39 +627,68 @@ function Dashboard({ tipo }) {
                             onChange={(e) => setBusca(e.target.value)}
                         />
 
-                        {aba === 3 && (
-                            <Box sx={{ display: 'flex', gap: 1 }}>
-                                <TextField
-                                    type="date"
-                                    label="Data início"
-                                    size="small"
-                                    InputLabelProps={{ shrink: true }}
-                                    value={dataInicio}
-                                    onChange={(e) => setDataInicio(e.target.value)}
-                                    sx={{ bgcolor: 'background.default' }}
-                                />
+                        <Box sx={{ display: 'flex', gap: 1 }}>
 
-                                <TextField
-                                    type="date"
-                                    label="Data fim"
-                                    size="small"
-                                    InputLabelProps={{ shrink: true }}
-                                    value={dataFim}
-                                    onChange={(e) => setDataFim(e.target.value)}
-                                    sx={{ bgcolor: 'background.default' }}
-                                />
+                            <TextField
+                                select
+                                label="Filtrar por"
+                                size="small"
+                                value={tipoDataFiltro}
+                                onChange={(e) => setTipoDataFiltro(e.target.value)}
+                                sx={{
+                                    minWidth: 170,
+                                    bgcolor: 'background.default'
+                                }}
+                                SelectProps={{
+                                    MenuProps: {
+                                        PaperProps: {
+                                            sx: {
+                                                bgcolor: 'background.default',
+                                                color: 'text.primary'
+                                            }
+                                        }
+                                    }
+                                }}
+                            >
+                                <MenuItem value="recebimento">
+                                    Data Importação
+                                </MenuItem>
 
-                                <Button
-                                    variant="outlined"
-                                    onClick={() => {
-                                        setDataInicio("");
-                                        setDataFim("");
-                                    }}
-                                >
-                                    Limpar
-                                </Button>
-                            </Box>
-                        )}
+                                <MenuItem value="emissao">
+                                    Data Emissão
+                                </MenuItem>
+                            </TextField>
+
+                            <TextField
+                                type="date"
+                                label="Data início"
+                                size="small"
+                                InputLabelProps={{ shrink: true }}
+                                value={dataInicio}
+                                onChange={(e) => setDataInicio(e.target.value)}
+                                sx={{ bgcolor: 'background.default' }}
+                            />
+
+                            <TextField
+                                type="date"
+                                label="Data fim"
+                                size="small"
+                                InputLabelProps={{ shrink: true }}
+                                value={dataFim}
+                                onChange={(e) => setDataFim(e.target.value)}
+                                sx={{ bgcolor: 'background.default' }}
+                            />
+
+                            <Button
+                                variant="outlined"
+                                onClick={() => {
+                                    setDataInicio("");
+                                    setDataFim("");
+                                }}
+                            >
+                                Limpar
+                            </Button>
+                        </Box>
 
                         <Button
                             variant="contained"
@@ -748,7 +801,7 @@ function Dashboard({ tipo }) {
                                             <Typography sx={{ fontSize: '0.8rem' }}><strong>Emissão:</strong> {nota.data_emissao}</Typography>
                                             <Typography sx={{ fontSize: '0.8rem' }}><strong>Importação:</strong> {nota.data_recebimento}</Typography>
                                             <Typography sx={{
-                                                fontSize: '0.8rem', 
+                                                fontSize: '0.8rem',
                                                 whiteSpace: 'nowrap',
                                                 overflow: 'hidden',
                                                 textOverflow: 'ellipsis',

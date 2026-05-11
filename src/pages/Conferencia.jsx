@@ -161,7 +161,7 @@ function Conferencia() {
     const [processandoScanner, setProcessandoScanner] = useState(false);
 
     const addCaixaSafe = (nova) => {
-        setCaixas(prev => {
+        atualizarCaixas(prev => {
             const existe = prev.some(c => c.id === nova.id);
             if (existe) return prev;
             return [...prev, nova];
@@ -201,7 +201,12 @@ function Conferencia() {
             caixaId: i.caixaId ?? i.caixa ?? null
         }));
 
-        const caixasParse = caixasSalvas ? JSON.parse(caixasSalvas) : [];
+        const caixasParse = caixasSalvas
+            ? JSON.parse(caixasSalvas).map(c => ({
+                ...c,
+                cheia: c.cheia ?? false
+            }))
+            : [];
 
         const cacheValido =
             itensCorrigidos.length > 0 &&
@@ -211,7 +216,7 @@ function Conferencia() {
             console.log("USANDO CACHE");
 
             setItens(itensCorrigidos);
-            setCaixas(caixasParse);
+            atualizarCaixas(caixasParse);
 
             return;
         } else {
@@ -476,7 +481,8 @@ function Conferencia() {
                         numero: nomeCaixa,
                         itens: [],
                         jaImprimiu: true,
-                        origem: "API"
+                        origem: "API",
+                        cheia: false
                     };
 
                     mapaCaixas[nomeCaixa] = novaCaixa;
@@ -514,7 +520,7 @@ function Conferencia() {
             console.log("CAIXAS CARREGADAS:", novasCaixas);
 
             setItens(itensComCaixaCorrigida);
-            setCaixas(novasCaixas);
+            atualizarCaixas(novasCaixas);
 
         } catch (error) {
             console.error("Erro no carregarTudo:", error);
@@ -534,7 +540,8 @@ function Conferencia() {
         const prateleira = getPrateleira(localizacao);
 
         const caixaExistente = caixasRef.current.find(c =>
-            c.prateleira === prateleira && !c.cheia
+            c.prateleira === prateleira &&
+            c.cheia !== true
         );
 
         if (caixaExistente) return caixaExistente;
@@ -574,9 +581,17 @@ function Conferencia() {
 
         // Se item já tem caixa → usa ela (se não estiver cheia)
         if (item.caixaId) {
-            const caixaItem = caixasRef.current.find(c => c.id === item.caixaId);
 
-            if (caixaItem && !caixaItem.cheia) {
+            const caixaItem = caixasRef.current.find(
+                c => c.id === item.caixaId
+            );
+
+            // Se a caixa do item está cheia, cria imediatamente uma nova
+            if (caixaItem?.cheia) {
+                return obterOuCriarCaixa(item.localizacao);
+            }
+
+            if (caixaItem) {
                 return caixaItem;
             }
         }
@@ -611,7 +626,7 @@ function Conferencia() {
     // Fechar caixa
     const fecharCaixa = () => {
         if (!caixaAberta) return;
-        setCaixas([...caixas, caixaAberta]);
+        atualizarCaixas([...caixas, caixaAberta]);
         setCaixaAberta(null);
     };
 
@@ -644,7 +659,7 @@ function Conferencia() {
             return; // Não fecha se deu erro
         }
 
-        setCaixas(prev => {
+        atualizarCaixas(prev => {
             const existe = prev.some(c => c.id === caixaFinal.id);
             if (existe) {
                 return prev.map(c => c.id === caixaFinal.id ? caixaFinal : c);
@@ -687,7 +702,7 @@ function Conferencia() {
         }
 
         // Remove das fechadas
-        setCaixas(prev => prev.filter(c => c.id !== caixa.id));
+        atualizarCaixas(prev => prev.filter(c => c.id !== caixa.id));
 
         // Recalcula os itens com base no estado atual
         const itensAtualizados = itens
@@ -731,7 +746,7 @@ function Conferencia() {
         }
 
         if (type === "remover_caixa") {
-            setCaixas(prev => prev.filter(c => c.id !== payload.id));
+            atualizarCaixas(prev => prev.filter(c => c.id !== payload.id));
 
             setSnackbar({
                 open: true,
@@ -878,6 +893,14 @@ function Conferencia() {
 
             let caixaDestino = resolverCaixa(itemAtual);
 
+            const caixaAtualizada = caixasRef.current.find(
+                c => c.id === caixaDestino.id
+            );
+
+            if (caixaAtualizada?.cheia) {
+                caixaDestino = obterOuCriarCaixa(itemAtual.localizacao);
+            }
+
             // CAIXA CHEIA
             if (caixaDestino?.cheia) {
 
@@ -983,7 +1006,7 @@ function Conferencia() {
                 };
             });
 
-            setCaixas(caixasAtualizadas);
+            atualizarCaixas(caixasAtualizadas);
 
             // CAIXA FINAL
 
@@ -1014,7 +1037,7 @@ function Conferencia() {
                 await imprimirEtiquetaCaixa(caixaFinal);
 
                 // MARCA COMO IMPRESSA
-                setCaixas(prev =>
+                atualizarCaixas(prev =>
                     prev.map(c =>
                         c.id === caixaDestino.id
                             ? { ...c, jaImprimiu: true }
@@ -1089,7 +1112,7 @@ function Conferencia() {
 
         setItens(novosItens);
 
-        setCaixas(prev => {
+        atualizarCaixas(prev => {
             const filtradas = prev.filter(c => c.id !== caixaOrigem.id);
 
             return [...filtradas, novaCaixa];
@@ -1323,7 +1346,9 @@ function Conferencia() {
     };
 
     const atualizarCaixas = (updater) => {
+
         setCaixas(prev => {
+
             const novo =
                 typeof updater === "function"
                     ? updater(prev)
@@ -1887,7 +1912,7 @@ function Conferencia() {
                                                     <IconButton
                                                         size="small"
                                                         onClick={() => {
-                                                            setCaixas(prev =>
+                                                            atualizarCaixas(prev =>
                                                                 prev.map(cx => {
                                                                     if (cx.id !== c.id) return cx;
 

@@ -385,6 +385,7 @@ function ConsultaGeral() {
                                                 <TableCell>Descrição</TableCell>
                                                 <TableCell>Qtd</TableCell>
                                                 <TableCell>Status</TableCell>
+                                                <TableCell>Caixa</TableCell>
                                             </TableRow>
                                         </TableHead>
 
@@ -426,8 +427,9 @@ function ConsultaGeral() {
                                                                     {getDescricaoStatus(item.status_item)}
                                                                 </Box>
                                                             </TableCell>
+                                                            <TableCell>{item.caixa}</TableCell>
                                                         </TableRow>
-
+ 
                                                         {/* UNIDADES */}
                                                         <TableRow sx={{ bgcolor: 'background.tabela', boxShadow: '0vh 0vh 1vh primary.sombra' }}>
                                                             <TableCell colSpan={5} sx={{ p: 0 }}>
