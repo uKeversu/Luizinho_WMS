@@ -2087,11 +2087,48 @@ function Conferencia() {
                                     onChange={(e) => selecionarImpressora(e.target.value)}
                                     sx={{
                                         bgcolor: "background.card",
-                                        color: 'text.primary'
+                                        color: "text.primary",
+
+                                        "& .MuiSelect-select": {
+                                            bgcolor: "background.alerta",
+                                            color: "text.primary",
+                                        },
+
+                                        "& .MuiOutlinedInput-notchedOutline": {
+                                            borderColor: "divider",
+                                        },
+
+                                        "&:hover .MuiOutlinedInput-notchedOutline": {
+                                            borderColor: "primary.main",
+                                        },
+
+                                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                                            borderColor: "primary.main",
+                                        },
                                     }}
                                 >
                                     {printers.map((p) => (
-                                        <MenuItem key={p} value={p}>
+                                        <MenuItem
+                                            key={p}
+                                            value={p}
+                                            sx={{
+                                                bgcolor: "background.card",
+                                                color: "text.primary",
+
+                                                "&:hover": {
+                                                    bgcolor: "background.alerta",
+                                                },
+
+                                                "&.Mui-selected": {
+                                                    bgcolor: "primary.main",
+                                                    color: "primary.branco",
+                                                },
+
+                                                "&.Mui-selected:hover": {
+                                                    bgcolor: "primary.dark",
+                                                },
+                                            }}
+                                        >
                                             {p}
                                         </MenuItem>
                                     ))}
