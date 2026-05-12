@@ -432,7 +432,7 @@ function ConsultaGeral() {
  
                                                         {/* UNIDADES */}
                                                         <TableRow sx={{ bgcolor: 'background.tabela', boxShadow: '0vh 0vh 1vh primary.sombra' }}>
-                                                            <TableCell colSpan={5} sx={{ p: 0 }}>
+                                                            <TableCell colSpan={6} sx={{ p: 0 }}>
                                                                 <Collapse in={expandedItem === key}>
 
                                                                     <Table size="small">

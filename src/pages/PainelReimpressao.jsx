@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
     Container, Typography, Card, CardContent, TextField, Button,
     Box, CircularProgress, Table, TableBody, TableCell,
-    TableContainer, TableHead, TableRow
+    TableContainer, TableHead, TableRow, Snackbar, Alert
 } from "@mui/material";
 import Collapse from "@mui/material/Collapse";
 import { Fragment } from "react";
@@ -45,6 +45,12 @@ function PainelReimpressao() {
 
     const [unidadesItem, setUnidadesItem] = useState({});
     const [loadingUnidades, setLoadingUnidades] = useState({});
+
+    const [snackbar, setSnackbar] = useState({
+        open: false,
+        message: "",
+        severity: "info"
+    });
 
     // ---------------- BUSCA ----------------
 
@@ -151,7 +157,7 @@ function PainelReimpressao() {
 
     // ---------------- IMPRESSÃO ----------------
 
-    const gerarZPL = (unidade) => {
+    const gerarZPL = (unidade, qr) => {
         const url = `http://192.168.1.82:4173/Rastreio/${unidade.id_unico}`;
 
         return `
@@ -167,8 +173,13 @@ function PainelReimpressao() {
 ^BQN,2,6
 ^FDLA,${url}^FS
 
-^FO230,10
-^A0N,40,45
+^FO380,3
+^A0N,20,20
+^FR
+^FDREIMPRESSA^FS
+
+^FO230,30
+^A0N,32,35
 ^FD${unidade.basico}^FS
 
 ^FO230,60
@@ -188,38 +199,76 @@ function PainelReimpressao() {
 ^FD${unidade.id_unico}^FS
 
 ^FO460,30
-^A0B,50,40
+^A0B,35,30
 ^FD${(userInfo?.codigo || "")}^FS
 
 ^XZ
-
 `;
     };
 
     const imprimirViaPython = async (zpl) => {
         try {
-            const host = window.location.hostname;
 
-            await fetch(`http://${host}:5000/print`, {
+            const printerSalva = localStorage.getItem("printer");
+
+            if (!printerSalva) {
+                setSnackbar({
+                    open: true,
+                    message: "Defina uma impressora antes de imprimir!",
+                    severity: "warning"
+                });
+                return;
+            }
+
+            const response = await fetch(`http://127.0.0.1:5000/print`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json"
+                },
                 body: JSON.stringify({
                     tipo: "windows",
                     conteudo: zpl,
-                    printer: "ZDesigner GC420t"
+                    printer: printerSalva
                 })
             });
 
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.erro || "Erro ao imprimir");
+            }
+
+            setSnackbar({
+                open: true,
+                message: "Etiqueta reimpressa com sucesso!",
+                severity: "success"
+            });
+            return true;
+
         } catch (error) {
-            console.error("Erro impressão:", error);
+
+            console.error("Erro impressão Python:", error);
+            setSnackbar({
+                open: true,
+                message: "Falha na impressão, ative o WMS Print!",
+                severity: "error"
+            });
+            return false;
         }
     };
 
     const imprimirUnidade = async (unidade) => {
         try {
-            await fetch(`${API}/api/nfe/unidade/imprimir/${unidade.id_unico}`);
 
-            const zpl = gerarZPL(unidade);
+            const resQr = await fetch(
+                `${API}/api/nfe/unidade/imprimir/${unidade.id_unico}`
+            );
+
+            const qr = await resQr.json();
+
+            if (!qr.qr_url) return;
+
+            const zpl = gerarZPL(unidade, qr);
 
             await imprimirViaPython(zpl);
 
@@ -229,8 +278,9 @@ function PainelReimpressao() {
     };
 
     const imprimirLote = async (lista) => {
-        for (const u of lista) {
-            await imprimirUnidade(u);
+
+        for (const unidade of lista) {
+            await imprimirUnidade(unidade);
         }
     };
 
@@ -416,6 +466,32 @@ function PainelReimpressao() {
                     </Card>
                 ))
             )}
+
+            {/* Snackbar */}
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={3000}
+                onClose={() => setSnackbar({ ...snackbar, open: false })}
+            >
+                <Alert
+                    variant="filled"
+                    severity={snackbar.severity}
+                    sx={{
+                        color: 'primary.branco',
+
+                        "& .MuiAlert-icon": {
+                            color: 'primary.branco'
+                        },
+
+                        "& .MuiAlert-action": {
+                            color: 'primary.branco'
+                        }
+                    }}
+                >
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
+
         </Container>
     );
 }

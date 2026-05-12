@@ -151,12 +151,11 @@ function Conferencia() {
     const [openFecharDialog, setOpenFecharDialog] = useState(false);
     const [numeroCaixa, setNumeroCaixa] = useState("");
     const caixasRef = useRef(caixas);
-    const [modalMoverItem, setModalMoverItem] = useState({
+    const [modalCaixaItem, setModalCaixaItem] = useState({
         open: false,
         item: null,
-        caixaOrigem: null,
-        caixaDestino: null,
-        acao: null
+        caixa: null,
+        cheia: false
     });
     const [processandoScanner, setProcessandoScanner] = useState(false);
 
@@ -187,39 +186,49 @@ function Conferencia() {
     }, []);
 
     useEffect(() => {
+
         if (!notasIds || notasIds.length === 0) return;
 
         const chaveItens = `itens_conferencia_${notasIds.join("_")}`;
         const chaveCaixas = `caixas_conferencia_${notasIds.join("_")}`;
 
         const itensSalvos = localStorage.getItem(chaveItens);
-        const caixasSalvas = localStorage.getItem(chaveCaixas);
 
-        const itensParse = itensSalvos ? JSON.parse(itensSalvos) : [];
+        const caixasSalvas = JSON.parse(
+            localStorage.getItem(chaveCaixas) || "[]"
+        );
+
+        const itensParse = itensSalvos
+            ? JSON.parse(itensSalvos)
+            : [];
+
         const itensCorrigidos = itensParse.map(i => ({
             ...i,
             caixaId: i.caixaId ?? i.caixa ?? null
         }));
 
-        const caixasParse = caixasSalvas
-            ? JSON.parse(caixasSalvas).map(c => ({
-                ...c,
-                cheia: c.cheia ?? false
-            }))
-            : [];
+        const caixasParse = caixasSalvas.map(c => ({
+            ...c,
+            cheia: c.cheia ?? false
+        }));
 
         const cacheValido =
             itensCorrigidos.length > 0 &&
-            itensCorrigidos.some(i => notasIds.includes(i.notaId));
+            itensCorrigidos.some(i =>
+                notasIds.includes(i.notaId)
+            );
 
         if (cacheValido) {
+
             console.log("USANDO CACHE");
 
             setItens(itensCorrigidos);
             atualizarCaixas(caixasParse);
 
             return;
+
         } else {
+
             console.log("CACHE INVALIDO → BUSCANDO API");
 
             carregarTudo();
@@ -413,6 +422,11 @@ function Conferencia() {
             const chaveItens = `itens_conferencia_${notasIds.join("_")}`;
             const itensSalvos = JSON.parse(localStorage.getItem(chaveItens) || "[]");
 
+            const chaveCaixas = `caixas_conferencia_${notasIds.join("_")}`;
+            const caixasSalvas = JSON.parse(
+                localStorage.getItem(chaveCaixas) || "[]"
+            );
+
             let todosItens = [];
 
             // Gera codigo da caixa vindo da API
@@ -436,10 +450,23 @@ function Conferencia() {
 
                 const itensFormatados = (dataItens.items || []).map((item) => {
 
-                    const itemSalvo = itensSalvos.find(i =>
-                        i.codigo_barras === item.cean &&
-                        i.notaId === nota.id
-                    );
+                    const itemSalvo = itensSalvos.find(i => {
+
+                        const codigoItem =
+                            item.cean && item.cean !== "SEM GTIN"
+                                ? item.cean
+                                : item.cod_produto;
+
+                        const codigoSalvo =
+                            i.codigo_barras && i.codigo_barras !== "SEM GTIN"
+                                ? i.codigo_barras
+                                : i.codigo_produto;
+
+                        return (
+                            codigoSalvo === codigoItem &&
+                            i.notaId === nota.id
+                        );
+                    });
 
                     const itemBase = {
                         descricao: item.descricao || "Item sem identificação",
@@ -449,10 +476,15 @@ function Conferencia() {
                         localizacao: item.loc_sistema || "Sem localização",
                         quantidade: Number(item.quantidade_comercial) || 0,
 
-                        conferido: itemSalvo?.conferido ?? (Number(item.qtd_conferida) || 0),
+                        conferido:
+                            itemSalvo?.conferido ??
+                            (Number(item.qtd_conferida) || 0),
 
-                        // Separa caixa de API / LocalStorage
-                        caixaId: itemSalvo?.caixaId ?? null,
+                        caixaId:
+                            itemSalvo?.caixaId ??
+                            item.caixa ??
+                            null,
+
                         caixaApi: item.caixa || null,
 
                         status: item.status_item,
@@ -476,13 +508,36 @@ function Conferencia() {
                 if (!nomeCaixa || nomeCaixa === "0") return;
 
                 if (!mapaCaixas[nomeCaixa]) {
+
+                    const caixaSalva = caixasRef.current.find(
+                        c => c.id === nomeCaixa
+                    ) || caixasSalvas.find(
+                        c => c.id === nomeCaixa
+                    );
+
+                    // EXTRAI PRATELEIRA E SEQUÊNCIA
+                    const match = nomeCaixa.match(/^(.+)\s-\s(\d+)$/);
+
+                    const prateleira =
+                        caixaSalva?.prateleira ||
+                        match?.[1] ||
+                        "SEM_LOC";
+
+                    const sequencia =
+                        caixaSalva?.sequencia ||
+                        Number(match?.[2] || 1);
+
                     const novaCaixa = {
                         id: nomeCaixa,
                         numero: nomeCaixa,
                         itens: [],
                         jaImprimiu: true,
                         origem: "API",
-                        cheia: false
+
+                        cheia: caixaSalva?.cheia ?? false,
+
+                        prateleira,
+                        sequencia
                     };
 
                     mapaCaixas[nomeCaixa] = novaCaixa;
@@ -492,14 +547,23 @@ function Conferencia() {
 
             const itensComCaixaCorrigida = todosItens.map(item => {
 
-                // Prioriza as caixas do localStorage
-                if (item.caixaId) return item;
+                // JÁ POSSUI CAIXA LOCAL
+                if (item.caixaId) {
 
-                // Se não achar, usa API
+                    const caixaLocal = novasCaixas.find(
+                        c => c.id === item.caixaId
+                    );
+
+                    return item;
+                }
+
+                // USA CAIXA DA API
                 if (item.caixaApi) {
+
                     const caixaObj = mapaCaixas[item.caixaApi];
 
                     if (caixaObj) {
+
                         return {
                             ...item,
                             caixaId: caixaObj.id
@@ -564,57 +628,71 @@ function Conferencia() {
             prateleira,
             sequencia: novaSequencia,
             cheia: false,
-            itens: []
+            itens: [],
+            jaImprimiu: false
         };
     };
 
     const resolverCaixa = (item) => {
-        const prateleira = getPrateleira(item.localizacao);
 
-        // Se existe caixa aberta de outra LOC -> fecha ela
-        if (
-            caixaAberta &&
-            caixaAberta.prateleira !== prateleira
-        ) {
-            fecharCaixa();
-        }
-
-        // Se item já tem caixa → usa ela (se não estiver cheia)
+        // ITEM JÁ POSSUI CAIXA
         if (item.caixaId) {
 
             const caixaItem = caixasRef.current.find(
                 c => c.id === item.caixaId
             );
 
-            // Se a caixa do item está cheia, cria imediatamente uma nova
-            if (caixaItem?.cheia) {
-                return obterOuCriarCaixa(item.localizacao);
-            }
-
             if (caixaItem) {
-                return caixaItem;
+
+                // CAIXA DO ITEM ESTÁ CHEIA
+                if (caixaItem.cheia) {
+
+                    return {
+                        caixa: caixaItem,
+                        origem: "ITEM_CAIXA_CHEIA"
+                    };
+                }
+
+                return {
+                    caixa: caixaItem,
+                    origem: "ITEM"
+                };
             }
         }
 
-        // Caixa aberta válida
-        if (
-            caixaAberta &&
-            caixaAberta.prateleira === prateleira &&
-            !caixaAberta.cheia
-        ) {
-            return caixaAberta;
+        // PRIORIDADE TOTAL:
+        // SE EXISTE CAIXA ABERTA, USA ELA
+        if (caixaAberta) {
+
+            return {
+                caixa: caixaAberta,
+                origem: "MANUAL"
+            };
         }
 
-        // Caixa existente disponível
+        const prateleira = getPrateleira(item.localizacao);
+
+        // PROCURA CAIXA DISPONÍVEL
         const caixaDisponivel = caixasRef.current.find(c =>
-            c.prateleira === prateleira && !c.cheia
+            c.prateleira === prateleira &&
+            !c.cheia
         );
 
-        if (caixaDisponivel) return caixaDisponivel;
+        if (caixaDisponivel) {
 
-        // Criar nova
-        const nova = obterOuCriarCaixa(item.localizacao);
-        return nova;
+            return {
+                caixa: caixaDisponivel,
+                origem: "AUTO"
+            };
+        }
+
+        // CRIA NOVA
+        return {
+            caixa: obterOuCriarCaixa(item.localizacao),
+            origem: "NOVA"
+        };
+        console.log("CAIXAS REF:", caixasRef.current);
+        console.log("ITEM:", item);
     };
 
     // Abrir nova caixa
@@ -653,7 +731,10 @@ function Conferencia() {
             caixaFinal.jaImprimiu = true;
         }
 
-        const sucesso = await enviarItensDaCaixa(caixaFinal);
+        const sucesso = await enviarItensDaCaixa(
+            caixaFinal,
+            itens
+        );
 
         if (!sucesso) {
             return; // Não fecha se deu erro
@@ -831,6 +912,30 @@ function Conferencia() {
         );
     };
 
+    // Marca caixa como cheia
+    const toggleCaixaCheia = (caixaId) => {
+
+        atualizarCaixas(prev =>
+            prev.map(c =>
+                c.id === caixaId
+                    ? { ...c, cheia: !c.cheia }
+                    : c
+            )
+        );
+
+        setCaixaAberta(prev => {
+
+            if (!prev || prev.id !== caixaId) {
+                return prev;
+            }
+
+            return {
+                ...prev,
+                cheia: !prev.cheia
+            };
+        });
+    };
+
     // Scanner
     const scanner = async () => {
 
@@ -843,6 +948,20 @@ function Conferencia() {
             const codigoLimpo = codigo.trim();
 
             if (!codigoLimpo) return;
+
+            // VALIDA IMPRESSORA
+            if (!printer || !printer.trim()) {
+
+                setSnackbar({
+                    open: true,
+                    message: "Selecione uma impressora antes de conferir itens",
+                    severity: "warning"
+                });
+
+                setCodigo("");
+
+                return;
+            }
 
             // BUSCA ITEM
 
@@ -889,19 +1008,60 @@ function Conferencia() {
                 return;
             }
 
-            // RESOLVE CAIXA
+            // Procura caixa
+            const resultadoCaixa = resolverCaixa(itemAtual);
 
-            let caixaDestino = resolverCaixa(itemAtual);
+            let caixaDestino = resultadoCaixa.caixa;
 
-            const caixaAtualizada = caixasRef.current.find(
-                c => c.id === caixaDestino.id
-            );
+            // Item possui caixa cheia
+            if (resultadoCaixa.origem === "ITEM_CAIXA_CHEIA") {
 
-            if (caixaAtualizada?.cheia) {
-                caixaDestino = obterOuCriarCaixa(itemAtual.localizacao);
+                setModalCaixaItem({
+                    open: true,
+                    item: itemAtual,
+                    caixa: caixaDestino,
+                    cheia: true
+                });
+
+                // Se existe caixa aberta, usa ela
+                if (caixaAberta && !caixaAberta.cheia) {
+
+                    caixaDestino = caixaAberta;
+
+                } else {
+
+                    setCodigo("");
+                    return;
+                }
             }
 
-            // CAIXA CHEIA
+            // Item possui caixa fixa
+            if (resultadoCaixa.origem === "ITEM") {
+
+                const caixaAtualizada = caixasRef.current.find(
+                    c => c.id === caixaDestino.id
+                );
+
+                // Caixa original do item está cheia
+                if (caixaAtualizada?.cheia) {
+
+                    setModalCaixaItem({
+                        open: true,
+                        item: itemAtual,
+                        caixa: caixaAtualizada,
+                        cheia: true
+                    });
+
+                    setCodigo("");
+
+                    return;
+                }
+
+                // Caixa disponível → usa obrigatoriamente ela
+                caixaDestino = caixaAtualizada || caixaDestino;
+            }
+
+            // Caixa cheia
             if (caixaDestino?.cheia) {
 
                 setSnackbar({
@@ -914,13 +1074,17 @@ function Conferencia() {
                 return;
             }
 
-            // GARANTE EXISTÊNCIA DA CAIXA
+            const ehCaixaNova = !caixasRef.current.some(
+                c => c.id === caixaDestino.id
+            );
+
+            // Garante que a caixa existe
             addCaixaSafe({
                 ...caixaDestino,
                 itens: caixaDestino.itens || []
             });
 
-            // MODO QUANTIDADE
+            // Modo quantidade
 
             let incremento = 1;
 
@@ -958,13 +1122,13 @@ function Conferencia() {
                 setQuantidadeInput("");
             }
 
-            // IMPRIME ETIQUETAS ITEM
+            // Imprime etiqueta dos itens
 
             for (let i = 0; i < incremento; i++) {
                 await imprimirEtiqueta(itemAtual);
             }
 
-            // ATUALIZA ITENS
+            // Atualiza itens
 
             const novosItensBase = itens.map((i, idx) => {
 
@@ -977,7 +1141,7 @@ function Conferencia() {
                 };
             });
 
-            // MOVE ITEM TOPO
+            // Move pro topo
             const itemAtualizado = novosItensBase[index];
 
             const listaFinal = [
@@ -987,66 +1151,59 @@ function Conferencia() {
 
             setItens(listaFinal);
 
-            // ATUALIZA CAIXAS
-            const caixasAtualizadas = caixasRef.current.map(c => {
-
-                if (c.id !== caixaDestino.id) {
-
-                    return {
-                        ...c,
-                        itens: listaFinal.filter(i => i.caixaId === c.id)
-                    };
-                }
-
-                return {
-                    ...c,
+            // Atualiza caixa
+            const caixasAtualizadas = [
+                ...caixasRef.current.filter(c => c.id !== caixaDestino.id),
+                {
+                    ...caixaDestino,
                     itens: listaFinal.filter(i => i.caixaId === caixaDestino.id),
-
-                    jaImprimiu: c.jaImprimiu || false
-                };
-            });
+                    jaImprimiu: caixaDestino.jaImprimiu ?? false,
+                    cheia: caixaDestino.cheia ?? false
+                }
+            ];
 
             atualizarCaixas(caixasAtualizadas);
 
-            // CAIXA FINAL
-
+            // Caixa final
             const caixaFinal = {
                 ...caixaDestino,
                 itens: listaFinal.filter(
                     i => i.caixaId === caixaDestino.id
                 ),
-                jaImprimiu: true
+                jaImprimiu: caixaDestino.jaImprimiu ?? false,
+                cheia: caixaDestino.cheia ?? false
             };
 
-            // ENVIA API
+            // Envia itens pra API
             const sucesso = await enviarItensDaCaixa(caixaFinal);
 
             if (!sucesso) {
                 return;
             }
 
-            // IMPRIME ETIQUETA CAIXA
-            const caixaExistente = caixasRef.current.find(
+            const caixaAtualState = caixasRef.current.find(
                 c => c.id === caixaDestino.id
             );
 
-            const jaImprimiu = caixaExistente?.jaImprimiu;
-
-            if (!jaImprimiu) {
+            if (ehCaixaNova && !caixaFinal.jaImprimiu) {
 
                 await imprimirEtiquetaCaixa(caixaFinal);
 
-                // MARCA COMO IMPRESSA
+                caixaFinal.jaImprimiu = true;
+
                 atualizarCaixas(prev =>
                     prev.map(c =>
                         c.id === caixaDestino.id
-                            ? { ...c, jaImprimiu: true }
+                            ? {
+                                ...c,
+                                jaImprimiu: true
+                            }
                             : c
                     )
                 );
             }
 
-            // FEEDBACK
+            // Feedback
             setUltimoItemScaneado(itemAtualizado);
 
             setSnackbar({
@@ -1075,67 +1232,6 @@ function Conferencia() {
                 inputRef.current?.focus();
             }, 50);
         }
-    };
-
-    const confirmarMoverCaixa = async () => {
-        const { item, caixaOrigem, acao } = modalMoverItem;
-
-        if (!item || !caixaOrigem) return;
-
-        const novaCaixa = obterOuCriarCaixa(item.localizacao);
-
-        // MOVE ITEM OU TODOS
-        const novosItens = itens.map(i => {
-            if (acao === "ITEM") {
-                if (
-                    i.codigo_barras === item.codigo_barras &&
-                    i.notaId === item.notaId
-                ) {
-                    return {
-                        ...i,
-                        caixaId: novaCaixa.id
-                    };
-                }
-                return i;
-            }
-
-            // TODOS DA CAIXA
-            if (i.caixaId === caixaOrigem.id) {
-                return {
-                    ...i,
-                    caixaId: novaCaixa.id
-                };
-            }
-
-            return i;
-        });
-
-        setItens(novosItens);
-
-        atualizarCaixas(prev => {
-            const filtradas = prev.filter(c => c.id !== caixaOrigem.id);
-
-            return [...filtradas, novaCaixa];
-        });
-
-        setCaixaAberta(novaCaixa);
-
-        setModalMoverItem({
-            open: false,
-            item: null,
-            caixaOrigem: null,
-            caixaDestino: null,
-            acao: null
-        });
-
-        setSnackbar({
-            open: true,
-            message:
-                acao === "ITEM"
-                    ? "Item movido para nova caixa"
-                    : "Todos os itens movidos para nova caixa",
-            severity: "success"
-        });
     };
 
     // Impressão de etiquetas de peça
@@ -1176,7 +1272,7 @@ function Conferencia() {
 ^FD${unidade.id_unico}^FS
 
 ^FO460,30
-^A0B,32,26
+^A0B,35,30
 ^FD${(userInfo?.codigo || "")}^FS
 
 ^XZ
@@ -1361,10 +1457,10 @@ function Conferencia() {
     };
 
     // Fecha caixa e envia para API
-    const enviarItensDaCaixa = async (caixa) => {
+    const enviarItensDaCaixa = async (caixa, itensAtualizados = itens) => {
         try {
 
-            const itensDaCaixa = itens.filter(i =>
+            const itensDaCaixa = itensAtualizados.filter(i =>
                 i.caixaId === caixa.id
             );
 
@@ -1481,7 +1577,10 @@ function Conferencia() {
             }
 
             for (const caixa of caixas) {
-                const sucesso = await enviarItensDaCaixa(caixa);
+                const sucesso = await enviarItensDaCaixa(
+                    caixa,
+                    itens
+                );
                 if (!sucesso) return;
             }
 
@@ -1908,27 +2007,50 @@ function Conferencia() {
                                                 </Tooltip>
 
                                                 {/* Caixa cheia / disponível */}
-                                                <Tooltip title={c.cheia ? "Caixa cheia" : "Caixa disponível"}>
+                                                <Tooltip
+                                                    title={c.cheia ? "Caixa cheia" : "Caixa disponível"}
+                                                >
                                                     <IconButton
                                                         size="small"
                                                         onClick={() => {
-                                                            atualizarCaixas(prev =>
-                                                                prev.map(cx => {
-                                                                    if (cx.id !== c.id) return cx;
 
-                                                                    const nova = { ...cx, cheia: !cx.cheia };
+                                                            const novoEstado = !c.cheia;
 
-                                                                    setCaixaAberta(aberta => {
-                                                                        if (!aberta || aberta.id !== cx.id) return aberta;
-                                                                        return nova;
-                                                                    });
-
-                                                                    return nova;
-                                                                })
+                                                            const novasCaixas = caixasRef.current.map(cx =>
+                                                                cx.id === c.id
+                                                                    ? {
+                                                                        ...cx,
+                                                                        cheia: novoEstado
+                                                                    }
+                                                                    : cx
                                                             );
+
+                                                            atualizarCaixas(novasCaixas);
+
+                                                            setCaixaAberta(prev => {
+
+                                                                if (!prev || prev.id !== c.id) {
+                                                                    return prev;
+                                                                }
+
+                                                                return {
+                                                                    ...prev,
+                                                                    cheia: novoEstado
+                                                                };
+                                                            });
+
+                                                            setSnackbar({
+                                                                open: true,
+                                                                message: novoEstado
+                                                                    ? `Caixa ${c.numero} marcada como CHEIA`
+                                                                    : `Caixa ${c.numero} marcada como DISPONÍVEL`,
+                                                                severity: novoEstado ? "error" : "success"
+                                                            });
                                                         }}
                                                     >
-                                                        <Inventory2Icon color={c.cheia ? "error" : "success"} />
+                                                        <Inventory2Icon
+                                                            color={c.cheia ? "error" : "success"}
+                                                        />
                                                     </IconButton>
                                                 </Tooltip>
 
@@ -2182,7 +2304,16 @@ function Conferencia() {
                 </DialogActions>
             </Dialog>
 
-            <Dialog open={modalMoverItem.open}
+            <Dialog
+                open={modalCaixaItem.open}
+                onClose={() =>
+                    setModalCaixaItem({
+                        open: false,
+                        item: null,
+                        caixa: null,
+                        cheia: false
+                    })
+                }
                 slotProps={{
                     paper: {
                         sx: {
@@ -2190,45 +2321,79 @@ function Conferencia() {
                             color: "text.primary",
                         }
                     }
-                }}>
-                <DialogTitle>Caixa cheia</DialogTitle>
+                }}
+            >
+                <DialogTitle>
+                    Item já possui caixa
+                </DialogTitle>
 
                 <DialogContent>
-                    {modalMoverItem.acao === "ITEM" ? (
-                        <Typography>
-                            Esse item já está em uma caixa cheia. Deseja mover APENAS esse item para uma nova caixa?
-                        </Typography>
-                    ) : (
-                        <Typography>
-                            Essa caixa está cheia. Deseja mover TODOS os itens para uma nova caixa?
+                    <Typography>
+                        Este item pertence à caixa:
+                    </Typography>
+
+                    <Typography sx={{ mt: 1, fontWeight: "bold" }}>
+                        {modalCaixaItem.caixa?.numero}
+                    </Typography>
+
+                    {modalCaixaItem.cheia && (
+                        <Typography sx={{ mt: 2 }} color="error">
+                            Essa caixa está marcada como CHEIA.
                         </Typography>
                     )}
                 </DialogContent>
 
                 <DialogActions>
-                    <Button
-                        onClick={() =>
-                            setModalMoverItem(prev => ({ ...prev, open: false }))
-                        }
-                        sx={{ color: "primary.branco", bgcolor: 'primary.cancelar', '&:hover': { bgcolor: 'primary.cancelarHover' } }}
-                    >
-                        Cancelar
-                    </Button>
+
+                    {modalCaixaItem.cheia && (
+                        <Button
+                            variant="contained"
+                            onClick={() =>
+                                imprimirEtiquetaCaixa(modalCaixaItem.caixa)
+                            }
+                        >
+                            Reimprimir etiqueta
+                        </Button>
+                    )}
 
                     <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={confirmarMoverCaixa}
-                        sx={{ color: "primary.branco", bgcolor: 'primary.confirmar', '&:hover': { bgcolor: 'primary.confirmarHover' } }}
+                        onClick={() =>
+                            setModalCaixaItem({
+                                open: false,
+                                item: null,
+                                caixa: null,
+                                cheia: false
+                            })
+                        }
                     >
-                        Confirmar
+                        Fechar
                     </Button>
                 </DialogActions>
             </Dialog>
 
             {/* Snackbar */}
-            <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
-                <Alert variant="filled" severity={snackbar.severity}>{snackbar.message}</Alert>
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={3000}
+                onClose={() => setSnackbar({ ...snackbar, open: false })}
+            >
+                <Alert
+                    variant="filled"
+                    severity={snackbar.severity}
+                    sx={{
+                        color: 'primary.branco',
+
+                        "& .MuiAlert-icon": {
+                            color: 'primary.branco'
+                        },
+
+                        "& .MuiAlert-action": {
+                            color: 'primary.branco'
+                        }
+                    }}
+                >
+                    {snackbar.message}
+                </Alert>
             </Snackbar>
         </Container>
     );

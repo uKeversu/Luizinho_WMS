@@ -90,6 +90,21 @@ function Dashboard({ tipo }) {
         setNotasSelecionadas([]);
     }, [aba]);
 
+    // Padroniza busca de notas dos últimos 7 dias
+    useEffect(() => {
+        const hoje = new Date();
+
+        const seteDiasAtras = new Date();
+        seteDiasAtras.setDate(hoje.getDate() - 7);
+
+        const formatarData = (data) => {
+            return data.toISOString().split("T")[0];
+        };
+
+        setDataInicio(formatarData(seteDiasAtras));
+        setDataFim(formatarData(hoje));
+    }, []);
+
     // Busca notas na API
     const buscarNotas = async () => {
         setLoadingNotas(true);
@@ -315,32 +330,35 @@ function Dashboard({ tipo }) {
                 ? nota.data_emissao
                 : nota.data_recebimento;
 
-        if (aba === 0) return nota.status === "EM_TRANSITO";
+        const dataNota = parseData(campoData);
+
+        // FILTRO DE DATA PARA TODAS AS ABAS
+        if (dataInicio) {
+            const inicio = new Date(dataInicio);
+            inicio.setHours(0, 0, 0, 0);
+
+            if (dataNota < inicio) return false;
+        }
+
+        if (dataFim) {
+            const fim = new Date(dataFim);
+            fim.setHours(23, 59, 59, 999);
+
+            if (dataNota > fim) return false;
+        }
+
+        // FILTRO DAS ABAS
+        if (aba === 0)
+            return nota.status === "EM_TRANSITO";
 
         if (aba === 1)
             return ["PENDENTE", "FORNECEDOR_DIRETO"].includes(nota.status);
 
-        if (aba === 2) return nota.status === "CONFERIDA";
+        if (aba === 2)
+            return nota.status === "CONFERIDA";
 
-        // HISTÓRICO
-        if (aba === 3) {
-
-            const dataNota = parseData(campoData);
-
-            if (dataInicio) {
-                const inicio = new Date(dataInicio);
-                if (dataNota < inicio) return false;
-            }
-
-            if (dataFim) {
-                const fim = new Date(dataFim);
-                fim.setHours(23, 59, 59, 999);
-
-                if (dataNota > fim) return false;
-            }
-
+        if (aba === 3)
             return true;
-        }
 
         return true;
     });
@@ -748,91 +766,330 @@ function Dashboard({ tipo }) {
                             {notasOrdenadas.map((nota, idx) => (
 
                                 <Grid size={{ xs: 12, md: 3 }} key={idx}>
-                                    <Card variant="outlined" sx={{
-                                        borderRadius: '2vh',
-                                        boxShadow: '0vh 0.1vh 0.5vh var(--sombra)',
-                                        bgcolor: nota.status === "FORNECEDOR_DIRETO" ? 'background.forndireto' : 'background.inputBg',
-                                        height: '100%',
-                                        display: 'flex',
-                                        textAlign: 'left',
-                                        flexDirection: 'column'
-                                    }}>
-                                        <CardContent sx={{
+                                    <Card
+                                        variant="outlined"
+                                        sx={{
+                                            borderRadius: '16px',
+                                            overflow: 'hidden',
+                                            border: '1px solid',
+                                            borderColor: 'divider',
+                                            bgcolor:
+                                                nota.status === "FORNECEDOR_DIRETO"
+                                                    ? 'background.forndireto'
+                                                    : 'background.inputBg',
+                                            boxShadow: '0 3px 10px rgba(0,0,0,0.08)',
+                                            transition: '0.2s ease',
+                                            height: '100%',
                                             display: 'flex',
                                             flexDirection: 'column',
-                                            flexGrow: 1,
-                                            gap: 1,
-                                        }}>
-                                            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                                <Typography><strong>NF:</strong> {nota.numero}</Typography>
 
-                                                {aba !== 3 && (nota.status === "FORNECEDOR_DIRETO" || nota.status === "PENDENTE") && (
-                                                    <Checkbox
-                                                        checked={notasSelecionadas.includes(nota.id)}
-                                                        onChange={(e) => {
-                                                            if (e.target.checked) {
-                                                                const notaAtual = nota;
-                                                                if (notaAtual.status === "PENDENTE" && notasSelecionadas.length >= 1) {
-                                                                    setSnackbar({
-                                                                        open: true,
-                                                                        message: "Só é permitido uma nota por vez",
-                                                                        severity: "warning"
-                                                                    });
-                                                                    return;
-                                                                }
-                                                                setNotasSelecionadas(prev => [...prev, nota.id]);
-                                                            } else {
-                                                                setNotasSelecionadas(prev => prev.filter(id => id !== nota.id));
-                                                            }
+                                            '&:hover': {
+                                                transform: 'translateY(-2px)',
+                                                boxShadow: '0 6px 16px rgba(0,0,0,0.12)',
+                                            }
+                                        }}
+                                    >
+                                        <CardContent
+                                            sx={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                flexGrow: 1,
+                                                p: 1.5,
+                                                gap: 1
+                                            }}
+                                        >
+                                            {/* HEADER */}
+                                            <Box
+                                                sx={{
+                                                    display: 'flex',
+                                                    justifyContent: 'space-between',
+                                                    alignItems: 'flex-start',
+                                                    gap: 1
+                                                }}
+                                            >
+                                                <Box>
+                                                    <Typography
+                                                        sx={{
+                                                            fontSize: '1rem',
+                                                            fontWeight: 700,
+                                                            color: 'primary.main',
+                                                            lineHeight: 1
                                                         }}
-                                                    />
-                                                )}
+                                                    >
+                                                        NF {nota.numero}
+                                                    </Typography>
+
+                                                    <Typography
+                                                        sx={{
+                                                            fontSize: '0.7rem',
+                                                            color: 'text.secondary',
+                                                            mt: 0.3
+                                                        }}
+                                                    >
+                                                        Série {nota.serie}
+                                                    </Typography>
+                                                </Box>
+
+                                                {aba !== 3 &&
+                                                    (nota.status === "FORNECEDOR_DIRETO" ||
+                                                        nota.status === "PENDENTE") && (
+                                                        <Checkbox
+                                                            size="small"
+                                                            checked={notasSelecionadas.includes(nota.id)}
+                                                            onChange={(e) => {
+                                                                if (e.target.checked) {
+                                                                    const notaAtual = nota;
+
+                                                                    if (
+                                                                        notaAtual.status === "PENDENTE" &&
+                                                                        notasSelecionadas.length >= 1
+                                                                    ) {
+                                                                        setSnackbar({
+                                                                            open: true,
+                                                                            message: "Só é permitido uma nota por vez",
+                                                                            severity: "warning"
+                                                                        });
+                                                                        return;
+                                                                    }
+
+                                                                    setNotasSelecionadas(prev => [
+                                                                        ...prev,
+                                                                        nota.id
+                                                                    ]);
+                                                                } else {
+                                                                    setNotasSelecionadas(prev =>
+                                                                        prev.filter(id => id !== nota.id)
+                                                                    );
+                                                                }
+                                                            }}
+                                                        />
+                                                    )}
                                             </Box>
-                                            <Typography><strong>Série:</strong> {nota.serie}</Typography>
-                                            <Typography sx={{
-                                                whiteSpace: 'nowrap',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
-                                                fontSize: '0.8rem'
-                                            }}>
-                                                <strong>Fornecedor:</strong> {nota.fornecedor}
-                                            </Typography>
 
-                                            <Typography sx={{ fontSize: '0.8rem' }}><strong>Emissão:</strong> {nota.data_emissao}</Typography>
-                                            <Typography sx={{ fontSize: '0.8rem' }}><strong>Importação:</strong> {nota.data_recebimento}</Typography>
-                                            <Typography sx={{
-                                                fontSize: '0.8rem',
-                                                whiteSpace: 'nowrap',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
-                                            }}><strong>Local:</strong> {nota.pallets?.toUpperCase()}</Typography>
-                                            {nota.observacao_palet?.trim() && (
-                                                <Typography sx={{ fontSize: '0.8rem', color: 'var(--observacao-texto)', fontStyle: 'italic' }}>
-                                                    <strong>Obs:</strong> {nota.observacao_palet}
+                                            {/* STATUS */}
+                                            <Box
+                                                sx={{
+                                                    alignSelf: 'flex-start',
+                                                    px: 1,
+                                                    py: 0.3,
+                                                    borderRadius: '999px',
+                                                    bgcolor:
+                                                        nota.status === "FORNECEDOR_DIRETO"
+                                                            ? 'background.forndireto'
+                                                            : nota.status === "PENDENTE"
+                                                                ? 'primary.parcial'
+                                                                : nota.status === "CONFERIDA"
+                                                                    ? 'primary.conferidos'
+                                                                    : 'primary.guardado',
+                                                    color: 'primary.branco',
+                                                    fontSize: '0.7rem',
+                                                    fontWeight: 700
+                                                }}
+                                            >
+                                                {nota.status}
+                                            </Box>
+
+                                            {/* FORNECEDOR */}
+                                            <Box
+                                                sx={{
+                                                    bgcolor: 'background.inputBg',
+                                                    borderRadius: '10px',
+                                                    p: 0.8
+                                                }}
+                                            >
+                                                <Typography
+                                                    sx={{
+                                                        fontSize: '0.58rem',
+                                                        color: 'text.secondary',
+                                                        textTransform: 'uppercase',
+                                                        mb: 0.2
+                                                    }}
+                                                >
+                                                    Fornecedor
                                                 </Typography>
-                                            )}
-                                            <Typography sx={{ fontSize: '0.8rem' }}><strong>Status:</strong> {nota.status}</Typography>
 
-                                            <Box sx={{ mt: 'auto' }}>
+                                                <Typography
+                                                    sx={{
+                                                        fontSize: '0.78rem',
+                                                        fontWeight: 600,
+                                                        whiteSpace: 'nowrap',
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis',
+                                                        color: 'text.primary'
+                                                    }}
+                                                >
+                                                    {nota.fornecedor}
+                                                </Typography>
+                                            </Box>
+
+                                            {/* DATAS */}
+                                            <Box
+                                                sx={{
+                                                    display: 'grid',
+                                                    gridTemplateColumns: '1fr 1fr',
+                                                    gap: 0.8
+                                                }}
+                                            >
+                                                <Box
+                                                    sx={{
+                                                        bgcolor: 'background.inputBg',
+                                                        borderRadius: '10px',
+                                                        p: 0.8
+                                                    }}
+                                                >
+                                                    <Typography
+                                                        sx={{
+                                                            fontSize: '0.55rem',
+                                                            color: 'text.secondary',
+                                                            textTransform: 'uppercase'
+                                                        }}
+                                                    >
+                                                        Emissão
+                                                    </Typography>
+
+                                                    <Typography
+                                                        sx={{
+                                                            fontSize: '0.72rem',
+                                                            fontWeight: 700
+                                                        }}
+                                                    >
+                                                        {nota.data_emissao}
+                                                    </Typography>
+                                                </Box>
+
+                                                <Box
+                                                    sx={{
+                                                        bgcolor: 'background.inputBg',
+                                                        borderRadius: '10px',
+                                                        p: 0.8
+                                                    }}
+                                                >
+                                                    <Typography
+                                                        sx={{
+                                                            fontSize: '0.55rem',
+                                                            color: 'text.secondary',
+                                                            textTransform: 'uppercase'
+                                                        }}
+                                                    >
+                                                        Importação
+                                                    </Typography>
+
+                                                    <Typography
+                                                        sx={{
+                                                            fontSize: '0.72rem',
+                                                            fontWeight: 700
+                                                        }}
+                                                    >
+                                                        {nota.data_recebimento}
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
+
+                                            {/* LOCAL */}
+                                            <Box
+                                                sx={{
+                                                    bgcolor: 'background.inputBg',
+                                                    borderRadius: '10px',
+                                                    p: 0.8
+                                                }}
+                                            >
+                                                <Typography
+                                                    sx={{
+                                                        fontSize: '0.55rem',
+                                                        color: 'text.secondary',
+                                                        textTransform: 'uppercase',
+                                                        mb: 0.2
+                                                    }}
+                                                >
+                                                    Local
+                                                </Typography>
+
+                                                <Typography
+                                                    sx={{
+                                                        fontSize: '0.78rem',
+                                                        fontWeight: 700,
+                                                        whiteSpace: 'nowrap',
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis'
+                                                    }}
+                                                >
+                                                    {nota.pallets?.toUpperCase()}
+                                                </Typography>
+                                            </Box>
+
+                                            {/* OBS */}
+                                            {nota.observacao_palet?.trim() && (
+                                                <Box
+                                                    sx={{
+                                                        bgcolor: 'primary.observacao',
+                                                        borderRadius: '10px',
+                                                        p: 0.8
+                                                    }}
+                                                >
+                                                    <Typography
+                                                        sx={{
+                                                            fontSize: '0.68rem',
+                                                            color: 'primary.branco'
+                                                        }}
+                                                    >
+                                                        <strong>Obs:</strong> {nota.observacao_palet}
+                                                    </Typography>
+                                                </Box>
+                                            )}
+
+                                            {/* BOTÕES */}
+                                            <Box
+                                                sx={{
+                                                    mt: 'auto',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    gap: 0.8
+                                                }}
+                                            >
                                                 <Button
                                                     fullWidth
                                                     variant="contained"
+                                                    size="small"
                                                     sx={{
-                                                        mb: '1vh',
-                                                        bgcolor: 'var(--azul)',
-                                                        '&:hover': { bgcolor: 'var(--azul-hover)' }
+                                                        borderRadius: '10px',
+                                                        py: 0.7,
+                                                        fontWeight: 700,
+                                                        fontSize: '0.72rem',
+                                                        textTransform: 'none',
+                                                        bgcolor: 'primary.main',
+                                                        boxShadow: 'none',
+
+                                                        '&:hover': {
+                                                            bgcolor: 'primary.mainHover',
+                                                            boxShadow: 'none'
+                                                        }
                                                     }}
-                                                    onClick={() => { buscarItens(nota) }}
-                                                >Ver itens
+                                                    onClick={() => {
+                                                        buscarItens(nota);
+                                                    }}
+                                                >
+                                                    Ver itens
                                                 </Button>
+
                                                 {aba !== 3 && nota.status === "EM_TRANSITO" && (
                                                     <Button
                                                         fullWidth
                                                         variant="contained"
+                                                        size="small"
                                                         disabled={loadingNotasIds.includes(nota.id)}
                                                         sx={{
-                                                            bgcolor: "var(--confirmar)",
-                                                            '&:hover': { bgcolor: "var(--confirmar-hover)" }
+                                                            borderRadius: '10px',
+                                                            py: 0.7,
+                                                            fontWeight: 700,
+                                                            fontSize: '0.72rem',
+                                                            textTransform: 'none',
+                                                            bgcolor: 'primary.confirmar',
+                                                            boxShadow: 'none',
+
+                                                            '&:hover': {
+                                                                bgcolor: 'primary.confirmarHover',
+                                                                boxShadow: 'none'
+                                                            }
                                                         }}
                                                         onClick={() => atualizarStatusNota(nota)}
                                                     >
