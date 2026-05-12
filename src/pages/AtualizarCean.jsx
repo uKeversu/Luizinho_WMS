@@ -23,7 +23,6 @@ import '../style/App.css';
 
 function AtualizarCean() {
 
-
     const navigate = useNavigate();
 
     // API BASE
