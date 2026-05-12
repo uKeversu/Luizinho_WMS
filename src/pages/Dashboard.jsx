@@ -617,8 +617,8 @@ function Dashboard({ tipo }) {
                         centered
                     >
                         <Tab label="Em Trânsito" />
-                        <Tab label="Conferência pendente" />
-                        <Tab label="Guarda pendente" />
+                        <Tab label="Pendentes" />
+                        <Tab label="Conferidas" />
                         <Tab label="Histórico" />
                     </Tabs>
                 </Box>
