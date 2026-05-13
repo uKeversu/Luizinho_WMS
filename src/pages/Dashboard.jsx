@@ -20,7 +20,8 @@ import {
     Backdrop,
     Snackbar,
     Alert,
-    MenuItem
+    MenuItem,
+    Tooltip
 } from "@mui/material";
 
 import PersonIcon from '@mui/icons-material/Person';
@@ -517,79 +518,93 @@ function Dashboard({ tipo }) {
                                 {userInfo?.nome}
                             </Typography>
                             {token && (
-                                <Button
-                                    size="small"
-                                    onClick={logout}
-                                    sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}
-                                >{<LogoutIcon />}
-                                </Button>
+                                <Tooltip title="Logout">
+                                    <Button size="small" onClick={logout} sx={{ color: "background.paper", display: 'flex', gap: 1 }}>{<LogoutIcon />}</Button>
+                                </Tooltip>
                             )}
                         </Box>
                         <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
 
-                            <Button
-                                onClick={() => navigate("/PainelReimpressao")}
-                                sx={{
-                                    color: "background.paper",
-                                    display: 'flex',
-                                    gap: 0.5,
-                                    fontSize: '0.75rem',
-                                    minWidth: 'auto',
-                                    padding: '4px 8px',
-                                    whiteSpace: 'nowrap'
-                                }}
-                            >
-                                Reimpressão
-                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                    <LocalPrintshopIcon fontSize="small" />
-                                    <ReplayIcon fontSize="small" sx={{ fontSize: 14 }} />
-                                </Box>
-                            </Button>
-                            <Button
-                                id="btnAtualizar" onClick={pegarLocal}
-                                disabled={loadingSync}
-                                size="small"
-                                sx={{
-                                    color: "background.paper",
-                                    display: 'flex',
-                                    gap: 0.5,
-                                    fontSize: '0.75rem',
-                                    minWidth: 'auto',
-                                    padding: '4px 8px',
-                                    whiteSpace: 'nowrap'
-                                }}>
-                                SS Plus Sync
-                                {<SyncIcon />}
-                            </Button>
-                            <Button
-                                onClick={() => navigate("/AtualizarCean")}
-                                sx={{
-                                    color: "background.paper",
-                                    display: 'flex',
-                                    gap: 0.5,
-                                    fontSize: '0.75rem',
-                                    minWidth: 'auto',
-                                    padding: '4px 8px',
-                                    whiteSpace: 'nowrap'
-                                }}
-                            >
-                                CORREÇÃO DE NOTAS
-                                {<BorderColorIcon />}
-                            </Button>
-                            <Button
-                                onClick={() => navigate("/ConsultaGeral")}
-                                sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}
-                            >
-                                Consulta Geral
-                                {<SearchIcon />}
-                            </Button>
-                            <Button
-                                onClick={() => navigate("/")}
-                                sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}
-                            >
-                                Recebimento
-                                {<LocalShippingIcon />}
-                            </Button>
+                            <Tooltip title="Reimprimir etiquetas">
+                                <Button
+                                    onClick={() => navigate("/PainelReimpressao")}
+                                    sx={{
+                                        color: "background.paper",
+                                        display: 'flex',
+                                        gap: 0.5,
+                                        fontSize: '0.75rem',
+                                        minWidth: 'auto',
+                                        padding: '4px 8px',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    Reimpressão
+                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                        <LocalPrintshopIcon fontSize="small" />
+                                        <ReplayIcon fontSize="small" sx={{ fontSize: 14 }} />
+                                    </Box>
+                                </Button>
+                            </Tooltip>
+
+                            <Tooltip title="Sincronizar itens com SS Plus">
+                                <Button
+                                    id="btnAtualizar"
+                                    onClick={pegarLocal}
+                                    disabled={loadingSync}
+                                    size="small"
+                                    sx={{
+                                        color: "background.paper",
+                                        display: 'flex',
+                                        gap: 0.5,
+                                        fontSize: '0.75rem',
+                                        minWidth: 'auto',
+                                        padding: '4px 8px',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    SS Plus Sync
+                                    <SyncIcon />
+                                </Button>
+                            </Tooltip>
+
+                            <Tooltip title="Corrigir CEAN e notas">
+                                <Button
+                                    onClick={() => navigate("/AtualizarCean")}
+                                    sx={{
+                                        color: "background.paper",
+                                        display: 'flex',
+                                        gap: 0.5,
+                                        fontSize: '0.75rem',
+                                        minWidth: 'auto',
+                                        padding: '4px 8px',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    CORREÇÃO DE NOTAS
+                                    <BorderColorIcon />
+                                </Button>
+                            </Tooltip>
+
+                            <Tooltip title="Consultar notas e itens">
+                                <Button
+                                    onClick={() => navigate("/ConsultaGeral")}
+                                    sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}
+                                >
+                                    Consulta Geral
+                                    <SearchIcon />
+                                </Button>
+                            </Tooltip>
+
+                            <Tooltip title="Tela de recebimento">
+                                <Button
+                                    onClick={() => navigate("/")}
+                                    sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}
+                                >
+                                    Recebimento
+                                    <LocalShippingIcon />
+                                </Button>
+                            </Tooltip>
+
                             <pre id="resultado"></pre>
                         </Box>
                     </Box>

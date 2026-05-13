@@ -1714,27 +1714,33 @@ function Conferencia() {
                         {<PersonIcon sx={{ color: "background.paper", paddingRight: '1vh' }} />}
                         <Typography sx={{ color: "background.paper", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>{userInfo?.nome}</Typography>
                         {token && (
-                            <Button size="small" onClick={logout} sx={{ color: "background.paper", display: 'flex', gap: 1 }}>{<LogoutIcon />}</Button>
+                            <Tooltip title="Logout">
+                                <Button size="small" onClick={logout} sx={{ color: "background.paper", display: 'flex', gap: 1 }}>{<LogoutIcon />}</Button>
+                            </Tooltip>
                         )}
                     </Box>
                     <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
-                        <Button
-                            id="btnAtualizar" onClick={syncSSPlus}
-                            disabled={loadingSync}
-                            size="small"
-                            sx={{
-                                color: "background.paper",
-                                display: 'flex',
-                                gap: 0.5,
-                                fontSize: '0.75rem',
-                                minWidth: 'auto',
-                                padding: '4px 8px',
-                                whiteSpace: 'nowrap'
-                            }}>
-                            SS Plus Sync
-                            {<SyncIcon />}
-                        </Button>
-                        <Button onClick={() => navigate("/Dashboard")} sx={{ color: "background.paper", display: 'flex', gap: 1 }}>Voltar {< ArrowBackIcon />}</Button>
+                        <Tooltip title="Sincronizar itens da nota com SS Plus">
+                            <Button
+                                id="btnAtualizar" onClick={syncSSPlus}
+                                disabled={loadingSync}
+                                size="small"
+                                sx={{
+                                    color: "background.paper",
+                                    display: 'flex',
+                                    gap: 0.5,
+                                    fontSize: '0.75rem',
+                                    minWidth: 'auto',
+                                    padding: '4px 8px',
+                                    whiteSpace: 'nowrap'
+                                }}>
+                                SS Plus Sync
+                                {<SyncIcon />}
+                            </Button>
+                        </Tooltip>
+                        <Tooltip title="Voltar ao Dashboard de notas">
+                            <Button onClick={() => navigate("/Dashboard")} sx={{ color: "background.paper", display: 'flex', gap: 1 }}>Voltar {< ArrowBackIcon />}</Button>
+                        </Tooltip>
                     </Box>
                 </Box>
             </Box>

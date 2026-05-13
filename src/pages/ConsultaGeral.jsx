@@ -62,8 +62,20 @@ function ConsultaGeral() {
     const [loadingItens, setLoadingItens] = useState({});
     const [modoBuscaItem, setModoBuscaItem] = useState(false);
     const [busca, setBusca] = useState("");
-    const [dataInicio, setDataInicio] = useState("");
-    const [dataFim, setDataFim] = useState("");
+
+    const hoje = new Date();
+
+    const dataFimPadrao = hoje.toISOString().split("T")[0];
+
+    const dataInicioObj = new Date();
+    dataInicioObj.setDate(dataInicioObj.getDate() - 30);
+
+    const dataInicioPadrao = dataInicioObj
+        .toISOString()
+        .split("T")[0];
+
+    const [dataInicio, setDataInicio] = useState(dataInicioPadrao);
+    const [dataFim, setDataFim] = useState(dataFimPadrao);
 
     const [expandedNota, setExpandedNota] = useState(null);
     const [expandedItem, setExpandedItem] = useState(null);
@@ -438,338 +450,338 @@ function ConsultaGeral() {
 
                 notas.map((nota) => (
 
-                        <Card
-                            key={nota.id}
-                            sx={{
-                                mb: 2,
-                                borderRadius: '2vh',
-                                boxShadow:
-                                    '0vh 0.1vh 0.5vh var(--sombra)',
-                                bgcolor: 'background.alerta',
-                            }}
-                        >
+                    <Card
+                        key={nota.id}
+                        sx={{
+                            mb: 2,
+                            borderRadius: '2vh',
+                            boxShadow:
+                                '0vh 0.1vh 0.5vh var(--sombra)',
+                            bgcolor: 'background.alerta',
+                        }}
+                    >
 
-                            <CardContent>
+                        <CardContent>
 
-                                {/* HEADER NOTA */}
-                                <Box
-                                    onClick={async () => {
+                            {/* HEADER NOTA */}
+                            <Box
+                                onClick={async () => {
 
-                                        const expandindo =
-                                            expandedNota !== nota.id;
+                                    const expandindo =
+                                        expandedNota !== nota.id;
 
-                                        setExpandedNota(
-                                            expandindo
-                                                ? nota.id
-                                                : null
+                                    setExpandedNota(
+                                        expandindo
+                                            ? nota.id
+                                            : null
+                                    );
+
+                                    // Busca itens apenas 1x
+                                    if (
+                                        expandindo &&
+                                        nota.itens === null &&
+                                        !modoBuscaItem
+                                    ) {
+
+                                        await buscarItensNota(
+                                            nota.id
                                         );
+                                    }
+                                }}
 
-                                        // Busca itens apenas 1x
-                                        if (
-                                            expandindo &&
-                                            nota.itens === null &&
-                                            !modoBuscaItem
-                                        ) {
+                                sx={{
+                                    cursor: "pointer"
+                                }}
+                            >
 
-                                            await buscarItensNota(
-                                                nota.id
-                                            );
-                                        }
-                                    }}
+                                <Typography fontWeight="bold">
+                                    📄 {nota.numero} - {nota.fornecedor}
+                                </Typography>
 
-                                    sx={{
-                                        cursor: "pointer"
-                                    }}
-                                >
+                                <Typography fontSize={'0.8rem'}>
+                                    {nota.data_recebimento}
+                                </Typography>
 
-                                    <Typography fontWeight="bold">
-                                        📄 {nota.numero} - {nota.fornecedor}
-                                    </Typography>
+                            </Box>
 
-                                    <Typography fontSize={'0.8rem'}>
-                                        {nota.data_recebimento}
-                                    </Typography>
+                            {/* ITENS */}
+                            <Collapse
+                                in={expandedNota === nota.id}
+                            >
 
-                                </Box>
+                                <Box sx={{ mt: 2 }}>
 
-                                {/* ITENS */}
-                                <Collapse
-                                    in={expandedNota === nota.id}
-                                >
+                                    {/* LOADING ITENS */}
+                                    {loadingItens[nota.id] ? (
 
-                                    <Box sx={{ mt: 2 }}>
+                                        <Box
+                                            sx={{
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                p: 3
+                                            }}
+                                        >
+                                            <CircularProgress size={25} />
+                                        </Box>
 
-                                        {/* LOADING ITENS */}
-                                        {loadingItens[nota.id] ? (
+                                    ) : (
 
-                                            <Box
-                                                sx={{
-                                                    display: 'flex',
-                                                    justifyContent: 'center',
-                                                    p: 3
-                                                }}
-                                            >
-                                                <CircularProgress size={25} />
-                                            </Box>
+                                        <>
+                                            {/* SEM ITENS */}
+                                            {!nota.itens ||
+                                                nota.itens.length === 0 ? (
 
-                                        ) : (
+                                                <Typography>
+                                                    Nenhum item encontrado
+                                                </Typography>
 
-                                            <>
-                                                {/* SEM ITENS */}
-                                                {!nota.itens ||
-                                                    nota.itens.length === 0 ? (
+                                            ) : (
 
-                                                    <Typography>
-                                                        Nenhum item encontrado
-                                                    </Typography>
+                                                <Table size="small">
 
-                                                ) : (
+                                                    <TableHead>
 
-                                                    <Table size="small">
+                                                        <TableRow>
+                                                            <TableCell>
+                                                                LOC
+                                                            </TableCell>
 
-                                                        <TableHead>
+                                                            <TableCell>
+                                                                Código
+                                                            </TableCell>
 
-                                                            <TableRow>
-                                                                <TableCell>
-                                                                    LOC
-                                                                </TableCell>
+                                                            <TableCell>
+                                                                Descrição
+                                                            </TableCell>
 
-                                                                <TableCell>
-                                                                    Código
-                                                                </TableCell>
+                                                            <TableCell>
+                                                                Qtd
+                                                            </TableCell>
 
-                                                                <TableCell>
-                                                                    Descrição
-                                                                </TableCell>
+                                                            <TableCell>
+                                                                Status
+                                                            </TableCell>
 
-                                                                <TableCell>
-                                                                    Qtd
-                                                                </TableCell>
+                                                            <TableCell>
+                                                                Caixa
+                                                            </TableCell>
+                                                        </TableRow>
 
-                                                                <TableCell>
-                                                                    Status
-                                                                </TableCell>
+                                                    </TableHead>
 
-                                                                <TableCell>
-                                                                    Caixa
-                                                                </TableCell>
-                                                            </TableRow>
+                                                    <TableBody>
 
-                                                        </TableHead>
+                                                        {nota.itens.map(
+                                                            (item, idx) => {
 
-                                                        <TableBody>
+                                                                const cod =
+                                                                    item.codigo_barras ??
+                                                                    item.cean ??
+                                                                    item.cod_produto ??
+                                                                    `idx-${idx}`;
 
-                                                            {nota.itens.map(
-                                                                (item, idx) => {
+                                                                const key =
+                                                                    `${nota.id}-${cod}`;
 
-                                                                    const cod =
-                                                                        item.codigo_barras ??
-                                                                        item.cean ??
-                                                                        item.cod_produto ??
-                                                                        `idx-${idx}`;
+                                                                return (
 
-                                                                    const key =
-                                                                        `${nota.id}-${cod}`;
+                                                                    <Fragment key={key}>
 
-                                                                    return (
+                                                                        {/* ITEM */}
+                                                                        <TableRow
 
-                                                                        <Fragment key={key}>
+                                                                            onClick={(e) => {
 
-                                                                            {/* ITEM */}
-                                                                            <TableRow
+                                                                                e.stopPropagation();
 
-                                                                                onClick={(e) => {
+                                                                                handleExpandItem(
+                                                                                    nota.id,
+                                                                                    cod
+                                                                                );
+                                                                            }}
 
-                                                                                    e.stopPropagation();
+                                                                            sx={{
+                                                                                cursor: "pointer",
 
-                                                                                    handleExpandItem(
-                                                                                        nota.id,
-                                                                                        cod
-                                                                                    );
-                                                                                }}
+                                                                                backgroundColor:
+                                                                                    isItemBuscado(item)
+                                                                                        ? 'primary.achouItem'
+                                                                                        : 'inherit',
 
+                                                                                transition: '0.2s'
+                                                                            }}
+                                                                        >
+
+                                                                            <TableCell>
+                                                                                {item.loc_sistema}
+                                                                            </TableCell>
+
+                                                                            <TableCell>
+                                                                                {item.basico}
+                                                                            </TableCell>
+
+                                                                            <TableCell>
+                                                                                {item.descricao}
+                                                                            </TableCell>
+
+                                                                            <TableCell>
+                                                                                {Number(
+                                                                                    item.quantidade_comercial
+                                                                                )}
+                                                                            </TableCell>
+
+                                                                            <TableCell
                                                                                 sx={{
-                                                                                    cursor: "pointer",
-
-                                                                                    backgroundColor:
-                                                                                        isItemBuscado(item)
-                                                                                            ? 'primary.achouItem'
-                                                                                            : 'inherit',
-
-                                                                                    transition: '0.2s'
+                                                                                    display: 'flex',
+                                                                                    alignItems: 'center'
                                                                                 }}
                                                                             >
 
-                                                                                <TableCell>
-                                                                                    {item.loc_sistema}
-                                                                                </TableCell>
+                                                                                {getIconStatus(
+                                                                                    item.status_item
+                                                                                )}
 
-                                                                                <TableCell>
-                                                                                    {item.basico}
-                                                                                </TableCell>
-
-                                                                                <TableCell>
-                                                                                    {item.descricao}
-                                                                                </TableCell>
-
-                                                                                <TableCell>
-                                                                                    {Number(
-                                                                                        item.quantidade_comercial
-                                                                                    )}
-                                                                                </TableCell>
-
-                                                                                <TableCell
-                                                                                    sx={{
-                                                                                        display: 'flex',
-                                                                                        alignItems: 'center'
-                                                                                    }}
-                                                                                >
-
-                                                                                    {getIconStatus(
+                                                                                <Box sx={{ ml: 2 }}>
+                                                                                    {getDescricaoStatus(
                                                                                         item.status_item
                                                                                     )}
+                                                                                </Box>
 
-                                                                                    <Box sx={{ ml: 2 }}>
-                                                                                        {getDescricaoStatus(
-                                                                                            item.status_item
-                                                                                        )}
-                                                                                    </Box>
+                                                                            </TableCell>
 
-                                                                                </TableCell>
+                                                                            <TableCell>
+                                                                                {item.caixa}
+                                                                            </TableCell>
 
-                                                                                <TableCell>
-                                                                                    {item.caixa}
-                                                                                </TableCell>
+                                                                        </TableRow>
 
-                                                                            </TableRow>
+                                                                        {/* UNIDADES */}
+                                                                        <TableRow
+                                                                            sx={{
+                                                                                bgcolor: 'background.tabela',
+                                                                                boxShadow:
+                                                                                    '0vh 0vh 1vh primary.sombra'
+                                                                            }}
+                                                                        >
 
-                                                                            {/* UNIDADES */}
-                                                                            <TableRow
-                                                                                sx={{
-                                                                                    bgcolor: 'background.tabela',
-                                                                                    boxShadow:
-                                                                                        '0vh 0vh 1vh primary.sombra'
-                                                                                }}
+                                                                            <TableCell
+                                                                                colSpan={6}
+                                                                                sx={{ p: 0 }}
                                                                             >
 
-                                                                                <TableCell
-                                                                                    colSpan={6}
-                                                                                    sx={{ p: 0 }}
+                                                                                <Collapse
+                                                                                    in={expandedItem === key}
                                                                                 >
 
-                                                                                    <Collapse
-                                                                                        in={expandedItem === key}
-                                                                                    >
+                                                                                    <Table size="small">
 
-                                                                                        <Table size="small">
+                                                                                        <TableHead>
 
-                                                                                            <TableHead>
+                                                                                            <TableRow>
 
-                                                                                                <TableRow>
+                                                                                                <TableCell>
+                                                                                                    ID ÚNICO
+                                                                                                </TableCell>
 
-                                                                                                    <TableCell>
-                                                                                                        ID ÚNICO
-                                                                                                    </TableCell>
+                                                                                                <TableCell>
+                                                                                                    ITEM
+                                                                                                </TableCell>
 
-                                                                                                    <TableCell>
-                                                                                                        ITEM
-                                                                                                    </TableCell>
+                                                                                                <TableCell>
+                                                                                                    STATUS
+                                                                                                </TableCell>
 
-                                                                                                    <TableCell>
-                                                                                                        STATUS
-                                                                                                    </TableCell>
+                                                                                                <TableCell>
+                                                                                                    DATA
+                                                                                                </TableCell>
 
-                                                                                                    <TableCell>
-                                                                                                        DATA
-                                                                                                    </TableCell>
+                                                                                                <TableCell>
+                                                                                                    FUNCIONÁRIO
+                                                                                                </TableCell>
 
-                                                                                                    <TableCell>
-                                                                                                        FUNCIONÁRIO
-                                                                                                    </TableCell>
+                                                                                                <TableCell>
+                                                                                                    RASTREIO
+                                                                                                </TableCell>
 
-                                                                                                    <TableCell>
-                                                                                                        RASTREIO
-                                                                                                    </TableCell>
+                                                                                            </TableRow>
 
-                                                                                                </TableRow>
+                                                                                        </TableHead>
 
-                                                                                            </TableHead>
+                                                                                        <TableBody>
 
-                                                                                            <TableBody>
+                                                                                            {(unidadesItem[cod] || [])
+                                                                                                .map((un) => (
 
-                                                                                                {(unidadesItem[cod] || [])
-                                                                                                    .map((un) => (
+                                                                                                    <TableRow
+                                                                                                        key={un.id_unico}
+                                                                                                    >
 
-                                                                                                        <TableRow
-                                                                                                            key={un.id_unico}
-                                                                                                        >
+                                                                                                        <TableCell>
+                                                                                                            {un.id_unico}
+                                                                                                        </TableCell>
 
-                                                                                                            <TableCell>
-                                                                                                                {un.id_unico}
-                                                                                                            </TableCell>
+                                                                                                        <TableCell>
+                                                                                                            {un.basico}
+                                                                                                        </TableCell>
 
-                                                                                                            <TableCell>
-                                                                                                                {un.basico}
-                                                                                                            </TableCell>
+                                                                                                        <TableCell>
+                                                                                                            {item.status_item}
+                                                                                                        </TableCell>
 
-                                                                                                            <TableCell>
-                                                                                                                {item.status_item}
-                                                                                                            </TableCell>
+                                                                                                        <TableCell>
+                                                                                                            {nota.data_recebimento}
+                                                                                                        </TableCell>
 
-                                                                                                            <TableCell>
-                                                                                                                {nota.data_recebimento}
-                                                                                                            </TableCell>
+                                                                                                        <TableCell>
+                                                                                                            {nota.conferente}
+                                                                                                        </TableCell>
 
-                                                                                                            <TableCell>
-                                                                                                                {nota.conferente}
-                                                                                                            </TableCell>
+                                                                                                        <TableCell>
 
-                                                                                                            <TableCell>
+                                                                                                            <Button
+                                                                                                                onClick={() =>
+                                                                                                                    navigate(
+                                                                                                                        `/Rastreio/${un.id_unico}`
+                                                                                                                    )
+                                                                                                                }
+                                                                                                            >
+                                                                                                                Histórico
+                                                                                                            </Button>
 
-                                                                                                                <Button
-                                                                                                                    onClick={() =>
-                                                                                                                        navigate(
-                                                                                                                            `/Rastreio/${un.id_unico}`
-                                                                                                                        )
-                                                                                                                    }
-                                                                                                                >
-                                                                                                                    Histórico
-                                                                                                                </Button>
+                                                                                                        </TableCell>
 
-                                                                                                            </TableCell>
+                                                                                                    </TableRow>
+                                                                                                ))}
 
-                                                                                                        </TableRow>
-                                                                                                    ))}
+                                                                                        </TableBody>
 
-                                                                                            </TableBody>
+                                                                                    </Table>
 
-                                                                                        </Table>
+                                                                                </Collapse>
 
-                                                                                    </Collapse>
+                                                                            </TableCell>
 
-                                                                                </TableCell>
+                                                                        </TableRow>
 
-                                                                            </TableRow>
+                                                                    </Fragment>
+                                                                );
+                                                            }
+                                                        )}
 
-                                                                        </Fragment>
-                                                                    );
-                                                                }
-                                                            )}
+                                                    </TableBody>
 
-                                                        </TableBody>
+                                                </Table>
+                                            )}
+                                        </>
+                                    )}
+                                </Box>
 
-                                                    </Table>
-                                                )}
-                                            </>
-                                        )}
-                                    </Box>
+                            </Collapse>
 
-                                </Collapse>
+                        </CardContent>
 
-                            </CardContent>
-
-                        </Card>
-                    ))
+                    </Card>
+                ))
             )}
         </Container>
     );

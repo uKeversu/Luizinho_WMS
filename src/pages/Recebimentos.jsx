@@ -18,7 +18,8 @@ import {
     DialogContent,
     DialogActions,
     Backdrop,
-    CircularProgress
+    CircularProgress,
+    Tooltip
 } from "@mui/material";
 
 import PersonIcon from '@mui/icons-material/Person';
@@ -600,51 +601,57 @@ function Recebimentos() {
                                 flexWrap: 'nowrap',
                                 overflow: 'hidden'
                             }}>
-                            <Button
-                                onClick={() => setOpenDialog(true)}
-                                sx={{
-                                    color: "background.paper",
-                                    display: 'flex',
-                                    gap: 0.5,
-                                    fontSize: '0.75rem',
-                                    minWidth: 'auto',
-                                    padding: '4px 8px',
-                                    whiteSpace: 'nowrap'
-                                }}
-                            >
-                                CADASTRAR FUNCIONARIO
-                                {< PersonAddIcon />}
-                            </Button>
-                            <Button
-                                onClick={() => navigate("/Alertas")}
-                                sx={{
-                                    color: "background.paper",
-                                    display: 'flex',
-                                    gap: 0.5,
-                                    fontSize: '0.75rem',
-                                    minWidth: 'auto',
-                                    padding: '4px 8px',
-                                    whiteSpace: 'nowrap'
-                                }}
-                            >
-                                Alertas
-                                {< WarningIcon />}
-                            </Button>
-                            <Button
-                                onClick={() => navigate("/Dashboard")}
-                                sx={{
-                                    color: "background.paper",
-                                    display: 'flex',
-                                    gap: 0.5,
-                                    fontSize: '0.75rem',
-                                    minWidth: 'auto',
-                                    padding: '4px 8px',
-                                    whiteSpace: 'nowrap'
-                                }}
-                            >
-                                NOTAS RECEBIDAS
-                                {< ArticleIcon />}
-                            </Button>
+                            <Tooltip title="Cadastro de funcionários">
+                                <Button
+                                    onClick={() => setOpenDialog(true)}
+                                    sx={{
+                                        color: "background.paper",
+                                        display: 'flex',
+                                        gap: 0.5,
+                                        fontSize: '0.75rem',
+                                        minWidth: 'auto',
+                                        padding: '4px 8px',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    FUNCIONARIOS
+                                    {< PersonAddIcon />}
+                                </Button>
+                            </Tooltip>
+                            <Tooltip title="Notas com pendências ou alertas">
+                                <Button
+                                    onClick={() => navigate("/Alertas")}
+                                    sx={{
+                                        color: "background.paper",
+                                        display: 'flex',
+                                        gap: 0.5,
+                                        fontSize: '0.75rem',
+                                        minWidth: 'auto',
+                                        padding: '4px 8px',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    Alertas
+                                    {< WarningIcon />}
+                                </Button>
+                            </Tooltip>
+                            <Tooltip title="Dashboard de notas recebidas">
+                                <Button
+                                    onClick={() => navigate("/Dashboard")}
+                                    sx={{
+                                        color: "background.paper",
+                                        display: 'flex',
+                                        gap: 0.5,
+                                        fontSize: '0.75rem',
+                                        minWidth: 'auto',
+                                        padding: '4px 8px',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    NOTAS
+                                    {< ArticleIcon />}
+                                </Button>
+                            </Tooltip>
                             <pre id="resultado"></pre>
                         </Box>
                     </Box>
