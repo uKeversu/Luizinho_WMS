@@ -1,38 +1,43 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import {
     Container,
     Typography,
-    Card,
-    CardContent,
-    Grid,
-    TextField,
-    Button,
     Box,
+    Paper,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    TextField,
+    CircularProgress,
     Snackbar,
     Alert,
-    CircularProgress,
-    Divider
+    Button,
+    Tooltip
 } from "@mui/material";
 
+import { ThemeContext } from "../context/ThemeContext";
+
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
-import '../style/App.css';
-
 function AtualizarCean() {
 
+    const { dark } = useContext(ThemeContext);
     const navigate = useNavigate();
 
-    // API BASE
     const API = "http://192.168.1.185:8077";
 
-    // Login
     const [userInfo, setUserInfo] = useState(() => {
         const user = localStorage.getItem("user_info");
         return user ? JSON.parse(user) : null;
     });
+
     const [token, setToken] = useState(() => localStorage.getItem("nfe_token") || "");
 
     const logout = () => {
@@ -42,107 +47,189 @@ function AtualizarCean() {
         localStorage.removeItem("user_info");
     };
 
+    const [notas, setNotas] = useState([]);
+    const [notaSelecionada, setNotaSelecionada] = useState("");
+
     const [itens, setItens] = useState([]);
-    const [loading, setLoading] = useState(false);
+
+    const [loadingNotas, setLoadingNotas] = useState(false);
+    const [loadingItens, setLoadingItens] = useState(false);
+
     const [snackbar, setSnackbar] = useState({
         open: false,
         message: "",
         severity: "success"
     });
 
-    const buscarItens = async () => {
-        setLoading(true);
+    // BUSCAR NOTAS
+    const buscarNotas = async () => {
+
+        setLoadingNotas(true);
 
         try {
-            const res = await fetch(`${API}/api/item/s_barra`);
+
+            const res = await fetch(`${API}/api/notas/listar`);
             const data = await res.json();
 
-            const nfeSalva = JSON.parse(localStorage.getItem("nfe_pendente_barra"));
-
-            let lista = [];
-
-            data.caixas.forEach(caixa => {
-                caixa.itens.forEach(item => {
-                    if (!nfeSalva || item.nfe_id == nfeSalva.nota) {
-                        lista.push(item);
-                    }
-                });
-            });
-
-            setItens(lista);
+            setNotas(data || []);
 
         } catch {
+
+            setSnackbar({
+                open: true,
+                message: "Erro ao carregar notas",
+                severity: "error"
+            });
+
+        } finally {
+            setLoadingNotas(false);
+        }
+    };
+
+    // BUSCAR ITENS DA NOTA
+    const buscarItens = async (notaId) => {
+
+        setLoadingItens(true);
+
+        try {
+
+            const res = await fetch(`${API}/api/itens_nfe/${notaId}`);
+            const data = await res.json();
+
+            console.log(data);
+
+            const itensFormatados = data.items.map(item => ({
+                ...item,
+                original: { ...item }
+            }));
+
+            setItens(itensFormatados);
+
+        } catch (err) {
+
+            console.error(err);
+
             setSnackbar({
                 open: true,
                 message: "Erro ao carregar itens",
                 severity: "error"
             });
+
         } finally {
-            setLoading(false);
+            setLoadingItens(false);
         }
     };
 
     useEffect(() => {
-        buscarItens();
+        buscarNotas();
     }, []);
 
-    const handleChange = (index, value) => {
+    const alterarCampo = (index, campo, valor) => {
+
         const novos = [...itens];
-        novos[index].codigo_barras = value;
+
+        novos[index][campo] = valor;
+
         setItens(novos);
     };
 
-    const salvarCodigo = async (item, index) => {
+    const buscarNotaPorNumero = async () => {
 
-        if (!item.codigo_barras.trim()) {
-            setSnackbar({
-                open: true,
-                message: "Informe um código válido",
-                severity: "warning"
-            });
+        if (!notaSelecionada.trim()) {
             return;
         }
 
-        console.log("URL:", `${API}/api/nfe/atualizarbarras/${item.nfe_id}/${item.id}`);
-        console.log("ITEM:", item);
+        try {
+
+            const notaEncontrada = notas.find(
+                n => String(n.numero) === String(notaSelecionada)
+            );
+
+            if (!notaEncontrada) {
+
+                setSnackbar({
+                    open: true,
+                    message: "Nota não encontrada",
+                    severity: "warning"
+                });
+
+                return;
+            }
+
+            buscarItens(notaEncontrada.id);
+
+        } catch (err) {
+
+            console.error(err);
+
+            setSnackbar({
+                open: true,
+                message: "Erro ao buscar nota",
+                severity: "error"
+            });
+        }
+    };
+
+    // SALVAR
+    const salvarItem = async (item) => {
 
         try {
+            const codigoEnvio = item.id;
+
             const res = await fetch(
-                `${API}/api/nfe/atualizarbarras/${item.nfe_id}/${item.id}`,
+                `${API}/api/nfe/itemcod/${codigoEnvio}`,
                 {
                     method: "PUT",
                     headers: {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        cean: item.codigo_barras
+                        basico: item.basico,
+                        cean:
+                            item.cean === "SEM GTIN"
+                                ? ""
+                                : item.cean,
+                        codire:
+                            item.cean === "SEM GTIN"
+                                ? ""
+                                : item.cean,
+                        loc_sistema: item.loc_sistema,
                     })
                 }
             );
 
-            if (!res.ok) throw new Error();
+            if (!res.ok) {
 
-            const novos = itens.filter((_, i) => i !== index);
-            setItens(novos);
+                const erro = await res.text();
 
+                console.error(erro);
+
+                throw new Error(erro);
+            }
+
+            console.log("ITEM ATUALIZADO:", item.id,
+                item.basico,
+                item.cean,
+                item.loc_sistema,
+            )
             setSnackbar({
                 open: true,
-                message: "Código atualizado!",
+                message: "Item atualizado!",
                 severity: "success"
             });
 
-            if (novos.length === 0) {
-                localStorage.removeItem("nfe_pendente_barra");
+        } catch (err) {
 
-                setTimeout(() => {
-                    navigate("/");
-                }, 1000);
-            }
+            console.error(err);
+            console.log("ITEM ATUALIZADO:", item.id,
+                item.basico,
+                item.cean,
+                item.loc_sistema,
+            )
 
-        } catch {
             setSnackbar({
                 open: true,
-                message: "Erro ao salvar",
+                message: err.message || "Erro ao atualizar item",
                 severity: "error"
             });
         }
@@ -159,12 +246,12 @@ function AtualizarCean() {
                     alignItems: { xs: 'flex-start', md: 'center' },
                     gap: 2,
                     p: 2,
-                    bgcolor: 'primary.main',
+                    bgcolor: 'var(--azul)',
                     mb: 5
                 }}
             >
                 <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "background.paper" }}>
-                    <strong>Identificação de código de barras</strong>
+                    <strong>Correção de Notas</strong>
                 </Typography>
                 <Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '0' }}>
@@ -194,98 +281,301 @@ function AtualizarCean() {
                 </Box>
             </Box>
 
-            {loading ? (
-                <Box textAlign="center">
-                    <CircularProgress />
-                </Box>
+            {/* BUSCA NOTA */}
+            <Box
+                mb={2}
+                display="flex"
+                gap={1}
+                alignItems="center"
+            >
+
+                <TextField
+                    label="Buscar nota"
+                    size="small"
+                    value={notaSelecionada}
+                    onChange={(e) => setNotaSelecionada(e.target.value)}
+                    onKeyDown={(e) => {
+
+                        if (e.key === "Enter") {
+                            buscarNotaPorNumero();
+                        }
+                    }}
+                    sx={{
+                        width: '100%',
+                        "& .MuiOutlinedInput-root": {
+                            bgcolor: "background.card",
+                            color: "text.primary",
+                            fontSize: "0.85rem",
+                            height: 38
+                        }
+                    }}
+                />
+
+                <Button
+                    variant="contained"
+                    size="small"
+                    onClick={buscarNotaPorNumero}
+                    sx={{
+                        minWidth: 90,
+                        height: 38,
+                        fontSize: "0.8rem"
+                    }}
+                >
+                    Buscar
+                </Button>
+
+            </Box>
+
+            {loadingNotas && <CircularProgress size={22} />}
+
+            {loadingItens ? (
+                <CircularProgress size={22} />
             ) : (
-                itens.length === 0 ? (
-                    <Typography>Nenhum item pendente</Typography>
-                ) : (
-                    <Grid container spacing={2}>
-                        {itens.map((item, index) => (
-                            <Grid item xs={12} md={6} lg={4} key={item.id} sx={{ display: "flex", margin: 'auto' }}>
+                <TableContainer
+                    component={Paper}
+                    sx={{
+                        maxHeight: "78vh",
+                        boxShadow: '0vh 0.1vh 0.5vh var(--sombra)',
+                        bgcolor: 'background.tabela',
+                        color: 'text.primary'
+                    }}
+                >
+                    <Table
+                        stickyHeader
+                        size="small"
+                    >
+                        <TableHead>
+                            <TableRow>
+                                <TableCell width={35} sx={{ p: 0.5 }} />
+                                <TableCell
+                                    width={110}
+                                    sx={{
+                                        color: 'background.paper',
+                                        p: 0.5,
+                                        fontSize: '0.8rem'
+                                    }}
+                                >
+                                    LOC
+                                </TableCell>
 
-                                <Card sx={{
-                                    borderRadius: '2vh',
-                                    boxShadow: '0vh 0.1vh 0.5vh var(--sombra)',
-                                    bgcolor: 'background.card',
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    width: "100%",
-                                    minHeight: 250,
-                                    minWidth: 300,
-                                    maxWidth: 300
-                                }}>
-                                    <CardContent sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
+                                <TableCell
+                                    width={140}
+                                    sx={{
+                                        color: 'background.paper',
+                                        p: 0.5,
+                                        fontSize: '0.8rem'
+                                    }}
+                                >
+                                    Código SSPlus
+                                </TableCell>
 
-                                        <Typography variant="subtitle1"
-                                            sx={{
-                                                whiteSpace: 'nowrap',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
-                                            }}>
-                                            {item.xProd}
-                                        </Typography>
+                                <TableCell
+                                    width={140}
+                                    sx={{
+                                        color: 'background.paper',
+                                        p: 0.5,
+                                        fontSize: '0.8rem'
+                                    }}
+                                >
+                                    Código Nfe
+                                </TableCell>
 
-                                        <Typography variant="body2">
-                                            <strong>Cod:</strong> {item.cprod}
-                                        </Typography>
+                                <TableCell
+                                    sx={{
+                                        color: 'background.paper',
+                                        p: 0.5,
+                                        fontSize: '0.8rem'
+                                    }}
+                                >
+                                    Descrição
+                                </TableCell>
 
-                                        <Typography variant="body2">
-                                            <strong>ID NFe:</strong> {item.nfe_id}
-                                        </Typography>
+                                <TableCell
+                                    width={140}
+                                    sx={{
+                                        color: 'background.paper',
+                                        p: 0.5,
+                                        fontSize: '0.8rem'
+                                    }}
+                                >
+                                    CEAN
+                                </TableCell>
 
-                                        <Typography variant="body2">
-                                            <strong>Quantidade:</strong> {Number(item.quantidade_comercial)}
-                                        </Typography>
+                                <TableCell
+                                    width={90}
+                                    align="right"
+                                    sx={{
+                                        color: 'background.paper',
+                                        p: 0.5,
+                                        paddingRight: 2.5,
+                                        fontSize: '0.8rem'
+                                    }}
+                                >
+                                    Ação
+                                </TableCell>
 
-                                        <TextField
-                                            fullWidth
-                                            label="Código de barras"
-                                            value={item.codigo_barras || ""}
-                                            onChange={(e) => handleChange(index, e.target.value)}
-                                            onKeyDown={(e) => {
-                                                if (e.key === "Enter") {
-                                                    salvarCodigo(item, index);
+                            </TableRow>
+                        </TableHead>
+
+                        <TableBody>
+
+                            {itens.map((item, index) => {
+
+                                const semCodigo =
+                                    !item.cean ||
+                                    item.cean === "SEM GTIN";
+
+                                return (
+
+                                    <TableRow
+                                        key={item.id}
+                                        hover
+                                        sx={{
+                                            height: 48
+                                        }}
+                                    >
+
+                                        <TableCell sx={{ p: 0.5 }}>
+
+                                            {semCodigo && (
+                                                <Tooltip title="Produto sem código de barras">
+                                                    <WarningAmberIcon
+                                                        sx={{
+                                                            color: "primary.parcial",
+                                                            fontSize: 18,
+                                                            marginLeft: 1
+                                                        }}
+                                                    />
+                                                </Tooltip>
+                                            )}
+
+                                        </TableCell>
+
+                                        <TableCell sx={{ p: 0.5 }}>
+                                            <TextField
+                                                size="small"
+                                                value={item.loc_sistema || ""}
+                                                onChange={(e) =>
+                                                    alterarCampo(index, "loc_sistema", e.target.value)
                                                 }
-                                            }}
-                                            sx={{
-                                                mt: 2, '& .MuiOutlinedInput-root': {
-                                                    '&:hover fieldset': {
-                                                        borderColor: 'primary.main',
-                                                    },
-                                                    '&.Mui-focused fieldset': {
-                                                        borderColor: 'primary.main',
+                                                sx={{
+                                                    "& .MuiOutlinedInput-root": {
+                                                        height: 34,
+                                                        fontSize: "0.8rem"
                                                     }
+                                                }}
+                                            />
+                                        </TableCell>
+
+                                        <TableCell sx={{ p: 0.5 }}>
+                                            <TextField
+                                                size="small"
+                                                value={item.basico || ""}
+                                                onChange={(e) =>
+                                                    alterarCampo(index, "basico", e.target.value)
                                                 }
-                                            }}
-                                        />
+                                                sx={{
+                                                    "& .MuiOutlinedInput-root": {
+                                                        height: 34,
+                                                        fontSize: "0.8rem"
+                                                    }
+                                                }}
+                                            />
+                                        </TableCell>
 
-                                        <Button
-                                            fullWidth
-                                            variant="contained"
-                                            sx={{ mt: "auto", color: "primary.branco", bgcolor: 'primary.main', '&:hover': { bgcolor: 'primary.mainHover' } }}
-                                            onClick={() => salvarCodigo(item, index)}
+                                        <TableCell sx={{ p: 0.5 }}>
+                                            <TextField
+                                                size="small"
+                                                value={item.cod_produto || ""}
+                                                onChange={(e) =>
+                                                    alterarCampo(index, "cod_produto", e.target.value)
+                                                }
+                                                sx={{
+                                                    "& .MuiOutlinedInput-root": {
+                                                        height: 34,
+                                                        fontSize: "0.8rem"
+                                                    }
+                                                }}
+                                            />
+                                        </TableCell>
+
+                                        <TableCell sx={{ p: 0.5 }}>
+                                            <TextField
+                                                fullWidth
+                                                size="small"
+                                                value={item.descricao || ""}
+                                                onChange={(e) =>
+                                                    alterarCampo(index, "descricao", e.target.value)
+                                                }
+                                                sx={{
+                                                    "& .MuiOutlinedInput-root": {
+                                                        height: 34,
+                                                        fontSize: "0.8rem"
+                                                    }
+                                                }}
+                                            />
+                                        </TableCell>
+
+                                        <TableCell sx={{ p: 0.5 }}>
+                                            <TextField
+                                                fullWidth
+                                                size="small"
+                                                value={item.cean || ""}
+                                                onChange={(e) =>
+                                                    alterarCampo(index, "cean", e.target.value)
+                                                }
+                                                sx={{
+                                                    "& .MuiOutlinedInput-root": {
+                                                        height: 34,
+                                                        fontSize: "0.8rem"
+                                                    }
+                                                }}
+                                            />
+                                        </TableCell>
+
+                                        <TableCell
+                                            align="right"
+                                            sx={{ p: 0.5 }}
                                         >
-                                            Salvar
-                                        </Button>
+                                            <Button
+                                                variant="contained"
+                                                size="small"
+                                                onClick={() => salvarItem(item)}
+                                                sx={{
+                                                    minWidth: 70,
+                                                    height: 30,
+                                                    fontSize: "0.72rem"
+                                                }}
+                                            >
+                                                Salvar
+                                            </Button>
+                                        </TableCell>
 
-                                    </CardContent>
-                                </Card>
+                                    </TableRow>
+                                );
+                            })}
 
-                            </Grid>
-                        ))}
-                    </Grid>
-                ))}
+                        </TableBody>
 
-            {/* Snackbar */}
+                    </Table>
+
+                </TableContainer>
+            )}
+
             <Snackbar
                 open={snackbar.open}
                 autoHideDuration={3000}
-                onClose={() => setSnackbar({ ...snackbar, open: false })}
+                onClose={() =>
+                    setSnackbar({
+                        ...snackbar,
+                        open: false
+                    })
+                }
             >
-                <Alert variant="filled" severity={snackbar.severity}>
+                <Alert
+                    severity={snackbar.severity}
+                    variant="filled"
+                >
                     {snackbar.message}
                 </Alert>
             </Snackbar>

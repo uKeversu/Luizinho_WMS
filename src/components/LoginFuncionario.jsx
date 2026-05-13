@@ -4,7 +4,9 @@ import {
   Card,
   Typography,
   TextField,
-  Button
+  Button,
+  Snackbar,
+  Alert
 } from "@mui/material";
 
 import { ThemeContext } from "../context/ThemeContext";
@@ -14,19 +16,29 @@ function LoginFuncionario({ onLogin }) {
 
   const [codigo, setCodigo] = useState("");
   const [loading, setLoading] = useState(false);
-  const [resultado, setResultado] = useState("");
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    severity: "success",
+    message: ""
+  });
 
   const API = "http://192.168.1.185:8077";
 
   const fazerLogin = async () => {
+
     if (!codigo.trim()) {
-      setResultado({ tipo: "warning", msg: "Digite o código" });
+      setSnackbar({
+        open: true,
+        severity: "warning",
+        message: "Digite o código"
+      });
       return;
     }
 
     setLoading(true);
 
     try {
+
       const res = await fetch(`${API}/api/funcionario/login`, {
         method: "POST",
         headers: {
@@ -35,16 +47,37 @@ function LoginFuncionario({ onLogin }) {
         body: JSON.stringify({ codigo })
       });
 
+      // Usuário não encontrado
+      if (res.status === 404) {
+        setSnackbar({
+          open: true,
+          severity: "error",
+          message: "Usuário não encontrado"
+        });
+
+        return;
+      }
+
       if (!res.ok) throw new Error();
 
       const data = await res.json();
 
       onLogin(data);
 
-      setResultado({ tipo: "success", msg: "Login realizado" });
+      setSnackbar({
+        open: true,
+        severity: "success",
+        message: "Login realizado"
+      });
 
     } catch (err) {
-      setResultado({ tipo: "error", msg: "Erro de conexão ou login" });
+
+      setSnackbar({
+        open: true,
+        severity: "error",
+        message: "Usuário não encontrado"
+      });
+
     } finally {
       setLoading(false);
     }
@@ -85,6 +118,26 @@ function LoginFuncionario({ onLogin }) {
           {loading ? "Entrando..." : "Entrar"}
         </Button>
       </Card>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          severity={snackbar.severity}
+          variant="filled"
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          sx={{
+            width: "100%",
+            color: "white"
+          }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+
     </Container>
   );
 }

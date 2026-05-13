@@ -573,7 +573,7 @@ function Dashboard({ tipo }) {
                                     whiteSpace: 'nowrap'
                                 }}
                             >
-                                ATUALIZAR CEAN
+                                CORREÇÃO DE NOTAS
                                 {<BorderColorIcon />}
                             </Button>
                             <Button
