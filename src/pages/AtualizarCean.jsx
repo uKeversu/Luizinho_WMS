@@ -51,6 +51,8 @@ function AtualizarCean() {
     const [notaSelecionada, setNotaSelecionada] = useState("");
 
     const [itens, setItens] = useState([]);
+    const [editIndex, setEditIndex] = useState(null);
+    const [itensEditados, setItensEditados] = useState({});
 
     const [loadingNotas, setLoadingNotas] = useState(false);
     const [loadingItens, setLoadingItens] = useState(false);
@@ -125,12 +127,19 @@ function AtualizarCean() {
     }, []);
 
     const alterarCampo = (index, campo, valor) => {
-
         const novos = [...itens];
 
         novos[index][campo] = valor;
 
         setItens(novos);
+
+        setItensEditados(prev => ({
+            ...prev,
+            [index]: {
+                ...prev[index],
+                [campo]: valor
+            }
+        }));
     };
 
     const buscarNotaPorNumero = async () => {
@@ -171,67 +180,63 @@ function AtualizarCean() {
     };
 
     // SALVAR
-    const salvarItem = async (item) => {
-
+    const salvarItem = async (item, index) => {
         try {
-            const codigoEnvio = item.id;
+            const res = await fetch(`${API}/api/nfe/itemcod/${item.id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    basico: item.basico,
+                    cean: item.cean === "SEM GTIN" ? "" : item.cean,
+                    codire: item.cean === "SEM GTIN" ? "" : item.cean,
+                    loc_sistema: item.loc_sistema,
+                })
+            });
 
-            const res = await fetch(
-                `${API}/api/nfe/itemcod/${codigoEnvio}`,
-                {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        basico: item.basico,
-                        cean:
-                            item.cean === "SEM GTIN"
-                                ? ""
-                                : item.cean,
-                        codire:
-                            item.cean === "SEM GTIN"
-                                ? ""
-                                : item.cean,
-                        loc_sistema: item.loc_sistema,
-                    })
-                }
-            );
+            if (!res.ok) throw new Error(await res.text());
 
-            if (!res.ok) {
-
-                const erro = await res.text();
-
-                console.error(erro);
-
-                throw new Error(erro);
-            }
-
-            console.log("ITEM ATUALIZADO:", item.id,
-                item.basico,
-                item.cean,
-                item.loc_sistema,
-            )
             setSnackbar({
                 open: true,
                 message: "Item atualizado!",
                 severity: "success"
             });
 
+            // limpa edição
+            setEditIndex(null);
+
+            // Remove do cache de alterações
+            setItensEditados(prev => {
+                const copy = { ...prev };
+                delete copy[index];
+                return copy;
+            });
+
         } catch (err) {
-
-            console.error(err);
-            console.log("ITEM ATUALIZADO:", item.id,
-                item.basico,
-                item.cean,
-                item.loc_sistema,
-            )
-
             setSnackbar({
                 open: true,
-                message: err.message || "Erro ao atualizar item",
+                message: err.message,
                 severity: "error"
             });
+        }
+    };
+
+    const handleKeyDown = (e, item, index) => {
+        if (e.key === "Enter") {
+            salvarItem(item);
+
+            // Pula linha depois de salvar alteração
+            const next = index + 1;
+            if (next < itens.length) {
+                setEditIndex(next);
+            } else {
+                setEditIndex(null);
+            }
+        }
+
+        if (e.key === "Escape") {
+            setEditIndex(null);
         }
     };
 
@@ -286,44 +291,44 @@ function AtualizarCean() {
                 mb={2}
                 display="flex"
                 gap={1}
-                alignItems="center"
+                alignItems="stretch"
             >
-
                 <TextField
                     label="Buscar nota"
                     size="small"
                     value={notaSelecionada}
                     onChange={(e) => setNotaSelecionada(e.target.value)}
                     onKeyDown={(e) => {
-
                         if (e.key === "Enter") {
                             buscarNotaPorNumero();
                         }
                     }}
                     sx={{
-                        width: '100%',
-                        "& .MuiOutlinedInput-root": {
-                            bgcolor: "background.card",
-                            color: "text.primary",
-                            fontSize: "0.85rem",
-                            height: 38
+                        flex: 1,
+                        bgcolor: 'background.card',
+                        '& .MuiOutlinedInput-root': {
+                            height: "40px",
+                            '&:hover fieldset': {
+                                borderColor: 'var(--azul)',
+                            },
+                            '&.Mui-focused fieldset': {
+                                borderColor: 'var(--azul)',
+                            }
                         }
                     }}
                 />
 
                 <Button
                     variant="contained"
-                    size="small"
                     onClick={buscarNotaPorNumero}
                     sx={{
-                        minWidth: 90,
-                        height: 38,
+                        height: "40px",
+                        minWidth: "180px",
                         fontSize: "0.8rem"
                     }}
                 >
                     Buscar
                 </Button>
-
             </Box>
 
             {loadingNotas && <CircularProgress size={22} />}
@@ -340,85 +345,21 @@ function AtualizarCean() {
                         color: 'text.primary'
                     }}
                 >
-                    <Table
-                        stickyHeader
-                        size="small"
-                    >
+                    <Table stickyHeader size="small">
+
                         <TableHead>
-                            <TableRow>
-                                <TableCell width={35} sx={{ p: 0.5 }} />
-                                <TableCell
-                                    width={110}
-                                    sx={{
-                                        color: 'background.paper',
-                                        p: 0.5,
-                                        fontSize: '0.8rem'
-                                    }}
-                                >
-                                    LOC
-                                </TableCell>
-
-                                <TableCell
-                                    width={140}
-                                    sx={{
-                                        color: 'background.paper',
-                                        p: 0.5,
-                                        fontSize: '0.8rem'
-                                    }}
-                                >
-                                    Código SSPlus
-                                </TableCell>
-
-                                <TableCell
-                                    width={140}
-                                    sx={{
-                                        color: 'background.paper',
-                                        p: 0.5,
-                                        fontSize: '0.8rem'
-                                    }}
-                                >
-                                    Código Nfe
-                                </TableCell>
-
-                                <TableCell
-                                    sx={{
-                                        color: 'background.paper',
-                                        p: 0.5,
-                                        fontSize: '0.8rem'
-                                    }}
-                                >
-                                    Descrição
-                                </TableCell>
-
-                                <TableCell
-                                    width={140}
-                                    sx={{
-                                        color: 'background.paper',
-                                        p: 0.5,
-                                        fontSize: '0.8rem'
-                                    }}
-                                >
-                                    CEAN
-                                </TableCell>
-
-                                <TableCell
-                                    width={90}
-                                    align="right"
-                                    sx={{
-                                        color: 'background.paper',
-                                        p: 0.5,
-                                        paddingRight: 2.5,
-                                        fontSize: '0.8rem'
-                                    }}
-                                >
-                                    Ação
-                                </TableCell>
-
+                            <TableRow sx={{ bgcolor: 'var(--azul)' }}>
+                                <TableCell sx={{ color: 'background.paper' }} />
+                                <TableCell sx={{ color: 'background.paper' }}>LOC</TableCell>
+                                <TableCell sx={{ color: 'background.paper' }}>Código SSPlus</TableCell>
+                                <TableCell sx={{ color: 'background.paper' }}>Código NFe</TableCell>
+                                <TableCell sx={{ color: 'background.paper' }}>Descrição</TableCell>
+                                <TableCell sx={{ color: 'background.paper' }}>CEAN</TableCell>
+                                <TableCell sx={{ color: 'background.paper' }} align="right">Ação</TableCell>
                             </TableRow>
                         </TableHead>
 
                         <TableBody>
-
                             {itens.map((item, index) => {
 
                                 const camposVazios = [
@@ -427,133 +368,148 @@ function AtualizarCean() {
                                     item.cod_produto,
                                     item.descricao,
                                     item.cean
-                                ].some(
-                                    campo =>
-                                        !campo ||
-                                        String(campo).trim() === "" ||
-                                        campo === "SEM GTIN"
+                                ].some(campo =>
+                                    !campo || String(campo).trim() === "" || campo === "SEM GTIN"
                                 );
 
-                                return (
+                                const isEditing = editIndex === index;
+                                const hasChanges = !!itensEditados[index];
 
+                                return (
                                     <TableRow
                                         key={item.id}
-                                        hover
+                                        onClick={() => setEditIndex(index)}
                                         sx={{
-                                            height: 48
+                                            bgcolor: camposVazios
+                                                ? 'background.alerta'
+                                                : hasChanges
+                                                    ? '#fff3cd'
+                                                    : 'inherit',
+
+                                            transition: "0.2s",
+                                            cursor: "pointer",
+
+                                            "&:hover": {
+                                                bgcolor: "action.hover"
+                                            }
                                         }}
                                     >
 
+                                        {/* ALERTA */}
                                         <TableCell sx={{ p: 0.5 }}>
-
                                             {camposVazios && (
-                                                <Tooltip title="Existem campos vazios nesta linha">
+                                                <Tooltip title="Campos pendentes">
                                                     <WarningAmberIcon
                                                         sx={{
                                                             color: "primary.parcial",
-                                                            fontSize: 18,
-                                                            marginLeft: 1
+                                                            fontSize: 18
                                                         }}
                                                     />
                                                 </Tooltip>
                                             )}
-
                                         </TableCell>
 
+                                        {/* LOC */}
                                         <TableCell sx={{ p: 0.5 }}>
-                                            <TextField
-                                                size="small"
-                                                value={item.loc_sistema || ""}
-                                                onChange={(e) =>
-                                                    alterarCampo(index, "loc_sistema", e.target.value)
-                                                }
-                                                sx={{
-                                                    "& .MuiOutlinedInput-root": {
-                                                        height: 34,
-                                                        fontSize: "0.8rem"
+                                            {isEditing ? (
+                                                <TextField
+                                                    size="small"
+                                                    value={item.loc_sistema || ""}
+                                                    onChange={(e) =>
+                                                        alterarCampo(index, "loc_sistema", e.target.value)
                                                     }
-                                                }}
-                                            />
+                                                    onKeyDown={(e) => handleKeyDown(e, item, index)}
+                                                    autoFocus
+                                                    sx={{
+                                                        "& .MuiOutlinedInput-root": { height: 32, fontSize: "0.75rem" }
+                                                    }}
+                                                />
+                                            ) : (
+                                                item.loc_sistema
+                                            )}
                                         </TableCell>
 
+                                        {/* SSPLUS */}
                                         <TableCell sx={{ p: 0.5 }}>
-                                            <TextField
-                                                size="small"
-                                                value={item.basico || ""}
-                                                onChange={(e) =>
-                                                    alterarCampo(index, "basico", e.target.value)
-                                                }
-                                                sx={{
-                                                    "& .MuiOutlinedInput-root": {
-                                                        height: 34,
-                                                        fontSize: "0.8rem"
+                                            {isEditing ? (
+                                                <TextField
+                                                    size="small"
+                                                    value={item.basico || ""}
+                                                    onChange={(e) =>
+                                                        alterarCampo(index, "basico", e.target.value)
                                                     }
-                                                }}
-                                            />
+                                                    onKeyDown={(e) => handleKeyDown(e, item, index)}
+                                                    sx={{ "& .MuiOutlinedInput-root": { height: 32 } }}
+                                                />
+                                            ) : (
+                                                item.basico
+                                            )}
                                         </TableCell>
 
+                                        {/* NFE */}
                                         <TableCell sx={{ p: 0.5 }}>
-                                            <TextField
-                                                size="small"
-                                                value={item.cod_produto || ""}
-                                                onChange={(e) =>
-                                                    alterarCampo(index, "cod_produto", e.target.value)
-                                                }
-                                                sx={{
-                                                    "& .MuiOutlinedInput-root": {
-                                                        height: 34,
-                                                        fontSize: "0.8rem"
+                                            {isEditing ? (
+                                                <TextField
+                                                    size="small"
+                                                    value={item.cod_produto || ""}
+                                                    onChange={(e) =>
+                                                        alterarCampo(index, "cod_produto", e.target.value)
                                                     }
-                                                }}
-                                            />
+                                                    onKeyDown={(e) => handleKeyDown(e, item, index)}
+                                                    sx={{ "& .MuiOutlinedInput-root": { height: 32 } }}
+                                                />
+                                            ) : (
+                                                item.cod_produto
+                                            )}
                                         </TableCell>
 
+                                        {/* DESCRIÇÃO */}
                                         <TableCell sx={{ p: 0.5 }}>
-                                            <TextField
-                                                fullWidth
-                                                size="small"
-                                                value={item.descricao || ""}
-                                                onChange={(e) =>
-                                                    alterarCampo(index, "descricao", e.target.value)
-                                                }
-                                                sx={{
-                                                    "& .MuiOutlinedInput-root": {
-                                                        height: 34,
-                                                        fontSize: "0.8rem"
+                                            {isEditing ? (
+                                                <TextField
+                                                    fullWidth
+                                                    size="small"
+                                                    value={item.descricao || ""}
+                                                    onChange={(e) =>
+                                                        alterarCampo(index, "descricao", e.target.value)
                                                     }
-                                                }}
-                                            />
+                                                    onKeyDown={(e) => handleKeyDown(e, item, index)}
+                                                    sx={{ "& .MuiOutlinedInput-root": { height: 32 } }}
+                                                />
+                                            ) : (
+                                                item.descricao
+                                            )}
                                         </TableCell>
 
+                                        {/* CEAN */}
                                         <TableCell sx={{ p: 0.5 }}>
-                                            <TextField
-                                                fullWidth
-                                                size="small"
-                                                value={item.cean || ""}
-                                                onChange={(e) =>
-                                                    alterarCampo(index, "cean", e.target.value)
-                                                }
-                                                sx={{
-                                                    "& .MuiOutlinedInput-root": {
-                                                        height: 34,
-                                                        fontSize: "0.8rem"
+                                            {isEditing ? (
+                                                <TextField
+                                                    fullWidth
+                                                    size="small"
+                                                    value={item.cean || ""}
+                                                    onChange={(e) =>
+                                                        alterarCampo(index, "cean", e.target.value)
                                                     }
-                                                }}
-                                            />
+                                                    onKeyDown={(e) => handleKeyDown(e, item, index)}
+                                                    sx={{ "& .MuiOutlinedInput-root": { height: 32 } }}
+                                                />
+                                            ) : (
+                                                item.cean
+                                            )}
                                         </TableCell>
 
-                                        <TableCell
-                                            align="right"
-                                            sx={{ p: 0.5 }}
-                                        >
+                                        {/* AÇÃO */}
+                                        <TableCell align="right" sx={{ p: 0.5 }}>
                                             <Button
                                                 variant="contained"
                                                 size="small"
-                                                onClick={() => salvarItem(item)}
+                                                onClick={() => salvarItem(item, index)}
                                                 sx={{
                                                     minWidth: 70,
-                                                    height: 30,
-                                                    fontSize: "0.72rem"
+                                                    height: 28,
+                                                    fontSize: "0.7rem",
+                                                    opacity: hasChanges ? 1 : 0.4
                                                 }}
                                             >
                                                 Salvar
@@ -563,11 +519,8 @@ function AtualizarCean() {
                                     </TableRow>
                                 );
                             })}
-
                         </TableBody>
-
                     </Table>
-
                 </TableContainer>
             )}
 
