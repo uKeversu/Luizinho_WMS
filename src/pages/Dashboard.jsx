@@ -1033,24 +1033,38 @@ function Dashboard({ tipo }) {
                                             </Box>
 
                                             {/* OBS */}
-                                            {nota.observacao?.trim() && (
-                                                <Box
-                                                    sx={{
-                                                        bgcolor: 'primary.observacao',
-                                                        borderRadius: '10px',
-                                                        p: 0.8
-                                                    }}
-                                                >
-                                                    <Typography
+                                            {(() => {
+                                                const obs = nota.observacao;
+
+                                                if (
+                                                    obs === null ||
+                                                    obs === undefined ||
+                                                    obs === 0 ||
+                                                    obs === "0" ||
+                                                    String(obs).trim() === ""
+                                                ) {
+                                                    return null;
+                                                }
+
+                                                return (
+                                                    <Box
                                                         sx={{
-                                                            fontSize: '0.68rem',
-                                                            color: 'primary.branco'
+                                                            bgcolor: 'primary.observacao',
+                                                            borderRadius: '10px',
+                                                            p: 0.8
                                                         }}
                                                     >
-                                                        <strong>Obs:</strong> {nota.observacao}
-                                                    </Typography>
-                                                </Box>
-                                            )}
+                                                        <Typography
+                                                            sx={{
+                                                                fontSize: '0.68rem',
+                                                                color: 'primary.branco'
+                                                            }}
+                                                        >
+                                                            <strong>Obs:</strong> {obs}
+                                                        </Typography>
+                                                    </Box>
+                                                );
+                                            })()}
 
                                             {/* BOTÕES */}
                                             <Box
