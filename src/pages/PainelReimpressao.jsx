@@ -336,7 +336,7 @@ function PainelReimpressao() {
             <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
                 <TextField
                     fullWidth
-                    placeholder="Buscar por código ou descrição do item"
+                    placeholder="Buscar por código do item"
                     value={busca}
                     onChange={(e) => setBusca(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && buscarNotas()}

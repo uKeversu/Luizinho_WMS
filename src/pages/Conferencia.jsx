@@ -1584,6 +1584,14 @@ function Conferencia() {
                 if (!sucesso) return;
             }
 
+
+            console.log({
+                status: "CONFERIDA",
+                localizacao: localizacaoFinal,
+                observacao: observacao,
+                conferente: userInfo?.codigo
+            });
+
             for (const nota of notaInfo) {
                 const response = await fetch(
                     `${API}/api/nfe/atualizar_por_nfe/${nota.serie}/${nota.numero}`,
@@ -1596,10 +1604,13 @@ function Conferencia() {
                         body: JSON.stringify({
                             status: "CONFERIDA",
                             localizacao: localizacaoFinal,
-                            observacao: observacao || null
+                            observacao: observacao,
+                            conferente: userInfo?.codigo
                         })
                     }
                 );
+
+                console.log("Enviando observação:", observacao)
 
                 const text = await response.text();
 

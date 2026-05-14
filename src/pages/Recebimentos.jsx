@@ -196,7 +196,7 @@ function Recebimentos() {
                         localizacao: paletes
                             .filter(p => p.palete.trim() !== "" || p.volume.trim() !== "")
                             .map(p => `Palete ${p.palete} - Volume ${p.volume}`).join(" | "),
-                        observacao_palet: observacao_palet,
+                        observacao: observacao_palet,
                         itens_corrigidos: itensCorrigidos
                     })
                 }

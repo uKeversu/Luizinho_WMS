@@ -421,9 +421,18 @@ function AtualizarCean() {
 
                             {itens.map((item, index) => {
 
-                                const semCodigo =
-                                    !item.cean ||
-                                    item.cean === "SEM GTIN";
+                                const camposVazios = [
+                                    item.loc_sistema,
+                                    item.basico,
+                                    item.cod_produto,
+                                    item.descricao,
+                                    item.cean
+                                ].some(
+                                    campo =>
+                                        !campo ||
+                                        String(campo).trim() === "" ||
+                                        campo === "SEM GTIN"
+                                );
 
                                 return (
 
@@ -437,8 +446,8 @@ function AtualizarCean() {
 
                                         <TableCell sx={{ p: 0.5 }}>
 
-                                            {semCodigo && (
-                                                <Tooltip title="Produto sem código de barras">
+                                            {camposVazios && (
+                                                <Tooltip title="Existem campos vazios nesta linha">
                                                     <WarningAmberIcon
                                                         sx={{
                                                             color: "primary.parcial",

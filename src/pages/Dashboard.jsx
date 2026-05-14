@@ -1033,7 +1033,7 @@ function Dashboard({ tipo }) {
                                             </Box>
 
                                             {/* OBS */}
-                                            {nota.observacao_palet?.trim() && (
+                                            {nota.observacao?.trim() && (
                                                 <Box
                                                     sx={{
                                                         bgcolor: 'primary.observacao',
@@ -1047,7 +1047,7 @@ function Dashboard({ tipo }) {
                                                             color: 'primary.branco'
                                                         }}
                                                     >
-                                                        <strong>Obs:</strong> {nota.observacao_palet}
+                                                        <strong>Obs:</strong> {nota.observacao}
                                                     </Typography>
                                                 </Box>
                                             )}
