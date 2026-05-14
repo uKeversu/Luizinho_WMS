@@ -230,7 +230,6 @@ function Recebimentos() {
                             .map(p => `Palete ${p.palete} - Volume ${p.volume}`).join(" | "),
                         observacao: observacao_palet,
                         itens_corrigidos: itensCorrigidos,
-                        recebimento_segundos: tempoSegundos ?? 0
 
                     })
                 }

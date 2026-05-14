@@ -9,6 +9,7 @@ import Rastreio from "./pages/Rastreio";
 import AtualizarCean from "./pages/AtualizarCean"
 import ConsultaGeral from "./pages/ConsultaGeral"
 import PainelReimpressao from "./pages/PainelReimpressao";
+import Produtividade from "./pages/Produtividade";
 
 import './index.css';
 
@@ -29,6 +30,7 @@ function App() {
           <Route path="/AtualizarCean" element={<AtualizarCean />} />
           <Route path="/ConsultaGeral" element={<ConsultaGeral />} />
           <Route path="/PainelReimpressao" element={<PainelReimpressao />} />
+          <Route path="/Produtividade" element={<Produtividade />} />
         </Routes>
       </Router>
     </ThemeProvider>
