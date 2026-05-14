@@ -43,6 +43,7 @@ import ModalErro from "../components/ModalErro";
 import ModalRetira from "../components/ModalRetira";
 import ModalObservacao from "../components/ModalObservacoes";
 import ModalConfirmaRecebimento from "../components/ModalConfirmaRecebimento";
+import Cronometro from "../components/Cronometro";
 
 import { ThemeContext } from "../context/ThemeContext";
 import '../style/App.css';
@@ -90,6 +91,8 @@ function Recebimentos() {
     const [file, setFile] = useState(null);
     const [itensSemGTIN, setItensSemGTIN] = useState([]);
     const [openGTINDialog, setOpenGTINDialog] = useState(false);
+    const [inicioRecebimento, setInicioRecebimento] = useState(null);
+    const [tempoDecorrido, setTempoDecorrido] = useState(0);
 
     // Fornecedor direto
     const [fornecedorDireto, setFornecedorDireto] = useState(false);
@@ -143,6 +146,26 @@ function Recebimentos() {
         }
     };
 
+    // Cronometro de recebimento
+    useEffect(() => {
+        if (!inicioRecebimento) return;
+
+        const interval = setInterval(() => {
+            setTempoDecorrido(
+                Math.floor((new Date() - inicioRecebimento) / 1000)
+            );
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [inicioRecebimento]);
+
+    const handleTempoRecebimento = (data) => {
+        console.log("TEMPO RECEBIMENTO:", data);
+
+        // Aqui você salva na API depois
+        // data.totalSeconds
+    };
+
     // Enviar XML para API
     async function enviarXML() {
         setLoading(true);
@@ -168,6 +191,13 @@ function Recebimentos() {
                 body: formData
             });
 
+            const fim = new Date();
+            let tempoSegundos = null;
+
+            if (inicioRecebimento) {
+                tempoSegundos = Math.floor((fim - inicioRecebimento) / 1000);
+            }
+
             console.log("UPLOAD NFE STATUS:", res.status);
             console.log("Conferente:", funcionario);
             console.log("Localização:", paletes
@@ -175,6 +205,8 @@ function Recebimentos() {
                 .map(p => `Palete:${p.palete}-${p.volume}`).join(" | "));
             console.log("Observação antes de atualizar:", observacao_palet);
             console.log("Status da nota antes:", fornecedorDireto);
+            console.log("Tempo de importação em segundos:", tempoSegundos);
+            console.log("Tempo de importação em minutos:", tempoSegundos / 60);
 
             let statusFinal = "PENDENTE";
             if (emTransito) {
@@ -197,11 +229,13 @@ function Recebimentos() {
                             .filter(p => p.palete.trim() !== "" || p.volume.trim() !== "")
                             .map(p => `Palete ${p.palete} - Volume ${p.volume}`).join(" | "),
                         observacao: observacao_palet,
-                        itens_corrigidos: itensCorrigidos
+                        itens_corrigidos: itensCorrigidos,
+                        recebimento_segundos: tempoSegundos ?? 0
+
                     })
                 }
             );
-
+ 
             console.log("Status da nota depois:", fornecedorDireto);
             console.log("STATUS ATUALIZAR:", response.status);
             console.log("Observação depois de atualizar:", observacao_palet);
@@ -215,8 +249,10 @@ function Recebimentos() {
             // Limpa campos
             setXmlData(null);
             setPaletes([{ palete: "", volume: "" }]);
-            setFuncionario("");
             setFile(null);
+
+            setInicioRecebimento(null);
+            setTempoDecorrido(0);
 
         } catch (err) {
             console.error("ERRO REAL:", err);
@@ -567,7 +603,8 @@ function Recebimentos() {
                         alignItems: { xs: 'flex-start', md: 'center' },
                         gap: 2,
                         p: 2,
-                        bgcolor: 'primary.main'
+                        bgcolor: 'primary.main',
+                        mb: 1
                     }}
                 >
                     <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "background.paper" }}>
@@ -656,6 +693,8 @@ function Recebimentos() {
                         </Box>
                     </Box>
                 </Box>
+
+                <Cronometro onFinish={handleTempoRecebimento} />
 
                 {/* Importar XML */}
                 <Card sx={{ mt: 3, mb: 3, borderRadius: '2vh', boxShadow: '0vh 0.1vh 0.5vh var(--sombra)', bgcolor: 'background.card' }}>
@@ -895,6 +934,16 @@ function Recebimentos() {
                                         });
                                         return;
                                     }
+
+                                    if (!inicioRecebimento) {
+                                        setSnackbar({
+                                            open: true,
+                                            message: "Inicie o cronômetro antes de confirmar o recebimento",
+                                            severity: "warning"
+                                        });
+                                        return;
+                                    }
+
                                     if (paletes.every(p => !p?.palete?.trim() && !p?.volume?.trim())) {
                                         setSnackbar({
                                             open: true,
