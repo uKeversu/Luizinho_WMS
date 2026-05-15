@@ -32,6 +32,7 @@ import IconButton from "@mui/material/IconButton";
 import WarningIcon from '@mui/icons-material/Warning';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
+import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
@@ -234,7 +235,7 @@ function Recebimentos() {
                     })
                 }
             );
- 
+
             console.log("Status da nota depois:", fornecedorDireto);
             console.log("STATUS ATUALIZAR:", response.status);
             console.log("Observação depois de atualizar:", observacao_palet);
@@ -654,6 +655,23 @@ function Recebimentos() {
                                     {< PersonAddIcon />}
                                 </Button>
                             </Tooltip>
+                            <Tooltip title="Desempenho dos conferentes">
+                                <Button
+                                    onClick={() => navigate("/Produtividade")}
+                                    sx={{
+                                        color: "background.paper",
+                                        display: "flex",
+                                        gap: 0.7,
+                                        fontSize: "0.75rem",
+                                        minWidth: "auto",
+                                        padding: "4px 10px",
+                                        whiteSpace: "nowrap",
+                                    }}
+                                >
+                                    PRODUTIVIDADE
+                                    <LeaderboardIcon fontSize="small" />
+                                </Button>
+                            </Tooltip>
                             <Tooltip title="Notas com pendências ou alertas">
                                 <Button
                                     onClick={() => navigate("/Alertas")}
@@ -929,15 +947,6 @@ function Recebimentos() {
                                         setSnackbar({
                                             open: true,
                                             message: "Selecione um XML antes",
-                                            severity: "warning"
-                                        });
-                                        return;
-                                    }
-
-                                    if (!inicioRecebimento) {
-                                        setSnackbar({
-                                            open: true,
-                                            message: "Inicie o cronômetro antes de confirmar o recebimento",
                                             severity: "warning"
                                         });
                                         return;

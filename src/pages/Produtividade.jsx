@@ -2,6 +2,7 @@ import { useEffect, useState, useContext } from "react";
 import {
     Container,
     Typography,
+    TextField,
     Paper,
     CircularProgress,
     Box,
@@ -40,53 +41,139 @@ export default function Produtividade() {
     const [dados, setDados] = useState([]);
     const [error, setError] = useState(null);
 
+    const [dataInicio, setDataInicio] = useState("");
+    const [dataFim, setDataFim] = useState("");
+    const [lastUpdate, setLastUpdate] = useState(null);
+
     // MODAL
     const [openDetalhes, setOpenDetalhes] = useState(false);
     const [detalhesSelecionados, setDetalhesSelecionados] = useState([]);
     const [nomeSelecionado, setNomeSelecionado] = useState("");
 
+    // Auto-Refresh
     useEffect(() => {
+        if (!dataInicio || !dataFim) return;
+
         carregarDados();
+
+        const interval = setInterval(() => {
+            carregarDados();
+        }, 5 * 60 * 1000);
+
+        return () => clearInterval(interval);
+
+    }, [dataInicio, dataFim]);
+
+    useEffect(() => {
+        const hoje = new Date();
+        const seteDias = new Date();
+        seteDias.setDate(hoje.getDate() - 7);
+
+        const fmt = (d) => d.toISOString().split("T")[0];
+
+        const ini = fmt(seteDias);
+        const fim = fmt(hoje);
+
+        setDataInicio(ini);
+        setDataFim(fim);
+
+        // força primeira carga
+        carregarDados(ini, fim);
+
     }, []);
+
+    useEffect(() => {
+        if (dados.length > 0) {
+            setLastUpdate(new Date().toLocaleTimeString());
+        }
+    }, [dados]);
+
+    const parseDate = (dateStr) => {
+        if (!dateStr) return null;
+
+        // ISO já funciona
+        if (dateStr.includes("T")) {
+            return new Date(dateStr);
+        }
+
+        // fallback BR -> yyyy-mm-dd
+        const [d, m, y] = dateStr.split(/[-/]/);
+        return new Date(`${y}-${m}-${d}T00:00:00`);
+    };
 
     // =====================================
     // PONTUAÇÃO
     // =====================================
     const calcularPontosItem = (item) => {
+        const desc = (item.descricao || "")
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
 
-        const desc = (item.descricao || "").toLowerCase();
-
-        // PESADO
+        // =========================
+        // PESADO (prioridade alta)
+        // =========================
         if (
-            desc.includes("amortecedor") ||
-            desc.includes("amort") ||
-            desc.includes("caixa de direção") ||
             desc.includes("caixa de direcao") ||
             desc.includes("semi eixo") ||
             desc.includes("homocinetica completa") ||
-            desc.includes("bandeja") ||
-            desc.includes("balanca") ||
-            desc.includes("balança")
+            desc.includes("amortecedor") ||
+            desc.includes("disco") ||
+            desc.includes("tambor")
         ) {
             return 10;
         }
 
+        if (desc.includes("radiador") && !desc.includes("mangueira")) {
+            return 10;
+        }
+
+        if (desc.includes("radiador") && desc.includes("mangueira")) {
+            return 5;
+        }
+
+        if (desc.includes("bandeja") && !desc.includes("pivo")) {
+            return 10;
+        }
+
+        if (desc.includes("bandeja") && desc.includes("pivo")) {
+            return 10;
+        }
+
+        if (desc.includes("bandeja") && desc.includes("bucha")) {
+            return 2;
+        }
+
+        // =========================
         // MÉDIO
+        // =========================
         if (
-            desc.includes("pastilha") ||
-            desc.includes("cubo") ||
             desc.includes("mangueira") ||
             desc.includes("cilindro") ||
             desc.includes("coxim") ||
             desc.includes("junta") ||
+            desc.includes("pastilha") ||
+            desc.includes("cubo") ||
             desc.includes("homocinetica fixa") ||
+            desc.includes("servo freio") ||
+            desc.includes("cabo") ||
+            desc.includes("bobina") ||
+            desc.includes("parafusos cabecote") ||
+            desc.includes("bomba")
+        ) {
+            return 5;
+        }
+
+        if (
             desc.includes("terminal") ||
             desc.includes("pivo")
         ) {
             return 5;
         }
 
+        // =========================
         // LEVE
+        // =========================
         return 2;
     };
 
@@ -200,7 +287,7 @@ export default function Produtividade() {
     // =====================================
     // CARREGAR
     // =====================================
-    const carregarDados = async () => {
+    const carregarDados = async (inicioParam, fimParam) => {
 
         try {
 
@@ -220,9 +307,25 @@ export default function Produtividade() {
             const resNotas = await fetch(API_NOTAS);
             const notas = await resNotas.json();
 
+            // Filtro por data
+            const inicio = new Date((inicioParam || dataInicio) + "T00:00:00");
+            const fim = new Date((fimParam || dataFim) + "T23:59:59");
+
+            const notasFiltradas = notas.filter((nota) => {
+
+                const dataNota = parseDate(nota.data_recebimento);
+
+                if (!dataNota) return false;
+
+                const ini = new Date(dataInicio + "T00:00:00");
+                const fim = new Date(dataFim + "T23:59:59");
+
+                return dataNota >= ini && dataNota <= fim;
+            });
+
             const mapa = {};
 
-            for (const nota of notas) {
+            for (const nota of notasFiltradas) {
 
                 const conf = nota.conferente || "SEM_CONFERENTE";
 
@@ -256,13 +359,15 @@ export default function Produtividade() {
                             Number(item.qtd_conferida) > 0
                         ) {
 
-                            const pts = calcularPontosItem(item);
+                            const qtd = Number(item.qtd_conferida || 1);
+
+                            const ptsUnitario = calcularPontosItem(item);
+
+                            const pts = ptsUnitario * qtd;
 
                             mapa[conf].pontos += pts;
 
-                            mapa[conf].itens += Number(
-                                item.qtd_conferida || 1
-                            );
+                            mapa[conf].itens += qtd;
 
                             // =========================
                             // VALIDA CAIXA
@@ -284,6 +389,7 @@ export default function Produtividade() {
 
                                 mapa[conf].detalhes.push({
                                     tipo: item.descricao,
+                                    codigo: item.basico,
                                     pontos: -15,
                                     erro: true,
                                     motivo: `Caixa incorreta (${item.caixa})`,
@@ -294,6 +400,9 @@ export default function Produtividade() {
 
                                 mapa[conf].detalhes.push({
                                     tipo: item.descricao,
+                                    codigo: item.basico,
+                                    quantidade: qtd,
+                                    pontosUnitario: ptsUnitario,
                                     pontos: pts,
                                     erro: false,
                                     localizacao: item.loc_sistema,
@@ -423,13 +532,14 @@ export default function Produtividade() {
                     <Typography
                         variant="h4"
                         fontWeight="bold"
+                        color="text.primary"
                     >
                         📊 Produtividade de conferência do SIGEL - WMS
                     </Typography>
 
                     <Typography
                         variant="body2"
-                        color="text.secondary"
+                        color="text.primary"
                     >
                         Controle operacional inteligente
                     </Typography>
@@ -437,7 +547,36 @@ export default function Produtividade() {
                 </Box>
 
             </Box>
+            <Box sx={{ display: "flex", gap: 2, mb: 2, flexWrap: "wrap" }}>
 
+                <TextField
+                    type="date"
+                    label="Data início"
+                    InputLabelProps={{ shrink: true }}
+                    value={dataInicio}
+                    onChange={(e) => setDataInicio(e.target.value)}
+                />
+
+                <TextField
+                    type="date"
+                    label="Data fim"
+                    InputLabelProps={{ shrink: true }}
+                    value={dataFim}
+                    onChange={(e) => setDataFim(e.target.value)}
+                />
+
+                <Button
+                    variant="contained"
+                    onClick={carregarDados}
+                >
+                    Filtrar
+                </Button>
+
+                <Typography variant="caption">
+                    Última atualização: {lastUpdate}
+                </Typography>
+
+            </Box>
             {/* KPI */}
             <Grid container spacing={2} sx={{ mb: 4 }}>
 
@@ -606,6 +745,13 @@ export default function Produtividade() {
                                                         ? "warning"
                                                         : "default"
                                         }
+                                        sx={{
+                                            color: "primary.branco",
+                                            fontWeight: 700,
+                                            "& .MuiChip-icon": {
+                                                color: "primary.branco",
+                                            },
+                                        }}
                                     />
 
                                     {index === 0 && (
@@ -613,6 +759,10 @@ export default function Produtividade() {
                                             icon={<StarIcon />}
                                             label="TOP PERFORMANCE"
                                             color="warning"
+                                            sx={{
+                                                color: "primary.branco",
+                                                fontWeight: "bold",
+                                            }}
                                         />
                                     )}
 
@@ -621,6 +771,10 @@ export default function Produtividade() {
                                             icon={<WarningAmberIcon />}
                                             label={`${row.errosCaixa} erros`}
                                             color="error"
+                                            sx={{
+                                                color: "primary.branco",
+                                                fontWeight: "bold",
+                                            }}
                                         />
                                     )}
 
@@ -664,6 +818,9 @@ export default function Produtividade() {
                                 <Chip
                                     label={`${row.pontos} ganhos`}
                                     color="success"
+                                    sx={{
+                                        color: "primary.branco"
+                                    }}
                                 />
 
                                 <Chip
@@ -674,6 +831,9 @@ export default function Produtividade() {
                                 <Chip
                                     label={`${row.pontosFinais} pts`}
                                     color="info"
+                                    sx={{
+                                        color: "primary.branco"
+                                    }}
                                 />
 
                                 <Chip
@@ -685,6 +845,9 @@ export default function Produtividade() {
                                                 ? "warning"
                                                 : "error"
                                     }
+                                    sx={{
+                                        color: "primary.branco"
+                                    }}
                                 />
 
                                 <Button
@@ -714,6 +877,13 @@ export default function Produtividade() {
                 onClose={() => setOpenDetalhes(false)}
                 fullWidth
                 maxWidth="md"
+                PaperProps={{
+                    sx: {
+                        bgcolor: dark ? "#121212" : "#fff",
+                        color: dark ? "#fff" : "#000",
+                        borderRadius: 4,
+                    }
+                }}
             >
 
                 <DialogTitle>
@@ -758,11 +928,15 @@ export default function Produtividade() {
                                 >
 
                                     <Box>
+                                        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                                            <Typography fontWeight="bold">
+                                                {item.codigo} - {item.tipo}
+                                            </Typography>
 
-                                        <Typography fontWeight="bold">
-                                            {item.tipo}
-                                        </Typography>
-
+                                            <Typography variant="caption" sx={{ marginLeft: 2 }}>
+                                                {item.quantidade}x • {item.pontosUnitario} pts
+                                            </Typography>
+                                        </Box>
                                         <Typography
                                             variant="caption"
                                             color="text.secondary"
@@ -779,6 +953,7 @@ export default function Produtividade() {
                                                 sx={{
                                                     display: "block",
                                                     mt: 0.5,
+                                                    fontWeight: "bold"
                                                 }}
                                             >
                                                 ❌ {item.motivo}
@@ -793,6 +968,9 @@ export default function Produtividade() {
                                                 ? <WarningAmberIcon />
                                                 : <CheckCircleIcon />
                                         }
+                                        sx={{
+                                            color: "primary.branco"
+                                        }}
                                         label={
                                             item.erro
                                                 ? `${item.pontos} pts`
