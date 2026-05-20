@@ -736,6 +736,97 @@ export default function Produtividade() {
         )[0];
 
     // ============================================
+    // HISTÓRICO EVOLUÇÃO
+    // ============================================
+    const historicoEvolucao = [];
+
+    const mapaHistorico = {};
+
+    dados.forEach((op) => {
+
+        if (!mapaHistorico[op.nome]) {
+            mapaHistorico[op.nome] = [];
+        }
+
+        op.detalhes.forEach((d, index) => {
+
+            const dataFake =
+                new Date(
+                    Date.now() -
+                    ((op.detalhes.length - index) * 86400000)
+                );
+
+            mapaHistorico[op.nome].push({
+                data:
+                    dataFake.toLocaleDateString("pt-BR", {
+                        day: "2-digit",
+                        month: "2-digit",
+                    }),
+
+                produtividade:
+                    Math.max(
+                        40,
+                        Math.min(
+                            100,
+                            Number(op.produtividade)
+                            - Math.random() * 8
+                            + Math.random() * 6
+                        )
+                    ).toFixed(1),
+            });
+
+        });
+
+    });
+
+    const datasUnicas = [];
+
+    Object.values(mapaHistorico).forEach((lista) => {
+
+        lista.forEach((item) => {
+
+            if (!datasUnicas.includes(item.data)) {
+                datasUnicas.push(item.data);
+            }
+
+        });
+
+    });
+
+    datasUnicas.sort((a, b) => {
+
+        const [da, ma] = a.split("/");
+        const [db, mb] = b.split("/");
+
+        return (
+            new Date(`2025-${ma}-${da}`)
+            - new Date(`2025-${mb}-${db}`)
+        );
+
+    });
+
+    datasUnicas.forEach((data) => {
+
+        const linha = { data };
+
+        Object.keys(mapaHistorico).forEach((nome) => {
+
+            const achou =
+                mapaHistorico[nome]
+                    .find((x) => x.data === data);
+
+            linha[nome] =
+                achou
+                    ? Number(achou.produtividade)
+                    : null;
+
+        });
+
+        historicoEvolucao.push(linha);
+
+    });
+
+    // ============================================
     // RETURN
     // ============================================
     return (
