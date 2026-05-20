@@ -120,6 +120,11 @@ export default function Produtividade() {
     const [nomeSelecionado,
         setNomeSelecionado] = useState("");
 
+    const [openRanks, setOpenRanks] = useState(false);
+
+    const [imagemFullscreen, setImagemFullscreen] =
+        useState(false);
+
     // ============================================
     // COLORS
     // ============================================
@@ -201,7 +206,10 @@ export default function Produtividade() {
 
         const interval = setInterval(() => {
 
-            carregarDados();
+            carregarDados(
+                dataInicio,
+                dataFim
+            );
 
         }, 5 * 60 * 1000);
 
@@ -216,54 +224,70 @@ export default function Produtividade() {
 
         if (!dateStr) return null;
 
-        if (dateStr.includes("T")) {
-            return new Date(dateStr);
-        }
+        const [d, m, y] = dateStr.split("-");
 
-        const [d, m, y] =
-            dateStr.split(/[-/]/);
-
-        return new Date(`${y}-${m}-${d}`);
+        return new Date(
+            Number(y),
+            Number(m) - 1,
+            Number(d),
+            0,
+            0,
+            0
+        );
 
     };
 
     // ============================================
     // LEVEL
     // ============================================
-    const obterNivel = (prod) => {
+    const obterNivel = (xp, itens, pontosFinais, produtividade, errosCaixa) => {
 
-        if (prod >= 98)
+        if (xp >= 300000 && itens >= 10000 && pontosFinais >= 15000 && produtividade >= 98)
             return {
-                nome: "MESTRE",
-                cor: "#00ff99",
-                emoji: "👑",
+                nome: "LENDARIO",
+                cor: "#a724ff",
+                imagem: "/ranks/icone-lendario.png",
             };
 
-        if (prod >= 92)
+        else if (xp >= 200000 && itens >= 5000 && pontosFinais >= 10000 && produtividade >= 95)
+            return {
+                nome: "MESTRE",
+                cor: "#ff2929",
+                imagem: "/ranks/icone-mestre.png",
+            };
+
+        else if (xp >= 150000 && itens >= 3000 && pontosFinais >= 5000 && produtividade >= 90)
+            return {
+                nome: "ESMERALDA",
+                cor: "#06c730",
+                imagem: "/ranks/icone-esmeralda.png",
+            };
+
+        else if (xp >= 100000 && itens >= 2000 && pontosFinais >= 3000 && produtividade >= 85)
             return {
                 nome: "DIAMANTE",
                 cor: "#00d5ff",
-                emoji: "💎",
+                imagem: "/ranks/icone-diamante.png",
             };
 
-        if (prod >= 85)
+        else if (xp >= 70000 && itens >= 1500 && pontosFinais >= 1000 && produtividade >= 80)
             return {
                 nome: "OURO",
                 cor: "#FFD700",
-                emoji: "🥇",
+                imagem: "/ranks/icone-ouro.png",
             };
 
-        if (prod >= 70)
+        else if (xp >= 30000 && itens >= 800 && pontosFinais >= 500 && produtividade >= 75)
             return {
                 nome: "PRATA",
-                cor: "#C0C0C0",
-                emoji: "🥈",
+                cor: "#9c9c9c",
+                imagem: "/ranks/icone-prata.png",
             };
 
         return {
             nome: "BRONZE",
-            cor: "#CD7F32",
-            emoji: "🥉",
+            cor: "#d17920",
+            imagem: "/ranks/icone-bronze.png",
         };
 
     };
@@ -295,6 +319,9 @@ export default function Produtividade() {
             desc.includes("balanca") ||
             desc.includes("bandeja") ||
             desc.includes("semi eixo") ||
+            desc.includes("semi-eixo") ||
+            desc.includes("deslizante") ||
+            desc.includes("comando de valvula") ||
             desc.includes("amortecedor") ||
             desc.includes("caixa de direcao") ||
             desc.includes("homocinetica completa") ||
@@ -305,21 +332,31 @@ export default function Produtividade() {
         }
 
         if (
+            desc.includes("junta homocinetica") ||
+            desc.includes("tulipa com trizeta")
+        ) {
+            return 7;
+        }
+
+        if (
             desc.includes("mangueira") ||
             desc.includes("cilindro") ||
             desc.includes("coxim") ||
             desc.includes("pastilha") ||
             desc.includes("sapata") ||
             desc.includes("pivo") ||
-            desc.includes("tubo") ||
-            desc.includes("bomba") ||
-            desc.includes("bobina") ||
             desc.includes("cabo") ||
             desc.includes("junta") ||
-            desc.includes("parafusos cabecote") ||
+            desc.includes("bomba") ||
             desc.includes("carcaca") ||
-            desc.includes("antichama") ||
-            desc.includes("terminal")
+            desc.includes("tubo") ||
+            desc.includes("reservatorio") ||
+            desc.includes("reser") ||
+            desc.includes("parafusos cabecote") ||
+            desc.includes("terminal") ||
+            desc.includes("barra de direcao") ||
+            desc.includes("barra axial") ||
+            desc.includes("barra")
         ) {
             return 5;
         }
@@ -331,6 +368,55 @@ export default function Produtividade() {
     // ============================================
     // VALIDAR CAIXA
     // ============================================
+    const normalizarRua = (texto = "") => {
+
+        return texto
+            .toUpperCase()
+            .replace(/\s+/g, "")
+            .replace(/^0+/, "");
+
+    };
+
+    const extrairRuaLoc = (loc = "") => {
+
+        const match =
+            loc.toUpperCase().match(/^0*(\d+[A-Z])/);
+
+        return match
+            ? match[1]
+            : "";
+
+    };
+
+    const extrairRuaCaixa = (caixa = "") => {
+
+        const texto =
+            caixa.toUpperCase();
+
+        // Caixa 13B - 1
+        let match =
+            texto.match(
+                /CAIXA\s*0*(\d+[A-Z])/
+            );
+
+        if (match) {
+            return match[1];
+        }
+
+        // 006A - 7
+        match =
+            texto.match(
+                /^0*(\d+[A-Z])/
+            );
+
+        if (match) {
+            return match[1];
+        }
+
+        return "";
+
+    };
+
     const validarCaixa = (item) => {
 
         const caixa = item.caixa || "";
@@ -346,14 +432,21 @@ export default function Produtividade() {
         }
 
         const loc =
-            (item.loc_sistema || "")
-                .substring(0, 4);
+            extrairRuaLoc(
+                item.loc_sistema
+            );
 
         const cx =
-            caixa.substring(0, 4);
+            extrairRuaCaixa(
+                caixa
+            );
 
         return {
-            valida: loc === cx,
+            valida:
+                normalizarRua(loc)
+                ===
+                normalizarRua(cx),
+
             ignorar: false,
         };
 
@@ -406,16 +499,30 @@ export default function Produtividade() {
             const notas =
                 await resNotas.json();
 
+            const criarDataLocal = (data, fim = false) => {
+
+                const [y, m, d] = data.split("-");
+
+                return new Date(
+                    Number(y),
+                    Number(m) - 1,
+                    Number(d),
+                    fim ? 23 : 0,
+                    fim ? 59 : 0,
+                    fim ? 59 : 0
+                );
+
+            };
+
             const inicio =
-                new Date(
-                    (ini || dataInicio)
-                    + "T00:00:00"
+                criarDataLocal(
+                    ini || dataInicio
                 );
 
             const final =
-                new Date(
-                    (fim || dataFim)
-                    + "T23:59:59"
+                criarDataLocal(
+                    fim || dataFim,
+                    true
                 );
 
             const notasFiltradas =
@@ -439,43 +546,6 @@ export default function Produtividade() {
 
             for (const nota of notasFiltradas) {
 
-                const conf =
-                    nota.conferente
-                    || "SEM_CONFERENTE";
-
-                if (!mapa[conf]) {
-
-                    mapa[conf] = {
-
-                        conferente: conf,
-
-                        nome:
-                            mapaFuncs[conf]
-                            || conf,
-
-                        notas: 0,
-
-                        pontos: 0,
-
-                        descontos: 0,
-
-                        pontosPesados: 0,
-
-                        itens: 0,
-
-                        errosCaixa: 0,
-
-                        detalhes: [],
-
-                        ultimaConferencia:
-                            nota.data_recebimento,
-
-                    };
-
-                }
-
-                mapa[conf].notas += 1;
-
                 try {
 
                     const resItens =
@@ -492,17 +562,53 @@ export default function Produtividade() {
                     for (const item of itens) {
 
                         if (
-                            item.status_item ===
-                            "ITEM_CONFERIDO"
-                            || Number(
-                                item.qtd_conferida
-                            ) > 0
+                            item.status_item === "ITEM_CONFERIDO"
+                            || Number(item.qtd_conferida) > 0
                         ) {
+
+                            const conf =
+                                item.conferente
+                                || "SEM_CONFERENTE";
+
+                            if (!mapa[conf]) {
+
+                                mapa[conf] = {
+
+                                    conferente: conf,
+
+                                    nome:
+                                        mapaFuncs[conf]
+                                        || conf,
+
+                                    notas: 0,
+
+                                    pontos: 0,
+
+                                    descontos: 0,
+
+                                    pontosPesados: 0,
+
+                                    itens: 0,
+
+                                    errosCaixa: 0,
+
+                                    detalhes: [],
+
+                                    notasSet: new Set(),
+
+                                    ultimaConferencia:
+                                        nota.data_recebimento,
+                                };
+
+                            }
+
+                            mapa[conf]
+                                .notasSet
+                                .add(nota.id);
 
                             const qtd =
                                 Number(
-                                    item.qtd_conferida
-                                    || 1
+                                    item.qtd_conferida || 1
                                 );
 
                             const ptsUnitario =
@@ -530,8 +636,10 @@ export default function Produtividade() {
 
                             if (!validacao.valida) {
 
+                                const descontoErro = 30;
+
                                 mapa[conf]
-                                    .descontos += 15;
+                                    .descontos += descontoErro;
 
                                 mapa[conf]
                                     .errosCaixa += 1;
@@ -551,14 +659,15 @@ export default function Produtividade() {
                                             ptsUnitario,
 
                                         pontosTotal:
-                                            -15,
+                                            -descontoErro,
 
                                         erro: true,
 
                                         localizacao:
                                             item.loc_sistema,
 
-                                        caixaItem: item.caixa,
+                                        caixaItem:
+                                            item.caixa,
 
                                         motivo:
                                             `Caixa incorreta (${item.caixa})`,
@@ -605,6 +714,9 @@ export default function Produtividade() {
 
             const resultado =
                 Object.values(mapa).map((item) => {
+
+                    item.notas =
+                        item.notasSet.size;
 
                     const pontosFinais =
                         item.pontos
@@ -736,97 +848,6 @@ export default function Produtividade() {
         )[0];
 
     // ============================================
-    // HISTÓRICO EVOLUÇÃO
-    // ============================================
-    const historicoEvolucao = [];
-
-    const mapaHistorico = {};
-
-    dados.forEach((op) => {
-
-        if (!mapaHistorico[op.nome]) {
-            mapaHistorico[op.nome] = [];
-        }
-
-        op.detalhes.forEach((d, index) => {
-
-            const dataFake =
-                new Date(
-                    Date.now() -
-                    ((op.detalhes.length - index) * 86400000)
-                );
-
-            mapaHistorico[op.nome].push({
-                data:
-                    dataFake.toLocaleDateString("pt-BR", {
-                        day: "2-digit",
-                        month: "2-digit",
-                    }),
-
-                produtividade:
-                    Math.max(
-                        40,
-                        Math.min(
-                            100,
-                            Number(op.produtividade)
-                            - Math.random() * 8
-                            + Math.random() * 6
-                        )
-                    ).toFixed(1),
-            });
-
-        });
-
-    });
-
-    const datasUnicas = [];
-
-    Object.values(mapaHistorico).forEach((lista) => {
-
-        lista.forEach((item) => {
-
-            if (!datasUnicas.includes(item.data)) {
-                datasUnicas.push(item.data);
-            }
-
-        });
-
-    });
-
-    datasUnicas.sort((a, b) => {
-
-        const [da, ma] = a.split("/");
-        const [db, mb] = b.split("/");
-
-        return (
-            new Date(`2025-${ma}-${da}`)
-            - new Date(`2025-${mb}-${db}`)
-        );
-
-    });
-
-    datasUnicas.forEach((data) => {
-
-        const linha = { data };
-
-        Object.keys(mapaHistorico).forEach((nome) => {
-
-            const achou =
-                mapaHistorico[nome]
-                    .find((x) => x.data === data);
-
-            linha[nome] =
-                achou
-                    ? Number(achou.produtividade)
-                    : null;
-
-        });
-
-        historicoEvolucao.push(linha);
-
-    });
-
-    // ============================================
     // RETURN
     // ============================================
     return (
@@ -898,10 +919,31 @@ export default function Produtividade() {
 
                 <Button
                     variant="contained"
-                    onClick={carregarDados}
+                    onClick={() =>
+                        carregarDados(
+                            dataInicio,
+                            dataFim
+                        )
+                    }
                 >
                     Atualizar
                 </Button>
+
+                <IconButton
+                    onClick={() => setOpenRanks(true)}
+                    sx={{
+                        bgcolor: "#1a1a1a",
+                        color: "#fff",
+                        width: "50px",
+                        height: "50px",
+
+                        "&:hover": {
+                            bgcolor: "#2a2a2a",
+                        },
+                    }}
+                >
+                    ?
+                </IconButton>
 
             </Box>
 
@@ -909,7 +951,7 @@ export default function Produtividade() {
             <Paper
                 sx={{
                     ...glassStyle,
-                    mb: 4,
+                    mb: 10,
                 }}
             >
 
@@ -961,8 +1003,11 @@ export default function Produtividade() {
                         const nivel =
                             obterNivel(
                                 Number(
-                                    row.produtividade
-                                )
+                                    row.xp
+                                ), row.itens,
+                                row.pontosFinais,
+                                row.produtividade,
+                                row.errosCaixa
                             );
 
                         return (
@@ -988,11 +1033,125 @@ export default function Produtividade() {
                                     <Paper
                                         sx={{
                                             ...glassStyle,
-                                            p: 3,
+
                                             position: "relative",
-                                            overflow: "hidden",
+
+                                            overflow: "visible",
+
+                                            pt: 12,
+                                            pb: 3,
+                                            px: 3,
+
+                                            border: `1px solid ${nivel.cor}55`,
+
+                                            boxShadow: `
+            0 0 20px ${nivel.cor}22,
+            0 0 60px ${nivel.cor}11
+        `,
+
+                                            background: dark
+                                                ? `
+                linear-gradient(
+                    180deg,
+                    ${nivel.cor}15 0%,
+                    #111 35%
+                )
+            `
+                                                : "#fff",
                                         }}
                                     >
+
+                                        {/* GLOW FUNDO */}
+                                        <Box
+                                            sx={{
+                                                position: "absolute",
+                                                top: -80,
+                                                left: "50%",
+                                                transform: "translateX(-50%)",
+
+                                                width: 180,
+                                                height: 180,
+
+                                                borderRadius: "50%",
+
+                                                background: `${nivel.cor}55`,
+
+                                                filter: "blur(70px)",
+
+                                                zIndex: 1,
+                                            }}
+                                        />
+
+                                        {/* RANK */}
+                                        <Box
+                                            sx={{
+                                                position: "absolute",
+
+                                                top: -70,
+
+                                                left: "50%",
+
+                                                transform: "translateX(-50%)",
+
+                                                zIndex: 20,
+
+                                                display: "flex",
+
+                                                flexDirection: "column",
+
+                                                alignItems: "center",
+                                            }}
+                                        >
+
+                                            <motion.img
+                                                src={nivel.imagem}
+                                                alt={nivel.nome}
+
+                                                animate={{
+                                                    y: [0, -6, 0],
+                                                }}
+
+                                                transition={{
+                                                    duration: 3,
+                                                    repeat: Infinity,
+                                                }}
+
+                                                style={{
+
+                                                    width: 140,
+                                                    height: 140,
+
+                                                    objectFit: "contain",
+
+                                                    filter: `
+                drop-shadow(0 0 12px ${nivel.cor})
+                drop-shadow(0 0 30px ${nivel.cor})
+            `,
+                                                }}
+                                            />
+
+                                            <Typography
+                                                sx={{
+                                                    mt: -1,
+
+                                                    fontWeight: 900,
+
+                                                    letterSpacing: 2,
+
+                                                    fontSize: 18,
+
+                                                    color: nivel.cor,
+
+                                                    textShadow: `
+                0 0 10px ${nivel.cor},
+                0 0 20px ${nivel.cor}
+            `,
+                                                }}
+                                            >
+                                                {nivel.nome}
+                                            </Typography>
+
+                                        </Box>
 
                                         <Box
                                             sx={{
@@ -1036,7 +1195,7 @@ export default function Produtividade() {
                                                         bgcolor:
                                                             nivel.cor,
                                                         color:
-                                                            "#000",
+                                                            "#ffffff",
                                                         fontWeight:
                                                             "bold",
                                                         fontSize:
@@ -1055,18 +1214,6 @@ export default function Produtividade() {
                                                     >
                                                         {row.nome}
                                                     </Typography>
-
-                                                    <Typography
-                                                        color={subTextColor}
-                                                    >
-                                                        {
-                                                            nivel.emoji
-                                                        }{" "}
-                                                        {
-                                                            nivel.nome
-                                                        }
-                                                    </Typography>
-
                                                 </Box>
 
                                             </Box>
@@ -1077,6 +1224,7 @@ export default function Produtividade() {
                                                 }
                                                 label={`${row.xp} XP`}
                                                 color="secondary"
+                                                sx={{ ml: 2 }}
                                             />
 
                                         </Box>
@@ -1097,6 +1245,7 @@ export default function Produtividade() {
                                                 }
                                                 label={`${row.pontosFinais} pts`}
                                                 color="warning"
+                                                sx={{ color: 'primary.branco' }}
                                             />
 
                                             <Chip
@@ -1112,6 +1261,7 @@ export default function Produtividade() {
                                                 }
                                                 label={`${row.produtividade}% precisão`}
                                                 color="success"
+                                                sx={{ color: 'primary.branco' }}
                                             />
 
                                             <Chip
@@ -1445,7 +1595,7 @@ export default function Produtividade() {
                                                     </TableCell>
 
                                                     <TableCell sx={{ color: "#fff" }}>
-                                                        Divergências
+                                                        Erros
                                                     </TableCell>
 
                                                     <TableCell sx={{ color: "#fff" }}>
@@ -1475,10 +1625,12 @@ export default function Produtividade() {
                                                     const nivel =
                                                         obterNivel(
                                                             Number(
-                                                                row.produtividade
-                                                            )
+                                                                row.xp
+                                                            ), row.itens,
+                                                            row.pontosFinais,
+                                                            row.produtividade,
+                                                            row.errosCaixa
                                                         );
-
                                                     return (
 
                                                         <TableRow
@@ -1509,12 +1661,22 @@ export default function Produtividade() {
 
                                                                     <Avatar
                                                                         sx={{
-                                                                            width: 42,
-                                                                            height: 42,
-                                                                            bgcolor:
-                                                                                nivel.cor,
-                                                                            color: "#000",
+                                                                            width: 72,
+                                                                            height: 72,
+
+                                                                            bgcolor: "#111",
+
+                                                                            border: `3px solid ${nivel.cor}`,
+
+                                                                            color: "#fff",
+
                                                                             fontWeight: "bold",
+
+                                                                            fontSize: 30,
+
+                                                                            boxShadow: `
+            0 0 15px ${nivel.cor}
+        `,
                                                                         }}
                                                                     >
                                                                         {index + 1}
@@ -1594,6 +1756,7 @@ export default function Produtividade() {
                                                                                 ? "warning"
                                                                                 : "error"
                                                                     }
+                                                                    sx={{ color: "primary.branco" }}
                                                                 />
 
                                                             </TableCell>
@@ -1625,22 +1788,31 @@ export default function Produtividade() {
                                                             {/* STATUS */}
                                                             <TableCell>
 
-                                                                <Chip
+                                                                <Chip sx={{
+                                                                    color: '#FFFFFF',
+                                                                    fontWeight: "bold"
+                                                                }}
                                                                     label={
-                                                                        row.produtividade >= 95
-                                                                            ? "ELITE"
-                                                                            : row.produtividade >= 85
-                                                                                ? "ÓTIMO"
-                                                                                : row.produtividade >= 70
-                                                                                    ? "OK"
-                                                                                    : "CRÍTICO"
+                                                                        row.produtividade >= 99
+                                                                            ? "MASTER"
+                                                                            :
+                                                                            row.produtividade >= 95
+                                                                                ? "ELITE"
+                                                                                : row.produtividade >= 85
+                                                                                    ? "ÓTIMO"
+                                                                                    : row.produtividade >= 70
+                                                                                        ? "OK"
+                                                                                        : "CRÍTICO"
                                                                     }
                                                                     color={
-                                                                        row.produtividade >= 95
-                                                                            ? "success"
-                                                                            : row.produtividade >= 70
-                                                                                ? "warning"
-                                                                                : "error"
+                                                                        row.produtividade >= 99
+                                                                            ? "warning"
+                                                                            :
+                                                                            row.produtividade >= 95
+                                                                                ? "info"
+                                                                                : row.produtividade >= 70
+                                                                                    ? "success"
+                                                                                    : "error"
                                                                     }
                                                                 />
 
@@ -1888,287 +2060,373 @@ export default function Produtividade() {
                     </Grid>
 
                     {/* ===================================== */}
-                    {/* PAINEL EXECUTIVO */}
+                    {/* PERFORMANCE + QUALIDADE */}
                     {/* ===================================== */}
-                    <Grid item xs={12} lg={8}>
+                    <Grid item xs={12}>
 
-                        <Paper
-                            sx={{
-                                ...glassStyle,
-                                p: 3,
-                                height: 450,
-                            }}
-                        >
+                        <Grid container spacing={3}>
 
-                            <Box
-                                sx={{
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                    alignItems: "center",
-                                    mb: 3,
-                                }}
-                            >
+                            {/* ===================================== */}
+                            {/* PERFORMANCE OPERACIONAL */}
+                            {/* ===================================== */}
+                            <Grid item xs={12} lg={6}>
 
-                                <Box>
-
-                                    <Typography
-                                        variant="h6"
-                                        fontWeight="bold"
-                                        color={textColor}
-                                    >
-                                        📈 Performance operacional
-                                    </Typography>
-
-                                    <Typography
-                                        color={subTextColor}
-                                        variant="body2"
-                                    >
-                                        Pontuação líquida da equipe
-                                    </Typography>
-
-                                </Box>
-
-                            </Box>
-
-                            <ResponsiveContainer
-                                width="100%"
-                                height="85%"
-                            >
-
-                                <BarChart data={dados}>
-
-                                    <CartesianGrid strokeDasharray="3 3" />
-
-                                    <XAxis dataKey="nome" />
-
-                                    <YAxis />
-
-                                    <Tooltip />
-
-                                    <Bar
-                                        dataKey="pontosFinais"
-                                        fill="#00ff99"
-                                        radius={[8, 8, 0, 0]}
-                                    />
-
-                                    <Bar
-                                        dataKey="descontos"
-                                        fill="#ff5252"
-                                        radius={[8, 8, 0, 0]}
-                                    />
-
-                                </BarChart>
-
-                            </ResponsiveContainer>
-
-                        </Paper>
-
-                    </Grid>
-
-                    {/* ===================================== */}
-                    {/* QUALIDADE */}
-                    {/* ===================================== */}
-                    <Grid item xs={12} lg={6}>
-
-                        <Paper
-                            sx={{
-                                ...glassStyle,
-                                p: 3,
-                                height: 600,
-                                display: "flex",
-                                flexDirection: "column",
-                            }}
-                        >
-
-                            <Box
-                                sx={{
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                    alignItems: "center",
-                                    mb: 2,
-                                    flexWrap: "wrap",
-                                    gap: 2,
-                                }}
-                            >
-
-                                <Box>
-
-                                    <Typography
-                                        variant="h5"
-                                        fontWeight="bold"
-                                        color={textColor}
-                                    >
-                                        🎯 Índice de qualidade operacional
-                                    </Typography>
-
-                                    <Typography
-                                        variant="body2"
-                                        color={subTextColor}
-                                    >
-                                        Relação entre produtividade e divergências
-                                    </Typography>
-
-                                </Box>
-
-                                <Chip
-                                    label={`${(
-                                        (
-                                            totalPontos /
-                                            (
-                                                totalPontos +
-                                                (totalErros * 15 || 1)
-                                            )
-                                        ) * 100
-                                    ).toFixed(1)}% assertividade`}
-                                    color="success"
+                                <Paper
                                     sx={{
-                                        fontWeight: "bold",
-                                        fontSize: 14,
-                                        height: 36,
+                                        ...glassStyle,
+                                        p: 3,
+                                        height: 600,
+                                        display: "flex",
+                                        flexDirection: "column",
                                     }}
-                                />
-
-                            </Box>
-
-                            <Box
-                                sx={{
-                                    flex: 1,
-                                    width: "100%",
-                                }}
-                            >
-
-                                <ResponsiveContainer
-                                    width="100%"
-                                    height="100%"
                                 >
 
-                                    <PieChart>
+                                    <Box
+                                        sx={{
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            alignItems: "center",
+                                            mb: 3,
+                                        }}
+                                    >
 
-                                        <Pie
-                                            data={[
-                                                {
-                                                    name: "Pontos positivos",
-                                                    value: totalPontos,
-                                                },
-                                                {
-                                                    name: "Pontos negativos",
-                                                    value: totalErros * 15,
-                                                },
-                                            ]}
-                                            dataKey="value"
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={90}
-                                            outerRadius={170}
-                                            paddingAngle={5}
-                                            labelLine={false}
-                                            label={({ name, percent }) =>
-                                                `${name} ${(
-                                                    percent * 100
-                                                ).toFixed(0)}%`
-                                            }
-                                        >
+                                        <Box>
 
-                                            <Cell fill="#00ff99" />
+                                            <Typography
+                                                variant="h5"
+                                                fontWeight="bold"
+                                                color={textColor}
+                                            >
+                                                📈 Performance operacional
+                                            </Typography>
 
-                                            <Cell fill="#ff5252" />
+                                            <Typography
+                                                color={subTextColor}
+                                                variant="body2"
+                                            >
+                                                Pontuação líquida da equipe
+                                            </Typography>
 
-                                        </Pie>
+                                        </Box>
 
-                                        <Tooltip
-                                            contentStyle={{
-                                                background: dark
-                                                    ? "#111"
-                                                    : "#fff",
-                                                border:
-                                                    "1px solid rgba(255,255,255,0.1)",
-                                                borderRadius: 12,
-                                                color: "#fff",
-                                            }}
+                                        <Chip
+                                            label="Tempo real"
+                                            color="success"
+                                            sx={{ ml: 2 }}
                                         />
 
-                                    </PieChart>
+                                    </Box>
 
-                                </ResponsiveContainer>
-
-                            </Box>
-
-                            {/* RESUMO */}
-                            <Grid
-                                container
-                                spacing={2}
-                                sx={{ mt: 1 }}
-                            >
-
-                                <Grid item xs={6}>
-
-                                    <Paper
+                                    <Box
                                         sx={{
-                                            p: 2,
-                                            borderRadius: 3,
-                                            bgcolor:
-                                                "rgba(0,255,120,0.08)",
-                                            border:
-                                                "1px solid rgba(0,255,120,0.15)",
+                                            flex: 1,
                                         }}
                                     >
 
-                                        <Typography
-                                            color="#00ff99"
-                                            fontWeight="bold"
+                                        <ResponsiveContainer
+                                            width="100%"
+                                            height="100%"
                                         >
-                                            ✅ Acertos
-                                        </Typography>
 
-                                        <Typography
-                                            variant="h5"
-                                            fontWeight="bold"
-                                            color={textColor}
-                                        >
-                                            {totalPontos}
-                                        </Typography>
+                                            <BarChart
+                                                data={dados}
+                                                margin={{
+                                                    top: 10,
+                                                    right: 20,
+                                                    left: 0,
+                                                    bottom: 10,
+                                                }}
+                                            >
 
-                                    </Paper>
+                                                <CartesianGrid
+                                                    strokeDasharray="3 3"
+                                                    stroke={
+                                                        dark
+                                                            ? "rgba(255,255,255,0.08)"
+                                                            : "#ddd"
+                                                    }
+                                                />
 
-                                </Grid>
+                                                <XAxis
+                                                    dataKey="nome"
+                                                    stroke={
+                                                        dark
+                                                            ? "#fff"
+                                                            : "#555"
+                                                    }
+                                                    tick={{
+                                                        fill:
+                                                            dark
+                                                                ? "#fff"
+                                                                : "#555",
+                                                    }}
+                                                />
 
-                                <Grid item xs={6}>
+                                                <YAxis
+                                                    stroke={
+                                                        dark
+                                                            ? "#fff"
+                                                            : "#555"
+                                                    }
+                                                    tick={{
+                                                        fill:
+                                                            dark
+                                                                ? "#fff"
+                                                                : "#555",
+                                                    }}
+                                                />
 
-                                    <Paper
-                                        sx={{
-                                            p: 2,
-                                            borderRadius: 3,
-                                            bgcolor:
-                                                "rgba(255,0,0,0.08)",
-                                            border:
-                                                "1px solid rgba(255,0,0,0.15)",
-                                        }}
-                                    >
+                                                <Tooltip
+                                                    contentStyle={{
+                                                        background:
+                                                            dark
+                                                                ? "#111"
+                                                                : "#fff",
 
-                                        <Typography
-                                            color="#ff5252"
-                                            fontWeight="bold"
-                                        >
-                                            ❌ Erros
-                                        </Typography>
+                                                        border:
+                                                            "1px solid rgba(255,255,255,0.1)",
 
-                                        <Typography
-                                            variant="h5"
-                                            fontWeight="bold"
-                                            color={textColor}
-                                        >
-                                            {totalErros * 15}
-                                        </Typography>
+                                                        borderRadius: 12,
+                                                    }}
+                                                />
 
-                                    </Paper>
+                                                <Bar
+                                                    dataKey="pontosFinais"
+                                                    fill="#00ff99"
+                                                    radius={[10, 10, 0, 0]}
+                                                />
 
-                                </Grid>
+                                                <Bar
+                                                    dataKey="descontos"
+                                                    fill="#ff5252"
+                                                    radius={[10, 10, 0, 0]}
+                                                />
+
+                                            </BarChart>
+
+                                        </ResponsiveContainer>
+
+                                    </Box>
+
+                                </Paper>
 
                             </Grid>
 
-                        </Paper>
+                            {/* ===================================== */}
+                            {/* QUALIDADE */}
+                            {/* ===================================== */}
+                            <Grid item xs={12} lg={6}>
+
+                                <Paper
+                                    sx={{
+                                        ...glassStyle,
+                                        p: 3,
+                                        height: 600,
+                                        width: 800,
+                                        display: "flex",
+                                        flexDirection: "column",
+                                    }}
+                                >
+
+                                    <Box
+                                        sx={{
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            alignItems: "center",
+                                            mb: 2,
+                                            flexWrap: "wrap",
+                                            gap: 2,
+                                        }}
+                                    >
+
+                                        <Box>
+
+                                            <Typography
+                                                variant="h5"
+                                                fontWeight="bold"
+                                                color={textColor}
+                                            >
+                                                🎯 Índice de qualidade operacional
+                                            </Typography>
+
+                                            <Typography
+                                                variant="body2"
+                                                color={subTextColor}
+                                            >
+                                                Relação entre produtividade e divergências
+                                            </Typography>
+
+                                        </Box>
+
+                                        <Chip
+                                            label={`${(
+                                                (
+                                                    totalPontos /
+                                                    (
+                                                        totalPontos +
+                                                        (totalErros * 15 || 1)
+                                                    )
+                                                ) * 100
+                                            ).toFixed(1)}% assertividade`}
+                                            color="success"
+                                            sx={{
+                                                fontWeight: "bold",
+                                                fontSize: 14,
+                                                height: 36,
+                                            }}
+                                        />
+
+                                    </Box>
+
+                                    <Box
+                                        sx={{
+                                            flex: 1,
+                                            width: "100%",
+                                        }}
+                                    >
+
+                                        <ResponsiveContainer
+                                            width="100%"
+                                            height="100%"
+                                        >
+
+                                            <PieChart>
+
+                                                <Pie
+                                                    data={[
+                                                        {
+                                                            name: "Pontos positivos",
+                                                            value: totalPontos,
+                                                        },
+                                                        {
+                                                            name: "Pontos negativos",
+                                                            value: totalErros * 15,
+                                                        },
+                                                    ]}
+                                                    dataKey="value"
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    innerRadius={90}
+                                                    outerRadius={170}
+                                                    paddingAngle={5}
+                                                    labelLine={false}
+                                                    label={({ name, percent }) =>
+                                                        `${name} ${(
+                                                            percent * 100
+                                                        ).toFixed(0)}%`
+                                                    }
+                                                >
+
+                                                    <Cell fill="#00ff99" />
+
+                                                    <Cell fill="#ff5252" />
+
+                                                </Pie>
+
+                                                <Tooltip
+                                                    contentStyle={{
+                                                        background: dark
+                                                            ? "#111"
+                                                            : "#fff",
+
+                                                        border:
+                                                            "1px solid rgba(255,255,255,0.1)",
+
+                                                        borderRadius: 12,
+
+                                                        color: "#fff",
+                                                    }}
+                                                />
+
+                                            </PieChart>
+
+                                        </ResponsiveContainer>
+
+                                    </Box>
+
+                                    {/* RESUMO */}
+                                    <Grid
+                                        container
+                                        spacing={2}
+                                        sx={{ mt: 1 }}
+                                    >
+
+                                        <Grid item xs={6}>
+
+                                            <Paper
+                                                sx={{
+                                                    p: 2,
+                                                    borderRadius: 3,
+                                                    bgcolor:
+                                                        "rgba(0,255,120,0.08)",
+
+                                                    border:
+                                                        "1px solid rgba(0,255,120,0.15)",
+                                                }}
+                                            >
+
+                                                <Typography
+                                                    color="#00ff99"
+                                                    fontWeight="bold"
+                                                >
+                                                    ✅ Acertos
+                                                </Typography>
+
+                                                <Typography
+                                                    variant="h5"
+                                                    fontWeight="bold"
+                                                    color={textColor}
+                                                >
+                                                    {totalPontos}
+                                                </Typography>
+
+                                            </Paper>
+
+                                        </Grid>
+
+                                        <Grid item xs={6}>
+
+                                            <Paper
+                                                sx={{
+                                                    p: 2,
+                                                    borderRadius: 3,
+                                                    bgcolor:
+                                                        "rgba(255,0,0,0.08)",
+
+                                                    border:
+                                                        "1px solid rgba(255,0,0,0.15)",
+                                                }}
+                                            >
+
+                                                <Typography
+                                                    color="#ff5252"
+                                                    fontWeight="bold"
+                                                >
+                                                    ❌ Erros
+                                                </Typography>
+
+                                                <Typography
+                                                    variant="h5"
+                                                    fontWeight="bold"
+                                                    color={textColor}
+                                                >
+                                                    {totalErros * 15}
+                                                </Typography>
+
+                                            </Paper>
+
+                                        </Grid>
+
+                                    </Grid>
+
+                                </Paper>
+
+                            </Grid>
+
+                        </Grid>
 
                     </Grid>
+
                 </Grid>
 
             )}
@@ -2188,8 +2446,11 @@ export default function Produtividade() {
                         const nivel =
                             obterNivel(
                                 Number(
-                                    row.produtividade
-                                )
+                                    row.xp
+                                ), row.itens,
+                                row.pontosFinais,
+                                row.produtividade,
+                                row.errosCaixa
                             );
 
                         return (
@@ -2205,172 +2466,377 @@ export default function Produtividade() {
                                 <motion.div
                                     whileHover={{
                                         scale: 1.03,
+                                        y: -5,
+                                    }}
+                                    transition={{
+                                        type: "spring",
+                                        stiffness: 300,
                                     }}
                                 >
-
                                     <Paper
                                         sx={{
                                             ...glassStyle,
-                                            p: 3,
+
                                             position: "relative",
-                                            overflow: "hidden",
+
+                                            overflow: "visible",
+
+                                            pt: 10,
+                                            p: 3,
+
+                                            border: `1px solid ${nivel.cor}55`,
+
+                                            background: dark
+                                                ? `
+                linear-gradient(
+                    180deg,
+                    ${nivel.cor}18 0%,
+                    #111 40%
+                )
+            `
+                                                : "#fff",
+
+                                            boxShadow: `
+            0 0 20px ${nivel.cor}22,
+            0 0 50px ${nivel.cor}11
+        `,
                                         }}
                                     >
 
-                                        {/* GLOW */}
+                                        {/* GLOW TOPO */}
                                         <Box
                                             sx={{
-                                                position:
-                                                    "absolute",
+                                                position: "absolute",
 
-                                                inset: 0,
+                                                top: -70,
 
-                                                background:
-                                                    `radial-gradient(circle at top right, ${nivel.cor}22, transparent 60%)`,
+                                                left: "50%",
+
+                                                transform: "translateX(-50%)",
+
+                                                width: 170,
+
+                                                height: 170,
+
+                                                borderRadius: "50%",
+
+                                                background: `${nivel.cor}55`,
+
+                                                filter: "blur(70px)",
+
+                                                zIndex: 1,
                                             }}
                                         />
 
-                                        <Box
-                                            sx={{
-                                                display: "flex",
-                                                justifyContent:
-                                                    "space-between",
+                                        {/* IMAGEM RANK */}
+                                        <motion.div
+                                            animate={{
+                                                y: [0, -6, 0],
+                                            }}
+                                            transition={{
+                                                duration: 3,
+                                                repeat: Infinity,
+                                            }}
+                                            style={{
+                                                position: "absolute",
+                                                top: -75,
+                                                transform: "translateX(-50%)",
+                                                zIndex: 20,
                                             }}
                                         >
-
-                                            <Avatar
+                                            <Box
+                                                component="img"
+                                                src={nivel.imagem}
+                                                alt={nivel.nome}
                                                 sx={{
-                                                    width: 80,
-                                                    height: 80,
-                                                    bgcolor:
-                                                        nivel.cor,
-                                                    color:
-                                                        "#000",
-                                                    fontWeight:
-                                                        "bold",
-                                                    fontSize:
-                                                        28,
+                                                    width: 100,
+                                                    height: 100,
+                                                    objectFit: "contain",
+
+                                                    filter: `
+                    drop-shadow(0 0 12px ${nivel.cor})
+                    drop-shadow(0 0 30px ${nivel.cor})
+                `,
                                                 }}
-                                            >
-                                                {index + 1}
-                                            </Avatar>
-
-                                            <Chip
-                                                icon={
-                                                    <MilitaryTechIcon />
-                                                }
-                                                label={`${row.xp} XP`}
-                                                color="secondary"
                                             />
-
-                                        </Box>
-
-                                        <Typography
-                                            variant="h5"
-                                            fontWeight="bold"
-                                            color={textColor}
-                                            sx={{
-                                                mt: 2,
-                                            }}
-                                        >
-                                            {row.nome}
-                                        </Typography>
-
-                                        <Typography
-                                            color={subTextColor}
-                                        >
-                                            {
-                                                nivel.emoji
-                                            }{" "}
-                                            {
-                                                nivel.nome
-                                            }
-                                        </Typography>
-
-                                        <Divider
-                                            sx={{
-                                                my: 2,
-                                            }}
-                                        />
-
-                                        <Stack
-                                            spacing={1}
-                                        >
-
-                                            <Chip
-                                                label={`🏆 ${row.pontosFinais} pontos`}
-                                                color="warning"
-                                            />
-
-                                            <Chip
-                                                label={`📦 ${row.itens} itens`}
-                                            />
-
-                                            <Chip
-                                                label={`⚡ ${row.produtividade}% precisão`}
-                                                color="success"
-                                            />
-
-                                            <Chip
-                                                label={`🔥 ${row.pontosPesados} itens pesados`}
-                                                color="error"
-                                            />
-
-                                        </Stack>
-
-                                        {/* ACHIEVEMENTS */}
-                                        <Box
-                                            sx={{
-                                                mt: 3,
-                                            }}
-                                        >
 
                                             <Typography
+                                                sx={{
+                                                    textAlign: "center",
+
+                                                    mt: -1,
+
+                                                    fontWeight: 900,
+
+                                                    letterSpacing: 2,
+
+                                                    fontSize: 18,
+
+                                                    color: nivel.cor,
+
+                                                    textShadow: `
+                    0 0 10px ${nivel.cor},
+                    0 0 20px ${nivel.cor}
+                `,
+                                                }}
+                                            >
+                                                {nivel.nome}
+                                            </Typography>
+                                        </motion.div>
+
+                                        {/* CONTEÚDO */}
+                                        <Box
+                                            sx={{
+                                                mt: 5,
+                                            }}
+                                        >
+
+                                            <Box
+                                                sx={{
+                                                    display: "flex",
+                                                    justifyContent: "space-between",
+                                                    alignItems: "center",
+                                                }}
+                                            >
+
+                                                <Avatar
+                                                    sx={{
+                                                        width: 80,
+                                                        height: 80,
+
+                                                        bgcolor: "#111",
+
+                                                        border: `3px solid ${nivel.cor}`,
+
+                                                        color: "#fff",
+
+                                                        fontWeight: "bold",
+
+                                                        fontSize: 28,
+
+                                                        boxShadow: `
+                        0 0 15px ${nivel.cor}
+                    `,
+                                                    }}
+                                                >
+                                                    {index + 1}
+                                                </Avatar>
+
+                                                <Chip
+                                                    icon={<MilitaryTechIcon />}
+                                                    label={`${row.xp} XP`}
+                                                    sx={{
+                                                        ml: 2,
+                                                        bgcolor: `${nivel.cor}22`,
+                                                        color: nivel.cor,
+                                                        border: `1px solid ${nivel.cor}55`,
+                                                        fontWeight: "bold",
+                                                    }}
+                                                />
+
+                                            </Box>
+
+                                            <Typography
+                                                variant="h5"
                                                 fontWeight="bold"
                                                 color={textColor}
                                                 sx={{
-                                                    mb: 1,
+                                                    mt: 2,
                                                 }}
                                             >
-                                                🎖️ Conquistas
+                                                {row.nome}
                                             </Typography>
+
+                                            <Divider
+                                                sx={{
+                                                    my: 2,
+                                                    borderColor: `${nivel.cor}33`,
+                                                }}
+                                            />
 
                                             <Stack
                                                 spacing={1}
                                             >
 
-                                                {row.itens >= 1000 && (
-                                                    <Chip
-                                                        label="🏆 1000 itens"
-                                                        color="warning"
-                                                    />
-                                                )}
+                                                <Chip
+                                                    label={`🏆 ${row.pontosFinais} pontos`}
+                                                    color="warning"
+                                                    sx={{ color: 'primary.branco' }}
+                                                />
 
-                                                {row.errosCaixa === 0 && (
-                                                    <Chip
-                                                        label="⚡ Sem erros"
-                                                        color="success"
-                                                    />
-                                                )}
+                                                <Chip
+                                                    label={`📦 ${row.itens} itens`}
+                                                    sx={{ color: 'primary.branco' }}
+                                                />
 
-                                                {row.pontosFinais >= 5000 && (
-                                                    <Chip
-                                                        label="🔥 5000 pontos"
-                                                        color="error"
-                                                    />
-                                                )}
+                                                <Chip
+                                                    label={`⚡ ${row.produtividade}% precisão`}
+                                                    color="success"
+                                                    sx={{ color: 'primary.branco' }}
+                                                />
 
-                                                {row.produtividade >= 98 && (
-                                                    <Chip
-                                                        label="💎 Precisão absurda"
-                                                        color="info"
-                                                    />
-                                                )}
+                                                <Chip
+                                                    label={`🔥 ${row.pontosPesados} itens pesados`}
+                                                    color="error"
+                                                    sx={{ color: 'primary.branco' }}
+                                                />
 
                                             </Stack>
 
-                                        </Box>
+                                            {/* ACHIEVEMENTS */}
+                                            <Box
+                                                sx={{
+                                                    mt: 3,
+                                                }}
+                                            >
 
+                                                <Typography
+                                                    fontWeight="bold"
+                                                    color={textColor}
+                                                    sx={{
+                                                        mb: 1,
+                                                    }}
+                                                >
+                                                    🎖️ Conquistas
+                                                </Typography>
+
+                                                <Stack
+                                                    spacing={1}
+                                                >
+
+                                                    {row.itens >= 1000 && row.itens <= 2999 && (
+                                                        <Chip
+                                                            label="🥉 1000 itens"
+                                                            color="warning"
+                                                            sx={{ color: 'primary.branco' }}
+                                                        />
+                                                    )}
+
+                                                    {row.itens >= 3000 && row.itens <= 4999 && (
+                                                        <Chip
+                                                            label="🥈 3000 itens"
+                                                            color="warning"
+                                                            sx={{ color: 'primary.branco' }}
+                                                        />
+                                                    )}
+
+                                                    {row.itens >= 5000 && row.itens <= 9999 && (
+                                                        <Chip
+                                                            label="🥇 5000 itens"
+                                                            color="warning"
+                                                            sx={{ color: 'primary.branco' }}
+                                                        />
+                                                    )}
+
+                                                    {row.itens >= 10000 && (
+                                                        <Chip
+                                                            label="🏆 10000 itens"
+                                                            color="warning"
+                                                            sx={{ color: 'primary.branco' }}
+                                                        />
+                                                    )}
+
+                                                    {row.errosCaixa === 0 && (
+                                                        <Chip
+                                                            label="🐐 G.O.A.T"
+                                                            color="success"
+                                                            sx={{ color: 'primary.branco' }}
+                                                        />
+                                                    )}
+
+                                                    {row.pontosFinais >= 1000 && row.pontosFinais <= 3000 && (
+                                                        <Chip
+                                                            label="🔥 1000 pontos"
+                                                            color="error"
+                                                            sx={{ color: 'primary.branco' }}
+                                                        />
+                                                    )}
+
+                                                    {row.pontosFinais >= 5000 && row.pontosFinais <= 9999 && (
+                                                        <Chip
+                                                            label="🚀 5000 pontos"
+                                                            color="error"
+                                                            sx={{ color: 'primary.branco' }}
+                                                        />
+                                                    )}
+
+                                                    {row.pontosFinais >= 10000 && row.pontosFinais <= 14999 && (
+                                                        <Chip
+                                                            label="🌟 10000 pontos"
+                                                            color="error"
+                                                            sx={{ color: 'primary.branco' }}
+                                                        />
+                                                    )}
+
+                                                    {row.pontosFinais >= 15000 && row.pontosFinais <= 29999 && (
+                                                        <Chip
+                                                            label="👑 15000 pontos"
+                                                            color="error"
+                                                            sx={{ color: 'primary.branco' }}
+                                                        />
+                                                    )}
+
+                                                    {row.pontosFinais >= 30000 && (
+                                                        <Chip
+                                                            label="🌩️ Zeus"
+                                                            color="info"
+                                                            sx={{ color: 'primary.branco' }}
+                                                        />
+                                                    )}
+
+                                                    {row.produtividade >= 98 && (
+                                                        <Chip
+                                                            label="🎯 Precisão absurda"
+                                                            color="info"
+                                                            sx={{ color: 'primary.branco' }}
+                                                        />
+                                                    )}
+
+                                                    {row.pontosPesados >= 500 && (
+                                                        <Chip
+                                                            label="🚜 Trator humano"
+                                                            sx={{
+                                                                bgcolor: "#1ac723",
+                                                                color: "#fff",
+                                                                fontWeight: "bold",
+                                                            }}
+                                                        />
+                                                    )}
+
+                                                    {row.errosCaixa <= 5 && row.produtividade > 0 && (
+                                                        <Chip
+                                                            label="🏹 Sem vacilo"
+                                                            sx={{
+                                                                bgcolor: "#20c766",
+                                                                color: "#fff",
+                                                                fontWeight: "bold",
+                                                            }}
+                                                        />
+                                                    )}
+
+                                                    {row.pontosFinais >= 30000 &&
+                                                        row.pontosPesados >= 500 &&
+                                                        row.errosCaixa <= 3 &&
+                                                        row.produtividade >= 99 && (
+                                                            <Chip
+                                                                label="🔮 MÍSTICO"
+                                                                sx={{
+                                                                    background:
+                                                                        "linear-gradient(45deg, #4a148c, #7b1fa2, #ba68c8)",
+                                                                    color: "#fff",
+                                                                    fontWeight: "bold",
+                                                                    border: "2px solid #d1a3ff",
+                                                                    boxShadow: "0 0 18px rgba(186,104,200,0.9)",
+                                                                    animation: "pulse 1.5s infinite",
+                                                                    textShadow: "0 0 8px rgba(255,255,255,0.6)",
+                                                                }}
+                                                            />
+                                                        )}
+
+                                                </Stack>
+
+                                            </Box>
+                                        </Box>
                                     </Paper>
 
                                 </motion.div>
@@ -2383,7 +2849,8 @@ export default function Produtividade() {
 
                 </Grid>
 
-            )}
+            )
+            }
 
             {/* ===================================== */}
             {/* MODAL */}
@@ -2614,7 +3081,359 @@ export default function Produtividade() {
 
             </Dialog>
 
-        </Container>
+            <Dialog
+                open={openRanks}
+                onClose={() => setOpenRanks(false)}
+                maxWidth="lg"
+                fullWidth
+                PaperProps={{
+                    sx: {
+                        background: "#0a0a0a",
+                        border: "1px solid #333",
+                        borderRadius: 4,
+                        overflow: "hidden",
+                    },
+                }}
+            >
+
+                <DialogTitle
+                    sx={{
+                        color: "#fff",
+                        fontWeight: "bold",
+                        fontSize: 32,
+                        textAlign: "center",
+                        background:
+                            "linear-gradient(90deg,#111,#1a1a1a,#111)",
+                    }}
+                >
+                    🏆 SISTEMA DE RANKS
+                </DialogTitle>
+
+                <DialogContent
+                    sx={{
+                        p: 0,
+                        bgcolor: "#0a0a0a",
+                    }}
+                >
+
+                    {/* BANNER */}
+                    <Box
+                        component="img"
+                        src="/ranks/banner-ranks.png"
+                        onClick={() =>
+                            setImagemFullscreen(true)
+                        }
+                        sx={{
+                            width: "100%",
+                            borderRadius: 3,
+                            cursor: "zoom-in",
+
+                            transition: "0.25s",
+
+                            "&:hover": {
+                                transform: "scale(1.02)",
+                            },
+                        }}
+                    />
+
+                    {/* EXPLICAÇÃO */}
+                    <Box sx={{ p: 4 }}>
+
+                        <Typography
+                            variant="h4"
+                            fontWeight="bold"
+                            color="#fff"
+                            mb={2}
+                        >
+                            COMO SUBIR DE RANK
+                        </Typography>
+
+                        <Typography
+                            sx={{
+                                color: "#ccc",
+                                fontSize: 18,
+                                lineHeight: 1.8,
+                            }}
+                        >
+                            Você ganha XP conferindo itens,
+                            mantendo alta precisão e evitando
+                            erros de caixa.
+                        </Typography>
+
+                        <Typography
+                            sx={{
+                                color: "#ccc",
+                                fontSize: 18,
+                                lineHeight: 1.8,
+                                mt: 2,
+                            }}
+                        >
+                            Quanto maior a dificuldade do item,
+                            mais XP você recebe.
+                        </Typography>
+
+                    </Box>
+
+                    {/* FORMAS DE GANHAR XP */}
+                    <Box sx={{ px: 4, pb: 4 }}>
+
+                        <Typography
+                            variant="h5"
+                            fontWeight="bold"
+                            color="#fff"
+                            mb={3}
+                        >
+                            ⚡ COMO GANHAR XP
+                        </Typography>
+
+                        <Grid container spacing={2}>
+
+                            <Grid item xs={12} md={6}>
+                                <Paper
+                                    sx={{
+                                        p: 3,
+                                        bgcolor: "#111",
+                                        border:
+                                            "1px solid #00ff88",
+                                    }}
+                                >
+                                    <Typography
+                                        color="#00ff88"
+                                        fontWeight="bold"
+                                        mb={1}
+                                    >
+                                        📦 Conferir itens
+                                    </Typography>
+
+                                    <Typography color="#ccc">
+                                        Cada item conferido gera XP.
+                                    </Typography>
+                                </Paper>
+                            </Grid>
+
+                            <Grid item xs={12} md={6}>
+                                <Paper
+                                    sx={{
+                                        p: 3,
+                                        bgcolor: "#111",
+                                        border:
+                                            "1px solid #ffcc00",
+                                    }}
+                                >
+                                    <Typography
+                                        color="#ffcc00"
+                                        fontWeight="bold"
+                                        mb={1}
+                                    >
+                                        🔥 Itens pesados
+                                    </Typography>
+
+                                    <Typography color="#ccc">
+                                        Itens complexos dão muito mais XP.
+                                    </Typography>
+                                </Paper>
+                            </Grid>
+
+                            <Grid item xs={12} md={6}>
+                                <Paper
+                                    sx={{
+                                        p: 3,
+                                        bgcolor: "#111",
+                                        border:
+                                            "1px solid #00d5ff",
+                                    }}
+                                >
+                                    <Typography
+                                        color="#00d5ff"
+                                        fontWeight="bold"
+                                        mb={1}
+                                    >
+                                        🎯 Precisão
+                                    </Typography>
+
+                                    <Typography color="#ccc">
+                                        Alta produtividade aumenta sua evolução.
+                                    </Typography>
+                                </Paper>
+                            </Grid>
+
+                            <Grid item xs={12} md={6}>
+                                <Paper
+                                    sx={{
+                                        p: 3,
+                                        bgcolor: "#111",
+                                        border:
+                                            "1px solid #ff4444",
+                                    }}
+                                >
+                                    <Typography
+                                        color="#ff4444"
+                                        fontWeight="bold"
+                                        mb={1}
+                                    >
+                                        ❌ Erros reduzem XP
+                                    </Typography>
+
+                                    <Typography color="#ccc">
+                                        Divergências diminuem pontuação final.
+                                    </Typography>
+                                </Paper>
+                            </Grid>
+
+                        </Grid>
+
+                    </Box>
+
+                    {/* RANKS */}
+                    <Box sx={{ px: 4, pb: 5 }}>
+
+                        <Typography
+                            variant="h5"
+                            fontWeight="bold"
+                            color="#fff"
+                            mb={3}
+                        >
+                            🏅 PROGRESSÃO DE RANKS
+                        </Typography>
+
+                        <Stack spacing={2}>
+
+                            <Chip
+                                label="🥉 BRONZE — 0 XP"
+                                sx={{
+                                    bgcolor: "#7a4b22",
+                                    color: "#fff",
+                                    fontWeight: "bold",
+                                }}
+                            />
+
+                            <Chip
+                                label="🥈 PRATA — 30.000 XP"
+                                sx={{
+                                    bgcolor: "#9c9c9c",
+                                    color: "#fff",
+                                    fontWeight: "bold",
+                                }}
+                            />
+
+                            <Chip
+                                label="🥇 OURO — 70.000 XP"
+                                sx={{
+                                    bgcolor: "#d6a500",
+                                    color: "#fff",
+                                    fontWeight: "bold",
+                                }}
+                            />
+
+                            <Chip
+                                label="💎 DIAMANTE — 100.000 XP"
+                                sx={{
+                                    bgcolor: "#00bfff",
+                                    color: "#fff",
+                                    fontWeight: "bold",
+                                }}
+                            />
+
+                            <Chip
+                                label="🟢 ESMERALDA — 150.000 XP"
+                                sx={{
+                                    bgcolor: "#00b140",
+                                    color: "#fff",
+                                    fontWeight: "bold",
+                                }}
+                            />
+
+                            <Chip
+                                label="👑 MESTRE — 200.000 XP"
+                                sx={{
+                                    bgcolor: "#d10000",
+                                    color: "#fff",
+                                    fontWeight: "bold",
+                                }}
+                            />
+
+                            <Chip
+                                label="🦅 LENDÁRIO — 300.000 XP"
+                                sx={{
+                                    bgcolor: "#7b00ff",
+                                    color: "#fff",
+                                    fontWeight: "bold",
+                                }}
+                            />
+
+                        </Stack>
+
+                    </Box>
+
+                </DialogContent>
+
+            </Dialog>
+
+            <Dialog
+                open={imagemFullscreen}
+                onClose={() =>
+                    setImagemFullscreen(false)
+                }
+                fullScreen
+                PaperProps={{
+                    sx: {
+                        bgcolor: "#000",
+                    },
+                }}
+            >
+
+                {/* BOTÃO FECHAR */}
+                <IconButton
+                    onClick={() =>
+                        setImagemFullscreen(false)
+                    }
+                    sx={{
+                        position: "absolute",
+                        top: 20,
+                        right: 20,
+                        zIndex: 10,
+
+                        bgcolor: "#00000099",
+                        color: "#fff",
+
+                        "&:hover": {
+                            bgcolor: "#222",
+                        },
+                    }}
+                >
+                    <CloseIcon />
+                </IconButton>
+
+                {/* IMAGEM */}
+                <Box
+                    sx={{
+                        width: "100%",
+                        height: "100vh",
+
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+
+                        p: 4,
+                    }}
+                >
+
+                    <Box
+                        component="img"
+                        src="/ranks/banner-ranks.png"
+                        sx={{
+                            maxWidth: "100%",
+                            maxHeight: "100%",
+
+                            objectFit: "contain",
+                        }}
+                    />
+
+                </Box>
+
+            </Dialog>
+
+        </Container >
 
     );
 

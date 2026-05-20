@@ -1498,7 +1498,6 @@ function Conferencia() {
                                 : "CONFERIDO_PARCIAL",
 
                             caixa: item.caixaId || caixa.numero,
-
                             conferente: userInfo?.codigo,
                             qtd_conferida: item.conferido
                         })
@@ -1584,7 +1583,6 @@ function Conferencia() {
                 if (!sucesso) return;
             }
 
-
             console.log({
                 status: "CONFERIDA",
                 localizacao: localizacaoFinal,
@@ -1605,7 +1603,6 @@ function Conferencia() {
                             status: "CONFERIDA",
                             localizacao: localizacaoFinal,
                             observacao: observacao,
-                            conferente: userInfo?.codigo
                         })
                     }
                 );
