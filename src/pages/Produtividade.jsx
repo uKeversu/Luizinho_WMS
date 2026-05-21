@@ -369,7 +369,8 @@ export default function Produtividade() {
         // MÉDIO/PESADO
         if (
             desc.includes("junta homocinetica") ||
-            desc.includes("tulipa com trizeta")
+            desc.includes("tulipa com trizeta") ||
+            desc.includes("pistao")
         ) {
             return 7;
         }
@@ -386,6 +387,7 @@ export default function Produtividade() {
             desc.includes("junta") ||
             desc.includes("bomba") ||
             desc.includes("carcaca") ||
+            desc.includes("antichama") ||
             desc.includes("tubo") ||
             desc.includes("reservatorio") ||
             desc.includes("reser") ||

@@ -162,9 +162,6 @@ function Recebimentos() {
 
     const handleTempoRecebimento = (data) => {
         console.log("TEMPO RECEBIMENTO:", data);
-
-        // Aqui você salva na API depois
-        // data.totalSeconds
     };
 
     // Enviar XML para API
