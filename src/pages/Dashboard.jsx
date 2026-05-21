@@ -1206,16 +1206,19 @@ function Dashboard({ tipo }) {
                                         </Box>
 
                                         {/* Linha 2 */}
-                                        <Typography
-                                            sx={{
-                                                fontSize: '0.8rem',
-                                                whiteSpace: 'nowrap',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis'
-                                            }}
-                                        >
-                                            {item.descricao || item.xProd}
-                                        </Typography>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <Typography
+                                                sx={{
+                                                    fontSize: '0.8rem',
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis'
+                                                }}
+                                            >
+                                                {item.descricao || item.xProd}
+                                            </Typography>
+                                            <Typography sx={{fontSize: '0.8rem'}}>{item.conferente}</Typography>
+                                        </Box>
 
                                         {/* Linha 3 */}
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>

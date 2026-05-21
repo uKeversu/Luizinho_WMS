@@ -1141,13 +1141,34 @@ function Conferencia() {
                 };
             });
 
-            // Move pro topo
+            // Move item recém conferido vai para o topo
             const itemAtualizado = novosItensBase[index];
 
+            // Ordena:
+            // 1. Itens pendentes primeiro
+            // 2. Itens conferidos por último
+            // 3. Item recém bipado sobe dentro dos pendentes
             const listaFinal = [
                 itemAtualizado,
                 ...novosItensBase.filter((_, idx) => idx !== index)
-            ];
+            ].sort((a, b) => {
+
+                const aFinalizado =
+                    Number(a.conferido) >= Number(a.quantidade);
+
+                const bFinalizado =
+                    Number(b.conferido) >= Number(b.quantidade);
+
+                // finalizados vão pro final
+                if (aFinalizado && !bFinalizado) return 1;
+                if (!aFinalizado && bFinalizado) return -1;
+
+                // mantém recém bipado no topo dos pendentes
+                if (a === itemAtualizado) return -1;
+                if (b === itemAtualizado) return 1;
+
+                return 0;
+            });
 
             setItens(listaFinal);
 
