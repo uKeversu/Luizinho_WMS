@@ -315,6 +315,41 @@ export default function Produtividade() {
             .normalize("NFD")
             .replace(/[\u0300-\u036f]/g, "");
 
+        // ITENS PEQUENOS QUE NÃO DEVEM HERDAR PONTUAÇÃO ALTA
+        const palavrasLeves = [
+            "bucha",
+            "rolamento",
+            "kit",
+            "reparo",
+            "retentor",
+            "anel",
+            "arruela",
+            "porca",
+            "parafuso",
+            "trava",
+            "grampos",
+            "grampo",
+            "vedacao",
+            "correia",
+            "coifa",
+            "filtro",
+        ];
+
+        const palavrasMedias = [
+            "coxim",
+        ];
+
+        // Se tiver qualquer palavra leve, já retorna 2
+        if (palavrasLeves.some(p => desc.includes(p))) {
+            return 2;
+        }
+
+        // Se tiver qualquer palavra média, já retorna 5
+        if (palavrasMedias.some(p => desc.includes(p))) {
+            return 5;
+        }
+
+        // PESADOS
         if (
             desc.includes("balanca") ||
             desc.includes("bandeja") ||
@@ -331,6 +366,7 @@ export default function Produtividade() {
             return 10;
         }
 
+        // MÉDIO/PESADO
         if (
             desc.includes("junta homocinetica") ||
             desc.includes("tulipa com trizeta")
@@ -338,6 +374,7 @@ export default function Produtividade() {
             return 7;
         }
 
+        // MÉDIOS
         if (
             desc.includes("mangueira") ||
             desc.includes("cilindro") ||
@@ -361,8 +398,8 @@ export default function Produtividade() {
             return 5;
         }
 
+        // LEVES
         return 2;
-
     };
 
     // ============================================

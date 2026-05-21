@@ -879,12 +879,16 @@ function ConsultaGeral() {
                                             {nota.fornecedor}
                                         </Typography>
 
-                                        <Typography
-                                            fontSize={'0.85rem'}
-                                            sx={{color: 'primary.observacao'}}
-                                        >Obs: 
-                                            {nota.observacao}
-                                        </Typography>
+                                        {nota.observacao &&
+                                            nota.observacao !== "null" &&
+                                            nota.observacao.trim() !== "" && (
+                                                <Typography
+                                                    fontSize={'0.85rem'}
+                                                    sx={{ color: 'primary.observacao' }}
+                                                >
+                                                    Obs: {nota.observacao}
+                                                </Typography>
+                                            )}
 
                                     </Box>
 
@@ -1033,9 +1037,8 @@ function ConsultaGeral() {
                                                                             </TableCell>
 
                                                                             <TableCell>
-                                                                                {Number(
-                                                                                    item.quantidade_comercial
-                                                                                )}
+                                                                                {item.qtd_conferida ?? 0}/
+                                                                                {Number(item.quantidade_comercial)}
                                                                             </TableCell>
 
                                                                             <TableCell>
