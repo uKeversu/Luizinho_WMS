@@ -3219,7 +3219,7 @@ export default function Produtividade() {
                                                 <Chip
                                                     label={
                                                         item.erro
-                                                            ? "-15 pts"
+                                                            ? "-30 pts"
                                                             : `+${item.pontosTotal} pts`
                                                     }
                                                     color={
