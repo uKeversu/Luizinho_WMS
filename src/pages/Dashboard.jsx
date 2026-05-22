@@ -365,7 +365,7 @@ function Dashboard({ tipo }) {
         return true;
     });
 
-    // Ordena notas pela data de recebimento
+    // Ordena notas pela data de recebimento ou data de emissão
     const notasOrdenadas = [...notasFiltradasPorAba].sort((a, b) => {
 
         const campoDataA =

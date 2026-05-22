@@ -125,9 +125,7 @@ export default function Produtividade() {
     const [imagemFullscreen, setImagemFullscreen] =
         useState(false);
 
-    // ============================================
-    // COLORS
-    // ============================================
+    // Cores
     const textColor = dark
         ? "primary.branco"
         : "text.primary";
@@ -140,9 +138,7 @@ export default function Produtividade() {
         ? "linear-gradient(135deg,#141414,#0a0a0a)"
         : "#fff";
 
-    // ============================================
-    // STYLE
-    // ============================================
+    // Cards
     const glassStyle = {
 
         borderRadius: 5,
@@ -171,9 +167,7 @@ export default function Produtividade() {
         },
     };
 
-    // ============================================
-    // LOAD
-    // ============================================
+    // Carrega últimos 7 dias
     useEffect(() => {
 
         const hoje = new Date();
@@ -197,9 +191,7 @@ export default function Produtividade() {
 
     }, []);
 
-    // ============================================
-    // AUTO REFRESH
-    // ============================================
+    // Auto refresh a cada 5min
     useEffect(() => {
 
         if (!dataInicio || !dataFim) return;
@@ -217,9 +209,7 @@ export default function Produtividade() {
 
     }, [dataInicio, dataFim]);
 
-    // ============================================
-    // DATE
-    // ============================================
+    // Converte data
     const parseDate = (dateStr) => {
 
         if (!dateStr) return null;
@@ -237,9 +227,7 @@ export default function Produtividade() {
 
     };
 
-    // ============================================
-    // LEVEL
-    // ============================================
+    // Gera patente do usuário
     const obterNivel = (xp, itens, pontosFinais, produtividade, errosCaixa) => {
 
         if (xp >= 300000 && itens >= 10000 && pontosFinais >= 15000 && produtividade >= 98)
@@ -292,9 +280,7 @@ export default function Produtividade() {
 
     };
 
-    // ============================================
-    // XP
-    // ============================================
+    // Gera XP do usuário
     const calcularXP = (item) => {
 
         return (
@@ -305,9 +291,7 @@ export default function Produtividade() {
 
     };
 
-    // ============================================
-    // POINTS
-    // ============================================
+    // Soma pontos com base no produto conferido
     const calcularPontosItem = (item) => {
 
         const desc = (item.descricao || "")
@@ -404,9 +388,7 @@ export default function Produtividade() {
         return 2;
     };
 
-    // ============================================
-    // VALIDAR CAIXA
-    // ============================================
+    // Valida se item esta em caixa correta
     const normalizarRua = (texto = "") => {
 
         return texto
@@ -491,9 +473,7 @@ export default function Produtividade() {
 
     };
 
-    // ============================================
-    // DETALHES
-    // ============================================
+    // Itens conferidos pelo usuário
     const abrirDetalhes = (row) => {
 
         setDetalhesSelecionados(
@@ -506,9 +486,7 @@ export default function Produtividade() {
 
     };
 
-    // ============================================
-    // LOAD DATA
-    // ============================================
+    // Carrega página com dados preenchidos
     const carregarDados = async (
         ini,
         fim
@@ -818,9 +796,7 @@ export default function Produtividade() {
 
     };
 
-    // ============================================
-    // LOADING
-    // ============================================
+    // Icone de carregamento
     if (loading) {
 
         return (
@@ -838,9 +814,7 @@ export default function Produtividade() {
 
     }
 
-    // ============================================
-    // TOTALS
-    // ============================================
+    // Dados totais
     const totalItens =
         dados.reduce(
             (a, b) => a + b.itens,
@@ -861,9 +835,7 @@ export default function Produtividade() {
             0
         );
 
-    // ============================================
-    // MVP
-    // ============================================
+    // MVP - Melhor conferente
     const mvp = dados[0];
 
     const pior =
@@ -886,9 +858,7 @@ export default function Produtividade() {
                 - a.pontosPesados
         )[0];
 
-    // ============================================
-    // RETURN
-    // ============================================
+    // Tela
     return (
 
         <Container
@@ -918,7 +888,7 @@ export default function Produtividade() {
 
             </Box>
 
-            {/* FILTER */}
+            {/* CAMPOS DE FILTRO POR DATA */}
             <Box
                 sx={{
                     display: "flex",
@@ -1084,18 +1054,18 @@ export default function Produtividade() {
                                             border: `1px solid ${nivel.cor}55`,
 
                                             boxShadow: `
-            0 0 20px ${nivel.cor}22,
-            0 0 60px ${nivel.cor}11
-        `,
+                                                0 0 20px ${nivel.cor}22,
+                                                0 0 60px ${nivel.cor}11
+                                            `,
 
                                             background: dark
                                                 ? `
-                linear-gradient(
-                    180deg,
-                    ${nivel.cor}15 0%,
-                    #111 35%
-                )
-            `
+                                                linear-gradient(
+                                                180deg,
+                                                ${nivel.cor}15 0%,
+                                                #111 35%
+                                                )
+                                                `
                                                 : "#fff",
                                         }}
                                     >
@@ -1163,9 +1133,9 @@ export default function Produtividade() {
                                                     objectFit: "contain",
 
                                                     filter: `
-                drop-shadow(0 0 12px ${nivel.cor})
-                drop-shadow(0 0 30px ${nivel.cor})
-            `,
+                                                    drop-shadow(0 0 12px ${nivel.cor}
+                                                    drop-shadow(0 0 30px ${nivel.cor})
+                                                `,
                                                 }}
                                             />
 
@@ -1182,9 +1152,9 @@ export default function Produtividade() {
                                                     color: nivel.cor,
 
                                                     textShadow: `
-                0 0 10px ${nivel.cor},
-                0 0 20px ${nivel.cor}
-            `,
+                                                    0 0 10px ${nivel.cor},
+                                                    0 0 20px ${nivel.cor}
+                                                `,
                                                 }}
                                             >
                                                 {nivel.nome}
