@@ -111,7 +111,23 @@ function Rastreio() {
 
     return (
         <Container sx={{ mt: 3 }}>
-            <Box sx={{ gap: 2, p: 2, bgcolor: 'var(--azul)', mb: 5 }}>
+            <Box sx={{
+                display: 'flex',
+                flexDirection: {
+                    xs: 'column',
+                    md: 'row'
+                },
+                justifyContent: 'space-between',
+                alignItems: {
+                    xs: 'flex-start',
+                    md: 'center'
+                },
+                gap: 2,
+                p: 2,
+                bgcolor: 'var(--azul)',
+                mb: 4,
+                borderRadius: '2vh'
+            }}>
                 <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "primary.branco" }}>
                     <strong>Rastreio de mercadoria</strong>
                 </Typography>

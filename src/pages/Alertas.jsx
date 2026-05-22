@@ -182,13 +182,20 @@ function Alertas() {
             <Box
                 sx={{
                     display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' },
+                    flexDirection: {
+                        xs: 'column',
+                        md: 'row'
+                    },
                     justifyContent: 'space-between',
-                    alignItems: { xs: 'flex-start', md: 'center' },
+                    alignItems: {
+                        xs: 'flex-start',
+                        md: 'center'
+                    },
                     gap: 2,
                     p: 2,
                     bgcolor: 'var(--azul)',
-                    mb: 5
+                    mb: 4,
+                    borderRadius: '2vh'
                 }}
             >
                 <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "background.paper" }}>
@@ -281,7 +288,7 @@ function Alertas() {
                 <Typography>Nenhum alerta encontrado</Typography>
             ) : (
 
-                <Grid container spacing={3} sx={{display: 'flex', justifyContent: 'space-between'}}>
+                <Grid container spacing={3} sx={{ display: 'flex', justifyContent: 'space-between' }}>
 
                     {alertas.map((alerta, idx) => (
                         <Grid item xs={12} md={3} key={idx}>

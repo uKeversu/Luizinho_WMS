@@ -10,6 +10,7 @@ import AtualizarCean from "./pages/AtualizarCean"
 import ConsultaGeral from "./pages/ConsultaGeral"
 import PainelReimpressao from "./pages/PainelReimpressao";
 import Produtividade from "./pages/Produtividade";
+import ConsultaGuarda from "./pages/ConsultaGuarda";
 
 import './index.css';
 
@@ -31,6 +32,7 @@ function App() {
           <Route path="/ConsultaGeral" element={<ConsultaGeral />} />
           <Route path="/PainelReimpressao" element={<PainelReimpressao />} />
           <Route path="/Produtividade" element={<Produtividade />} />
+          <Route path="/ConsultaGuarda" element={<ConsultaGuarda />} />
         </Routes>
       </Router>
     </ThemeProvider>

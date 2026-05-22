@@ -292,13 +292,20 @@ function PainelReimpressao() {
             <Box
                 sx={{
                     display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' },
+                    flexDirection: {
+                        xs: 'column',
+                        md: 'row'
+                    },
                     justifyContent: 'space-between',
-                    alignItems: { xs: 'flex-start', md: 'center' },
+                    alignItems: {
+                        xs: 'flex-start',
+                        md: 'center'
+                    },
                     gap: 2,
                     p: 2,
                     bgcolor: 'var(--azul)',
-                    mb: 5
+                    mb: 4,
+                    borderRadius: '2vh'
                 }}
             >
                 <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "background.paper" }}>

@@ -651,7 +651,8 @@ function ConsultaGeral() {
                     gap: 2,
                     p: 2,
                     bgcolor: 'var(--azul)',
-                    mb: 5
+                    mb: 4,
+                    borderRadius: '2vh'
                 }}
             >
 

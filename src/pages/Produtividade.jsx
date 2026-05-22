@@ -315,7 +315,7 @@ export default function Produtividade() {
             .normalize("NFD")
             .replace(/[\u0300-\u036f]/g, "");
 
-        // ITENS PEQUENOS QUE NÃO DEVEM HERDAR PONTUAÇÃO ALTA
+        // Para evitar itens leves entrarem como pesados
         const palavrasLeves = [
             "bucha",
             "rolamento",
@@ -2945,10 +2945,7 @@ export default function Produtividade() {
                             p: 3,
                             borderRadius: 4,
                             mb: 3,
-                            bgcolor:
-                                dark
-                                    ? "#1b1b1b"
-                                    : "#f5f5f5",
+                            bgcolor: dark ? "#1b1b1b" : "#f5f5f5",
                         }}
                     >
 
@@ -2956,33 +2953,162 @@ export default function Produtividade() {
                             variant="h6"
                             fontWeight="bold"
                             color={textColor}
-                            sx={{ mb: 2 }}
+                            sx={{ mb: 3 }}
                         >
                             📊 Explicação da pontuação
                         </Typography>
 
-                        <Typography color={textColor}>
-                            Cada item possui uma pontuação baseada na dificuldade logística.
-                        </Typography>
+                        <Grid container spacing={2}>
 
-                        <Typography color={textColor}>
-                            Itens pesados/grandes = 10 pts
-                        </Typography>
+                            {/* LADO ESQUERDO */}
+                            <Grid item xs={12} md={4}>
 
-                        <Typography color={textColor}>
-                            Itens médios = 5 pts
-                        </Typography>
+                                {/* Divergência de caixas */}
+                                <Typography
+                                    color="error.main"
+                                    sx={{ fontWeight: "bold" }}
+                                >
+                                    Divergência de caixa = -30 pts
+                                </Typography>
 
-                        <Typography color={textColor}>
-                            Itens leves = 2 pts
-                        </Typography>
+                            </Grid>
 
-                        <Typography
-                            color="error.main"
-                            sx={{ mt: 1 }}
-                        >
-                            Divergência de caixa = -15 pts
-                        </Typography>
+                            {/* LADO DIREITO */}
+                            <Grid item xs={12} md={8}>
+
+                                <Typography
+                                    variant="subtitle1"
+                                    fontWeight="bold"
+                                    color={textColor}
+                                    sx={{ mb: 2 }}
+                                >
+                                    Categorias de itens
+                                </Typography>
+
+                                <Grid container spacing={2}>
+
+                                    {/* PESADOS */}
+                                    <Grid item xs={12} md={6}>
+                                        <Box
+                                            sx={{
+                                                p: 2,
+                                                borderRadius: 3,
+                                                bgcolor: dark ? "#262626" : "#fff",
+                                                border: "1px solid",
+                                                borderColor: dark ? "#333" : "#ddd",
+                                                height: "100%",
+                                            }}
+                                        >
+                                            <Typography
+                                                fontWeight="bold"
+                                                color="#ff9800"
+                                                sx={{ mb: 1 }}
+                                            >
+                                                🏋️ Pesados — 10 pts
+                                            </Typography>
+
+                                            <Typography variant="body2" color={textColor}>
+                                                Balança, Bandeja, Semi eixo,
+                                                Deslizante, Comando de válvula,
+                                                Amortecedor, Caixa de direção,
+                                                Homocinética completa,
+                                                Radiador, Disco
+                                            </Typography>
+                                        </Box>
+                                    </Grid>
+
+                                    {/* MÉDIO/PESADO */}
+                                    <Grid item xs={12} md={6}>
+                                        <Box
+                                            sx={{
+                                                p: 2,
+                                                borderRadius: 3,
+                                                bgcolor: dark ? "#262626" : "#fff",
+                                                border: "1px solid",
+                                                borderColor: dark ? "#333" : "#ddd",
+                                                height: "100%",
+                                            }}
+                                        >
+                                            <Typography
+                                                fontWeight="bold"
+                                                color="#ab47bc"
+                                                sx={{ mb: 1 }}
+                                            >
+                                                ⚙️ Médio/Pesado — 7 pts
+                                            </Typography>
+
+                                            <Typography variant="body2" color={textColor}>
+                                                Junta homocinética,
+                                                Tulipa com trizeta,
+                                                Jogo de Pistão
+                                            </Typography>
+                                        </Box>
+                                    </Grid>
+
+                                    {/* MÉDIOS */}
+                                    <Grid item xs={12}>
+                                        <Box
+                                            sx={{
+                                                p: 2,
+                                                borderRadius: 3,
+                                                bgcolor: dark ? "#262626" : "#fff",
+                                                border: "1px solid",
+                                                borderColor: dark ? "#333" : "#ddd",
+                                            }}
+                                        >
+                                            <Typography
+                                                fontWeight="bold"
+                                                color="#2196f3"
+                                                sx={{ mb: 1 }}
+                                            >
+                                                📦 Médios — 5 pts
+                                            </Typography>
+
+                                            <Typography variant="body2" color={textColor}>
+                                                Mangueira, Cilindro, Coxim,
+                                                Pastilha de freio, Sapata, Lonas Pivô,
+                                                Cabo de vela, Cabo de embreagem, Cabo de freio,
+                                                Junta de cabeçote, Junta de tampa de válvula
+                                                Bomba de óleo, Bomba de água
+                                                Carcaça de válvula termostática, Antichama,
+                                                Tubo, Reservatório,
+                                                Parafusos de cabeçote,
+                                                Terminal de direção, Barra axial
+                                            </Typography>
+                                        </Box>
+                                    </Grid>
+
+                                    {/* LEVES */}
+                                    <Grid item xs={12}>
+                                        <Box
+                                            sx={{
+                                                p: 2,
+                                                borderRadius: 3,
+                                                bgcolor: dark ? "#262626" : "#fff",
+                                                border: "1px solid",
+                                                borderColor: dark ? "#333" : "#ddd",
+                                            }}
+                                        >
+                                            <Typography
+                                                fontWeight="bold"
+                                                color="#4caf50"
+                                                sx={{ mb: 1 }}
+                                            >
+                                                🍃 Leves — 2 pts
+                                            </Typography>
+
+                                            <Typography variant="body2" color={textColor}>
+                                                Todos os itens que não entram
+                                                nas categorias acima.
+                                            </Typography>
+                                        </Box>
+
+                                    </Grid>
+                                </Grid>
+
+                            </Grid>
+
+                        </Grid>
 
                     </Paper>
 

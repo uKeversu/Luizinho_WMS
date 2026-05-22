@@ -28,6 +28,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import SearchIcon from '@mui/icons-material/Search';
+import Inventory2Icon from '@mui/icons-material/Inventory2';
 import SwapVertIcon from '@mui/icons-material/SwapVert';
 import BorderColorIcon from '@mui/icons-material/BorderColor';
 import SyncIcon from '@mui/icons-material/Sync';
@@ -495,12 +496,20 @@ function Dashboard({ tipo }) {
                 <Box
                     sx={{
                         display: 'flex',
-                        flexDirection: { xs: 'column', md: 'row' },
+                        flexDirection: {
+                            xs: 'column',
+                            md: 'row'
+                        },
                         justifyContent: 'space-between',
-                        alignItems: { xs: 'flex-start', md: 'center' },
+                        alignItems: {
+                            xs: 'flex-start',
+                            md: 'center'
+                        },
                         gap: 2,
                         p: 2,
-                        bgcolor: 'var(--azul)'
+                        bgcolor: 'var(--azul)',
+                        mb: 4,
+                        borderRadius: '2vh'
                     }}
                 >
                     <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "background.paper" }}>
@@ -592,6 +601,16 @@ function Dashboard({ tipo }) {
                                 >
                                     Consulta Geral
                                     <SearchIcon />
+                                </Button>
+                            </Tooltip>
+
+                            <Tooltip title="Consultar guarda de itens">
+                                <Button
+                                    onClick={() => navigate("/ConsultaGuarda")}
+                                    sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}
+                                >
+                                    Guardas
+                                    <Inventory2Icon />
                                 </Button>
                             </Tooltip>
 
@@ -1135,6 +1154,7 @@ function Dashboard({ tipo }) {
                         </Grid>
                     )}
                 </Box>
+
                 <Dialog open={openModal} onClose={() => setOpenModal(false)} fullWidth maxWidth="md"
                     slotProps={{
                         paper: {
@@ -1217,7 +1237,7 @@ function Dashboard({ tipo }) {
                                             >
                                                 {item.descricao || item.xProd}
                                             </Typography>
-                                            <Typography sx={{fontSize: '0.8rem'}}>{item.conferente}</Typography>
+                                            <Typography sx={{ fontSize: '0.8rem' }}>{item.conferente}</Typography>
                                         </Box>
 
                                         {/* Linha 3 */}

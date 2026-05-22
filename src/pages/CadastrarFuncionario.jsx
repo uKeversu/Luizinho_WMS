@@ -142,13 +142,20 @@ function CadastroFuncionario() {
             <Box
                 sx={{
                     display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' },
+                    flexDirection: {
+                        xs: 'column',
+                        md: 'row'
+                    },
                     justifyContent: 'space-between',
-                    alignItems: { xs: 'flex-start', md: 'center' },
+                    alignItems: {
+                        xs: 'flex-start',
+                        md: 'center'
+                    },
                     gap: 2,
                     p: 2,
-                    bgcolor: 'primary.main',
-                    mb: 5
+                    bgcolor: 'var(--azul)',
+                    mb: 4,
+                    borderRadius: '2vh'
                 }}
             >
                 <Typography variant="h4" sx={{ color: "background.paper" }}>
