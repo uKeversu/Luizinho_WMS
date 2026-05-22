@@ -173,6 +173,13 @@ function ConsultaGuarda() {
 
     }, []);
 
+    // Focus no input de buscar produto
+    useEffect(() => {
+
+        buscaRef.current?.focus();
+
+    }, []);
+
     const getNomeFuncionario = (codigo) => {
 
         if (!codigo) return "-";
@@ -266,7 +273,7 @@ function ConsultaGuarda() {
 
             // PARAMS APENAS PARA ERROS
             const paramsErro = new URLSearchParams();
- 
+
             if (/^\d+$/.test(termo)) {
 
                 paramsErro.append(
@@ -327,6 +334,48 @@ function ConsultaGuarda() {
         } finally {
 
             setLoading(false);
+        }
+    };
+
+    const navegarCampos = (e, proximoRef, anteriorRef, acaoEnter) => {
+
+        switch (e.key) {
+
+            case "ArrowRight":
+            case "ArrowDown":
+
+                e.preventDefault();
+
+                proximoRef?.current?.focus();
+
+                break;
+
+            case "ArrowLeft":
+            case "ArrowUp":
+
+                e.preventDefault();
+
+                anteriorRef?.current?.focus();
+
+                break;
+
+            case "Enter":
+
+                e.preventDefault();
+
+                if (acaoEnter) {
+
+                    acaoEnter();
+
+                } else {
+
+                    proximoRef?.current?.focus();
+                }
+
+                break;
+
+            default:
+                break;
         }
     };
 
@@ -486,15 +535,13 @@ function ConsultaGuarda() {
                                 setBusca(e.target.value)
                             }
 
-                            onKeyDown={(e) => {
-
-                                if (e.key === "Enter") {
-
-                                    e.preventDefault();
-
-                                    dataInicioRef.current?.focus();
-                                }
-                            }}
+                            onKeyDown={(e) =>
+                                navegarCampos(
+                                    e,
+                                    dataInicioRef,
+                                    null
+                                )
+                            }
 
                             InputProps={{
                                 startAdornment: (
@@ -527,15 +574,13 @@ function ConsultaGuarda() {
                                 )
                             }
 
-                            onKeyDown={(e) => {
-
-                                if (e.key === "Enter") {
-
-                                    e.preventDefault();
-
-                                    dataFimRef.current?.focus();
-                                }
-                            }}
+                            onKeyDown={(e) =>
+                                navegarCampos(
+                                    e,
+                                    dataFimRef,
+                                    buscaRef
+                                )
+                            }
                         />
 
                     </Grid>
@@ -557,15 +602,14 @@ function ConsultaGuarda() {
                                 )
                             }
 
-                            onKeyDown={(e) => {
-
-                                if (e.key === "Enter") {
-
-                                    e.preventDefault();
-
-                                    buscarGuardas();
-                                }
-                            }}
+                            onKeyDown={(e) =>
+                                navegarCampos(
+                                    e,
+                                    null,
+                                    dataInicioRef,
+                                    buscarGuardas
+                                )
+                            }
                         />
 
                     </Grid>
