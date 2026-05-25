@@ -207,7 +207,6 @@ function ConsultaGuarda() {
     };
 
     // Busca de guarda
-
     const buscarGuardas = async () => {
 
         if (!busca.trim()) return;

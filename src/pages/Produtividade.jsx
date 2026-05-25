@@ -303,7 +303,7 @@ export default function Produtividade() {
         const palavrasLeves = [
             "bucha",
             "rolamento",
-            "kit",
+            "kit amortecedor",
             "reparo",
             "retentor",
             "anel",
@@ -314,13 +314,13 @@ export default function Produtividade() {
             "grampos",
             "grampo",
             "vedacao",
-            "correia",
             "coifa",
             "filtro",
         ];
 
         const palavrasMedias = [
             "coxim",
+            "kit correia",
         ];
 
         // Se tiver qualquer palavra leve, já retorna 2
@@ -345,6 +345,7 @@ export default function Produtividade() {
             desc.includes("caixa de direcao") ||
             desc.includes("homocinetica completa") ||
             desc.includes("radiador") ||
+            desc.includes("embreagem") ||
             desc.includes("disco")
         ) {
             return 10;
@@ -377,6 +378,7 @@ export default function Produtividade() {
             desc.includes("reser") ||
             desc.includes("parafusos cabecote") ||
             desc.includes("terminal") ||
+            desc.includes("kit correia") ||
             desc.includes("barra de direcao") ||
             desc.includes("barra axial") ||
             desc.includes("barra")
@@ -1883,7 +1885,7 @@ export default function Produtividade() {
                                                 color="#00ff99"
                                                 fontWeight="bold"
                                             >
-                                                🏆 MVP DO DIA
+                                                🏆 MVP DA SEMANA
                                             </Typography>
 
                                             <Typography
@@ -2981,7 +2983,7 @@ export default function Produtividade() {
                                                 Balança, Bandeja, Semi eixo,
                                                 Deslizante, Comando de válvula,
                                                 Amortecedor, Caixa de direção,
-                                                Homocinética completa,
+                                                Homocinética completa, Kit embreagem
                                                 Radiador, Disco
                                             </Typography>
                                         </Box>
@@ -3041,7 +3043,7 @@ export default function Produtividade() {
                                                 Junta de cabeçote, Junta de tampa de válvula
                                                 Bomba de óleo, Bomba de água
                                                 Carcaça de válvula termostática, Antichama,
-                                                Tubo, Reservatório,
+                                                Tubo, Reservatório, Kit correia,
                                                 Parafusos de cabeçote,
                                                 Terminal de direção, Barra axial
                                             </Typography>

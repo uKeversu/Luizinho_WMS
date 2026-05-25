@@ -301,7 +301,7 @@ function AtualizarCean() {
                 alignItems="stretch"
             >
                 <TextField
-                    label="Buscar nota"
+                    label="Buscar NF por número"
                     size="small"
                     value={notaSelecionada}
                     onChange={(e) => setNotaSelecionada(e.target.value)}
@@ -355,14 +355,14 @@ function AtualizarCean() {
                     <Table stickyHeader size="small">
 
                         <TableHead>
-                            <TableRow sx={{ bgcolor: 'var(--azul)' }}>
-                                <TableCell sx={{ color: 'background.paper' }} />
-                                <TableCell sx={{ color: 'background.paper' }}>LOC</TableCell>
-                                <TableCell sx={{ color: 'background.paper' }}>Código SSPlus</TableCell>
-                                <TableCell sx={{ color: 'background.paper' }}>Código NFe</TableCell>
-                                <TableCell sx={{ color: 'background.paper' }}>Descrição</TableCell>
-                                <TableCell sx={{ color: 'background.paper' }}>CEAN</TableCell>
-                                <TableCell sx={{ color: 'background.paper' }} align="right">Ação</TableCell>
+                            <TableRow>
+                                <TableCell sx={{ color: 'background.paper', bgcolor: 'primary.main' }} />
+                                <TableCell sx={{ color: 'background.paper', bgcolor: 'primary.main' }}>LOC</TableCell>
+                                <TableCell sx={{ color: 'background.paper', bgcolor: 'primary.main' }}>Código SSPlus</TableCell>
+                                <TableCell sx={{ color: 'background.paper', bgcolor: 'primary.main' }}>Código NFe</TableCell>
+                                <TableCell sx={{ color: 'background.paper', bgcolor: 'primary.main' }}>Descrição</TableCell>
+                                <TableCell sx={{ color: 'background.paper', bgcolor: 'primary.main' }}>CEAN</TableCell>
+                                <TableCell sx={{ color: 'background.paper', bgcolor: 'primary.main' }} align="right">Ação</TableCell>
                             </TableRow>
                         </TableHead>
 
