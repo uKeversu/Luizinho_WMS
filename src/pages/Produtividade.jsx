@@ -315,6 +315,8 @@ export default function Produtividade() {
             "grampo",
             "vedacao",
             "coifa",
+            "tampa reservatorio",
+            "tampa radiador",
             "filtro",
         ];
 
@@ -341,11 +343,14 @@ export default function Produtividade() {
             desc.includes("semi-eixo") ||
             desc.includes("deslizante") ||
             desc.includes("comando de valvula") ||
+            desc.includes("comando valvula") ||
             desc.includes("amortecedor") ||
             desc.includes("caixa de direcao") ||
             desc.includes("homocinetica completa") ||
             desc.includes("radiador") ||
             desc.includes("embreagem") ||
+            desc.includes("carter") ||
+            desc.includes("tampa valvula") ||
             desc.includes("disco")
         ) {
             return 10;
@@ -355,7 +360,10 @@ export default function Produtividade() {
         if (
             desc.includes("junta homocinetica") ||
             desc.includes("tulipa com trizeta") ||
-            desc.includes("pistao")
+            desc.includes("pistao") ||
+            desc.includes("pastilha") ||
+            desc.includes("sapata") ||
+            desc.includes("lona")
         ) {
             return 7;
         }
@@ -365,8 +373,6 @@ export default function Produtividade() {
             desc.includes("mangueira") ||
             desc.includes("cilindro") ||
             desc.includes("coxim") ||
-            desc.includes("pastilha") ||
-            desc.includes("sapata") ||
             desc.includes("pivo") ||
             desc.includes("cabo") ||
             desc.includes("junta") ||
@@ -2984,7 +2990,7 @@ export default function Produtividade() {
                                                 Deslizante, Comando de válvula,
                                                 Amortecedor, Caixa de direção,
                                                 Homocinética completa, Kit embreagem
-                                                Radiador, Disco
+                                                Radiador, Disco, Tampa de válvula, Carter
                                             </Typography>
                                         </Box>
                                     </Grid>
@@ -3010,9 +3016,9 @@ export default function Produtividade() {
                                             </Typography>
 
                                             <Typography variant="body2" color={textColor}>
-                                                Junta homocinética,
-                                                Tulipa com trizeta,
-                                                Jogo de Pistão
+                                                Junta homocinética, Tulipa com trizeta,
+                                                Jogo de Pistão, Pastilha de freio,
+                                                Sapata de freio, Lona de freio
                                             </Typography>
                                         </Box>
                                     </Grid>
@@ -3037,14 +3043,13 @@ export default function Produtividade() {
                                             </Typography>
 
                                             <Typography variant="body2" color={textColor}>
-                                                Mangueira, Cilindro, Coxim,
-                                                Pastilha de freio, Sapata, Lonas Pivô,
+                                                Mangueira, Cilindro, Coxim, Pivô,
                                                 Cabo de vela, Cabo de embreagem, Cabo de freio,
                                                 Junta de cabeçote, Junta de tampa de válvula
                                                 Bomba de óleo, Bomba de água
                                                 Carcaça de válvula termostática, Antichama,
                                                 Tubo, Reservatório, Kit correia,
-                                                Parafusos de cabeçote,
+                                                Kit parafuso,
                                                 Terminal de direção, Barra axial
                                             </Typography>
                                         </Box>
