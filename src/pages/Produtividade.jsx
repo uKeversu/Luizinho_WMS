@@ -1,6 +1,3 @@
-// ============================================
-// IMPORTS
-// ============================================
 import { useEffect, useState, useContext } from "react";
 
 import {
@@ -75,9 +72,7 @@ import { motion } from "framer-motion";
 
 import { ThemeContext } from "../context/ThemeContext";
 
-// ============================================
-// APIs
-// ============================================
+// API
 const API_NOTAS =
     "http://192.168.1.185:8077/api/notas/listar";
 
@@ -87,16 +82,11 @@ const API_ITENS =
 const API_FUNCIONARIOS =
     "http://192.168.1.185:8077/api/funcionarios/listar";
 
-// ============================================
-// COMPONENT
-// ============================================
 export default function Produtividade() {
 
     const { dark } = useContext(ThemeContext);
 
-    // ============================================
     // STATES
-    // ============================================
     const [loading, setLoading] = useState(true);
 
     const [dados, setDados] = useState([]);
@@ -1346,9 +1336,6 @@ export default function Produtividade() {
 
                 <Grid container spacing={3}>
 
-                    {/* ===================================== */}
-                    {/* KPIs EXECUTIVOS */}
-                    {/* ===================================== */}
                     <Grid item xs={12}>
 
                         <Grid container spacing={12}>
@@ -1535,7 +1522,7 @@ export default function Produtividade() {
                     </Grid>
 
                     {/* ===================================== */}
-                    {/* RELATÓRIO + SALA DE GUERRA */}
+                    {/* RELATÓRIO*/}
                     {/* ===================================== */}
                     <Grid item xs={12}>
 
@@ -1692,8 +1679,8 @@ export default function Produtividade() {
                                                                             fontSize: 30,
 
                                                                             boxShadow: `
-            0 0 15px ${nivel.cor}
-        `,
+                                                                            0 0 15px ${nivel.cor}
+                                                                        `,
                                                                         }}
                                                                     >
                                                                         {index + 1}
