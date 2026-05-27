@@ -329,6 +329,7 @@ export default function Produtividade() {
         if (
             desc.includes("balanca") ||
             desc.includes("bandeja") ||
+            desc.includes("braco") ||
             desc.includes("semi eixo") ||
             desc.includes("semi-eixo") ||
             desc.includes("deslizante") ||
@@ -2973,10 +2974,10 @@ export default function Produtividade() {
                                             </Typography>
 
                                             <Typography variant="body2" color={textColor}>
-                                                Balança, Bandeja, Semi eixo,
-                                                Deslizante, Comando de válvula,
-                                                Amortecedor, Caixa de direção,
-                                                Homocinética completa, Kit embreagem
+                                                Balança, Bandeja, Braço oscilante,
+                                                Semi eixo, Deslizante, Amortecedor,
+                                                Comando de válvula, Caixa de direção,
+                                                Homocinética completa, Kit embreagem,
                                                 Radiador, Disco, Tampa de válvula, Carter
                                             </Typography>
                                         </Box>
