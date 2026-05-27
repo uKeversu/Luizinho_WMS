@@ -224,7 +224,8 @@ function Dashboard({ tipo }) {
             item?.cean?.toString().includes(termo) ||
             item?.codigo_barras?.toString().includes(termo) ||
             item?.basico?.toString().includes(termo) ||
-            item?.loc_sistema?.toString().includes(termo)
+            item?.loc_sistema?.toString().includes(termo) ||
+            item?.caixa?.toLowerCase().includes(termo)
         );
     });
 
@@ -297,6 +298,25 @@ function Dashboard({ tipo }) {
                 message: `NF ${nota.numero} atualizada com sucesso`,
                 severity: "success"
             });
+
+            // Delay pra não pular a snackbar
+            setTimeout(() => {
+                navigate("/", {
+                    state: {
+                        modo: "PENDENTE",
+                        nota: {
+                            id: nota.id,
+                            numero: nota.numero,
+                            serie: nota.serie,
+                            fornecedor: nota.fornecedor,
+                            total_itens: nota.total_itens,
+                            cnpj: nota.cnpj_emitente,
+                            volumes: nota.volumes,
+                            cfop: nota.cfop,
+                        }
+                    }
+                });
+            }, 300);
 
         } catch (error) {
             console.error(error);

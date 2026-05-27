@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
     Container,
     Typography,
@@ -56,6 +56,7 @@ function Recebimentos() {
 
     // Acessar outras pages
     const navigate = useNavigate();
+    const location = useLocation();
 
     // API BASE
     const API = "http://192.168.1.185:8077";
@@ -79,6 +80,30 @@ function Recebimentos() {
         localStorage.removeItem("nfe_token");
         localStorage.removeItem("user_info");
     };
+
+    // Puxa Nfe do dashboard
+    useEffect(() => {
+        if (location.state?.modo === "PENDENTE") {
+            const nota = location.state.nota;
+
+            setXmlData({
+                nota: nota.numero,
+                serie: nota.serie,
+                fornecedor: nota.fornecedor,
+                cnpj: nota.cnpj_emitente || "Não informado",
+                totalPecas: nota.total_itens || "Não informado",
+                volumes: nota.volumes || "Não informado",
+                cfop: nota.cfop || "Não informado" 
+            });
+        }
+    }, [location.state]);
+
+    // Salva nfe pendente
+    useEffect(() => {
+        if (location.state?.nota) {
+            localStorage.setItem("nf_pendente", JSON.stringify(location.state.nota));
+        }
+    }, [location.state]);
 
     // Cadastro de funcionario
     const [openDialog, setOpenDialog] = useState(false);
@@ -206,9 +231,9 @@ function Recebimentos() {
             console.log("Tempo de importação em segundos:", tempoSegundos);
             console.log("Tempo de importação em minutos:", tempoSegundos / 60);
 
-            let statusFinal = "PENDENTE";
+            let statusFinal = "EM_TRANSITO";
             if (emTransito) {
-                statusFinal = "EM_TRANSITO";
+                statusFinal = "PENDENTE";
             } else if (fornecedorDireto) {
                 statusFinal = "FORNECEDOR_DIRETO";
             }
@@ -800,7 +825,7 @@ function Recebimentos() {
                                         }
                                         label={
                                             <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                Em trânsito
+                                                Pendente
                                             </Typography>
                                         }
                                         sx={{ mr: 1 }}
@@ -947,10 +972,10 @@ function Recebimentos() {
                                 variant="contained"
                                 sx={{ mt: 1, ml: 1, bgcolor: 'var(--confirmar)', '&:hover': { bgcolor: 'var(--confirmar-hover)' }, height: "7.3vh" }}
                                 onClick={() => {
-                                    if (!file) {
+                                    if (!xmlData) {
                                         setSnackbar({
                                             open: true,
-                                            message: "Selecione um XML antes",
+                                            message: "Carregue ou selecione uma nota primeiro",
                                             severity: "warning"
                                         });
                                         return;
