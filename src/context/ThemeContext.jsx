@@ -30,6 +30,7 @@ export function ThemeProvider({ children }) {
             primaryHover: "#0056b3",
             background: "#121212",
             paper: "#FFFFFF",
+            subPaper: "rgba(255,255,255,0.7)",
             card: "#121212",
             text: "#ffffff",
             forndireto: "#383838",
@@ -65,6 +66,7 @@ export function ThemeProvider({ children }) {
             primaryHover: "#0056b3",
             background: "#ffffff",
             paper: "#f3f3f3",
+            subPaper: "rgba(255,255,255,0.7)",
             card: "#f3f3f3",
             text: "#08060d",
             forndireto: "#f3f3f3",
@@ -129,6 +131,7 @@ export function ThemeProvider({ children }) {
             background: {
                 default: colors.background,
                 paper: colors.paper,
+                subPaper: colors.subPaper,
                 card: colors.card,
                 forndireto: colors.forndireto,
                 inputBg: colors.inputBg,

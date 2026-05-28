@@ -34,6 +34,7 @@ import BorderColorIcon from '@mui/icons-material/BorderColor';
 import SyncIcon from '@mui/icons-material/Sync';
 import LocalPrintshopIcon from '@mui/icons-material/LocalPrintshop';
 import ReplayIcon from '@mui/icons-material/Replay';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 
 import LoginFuncionario from "../components/LoginFuncionario";
 
@@ -66,6 +67,8 @@ function Dashboard({ tipo }) {
     // Sistema
     const [notas, setNotas] = useState([]);
     const [loadingNotas, setLoadingNotas] = useState(false);
+    const [loadingNotasIds, setLoadingNotasIds] = useState([]);
+    const [loadingItens, setLoadingItens] = useState(false);
     const [busca, setBusca] = useState("");
     const [openModal, setOpenModal] = useState(false);
     const [itensNota, setItensNota] = useState([]);
@@ -75,11 +78,11 @@ function Dashboard({ tipo }) {
     const [aba, setAba] = useState(1);
     const [notasSelecionadas, setNotasSelecionadas] = useState([]);
     const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
-    const [loadingNotasIds, setLoadingNotasIds] = useState([]);
     const [ordemData, setOrdemData] = useState("desc");
     const [dataInicio, setDataInicio] = useState("");
     const [dataFim, setDataFim] = useState("");
     const [tipoDataFiltro, setTipoDataFiltro] = useState("recebimento");
+    const [funcionariosMap, setFuncionariosMap] = useState({});
 
     // SS Plus Sync
     const [loadingSync, setLoadingSync] = useState(false);
@@ -106,6 +109,35 @@ function Dashboard({ tipo }) {
         setDataInicio(formatarData(seteDiasAtras));
         setDataFim(formatarData(hoje));
     }, []);
+
+    useEffect(() => {
+        buscarFuncionarios();
+    }, []);
+
+    // Busca nome dos funcionários pelo código na API
+    const buscarFuncionarios = async () => {
+        try {
+            const response = await fetch(`${API}/api/funcionarios/listar`);
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error("Erro ao buscar funcionários");
+                return;
+            }
+
+            const mapa = {};
+
+            data.forEach((funcionario) => {
+                mapa[String(funcionario.codigo).trim()] = funcionario.nome;
+            });
+
+            setFuncionariosMap(mapa);
+
+        } catch (error) {
+            console.error("Erro ao buscar funcionários:", error);
+        }
+    };
 
     // Busca notas na API
     const buscarNotas = async () => {
@@ -162,6 +194,7 @@ function Dashboard({ tipo }) {
 
         return (
             nota?.numero?.toString().includes(termo) ||
+            nota?.fornecedor?.toLowerCase().includes(termo) ||
             nota?.serie?.toString().includes(termo)
         );
     });
@@ -174,6 +207,8 @@ function Dashboard({ tipo }) {
     const buscarItens = async (nota) => {
         try {
 
+            setLoadingItens(true);
+
             setItensNota([]);
             setNotaSelecionada(nota);
             setOpenModal(true);
@@ -185,7 +220,6 @@ function Dashboard({ tipo }) {
             const data = await response.json();
 
             if (response.ok) {
-                console.log("RESPOSTA ITENS:", data);
 
                 const todosItens = data.items || [];
 
@@ -205,12 +239,13 @@ function Dashboard({ tipo }) {
                 });
 
                 setItensNota(itensComDados);
-
-                console.log("Buscando itens da nota:", nota.id);
-                console.log("URL:", `${API}/api/itens_nfe/${nota.id}`);
             }
+
         } catch (error) {
             console.error(error);
+
+        } finally {
+            setLoadingItens(false);
         }
     };
 
@@ -223,8 +258,8 @@ function Dashboard({ tipo }) {
             item?.xProd?.toLowerCase().includes(termo) ||
             item?.cean?.toString().includes(termo) ||
             item?.codigo_barras?.toString().includes(termo) ||
-            item?.basico?.toString().includes(termo) ||
-            item?.loc_sistema?.toString().includes(termo) ||
+            item?.basico?.toLowerCase().includes(termo) ||
+            item?.loc_sistema?.toLowerCase().includes(termo) ||
             item?.caixa?.toLowerCase().includes(termo)
         );
     });
@@ -811,6 +846,14 @@ function Dashboard({ tipo }) {
                     {loadingNotas ? (
                         <Box textAlign="center">
                             <CircularProgress />
+                            <Typography
+                                mt={2}
+                                sx={{
+                                    color: 'text.secondary'
+                                }}
+                            >
+                                Carregando notas...
+                            </Typography>
                         </Box>
                     ) : notasOrdenadas.length === 0 ? (
                         <Typography>Nenhuma nota encontrada</Typography>
@@ -918,6 +961,17 @@ function Dashboard({ tipo }) {
                                                             }}
                                                         />
                                                     )}
+
+                                                {aba !== 3 && nota.status === "EM_TRANSITO" && (
+                                                    <Tooltip title="Baixar XML completo da nota">
+                                                        <Button
+                                                            // onClick={() => baixarXML(nota.id)}
+                                                            sx={{ color: "background.paper", display: 'flex', gap: 1 }}
+                                                        >
+                                                            <FileDownloadIcon />
+                                                        </Button>
+                                                    </Tooltip>
+                                                )}
                                             </Box>
 
                                             {/* STATUS */}
@@ -1206,9 +1260,35 @@ function Dashboard({ tipo }) {
                         onChange={(e) => setBuscaItem(e.target.value)}
                     />
                     <DialogContent sx={{ mt: 2 }} dividers>
-                        {itensNota.length === 0 ? (
+
+                        {loadingItens ? (
+
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    minHeight: "250px",
+                                    flexDirection: 'column'
+                                }}
+                            >
+                                <CircularProgress />
+                                <Typography
+                                    mt={2}
+                                    sx={{
+                                        color: 'text.secondary'
+                                    }}
+                                >
+                                    Carregando itens...
+                                </Typography>
+                            </Box>
+
+                        ) : itensNota.length === 0 ? (
+
                             <Typography>Nenhum item encontrado</Typography>
+
                         ) : (
+
                             itensFiltrados.map((item, index) => {
 
                                 return (
@@ -1225,9 +1305,13 @@ function Dashboard({ tipo }) {
                                             fontSize: '0.85rem'
                                         }}
                                     >
+
                                         {/* Linha 1 */}
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <Typography><strong>{item.basico || item.cod_produto || "-"}</strong></Typography>
+                                            <Typography>
+                                                <strong>{item.basico || item.cod_produto || "-"}</strong>
+                                            </Typography>
+
                                             <Typography sx={{
                                                 color:
                                                     item.status_item === "PENDENTE" ? "primary.pendentes" :
@@ -1257,13 +1341,18 @@ function Dashboard({ tipo }) {
                                             >
                                                 {item.descricao || item.xProd}
                                             </Typography>
-                                            <Typography sx={{ fontSize: '0.8rem' }}>{item.conferente}</Typography>
+
+                                            <Typography sx={{ fontSize: '0.8rem' }}>
+                                                {funcionariosMap[String(item.conferente).trim()] || item.conferente || "-"}
+                                            </Typography>
                                         </Box>
 
                                         {/* Linha 3 */}
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
                                             <Typography>{item.loc_sistema || "-"}</Typography>
-                                            <Typography>{item.qtd_conferida} / {Number(item.quantidade_comercial)}</Typography>
+                                            <Typography>
+                                                {item.qtd_conferida} / {Number(item.quantidade_comercial)}
+                                            </Typography>
                                         </Box>
 
                                         {/* Linha 4 */}
@@ -1271,6 +1360,7 @@ function Dashboard({ tipo }) {
                                             <Typography sx={{ fontSize: '0.75rem' }}>
                                                 {item.cean || item.codigo_barras || "-"}
                                             </Typography>
+
                                             <Typography sx={{ fontSize: '0.75rem' }}>
                                                 {caixaInvalida(item.caixa)
                                                     ? "SEM CAIXA"
@@ -1278,13 +1368,22 @@ function Dashboard({ tipo }) {
                                                 }
                                             </Typography>
                                         </Box>
+
                                     </Card>
                                 );
                             })
                         )}
+
                     </DialogContent>
                     <DialogActions>
-                        <Button sx={{ color: "primary.branco", bgcolor: 'primary.cancelar', '&:hover': { bgcolor: 'primary.cancelarHover' } }} onClick={() => setOpenModal(false)}>Fechar</Button>
+                        <Button sx={{ color: "primary.branco", bgcolor: 'primary.cancelar', '&:hover': { bgcolor: 'primary.cancelarHover' } }}
+                            onClick={() => {
+                                setOpenModal(false);
+                                setBuscaItem("");
+                            }}
+                        >
+                            Fechar
+                        </Button>
                     </DialogActions>
                 </Dialog>
 
