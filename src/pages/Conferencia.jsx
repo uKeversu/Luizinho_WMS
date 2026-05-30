@@ -2,7 +2,7 @@ import { useState, useEffect, useContext, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useMemo } from "react";
 import {
-    Container, Typography, Card, Box, TextField, Button,
+    Container, Typography, Card, CardContent, Chip, Divider, Box, TextField, Button,
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions,
     CircularProgress, Backdrop, IconButton, Tooltip, FormControl, InputLabel,
@@ -158,6 +158,14 @@ function Conferencia() {
         cheia: false
     });
     const [processandoScanner, setProcessandoScanner] = useState(false);
+
+    // Agrupa caixas por localizações próximas
+    const [agrupamentosSelecionados, setAgrupamentosSelecionados] = useState([]);
+    const [gruposLocalizacao, setGruposLocalizacao] = useState([]);
+    const [dialogAgrupamentos, setDialogAgrupamentos] = useState({
+        open: false,
+        sugestoes: []
+    });
 
     const addCaixaSafe = (nova) => {
         atualizarCaixas(prev => {
@@ -427,7 +435,20 @@ function Conferencia() {
                 localStorage.getItem(chaveCaixas) || "[]"
             );
 
+            const agrupamentosSalvos = JSON.parse(
+                localStorage.getItem(
+                    `agrupamentos_${notasIds.join("_")}`
+                ) || "[]"
+            );
+
+            setAgrupamentosSelecionados(
+                agrupamentosSalvos
+            );
+
             let todosItens = [];
+
+            // Sugestões de agrupamento
+            const sugestoes = [];
 
             // Gera codigo da caixa vindo da API
             const gerarIdCaixa = (nome) => nome;
@@ -468,7 +489,7 @@ function Conferencia() {
                         );
                     });
 
-                    const itemBase = {
+                    return {
                         descricao: item.descricao || "Item sem identificação",
                         codigo_barras: item.cean || "",
                         codigo_produto: item.cod_produto || "",
@@ -492,11 +513,98 @@ function Conferencia() {
                         notaNumero: nota.numero || "-",
                         notaSerie: nota.serie || "-"
                     };
-
-                    return itemBase;
                 });
 
                 todosItens = [...todosItens, ...itensFormatados];
+            }
+
+            const mapaLocalizacoes = {};
+
+            todosItens.forEach(item => {
+
+                const loc = getPrateleira(item.localizacao);
+
+                if (!mapaLocalizacoes[loc]) {
+                    mapaLocalizacoes[loc] = 0;
+                }
+
+                mapaLocalizacoes[loc] =
+                    (mapaLocalizacoes[loc] || 0) + 1;
+            });
+
+            const localizacoes = Object.keys(mapaLocalizacoes).sort();
+            const localizacoesUsadas = new Set();
+
+            for (let i = 0; i < localizacoes.length - 1; i++) {
+
+                const atual = localizacoes[i];
+                const proxima = localizacoes[i + 1];
+
+                // Já usada em outro agrupamento
+                if (
+                    localizacoesUsadas.has(atual) ||
+                    localizacoesUsadas.has(proxima)
+                ) {
+                    continue;
+                }
+
+                const qtdAtual = mapaLocalizacoes[atual];
+                const qtdProxima = mapaLocalizacoes[proxima];
+
+                const numeroAtual =
+                    parseInt(atual.match(/\d+/)?.[0] || 0);
+
+                const numeroProximo =
+                    parseInt(proxima.match(/\d+/)?.[0] || 0);
+
+                const distancia =
+                    Math.abs(numeroAtual - numeroProximo);
+
+                // Mesmo número (042A + 042B)
+                // OU até UMA ruas próximas (042A + 043A)
+                const agrupamentoPermitido =
+                    distancia <= 1;
+
+                const poucasPecas =
+                    (qtdAtual + qtdProxima) <= 50;
+
+                const jaSalvo = agrupamentosSalvos.some(g =>
+                    g.nome === `${atual}/${proxima}`
+                );
+
+                if (
+                    agrupamentoPermitido &&
+                    poucasPecas &&
+                    !jaSalvo
+                ) {
+
+                    sugestoes.push({
+                        nome: `${atual}/${proxima}`,
+                        localizacoes: [atual, proxima],
+                        quantidade: qtdAtual + qtdProxima,
+
+                        itens: todosItens
+                            .filter(item => {
+
+                                const prateleira =
+                                    getPrateleira(item.localizacao);
+
+                                return (
+                                    prateleira === atual ||
+                                    prateleira === proxima
+                                );
+                            })
+                            .sort((a, b) =>
+                                a.localizacao.localeCompare(
+                                    b.localizacao
+                                )
+                            )
+                    });
+
+                    // Marca como usadas
+                    localizacoesUsadas.add(atual);
+                    localizacoesUsadas.add(proxima);
+                }
             }
 
             // Agrupa as caixas da API
@@ -504,7 +612,9 @@ function Conferencia() {
             let novasCaixas = [];
 
             todosItens.forEach(item => {
+
                 const nomeCaixa = item.caixaApi;
+
                 if (!nomeCaixa || nomeCaixa === "0") return;
 
                 if (!mapaCaixas[nomeCaixa]) {
@@ -515,11 +625,13 @@ function Conferencia() {
                         c => c.id === nomeCaixa
                     );
 
-                    // EXTRAI PRATELEIRA E SEQUÊNCIA
+                    // EX:
+                    // 001A - 1
+                    // 001A/001B - 1
                     const match = nomeCaixa.match(/^(.+)\s-\s(\d+)$/);
 
-                    const prateleira =
-                        caixaSalva?.prateleira ||
+                    const grupo =
+                        caixaSalva?.grupo ||
                         match?.[1] ||
                         "SEM_LOC";
 
@@ -530,19 +642,44 @@ function Conferencia() {
                     const novaCaixa = {
                         id: nomeCaixa,
                         numero: nomeCaixa,
+                        grupo,
+                        prateleira: grupo,
+                        localizacoes: grupo.includes("/")
+                            ? grupo.split("/")
+                            : [grupo],
+
+                        sequencia,
+
                         itens: [],
+
                         jaImprimiu: true,
                         origem: "API",
 
-                        cheia: caixaSalva?.cheia ?? false,
-
-                        prateleira,
-                        sequencia
+                        cheia: caixaSalva?.cheia ?? false
                     };
 
                     mapaCaixas[nomeCaixa] = novaCaixa;
+
                     novasCaixas.push(novaCaixa);
                 }
+            });
+
+            agrupamentosSalvos.forEach(grupo => {
+
+                const caixasDoGrupo = novasCaixas.filter(caixa =>
+                    grupo.localizacoes.some(loc =>
+                        caixa.grupo?.includes(loc)
+                    )
+                );
+
+                caixasDoGrupo.forEach(caixa => {
+
+                    caixa.grupo = grupo.nome;
+                    caixa.prateleira = grupo.nome;
+
+                    caixa.localizacoes =
+                        grupo.localizacoes;
+                });
             });
 
             const itensComCaixaCorrigida = todosItens.map(item => {
@@ -582,6 +719,14 @@ function Conferencia() {
 
             console.log("ITENS CARREGADOS:", itensComCaixaCorrigida);
             console.log("CAIXAS CARREGADAS:", novasCaixas);
+            console.log("SUGESTOES COMPLETAS:", sugestoes);
+
+            if (sugestoes.length > 0) {
+                setDialogAgrupamentos({
+                    open: true,
+                    sugestoes
+                });
+            }
 
             setItens(itensComCaixaCorrigida);
             atualizarCaixas(novasCaixas);
@@ -601,17 +746,24 @@ function Conferencia() {
     };
 
     const obterOuCriarCaixa = (localizacao) => {
+
         const prateleira = getPrateleira(localizacao);
 
+        const grupo = buscarGrupoDaLocalizacao(prateleira);
+
+        const chaveGrupo = grupo
+            ? grupo.nome
+            : prateleira;
+
         const caixaExistente = caixasRef.current.find(c =>
-            c.prateleira === prateleira &&
+            c.grupo === chaveGrupo &&
             c.cheia !== true
         );
 
         if (caixaExistente) return caixaExistente;
 
         const caixasMesmaPrateleira = caixasRef.current.filter(c =>
-            c.prateleira === prateleira
+            c.grupo === chaveGrupo
         );
 
         const maiorSequencia = caixasMesmaPrateleira.length > 0
@@ -620,17 +772,29 @@ function Conferencia() {
 
         const novaSequencia = maiorSequencia + 1;
 
-        const numero = `${prateleira} - ${novaSequencia}`;
+        const numero = `${chaveGrupo} - ${novaSequencia}`;
 
         return {
             id: numero,
             numero,
+            grupo: chaveGrupo,
             prateleira,
+            localizacoes: grupo
+                ? grupo.localizacoes
+                : [prateleira],
             sequencia: novaSequencia,
             cheia: false,
             itens: [],
             jaImprimiu: false
         };
+    };
+
+    // Agrupa localizações para usar nas caixas
+    const buscarGrupoDaLocalizacao = (prateleira) => {
+
+        return gruposLocalizacao.find(g =>
+            g.localizacoes.includes(prateleira)
+        );
     };
 
     const resolverCaixa = (item) => {
@@ -672,9 +836,15 @@ function Conferencia() {
 
         const prateleira = getPrateleira(item.localizacao);
 
+        const grupo = buscarGrupoDaLocalizacao(prateleira);
+
+        const chaveGrupo = grupo
+            ? grupo.nome
+            : prateleira;
+
         // PROCURA CAIXA DISPONÍVEL
         const caixaDisponivel = caixasRef.current.find(c =>
-            c.prateleira === prateleira &&
+            c.grupo === chaveGrupo &&
             !c.cheia
         );
 
@@ -1355,7 +1525,7 @@ function Conferencia() {
             if (!data.unidades || data.unidades.length === 0) {
                 setSnackbar({
                     open: true,
-                    message: "Nenhuma etiqueta disponível",
+                    message: "Etiqueta não encontrada, verifique código de barras!",
                     severity: "warning"
                 });
                 return;
@@ -1503,7 +1673,7 @@ function Conferencia() {
                     return false;
                 }
 
-                console.log("ENVIANDO PARA API A CAIXA: ", item.caixaId || caixa.numero)
+                console.log("ENVIANDO PARA API A CAIXA: ", caixa.numero)
 
                 const response = await fetch(
                     `${API}/api/atualizar_item/${item.notaId}/${codigoEnvio}`,
@@ -1518,7 +1688,7 @@ function Conferencia() {
                                 ? "ITEM_CONFERIDO"
                                 : "CONFERIDO_PARCIAL",
 
-                            caixa: item.caixaId || caixa.numero,
+                            caixa: caixa.numero,
                             conferente: userInfo?.codigo,
                             qtd_conferida: item.conferido
                         })
@@ -1702,6 +1872,29 @@ function Conferencia() {
 
             // Ordena pela sequência
             return caixaA.sequencia - caixaB.sequencia;
+        });
+    };
+
+    const confirmarAgrupamentos = async (selecionados) => {
+
+        setGruposLocalizacao(selecionados);
+
+        localStorage.setItem(
+            `agrupamentos_${notasIds.join("_")}`,
+            JSON.stringify(selecionados )
+        );
+
+        setDialogAgrupamentos({
+            open: false,
+            sugestoes: []
+        });
+
+        await carregarTudo();
+
+        setSnackbar({
+            open: true,
+            message: "Agrupamentos aplicados",
+            severity: "success"
         });
     };
 
@@ -2410,6 +2603,202 @@ function Conferencia() {
                         }
                     >
                         Fechar
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* SUGESTÃO DE AGRUPAMENTOS DE CAIXAS */}
+            <Dialog
+                open={dialogAgrupamentos.open}
+                maxWidth="md"
+                fullWidth
+                slotProps={{
+                    paper: {
+                        sx: {
+                            bgcolor: "background.card",
+                            color: "text.primary",
+                            borderRadius: 3
+                        }
+                    }
+                }}
+            >
+                <DialogTitle
+                    sx={{
+                        fontWeight: 700,
+                        borderBottom: "1px solid",
+                        borderColor: "divider"
+                    }}
+                >
+                    Sugestão de agrupamentos de caixas
+                </DialogTitle>
+
+                <DialogContent sx={{ mt: 2 }}>
+
+                    <Typography sx={{ mb: 3 }}>
+                        Deseja agrupá-las em uma única caixa?
+                    </Typography>
+
+                    {dialogAgrupamentos.sugestoes.map((sugestao, i) => {
+
+                        const marcado =
+                            agrupamentosSelecionados.some(
+                                g => g.nome === sugestao.nome
+                            );
+
+                        return (
+                            <Card
+                                key={i}
+                                onClick={() => {
+
+                                    if (marcado) {
+
+                                        setAgrupamentosSelecionados(prev =>
+                                            prev.filter(g =>
+                                                g.nome !== sugestao.nome
+                                            )
+                                        );
+
+                                    } else {
+
+                                        setAgrupamentosSelecionados(prev => [
+                                            ...prev,
+                                            sugestao
+                                        ]);
+                                    }
+                                }}
+                                sx={{
+                                    mb: 2,
+                                    cursor: "pointer",
+                                    border: marcado
+                                        ? "2px solid"
+                                        : "1px solid",
+                                    borderColor: marcado
+                                        ? "primary.main"
+                                        : "divider",
+                                    transition: "0.2s",
+                                    bgcolor: marcado
+                                        ? "action.selected"
+                                        : "background.paper",
+                                }}
+                            >
+                                <CardContent sx={{
+                                    bgcolor: 'background.alerta',
+                                    color: 'text.primary'
+                                }}>
+
+                                    <Box
+                                        sx={{
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            alignItems: "center",
+                                            mb: 2,
+                                            color: 'text.primary'
+                                        }}
+                                    >
+                                        <Typography
+                                            variant="h6"
+                                            sx={{ fontWeight: 700 }}
+                                        >
+                                            {sugestao.nome}
+                                        </Typography>
+
+                                        <Chip
+                                            label={`${sugestao.quantidade} itens diferentes`}
+                                            color="primary"
+                                            size="small"
+                                        />
+                                    </Box>
+
+                                    <Divider sx={{ mb: 2 }} />
+
+                                    <Box
+                                        sx={{
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            gap: 1
+                                        }}
+                                    >
+                                        {sugestao.itens?.map((item, idx) => (
+                                            <Box
+                                                key={idx}
+                                                sx={{
+                                                    p: 1.2,
+                                                    borderRadius: 2,
+                                                    bgcolor: "background.default",
+                                                    border: "1px solid",
+                                                    borderColor: "divider",
+                                                    display: "flex",
+                                                    justifyContent: "space-between",
+                                                    alignItems: "center",
+                                                    gap: 2
+                                                }}
+                                            >
+                                                <Box sx={{ flex: 1 }}>
+                                                    <Typography
+                                                        variant="body2"
+                                                        sx={{
+                                                            fontWeight: 700
+                                                        }}
+                                                    >
+                                                        {item.localizacao}
+                                                    </Typography>
+
+                                                    <Typography
+                                                        variant="body2"
+                                                        color="text.secondary"
+                                                    >
+                                                        {item.basico} - {item.descricao}
+                                                    </Typography>
+                                                </Box>
+
+                                                <Chip
+                                                    label={`${item.quantidade} unidade(s)`}
+                                                    size="small"
+                                                    color="primary"
+                                                    sx={{
+                                                        fontWeight: 700,
+                                                        minWidth: 60
+                                                    }}
+                                                />
+                                            </Box>
+                                        ))}
+                                    </Box>
+
+                                </CardContent>
+                            </Card>
+                        );
+                    })}
+                </DialogContent>
+
+                <DialogActions
+                    sx={{
+                        px: 3,
+                        pb: 2
+                    }}
+                >
+                    <Button
+                        onClick={() =>
+                            setDialogAgrupamentos({
+                                open: false,
+                                sugestoes: []
+                            })
+                        }
+                    >
+                        Ignorar
+                    </Button>
+
+                    <Button
+                        variant="contained"
+                        disabled={
+                            agrupamentosSelecionados.length === 0
+                        }
+                        onClick={() =>
+                            confirmarAgrupamentos(
+                                agrupamentosSelecionados
+                            )
+                        }
+                    >
+                        Confirmar agrupamentos
                     </Button>
                 </DialogActions>
             </Dialog>

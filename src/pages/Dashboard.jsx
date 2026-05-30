@@ -161,24 +161,7 @@ function Dashboard({ tipo }) {
 
             const notasArray = Array.isArray(data) ? data : [];
 
-            // Buscar observação do palete para cada nota
-            const notasComObs = await Promise.all(
-                notasArray.map(async (nota) => {
-                    try {
-                        const respPalet = await fetch(`${API}/api/palet_nfe/${nota.id}`);
-                        const dataPalet = await respPalet.json();
-
-                        const observacao = (dataPalet.items && dataPalet.items[0]?.observacao_palet) || "";
-
-                        return { ...nota, observacao_palet: observacao };
-                    } catch (err) {
-                        console.error(`Erro ao buscar observação da nota ${nota.id}:`, err);
-                        return { ...nota, observacao_palet: "" };
-                    }
-                })
-            );
-
-            setNotas(notasComObs);
+            setNotas(notasArray);
 
         } catch (error) {
             console.error("Erro na requisição:", error);
@@ -264,20 +247,63 @@ function Dashboard({ tipo }) {
         );
     });
 
-    // Busca observação da nota
-    const buscarObservacaoPalet = async (notaId) => {
-        try {
-            const response = await fetch(`${API}/api/palet_nfe/${notaId}`);
-            const data = await response.json();
+    // Baixar XML da nota
+    const baixarXML = (nota) => {
 
-            if (response.ok && data.items && data.items.length > 0) {
-                setObservacaoPalet(data.items[0].observacao_palet || "");
-            } else {
-                setObservacaoPalet("");
-            }
-        } catch (err) {
-            console.error("Erro ao buscar observação do palet:", err);
-            setObservacaoPalet("");
+        if (!nota?.xml) {
+            setSnackbar({
+                open: true,
+                message: "XML não disponível para esta nota",
+                severity: "warning"
+            });
+
+            return;
+        }
+
+        try {
+
+            // Nome do arquivo
+            const nomeArquivo = `NF_${nota.numero}_SERIE_${nota.serie}.xml`;
+
+            // Cria blob XML
+            const blob = new Blob(
+                [nota.xml],
+                { type: "application/xml;charset=utf-8" }
+            );
+
+            // Cria URL temporária
+            const url = window.URL.createObjectURL(blob);
+
+            // Cria link invisível
+            const link = document.createElement("a");
+
+            link.href = url;
+            link.download = nomeArquivo;
+
+            document.body.appendChild(link);
+
+            // Faz download
+            link.click();
+
+            // Limpeza
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+
+            setSnackbar({
+                open: true,
+                message: `XML da NF ${nota.numero} baixado com sucesso`,
+                severity: "success"
+            });
+
+        } catch (error) {
+
+            console.error(error);
+
+            setSnackbar({
+                open: true,
+                message: "Erro ao baixar XML",
+                severity: "error"
+            });
         }
     };
 
@@ -336,7 +362,7 @@ function Dashboard({ tipo }) {
 
             // Delay pra não pular a snackbar
             setTimeout(() => {
-                navigate("/", {
+                navigate("/Dashboard", {
                     state: {
                         modo: "PENDENTE",
                         nota: {
@@ -962,10 +988,10 @@ function Dashboard({ tipo }) {
                                                         />
                                                     )}
 
-                                                {aba !== 3 && nota.status === "EM_TRANSITO" && (
+                                                {aba !== 1 && (
                                                     <Tooltip title="Baixar XML completo da nota">
                                                         <Button
-                                                            // onClick={() => baixarXML(nota.id)}
+                                                            onClick={() => baixarXML(nota)}
                                                             sx={{ color: "background.paper", display: 'flex', gap: 1 }}
                                                         >
                                                             <FileDownloadIcon />
@@ -1393,7 +1419,21 @@ function Dashboard({ tipo }) {
                     autoHideDuration={3000}
                     onClose={() => setSnackbar({ ...snackbar, open: false })}
                 >
-                    <Alert variant="filled" severity={snackbar.severity}>
+                    <Alert
+                        variant="filled"
+                        severity={snackbar.severity}
+                        sx={{
+                            color: 'primary.branco',
+
+                            "& .MuiAlert-icon": {
+                                color: 'primary.branco'
+                            },
+
+                            "& .MuiAlert-action": {
+                                color: 'primary.branco'
+                            }
+                        }}
+                    >
                         {snackbar.message}
                     </Alert>
                 </Snackbar>

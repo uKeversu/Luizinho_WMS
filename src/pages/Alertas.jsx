@@ -28,6 +28,7 @@ import WarehouseRoundedIcon from '@mui/icons-material/WarehouseRounded';
 import FactCheckRoundedIcon from '@mui/icons-material/FactCheckRounded';
 import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded';
 import AccessTimeFilledRoundedIcon from '@mui/icons-material/AccessTimeFilled';
+import AssignmentReturnRoundedIcon  from '@mui/icons-material/AssignmentReturnRounded';
 
 import { ThemeContext } from "../context/ThemeContext";
 
@@ -193,6 +194,7 @@ function Alertas() {
         setLoadingAlertas(true);
 
         const CFOP_GARANTIA = ["5949", "6949"];
+        const CFOP_DEVOLUCAO = ["1202", "2202"];
 
         const agrupados = {};
 
@@ -255,7 +257,23 @@ function Alertas() {
 
                     alertasNota.push({
                         tipo: "CFOP_GARANTIA",
-                        mensagem: `${garantia.length} item(ns) com CFOP garantia`
+                        mensagem: `${garantia.length} item(ns) com CFOP de garantia`
+                    });
+                }
+
+                // DEVOLUÇÃO
+                const devolucao = itens.filter(item =>
+                    item.cfop &&
+                    CFOP_DEVOLUCAO.includes(
+                        item.cfop.toString().trim()
+                    )
+                );
+
+                if (devolucao.length > 0) {
+
+                    alertasNota.push({
+                        tipo: "CFOP_DEVOLUCAO",
+                        mensagem: `${devolucao.length} item(ns) com CFOP de devolução`
                     });
                 }
 
@@ -316,6 +334,10 @@ function Alertas() {
 
     const totalGarantia = alertas.filter(a =>
         a.alertas.some(x => x.tipo === "CFOP_GARANTIA")
+    ).length;
+
+    const totalDevolucao = alertas.filter(a =>
+        a.alertas.some(x => x.tipo === "CFOP_DEVOLUCAO")
     ).length;
 
     return (
@@ -413,6 +435,13 @@ function Alertas() {
                         valor: totalGarantia,
                         cor: "var(--garantia)",
                         icon: <Inventory2RoundedIcon />
+                    },
+
+                    {
+                        titulo: "Devolução",
+                        valor: totalDevolucao,
+                        cor: "primary.main",
+                        icon: <AssignmentReturnRoundedIcon />
                     }
                 ].map((item, idx) => (
 

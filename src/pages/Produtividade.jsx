@@ -294,8 +294,8 @@ export default function Produtividade() {
             "bucha",
             "rolamento",
             "kit amortecedor",
+            "kit do amortecedor",
             "reparo",
-            "retentor",
             "anel",
             "arruela",
             "porca",
@@ -389,87 +389,96 @@ export default function Produtividade() {
 
     // Valida se item esta em caixa correta
     const normalizarRua = (texto = "") => {
-
         return texto
             .toUpperCase()
             .replace(/\s+/g, "")
             .replace(/^0+/, "");
-
     };
 
-    const extrairRuaLoc = (loc = "") => {
-
-        const match =
-            loc.toUpperCase().match(/^0*(\d+[A-Z])/);
-
-        return match
-            ? match[1]
-            : "";
-
+    // Extrai ruas/localizações da loc_sistema
+    const extrairRuasLoc = (loc = "") => {
+        return loc
+            .toUpperCase()
+            .split("/")
+            .map(parte => {
+                const match = parte.match(/([A-Z0-9]+)/);
+                return match ? match[1] : null;
+            })
+            .filter(Boolean);
     };
 
-    const extrairRuaCaixa = (caixa = "") => {
+    // Extrai ruas/localizações da caixa
+    const extrairRuasCaixa = (caixa = "") => {
+        const texto = caixa
+            .toUpperCase()
+            .replace(/CAIXA\s*/g, "");
 
-        const texto =
-            caixa.toUpperCase();
+        return texto
+            .split("/")
+            .map(parte => {
+                const match = parte.match(/([A-Z0-9]+)/);
+                return match ? match[1] : null;
+            })
+            .filter(Boolean);
+    };
 
-        // Caixa 13B - 1
-        let match =
-            texto.match(
-                /CAIXA\s*0*(\d+[A-Z])/
-            );
+    // Extrai número da localização
+    const extrairNumeroLoc = (loc = "") => {
+        const match = loc.toUpperCase().match(/(\d{3})[A-Z]/);
 
-        if (match) {
-            return match[1];
-        }
+        if (!match) return null;
 
-        // 006A - 7
-        match =
-            texto.match(
-                /^0*(\d+[A-Z])/
-            );
-
-        if (match) {
-            return match[1];
-        }
-
-        return "";
-
+        return parseInt(match[1], 10);
     };
 
     const validarCaixa = (item) => {
+        const caixa = (item.caixa || "").toUpperCase().trim();
 
-        const caixa = item.caixa || "";
-
-        if (
-            !caixa ||
-            caixa === "0"
-        ) {
+        if (!caixa || caixa === "0") {
             return {
                 valida: false,
                 ignorar: true,
             };
         }
 
-        const loc =
-            extrairRuaLoc(
-                item.loc_sistema
-            );
+        // REGRA UNIVERSAL CAIXAS CIMA/BAIXO
 
-        const cx =
-            extrairRuaCaixa(
-                caixa
-            );
+        const numeroLoc = extrairNumeroLoc(item.loc_sistema);
+
+        if (numeroLoc !== null) {
+
+            // CIMA → 030A até 999A
+            if (caixa.includes("CIMA")) {
+                return {
+                    valida: numeroLoc >= 30,
+                    ignorar: false,
+                };
+            }
+
+            // BAIXO → 000A até 029A
+            if (caixa.includes("BAIXO")) {
+                return {
+                    valida: numeroLoc <= 29,
+                    ignorar: false,
+                };
+            }
+        }
+
+        // REGRA DE CAIXAS PADRÃO(POR LOCALIZAÇÃO)
+
+        const ruasLoc = extrairRuasLoc(item.loc_sistema);
+        const ruasCaixa = extrairRuasCaixa(caixa);
+
+        const valida = ruasLoc.some(loc =>
+            ruasCaixa.some(cx =>
+                normalizarRua(loc) === normalizarRua(cx)
+            )
+        );
 
         return {
-            valida:
-                normalizarRua(loc)
-                ===
-                normalizarRua(cx),
-
+            valida,
             ignorar: false,
         };
-
     };
 
     // Itens conferidos pelo usuário
