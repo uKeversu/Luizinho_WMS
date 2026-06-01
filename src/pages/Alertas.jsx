@@ -28,7 +28,7 @@ import WarehouseRoundedIcon from '@mui/icons-material/WarehouseRounded';
 import FactCheckRoundedIcon from '@mui/icons-material/FactCheckRounded';
 import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded';
 import AccessTimeFilledRoundedIcon from '@mui/icons-material/AccessTimeFilled';
-import AssignmentReturnRoundedIcon  from '@mui/icons-material/AssignmentReturnRounded';
+import AssignmentReturnRoundedIcon from '@mui/icons-material/AssignmentReturnRounded';
 
 import { ThemeContext } from "../context/ThemeContext";
 
@@ -194,7 +194,7 @@ function Alertas() {
         setLoadingAlertas(true);
 
         const CFOP_GARANTIA = ["5949", "6949"];
-        const CFOP_DEVOLUCAO = ["1202", "2202"];
+        const CFOP_DEVOLUCAO = ["5662", "6202", "5202"];
 
         const agrupados = {};
 
@@ -415,7 +415,7 @@ function Alertas() {
                     {
                         titulo: "Total Alertas",
                         valor: alertas.length,
-                        cor: "#1976d2",
+                        cor: "primary.main",
                         icon: <WarningAmberRoundedIcon />
                     },
                     {
@@ -440,7 +440,7 @@ function Alertas() {
                     {
                         titulo: "Devolução",
                         valor: totalDevolucao,
-                        cor: "primary.main",
+                        cor: "primary.retorno",
                         icon: <AssignmentReturnRoundedIcon />
                     }
                 ].map((item, idx) => (
@@ -590,6 +590,13 @@ function Alertas() {
                                     onClick={() => setFiltroTipo("CFOP_GARANTIA")}
                                 />
 
+                                <Chip
+                                    label="DEVOLUÇÃO"
+                                    clickable
+                                    color={filtroTipo === "CFOP_DEVOLUCAO" ? "primary" : "default"}
+                                    onClick={() => setFiltroTipo("CFOP_DEVOLUCAO")}
+                                />
+
                             </Box>
 
                         </Grid>
@@ -708,8 +715,8 @@ function Alertas() {
 
                                     minWidth: '280px',
                                     maxWidth: '280px',
-                                    minHeight: '420px',
-                                    maxHeight: '420px',
+                                    minHeight: '400px',
+                                    maxHeight: '400px',
 
                                     display: 'flex',
                                     flexDirection: 'column',
@@ -831,7 +838,11 @@ function Alertas() {
                                                 ? "var(--atraso-conferencia)"
                                                 : item.tipo === "GUARDA_PENDENTE"
                                                     ? "var(--atraso-guarda)"
-                                                    : "var(--garantia)";
+                                                    : item.tipo === "CFOP_GARANTIA"
+                                                        ? "var(--garantia)"
+                                                        : item.tipo === "CFOP_DEVOLUCAO"
+                                                            ? "primary.retorno"
+                                                            : "background.default";
 
                                         return (
 
@@ -1060,33 +1071,6 @@ function Alertas() {
 
                                         </Box>
                                     )}
-
-                                    {/* BOTÃO */}
-
-                                    <Button
-                                        fullWidth
-                                        variant="contained"
-
-                                        sx={{
-                                            mt: 'auto',
-
-                                            borderRadius: '12px',
-
-                                            py: 0.9,
-
-                                            fontWeight: 700,
-
-                                            textTransform: 'none',
-
-                                            boxShadow: 'none'
-                                        }}
-
-                                        onClick={() =>
-                                            navigate(`/dashboard?nota=${alerta.nota.numero}`)
-                                        }
-                                    >
-                                        Abrir Nota
-                                    </Button>
 
                                 </CardContent>
 
