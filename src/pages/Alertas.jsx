@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useContext } from "react";
+import { React, useState, useEffect, useMemo, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -435,37 +435,43 @@ function Alertas() {
                         titulo: "Total Alertas",
                         valor: alertas.length,
                         cor: "primary.main",
-                        icon: <WarningAmberRoundedIcon />
+                        icon: <WarningAmberRoundedIcon />,
+                        ajustarIconeWarning: true
                     },
                     {
                         titulo: "Conferência",
                         valor: totalConferencia,
                         cor: "var(--atraso-conferencia)",
-                        icon: <FactCheckRoundedIcon />
+                        icon: <FactCheckRoundedIcon />,
+                        ajustarIconeConf: true
                     },
                     {
                         titulo: "Guarda",
                         valor: totalGuarda,
                         cor: "var(--atraso-guarda)",
-                        icon: <WarehouseRoundedIcon />
+                        icon: <WarehouseRoundedIcon />,
+                        ajustarIconeGuarda: true
                     },
                     {
                         titulo: "Garantia",
                         valor: totalGarantia,
                         cor: "var(--garantia)",
-                        icon: <Inventory2RoundedIcon />
+                        icon: <Inventory2RoundedIcon />,
+                        ajustarIconeGarantia: true
                     },
                     {
                         titulo: "Devolução",
                         valor: totalDevolucao,
                         cor: "primary.retorno",
-                        icon: <AssignmentReturnRoundedIcon />
+                        icon: <AssignmentReturnRoundedIcon />,
+                        ajustarIconeDevolucao: true
                     },
                     {
                         titulo: "Sem GTIN",
                         valor: totalSemGTIN,
                         cor: "warning.main",
-                        icon: <BarcodeReaderIcon />
+                        icon: <BarcodeReaderIcon />,
+                        ajustarIconeSemGtin: true
                     }
                 ].map((item, idx) => (
 
@@ -494,7 +500,7 @@ function Alertas() {
                                 <Box
                                     sx={{
                                         display: 'flex',
-                                        justifyContent: 'space-between'
+                                        justifyContent: 'space-between',
                                     }}
                                 >
 
@@ -515,16 +521,26 @@ function Alertas() {
                                         </Typography>
 
                                     </Box>
-
-                                    <Avatar
-                                        sx={{
-                                            bgcolor: item.cor,
-                                            ml: 2
-                                        }}
-                                    >
-                                        {item.icon}
-                                    </Avatar>
-
+                                    <Box sx={{ display: "flex", ml: 2, alignItems: "top", justifyContent: "center" }}>
+                                        <Avatar
+                                            sx={{
+                                                bgcolor: item.cor,
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                height: 40,
+                                                width: 40,
+                                                "& svg": {
+                                                    fontSize: 24,
+                                                    position: "relative",
+                                                    top: item.ajustarIconeWarning ? "-2px" : 0,
+                                                    right: item.ajustarIconeGuarda ? "0.5px" : 0,
+                                                }
+                                            }}
+                                        >
+                                            {item.icon}
+                                        </Avatar>
+                                    </Box>
                                 </Box>
 
                             </CardContent>
