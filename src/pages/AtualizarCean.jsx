@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
     Container,
     Typography,
@@ -56,6 +56,7 @@ function AtualizarCean() {
 
     const [loadingNotas, setLoadingNotas] = useState(false);
     const [loadingItens, setLoadingItens] = useState(false);
+    const [searchParams] = useSearchParams();
 
     const [snackbar, setSnackbar] = useState({
         open: false,
@@ -125,6 +126,27 @@ function AtualizarCean() {
     useEffect(() => {
         buscarNotas();
     }, []);
+
+    useEffect(() => {
+
+        if (notas.length === 0) return;
+
+        const notaUrl = searchParams.get("nota");
+
+        if (!notaUrl) return;
+
+        const notaEncontrada = notas.find(
+            n => String(n.numero) === String(notaUrl)
+        );
+
+        if (notaEncontrada) {
+
+            setNotaSelecionada(notaUrl);
+
+            buscarItens(notaEncontrada.id);
+        }
+
+    }, [notas]);
 
     const alterarCampo = (index, campo, valor) => {
         const novos = [...itens];

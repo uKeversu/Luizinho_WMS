@@ -29,6 +29,7 @@ import FactCheckRoundedIcon from '@mui/icons-material/FactCheckRounded';
 import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded';
 import AccessTimeFilledRoundedIcon from '@mui/icons-material/AccessTimeFilled';
 import AssignmentReturnRoundedIcon from '@mui/icons-material/AssignmentReturnRounded';
+import BarcodeReaderIcon from '@mui/icons-material/BarcodeReader';
 
 import { ThemeContext } from "../context/ThemeContext";
 
@@ -277,6 +278,20 @@ function Alertas() {
                     });
                 }
 
+                // SEM GTIN
+                const semGTIN = itens.filter(item =>
+                    !item.cean ||
+                    item.cean === "SEM GTIN" ||
+                    item.cean === "SEMGTIN"
+                );
+
+                if (semGTIN.length > 0) {
+                    alertasNota.push({
+                        tipo: "SEM_GTIN",
+                        mensagem: `${semGTIN.length} item(ns) sem GTIN`
+                    });
+                }
+
                 if (alertasNota.length > 0) {
 
                     agrupados[nota.id] = {
@@ -340,6 +355,10 @@ function Alertas() {
         a.alertas.some(x => x.tipo === "CFOP_DEVOLUCAO")
     ).length;
 
+    const totalSemGTIN = alertas.filter(a =>
+        a.alertas.some(x => x.tipo === "SEM_GTIN")
+    ).length;
+
     return (
 
         <Container
@@ -373,7 +392,7 @@ function Alertas() {
             >
                 <Box>
                     <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "background.paper" }}>
-                        <strong>Alertas de atrasos</strong>
+                        <strong>Painel de alertas</strong>
                     </Typography>
                     <Typography variant="h7" sx={{ color: "background.subPaper" }}>
                         Monitoramento de processos logísticos
@@ -436,12 +455,17 @@ function Alertas() {
                         cor: "var(--garantia)",
                         icon: <Inventory2RoundedIcon />
                     },
-
                     {
                         titulo: "Devolução",
                         valor: totalDevolucao,
                         cor: "primary.retorno",
                         icon: <AssignmentReturnRoundedIcon />
+                    },
+                    {
+                        titulo: "Sem GTIN",
+                        valor: totalSemGTIN,
+                        cor: "warning.main",
+                        icon: <BarcodeReaderIcon />
                     }
                 ].map((item, idx) => (
 
@@ -568,33 +592,35 @@ function Alertas() {
                                     color={filtroTipo === "TODOS" ? "primary" : "default"}
                                     onClick={() => setFiltroTipo("TODOS")}
                                 />
-
                                 <Chip
                                     label="CONFERÊNCIA"
                                     clickable
                                     color={filtroTipo === "ATRASO_CONFERENCIA" ? "primary" : "default"}
                                     onClick={() => setFiltroTipo("ATRASO_CONFERENCIA")}
                                 />
-
                                 <Chip
                                     label="GUARDA"
                                     clickable
                                     color={filtroTipo === "GUARDA_PENDENTE" ? "primary" : "default"}
                                     onClick={() => setFiltroTipo("GUARDA_PENDENTE")}
                                 />
-
                                 <Chip
                                     label="GARANTIA"
                                     clickable
                                     color={filtroTipo === "CFOP_GARANTIA" ? "primary" : "default"}
                                     onClick={() => setFiltroTipo("CFOP_GARANTIA")}
                                 />
-
                                 <Chip
                                     label="DEVOLUÇÃO"
                                     clickable
                                     color={filtroTipo === "CFOP_DEVOLUCAO" ? "primary" : "default"}
                                     onClick={() => setFiltroTipo("CFOP_DEVOLUCAO")}
+                                />
+                                <Chip
+                                    label="SEM GTIN"
+                                    clickable
+                                    color={filtroTipo === "SEM_GTIN" ? "primary" : "default"}
+                                    onClick={() => setFiltroTipo("SEM_GTIN")}
                                 />
 
                             </Box>
@@ -689,213 +715,116 @@ function Alertas() {
 
                 <Grid container spacing={3}>
 
-                    {alertasFiltrados.map((alerta, idx) => (
+                    {alertasFiltrados.map((alerta, idx) => {
 
-                        <Grid item xs={12} md={6} xl={4} key={idx}>
+                        const possuiSemGTIN = alerta.alertas.some(
+                            a => a.tipo === "SEM_GTIN"
+                        );
 
-                            <Card
-                                sx={{
-                                    borderRadius: '20px',
-                                    overflow: 'hidden',
-                                    border: '1px solid',
-                                    borderColor: 'divider',
+                        return (
 
-                                    bgcolor:
-                                        dark
-                                            ? 'background.alerta'
-                                            : 'background.default',
+                            <Grid item xs={12} md={6} xl={4} key={idx}>
 
-                                    backdropFilter: 'blur(10px)',
+                                <Card
+                                    sx={{
+                                        borderRadius: '20px',
+                                        overflow: 'hidden',
+                                        border: '1px solid',
+                                        borderColor: 'divider',
 
-                                    boxShadow: dark
-                                        ? '0 4px 20px rgba(0,0,0,0.45)'
-                                        : '0 4px 14px rgba(0,0,0,0.08)',
+                                        bgcolor:
+                                            dark
+                                                ? 'background.alerta'
+                                                : 'background.default',
 
-                                    transition: '0.25s ease',
-
-                                    minWidth: '280px',
-                                    maxWidth: '280px',
-                                    minHeight: '400px',
-                                    maxHeight: '400px',
-
-                                    display: 'flex',
-                                    flexDirection: 'column',
-
-                                    '&:hover': {
-                                        transform: 'translateY(-3px)',
+                                        backdropFilter: 'blur(10px)',
 
                                         boxShadow: dark
-                                            ? '0 8px 26px rgba(0,0,0,0.6)'
-                                            : '0 8px 22px rgba(0,0,0,0.12)'
-                                    }
-                                }}
-                            >
+                                            ? '0 4px 20px rgba(0,0,0,0.45)'
+                                            : '0 4px 14px rgba(0,0,0,0.08)',
 
-                                <CardContent
-                                    sx={{
+                                        transition: '0.25s ease',
+
+                                        minWidth: '280px',
+                                        maxWidth: '280px',
+                                        minHeight: '480px',
+                                        maxHeight: '480px',
+
                                         display: 'flex',
                                         flexDirection: 'column',
-                                        flexGrow: 1,
-                                        gap: 1.2,
-                                        p: 2,
-                                        height: '100%'
+
+                                        '&:hover': {
+                                            transform: 'translateY(-3px)',
+
+                                            boxShadow: dark
+                                                ? '0 8px 26px rgba(0,0,0,0.6)'
+                                                : '0 8px 22px rgba(0,0,0,0.12)'
+                                        }
                                     }}
                                 >
 
-                                    {/* HEADER */}
-
-                                    <Box
+                                    <CardContent
                                         sx={{
                                             display: 'flex',
-                                            justifyContent: 'space-between',
-                                            alignItems: 'flex-start'
+                                            flexDirection: 'column',
+                                            flexGrow: 1,
+                                            gap: 1.2,
+                                            p: 2,
+                                            height: '100%'
                                         }}
                                     >
 
-                                        <Box>
+                                        {/* HEADER */}
 
-                                            <Typography
-                                                sx={{
-                                                    fontSize: '1.15rem',
-                                                    fontWeight: 'bold',
-                                                    color: 'primary.main'
-                                                }}
-                                            >
-                                                NF {alerta.nota.numero}
-                                            </Typography>
-
-                                            <Typography
-                                                sx={{
-                                                    fontSize: '0.72rem',
-                                                    color: 'text.secondary'
-                                                }}
-                                            >
-                                                Série {alerta.nota.serie}
-                                            </Typography>
-
-                                        </Box>
-
-                                        <Chip
-                                            label={alerta.prioridade.label}
-
+                                        <Box
                                             sx={{
-                                                bgcolor: alerta.prioridade.color,
-                                                color: '#fff',
-                                                fontWeight: 700
-                                            }}
-                                        />
-
-                                    </Box>
-
-                                    {/* FORNECEDOR */}
-
-                                    <Box
-                                        sx={{
-                                            bgcolor:
-                                                dark
-                                                    ? 'background.card'
-                                                    : 'background.inputBg',
-
-                                            borderRadius: '14px',
-                                            p: 1
-                                        }}
-                                    >
-
-                                        <Typography
-                                            sx={{
-                                                fontSize: '0.6rem',
-                                                color: 'text.secondary',
-                                                textTransform: 'uppercase'
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'flex-start'
                                             }}
                                         >
-                                            Fornecedor
-                                        </Typography>
 
-                                        <Tooltip title={alerta.nota.fornecedor}>
+                                            <Box>
+                                                <Typography
+                                                    sx={{
+                                                        fontSize: '1.15rem',
+                                                        fontWeight: 'bold',
+                                                        color: 'primary.main'
+                                                    }}
+                                                >
+                                                    NF {alerta.nota.numero}
+                                                </Typography>
 
-                                            <Typography
-                                                sx={{
-                                                    fontSize: '0.82rem',
-                                                    fontWeight: 700,
-                                                    whiteSpace: 'nowrap',
-                                                    overflow: 'hidden',
-                                                    textOverflow: 'ellipsis'
-                                                }}
-                                            >
-                                                {alerta.nota.fornecedor}
-                                            </Typography>
-
-                                        </Tooltip>
-
-                                    </Box>
-
-                                    {/* ALERTAS */}
-
-                                    {alerta.alertas.map((item, index) => {
-
-                                        const cor =
-                                            item.tipo === "ATRASO_CONFERENCIA"
-                                                ? "var(--atraso-conferencia)"
-                                                : item.tipo === "GUARDA_PENDENTE"
-                                                    ? "var(--atraso-guarda)"
-                                                    : item.tipo === "CFOP_GARANTIA"
-                                                        ? "var(--garantia)"
-                                                        : item.tipo === "CFOP_DEVOLUCAO"
-                                                            ? "primary.retorno"
-                                                            : "background.default";
-
-                                        return (
+                                                <Typography
+                                                    sx={{
+                                                        fontSize: '0.72rem',
+                                                        color: 'text.secondary'
+                                                    }}
+                                                >
+                                                    Série {alerta.nota.serie}
+                                                </Typography>
+                                            </Box>
 
                                             <Box
-                                                key={index}
                                                 sx={{
-                                                    borderRadius: '14px',
-
-                                                    bgcolor:
-                                                        dark
-                                                            ? `${cor}20`
-                                                            : `${cor}15`,
-
-                                                    border: `1px solid ${cor}40`,
-
-                                                    p: 1.2
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    gap: 1,
+                                                    alignItems: 'flex-end'
                                                 }}
                                             >
-
-                                                <Typography
+                                                <Chip
+                                                    label={alerta.prioridade.label}
                                                     sx={{
-                                                        fontSize: '0.74rem',
-                                                        fontWeight: 800,
-                                                        color: cor,
-                                                        mb: 0.5
+                                                        bgcolor: alerta.prioridade.color,
+                                                        color: '#fff',
+                                                        fontWeight: 700
                                                     }}
-                                                >
-                                                    {item.tipo}
-                                                </Typography>
-
-                                                <Typography
-                                                    sx={{
-                                                        fontSize: '0.82rem'
-                                                    }}
-                                                >
-                                                    {item.mensagem}
-                                                </Typography>
-
+                                                />
                                             </Box>
-                                        );
-                                    })}
+                                        </Box>
 
-                                    <Divider />
-
-                                    {/* INFO */}
-
-                                    <Box
-                                        sx={{
-                                            display: 'grid',
-                                            gridTemplateColumns: '1fr 1fr',
-                                            gap: 1
-                                        }}
-                                    >
+                                        {/* FORNECEDOR */}
 
                                         <Box
                                             sx={{
@@ -903,151 +832,6 @@ function Alertas() {
                                                     dark
                                                         ? 'background.card'
                                                         : 'background.inputBg',
-
-                                                borderRadius: '12px',
-                                                p: 1
-                                            }}
-                                        >
-
-                                            <Typography
-                                                sx={{
-                                                    fontSize: '0.58rem',
-                                                    color: 'text.secondary'
-                                                }}
-                                            >
-                                                Dias alerta
-                                            </Typography>
-
-                                            <Typography
-                                                sx={{
-                                                    fontWeight: 800,
-                                                    color: alerta.prioridade.color
-                                                }}
-                                            >
-                                                {alerta.dias} dias
-                                            </Typography>
-
-                                        </Box>
-
-                                        <Box
-                                            sx={{
-                                                bgcolor:
-                                                    dark
-                                                        ? 'background.card'
-                                                        : 'background.inputBg',
-
-                                                borderRadius: '12px',
-                                                p: 1
-                                            }}
-                                        >
-
-                                            <Typography
-                                                sx={{
-                                                    fontSize: '0.58rem',
-                                                    color: 'text.secondary'
-                                                }}
-                                            >
-                                                Itens
-                                            </Typography>
-
-                                            <Typography
-                                                sx={{
-                                                    fontWeight: 800
-                                                }}
-                                            >
-                                                {alerta.quantidadeItens}
-                                            </Typography>
-
-                                        </Box>
-
-                                    </Box>
-
-                                    {/* DATAS */}
-
-                                    <Box
-                                        sx={{
-                                            display: 'grid',
-                                            gridTemplateColumns: '1fr 1fr',
-                                            gap: 1
-                                        }}
-                                    >
-
-                                        <Box
-                                            sx={{
-                                                bgcolor:
-                                                    dark
-                                                        ? 'background.card'
-                                                        : 'background.inputBg',
-
-                                                borderRadius: '12px',
-                                                p: 1
-                                            }}
-                                        >
-
-                                            <Typography
-                                                sx={{
-                                                    fontSize: '0.55rem',
-                                                    color: 'text.secondary'
-                                                }}
-                                            >
-                                                Emissão
-                                            </Typography>
-
-                                            <Typography
-                                                sx={{
-                                                    fontSize: '0.74rem',
-                                                    fontWeight: 700
-                                                }}
-                                            >
-                                                {alerta.nota.data_emissao}
-                                            </Typography>
-
-                                        </Box>
-
-                                        <Box
-                                            sx={{
-                                                bgcolor:
-                                                    dark
-                                                        ? 'background.card'
-                                                        : 'background.inputBg',
-
-                                                borderRadius: '12px',
-                                                p: 1
-                                            }}
-                                        >
-
-                                            <Typography
-                                                sx={{
-                                                    fontSize: '0.55rem',
-                                                    color: 'text.secondary'
-                                                }}
-                                            >
-                                                Importação
-                                            </Typography>
-
-                                            <Typography
-                                                sx={{
-                                                    fontSize: '0.74rem',
-                                                    fontWeight: 700
-                                                }}
-                                            >
-                                                {alerta.nota.data_recebimento}
-                                            </Typography>
-
-                                        </Box>
-
-                                    </Box>
-
-                                    {/* OBS */}
-
-                                    {alerta.nota.observacao && (
-
-                                        <Box
-                                            sx={{
-                                                bgcolor:
-                                                    dark
-                                                        ? 'rgba(255,255,255,0.05)'
-                                                        : 'primary.observacao',
 
                                                 borderRadius: '14px',
                                                 p: 1
@@ -1056,34 +840,299 @@ function Alertas() {
 
                                             <Typography
                                                 sx={{
-                                                    fontSize: '0.72rem',
-
-                                                    color:
-                                                        dark
-                                                            ? 'warning.light'
-                                                            : '#fff'
+                                                    fontSize: '0.6rem',
+                                                    color: 'text.secondary',
+                                                    textTransform: 'uppercase'
                                                 }}
                                             >
-                                                <strong>Obs:</strong>
-                                                {" "}
-                                                {alerta.nota.observacao}
+                                                Fornecedor
                                             </Typography>
 
+                                            <Tooltip title={alerta.nota.fornecedor}>
+
+                                                <Typography
+                                                    sx={{
+                                                        fontSize: '0.82rem',
+                                                        fontWeight: 700,
+                                                        whiteSpace: 'nowrap',
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis'
+                                                    }}
+                                                >
+                                                    {alerta.nota.fornecedor}
+                                                </Typography>
+
+                                            </Tooltip>
+
                                         </Box>
-                                    )}
 
-                                </CardContent>
+                                        {/* ALERTAS */}
 
-                            </Card>
+                                        {alerta.alertas.map((item, index) => {
 
-                        </Grid>
+                                            const cor =
+                                                item.tipo === "ATRASO_CONFERENCIA"
+                                                    ? "var(--atraso-conferencia)"
+                                                    : item.tipo === "GUARDA_PENDENTE"
+                                                        ? "var(--atraso-guarda)"
+                                                        : item.tipo === "CFOP_GARANTIA"
+                                                            ? "var(--garantia)"
+                                                            : item.tipo === "CFOP_DEVOLUCAO"
+                                                                ? "primary.retorno"
+                                                                : item.tipo === "SEM_GTIN"
+                                                                    ? "warning.main"
+                                                                    : "background.default";
 
-                    ))}
+                                            return (
 
+                                                <Box
+                                                    key={index}
+                                                    onClick={() => {
+                                                        if (item.tipo === "SEM_GTIN") {
+                                                            navigate(`/AtualizarCean?nota=${alerta.nota.numero}`);
+                                                        }
+                                                    }}
+                                                    sx={{
+                                                        borderRadius: '14px',
+                                                        cursor:
+                                                            item.tipo === "SEM_GTIN"
+                                                                ? 'pointer'
+                                                                : 'default',
+
+                                                        bgcolor:
+                                                            dark
+                                                                ? `${cor}20`
+                                                                : `${cor}15`,
+
+                                                        border: `1px solid ${cor}40`,
+                                                        p: 1.2,
+
+                                                        '&:hover': item.tipo === "SEM_GTIN"
+                                                            ? {
+                                                                transform: 'scale(1.02)'
+                                                            }
+                                                            : {}
+                                                    }}
+                                                >
+
+                                                    <Typography
+                                                        sx={{
+                                                            fontSize: '0.74rem',
+                                                            fontWeight: 800,
+                                                            color: cor,
+                                                            mb: 0.5
+                                                        }}
+                                                    >
+                                                        {item.tipo}
+                                                    </Typography>
+
+                                                    <Typography
+                                                        sx={{
+                                                            fontSize: '0.82rem'
+                                                        }}
+                                                    >
+                                                        {item.tipo === "SEM_GTIN"
+                                                            ? `${item.mensagem} • Clique para corrigir`
+                                                            : item.mensagem
+                                                        }
+                                                    </Typography>
+
+                                                </Box>
+                                            );
+                                        })}
+
+                                        <Divider />
+
+                                        {/* INFO */}
+
+                                        <Box
+                                            sx={{
+                                                display: 'grid',
+                                                gridTemplateColumns: '1fr 1fr',
+                                                gap: 1
+                                            }}
+                                        >
+
+                                            <Box
+                                                sx={{
+                                                    bgcolor:
+                                                        dark
+                                                            ? 'background.card'
+                                                            : 'background.inputBg',
+
+                                                    borderRadius: '12px',
+                                                    p: 1
+                                                }}
+                                            >
+
+                                                <Typography
+                                                    sx={{
+                                                        fontSize: '0.58rem',
+                                                        color: 'text.secondary'
+                                                    }}
+                                                >
+                                                    Dias alerta
+                                                </Typography>
+
+                                                <Typography
+                                                    sx={{
+                                                        fontWeight: 800,
+                                                        color: alerta.prioridade.color
+                                                    }}
+                                                >
+                                                    {alerta.dias} dias
+                                                </Typography>
+
+                                            </Box>
+
+                                            <Box
+                                                sx={{
+                                                    bgcolor:
+                                                        dark
+                                                            ? 'background.card'
+                                                            : 'background.inputBg',
+
+                                                    borderRadius: '12px',
+                                                    p: 1
+                                                }}
+                                            >
+
+                                                <Typography
+                                                    sx={{
+                                                        fontSize: '0.58rem',
+                                                        color: 'text.secondary'
+                                                    }}
+                                                >
+                                                    Itens
+                                                </Typography>
+
+                                                <Typography
+                                                    sx={{
+                                                        fontWeight: 800
+                                                    }}
+                                                >
+                                                    {alerta.quantidadeItens}
+                                                </Typography>
+
+                                            </Box>
+
+                                        </Box>
+
+                                        {/* DATAS */}
+
+                                        <Box
+                                            sx={{
+                                                display: 'grid',
+                                                gridTemplateColumns: '1fr 1fr',
+                                                gap: 1
+                                            }}
+                                        >
+
+                                            <Box
+                                                sx={{
+                                                    bgcolor:
+                                                        dark
+                                                            ? 'background.card'
+                                                            : 'background.inputBg',
+
+                                                    borderRadius: '12px',
+                                                    p: 1
+                                                }}
+                                            >
+
+                                                <Typography
+                                                    sx={{
+                                                        fontSize: '0.55rem',
+                                                        color: 'text.secondary'
+                                                    }}
+                                                >
+                                                    Emissão
+                                                </Typography>
+
+                                                <Typography
+                                                    sx={{
+                                                        fontSize: '0.74rem',
+                                                        fontWeight: 700
+                                                    }}
+                                                >
+                                                    {alerta.nota.data_emissao}
+                                                </Typography>
+
+                                            </Box>
+
+                                            <Box
+                                                sx={{
+                                                    bgcolor:
+                                                        dark
+                                                            ? 'background.card'
+                                                            : 'background.inputBg',
+
+                                                    borderRadius: '12px',
+                                                    p: 1
+                                                }}
+                                            >
+
+                                                <Typography
+                                                    sx={{
+                                                        fontSize: '0.55rem',
+                                                        color: 'text.secondary'
+                                                    }}
+                                                >
+                                                    Importação
+                                                </Typography>
+
+                                                <Typography
+                                                    sx={{
+                                                        fontSize: '0.74rem',
+                                                        fontWeight: 700
+                                                    }}
+                                                >
+                                                    {alerta.nota.data_recebimento}
+                                                </Typography>
+
+                                            </Box>
+
+                                        </Box>
+
+                                        {/* OBS */}
+
+                                        {alerta.nota.observacao && (
+
+                                            <Box
+                                                sx={{
+                                                    bgcolor:
+                                                        dark
+                                                            ? 'rgba(255,255,255,0.05)'
+                                                            : 'primary.observacao',
+
+                                                    borderRadius: '14px',
+                                                    p: 1
+                                                }}
+                                            >
+
+                                                <Typography
+                                                    sx={{
+                                                        fontSize: '0.72rem',
+
+                                                        color:
+                                                            dark
+                                                                ? 'warning.light'
+                                                                : '#fff'
+                                                    }}
+                                                >
+                                                    <strong>Obs:</strong>
+                                                    {" "}
+                                                    {alerta.nota.observacao}
+                                                </Typography>
+                                            </Box>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </Grid>
+                        );
+                    })}
                 </Grid>
-
             )}
-
         </Container>
     );
 }
