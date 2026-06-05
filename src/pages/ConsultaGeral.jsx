@@ -1,4 +1,4 @@
-import { useState, useContext, useRef } from "react";
+import { useState, useContext, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -15,7 +15,9 @@ import {
     TableCell,
     TableHead,
     TableRow,
-    Chip
+    Chip,
+    Grid,
+    Paper
 } from "@mui/material";
 
 import Collapse from "@mui/material/Collapse";
@@ -29,6 +31,7 @@ import RuleIcon from '@mui/icons-material/Rule';
 import WarehouseIcon from '@mui/icons-material/Warehouse';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import WarningIcon from '@mui/icons-material/Warning';
+import SearchIcon from '@mui/icons-material/Search';
 
 import { ThemeContext } from "../context/ThemeContext";
 
@@ -63,21 +66,34 @@ function ConsultaGeral() {
 
     // SISTEMA
     const [notas, setNotas] = useState([]);
+    const cacheNotas = useRef({});
     const [loading, setLoading] = useState(false);
 
     const [busca, setBusca] = useState("");
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+
+    const [numeroNota, setNumeroNota] = useState("");
+    const [razaoSocial, setRazaoSocial] = useState("");
+    const [cnpjEmitente, setCnpjEmitente] = useState("");
+    const [funcionarios, setFuncionarios] = useState({});
 
     const [expandedNota, setExpandedNota] = useState(null);
     const [expandedItem, setExpandedItem] = useState(null);
 
     const [unidadesItem, setUnidadesItem] = useState({});
+    const [loadingItens, setLoadingItens] = useState({});
     const [loadingUnidades, setLoadingUnidades] = useState({});
 
-    const [loadingItens, setLoadingItens] = useState({});
-
-    const cacheItens = useRef({});
     const cacheBasico = useRef({});
     const cacheUnidades = useRef({});
+
+    // Refs de buscas
+    const dataInicioRef = useRef(null);
+
+    const dataFimRef = useRef(null);
+
+    const buscaRef = useRef(null);
 
     // DATAS
     const hoje = new Date();
@@ -100,6 +116,37 @@ function ConsultaGeral() {
     const [dataFim, setDataFim] =
         useState(dataFimPadrao);
 
+    // Busca nome dos funcionarios
+    useEffect(() => {
+
+        const carregarFuncionarios = async () => {
+
+            const response = await fetch(
+                `${API}/api/funcionarios/listar`
+            );
+
+            const data = await response.json();
+
+            const mapa = {};
+
+            data.forEach(f => {
+                mapa[String(f.codigo)] = f.nome;
+            });
+
+            setFuncionarios(mapa);
+        };
+
+        carregarFuncionarios();
+
+    }, []);
+
+    // Focus no input de buscar produto
+    useEffect(() => {
+
+        buscaRef.current?.focus();
+
+    }, []);
+
     // HELPERS
     const contains = (valor, termo) => {
 
@@ -111,14 +158,10 @@ function ConsultaGeral() {
             .includes(termo);
     };
 
-    const parseDataBR = (dataStr) => {
+    const formatarData = (data) => {
+        if (!data) return "-";
 
-        if (!dataStr) return new Date(0);
-
-        const [dia, mes, ano] =
-            dataStr.split("-");
-
-        return new Date(`${ano}-${mes}-${dia}`);
+        return new Date(data).toLocaleString("pt-BR");
     };
 
     // STATUS
@@ -191,320 +234,92 @@ function ConsultaGeral() {
         }
     };
 
-    // BASICO
-    const buscarBasico = async (codigo) => {
+    const getCorStatusNota = (status) => {
+        switch (status) {
+            case "EM_TRANSITO":
+                return "primary.guardado";
 
-        if (!codigo) return "-";
+            case "PENDENTE":
+                return "primary.parcial";
 
-        if (cacheBasico.current[codigo]) {
-            return cacheBasico.current[codigo];
-        }
+            case "CONFERIDA":
+                return "primary.conferidos";
 
-        try {
+            case "GUARDADA":
+                return "#7b1fa2";
 
-            const res = await fetch(
-                `${API}/api/nfe/unidades/nao_impressas/codire/${codigo}`
-            );
-
-            const data = await res.json();
-
-            const basico =
-                data.unidades?.[0]?.basico || "-";
-
-            cacheBasico.current[codigo] = basico;
-
-            return basico;
-
-        } catch {
-
-            return "-";
-        }
-    };
-
-    // BUSCAR ITENS
-    const buscarItensNota = async (notaId) => {
-
-        // CACHE
-        if (cacheItens.current[notaId]) {
-
-            setNotas(prev =>
-                prev.map(n =>
-                    n.id === notaId
-                        ? {
-                            ...n,
-                            itens: cacheItens.current[notaId]
-                        }
-                        : n
-                )
-            );
-
-            return;
-        }
-
-        setLoadingItens(prev => ({
-            ...prev,
-            [notaId]: true
-        }));
-
-        try {
-
-            const response = await fetch(
-                `${API}/api/itens_nfe/${notaId}`
-            );
-
-            const data = await response.json();
-
-            const itensBrutos =
-                Array.isArray(data.items)
-                    ? data.items
-                    : [];
-
-            // REMOVE DUPLICADOS
-            const mapa = new Map();
-
-            itensBrutos.forEach(item => {
-
-                const chave = [
-                    item.cod_produto,
-                    item.cean,
-                    item.loc_sistema
-                ].join("-");
-
-                if (!mapa.has(chave)) {
-
-                    mapa.set(chave, {
-                        ...item
-                    });
-
-                    return;
-                }
-
-                const existente = mapa.get(chave);
-
-                existente.quantidade_comercial =
-                    Number(existente.quantidade_comercial || 0)
-                    +
-                    Number(item.quantidade_comercial || 0);
-
-                existente.qtd_conferida =
-                    Number(existente.qtd_conferida || 0)
-                    +
-                    Number(item.qtd_conferida || 0);
-            });
-
-            const itensSemDuplicados =
-                Array.from(mapa.values());
-
-            // BASICOS EM PARALELO
-            const itens = await Promise.all(
-
-                itensSemDuplicados.map(async (item) => {
-
-                    const codigo =
-                        item.codigo_barras ||
-                        item.cean ||
-                        item.cod_produto;
-
-                    const basico =
-                        await buscarBasico(codigo);
-
-                    return {
-                        ...item,
-                        basico
-                    };
-                })
-            );
-
-            cacheItens.current[notaId] = itens;
-
-            setNotas(prev =>
-                prev.map(n =>
-                    n.id === notaId
-                        ? { ...n, itens }
-                        : n
-                )
-            );
-
-        } catch (err) {
-
-            console.error(err);
-
-        } finally {
-
-            setLoadingItens(prev => ({
-                ...prev,
-                [notaId]: false
-            }));
+            default:
+                return "#616161";
         }
     };
 
     // BUSCAR NOTAS
     const buscarNotas = async () => {
-
         setLoading(true);
 
         try {
-
             const params = new URLSearchParams();
 
-            if (dataInicio) {
-                params.append(
-                    "data_inicio",
-                    dataInicio
-                );
-            }
+            params.append("data_inicio", dataInicio);
+            params.append("data_fim", dataFim);
+            params.append("page", page);
 
-            if (dataFim) {
-                params.append(
-                    "data_fim",
-                    dataFim
-                );
+            if (busca.trim()) {
+                params.append("basico", busca.trim());
             }
 
             const response = await fetch(
-                `${API}/api/notas/listar?${params.toString()}`
+                `${API}/api/itens_nfe/consulta?${params}`
             );
 
             const data = await response.json();
+            const itens = data.items || [];
 
-            const notasArray =
-                Array.isArray(data)
-                    ? data
-                    : [];
+            setTotalPages(data.total_pages || 1);
 
-            const termo =
-                busca.trim().toLowerCase();
-
-            // SEM BUSCA
-            if (!termo) {
-
-                const lista = notasArray
-                    .map(n => ({
-                        ...n,
-                        itens: null
-                    }))
-                    .sort(
-                        (a, b) =>
-                            parseDataBR(
-                                b.data_recebimento
-                            ) -
-                            parseDataBR(
-                                a.data_recebimento
-                            )
-                    );
-
-                setNotas(lista);
-
+            if (!itens.length) {
+                setNotas([]);
                 return;
             }
 
-            // COM BUSCA
-            // PARALELO
-            const resultados = await Promise.all(
+            const agrupadas = {};
 
-                notasArray.map(async (nota) => {
+            itens.forEach(item => {
+                const notaId = item.nfe_id;
 
-                    try {
+                if (!agrupadas[notaId]) {
+                    agrupadas[notaId] = {
+                        id: notaId,
 
-                        const respItens = await fetch(
-                            `${API}/api/itens_nfe/${nota.id}`
-                        );
+                        numero: item.nfe_numero || "-",
+                        serie: item.nfe_serie || "-",
 
-                        const dataItens =
-                            await respItens.json();
+                        fornecedor: item.fornecedor || "-",
 
-                        const itens =
-                            dataItens.items || [];
+                        status: item.status,
+                        observacao: item.nfe_observacao,
 
-                        const itensMatch =
-                            await Promise.all(
+                        data_recebimento:
+                            item.nfe_created_at || item.created_at,
 
-                                itens.map(async (item) => {
+                        itens: []
+                    };
+                }
 
-                                    const codigo =
-                                        item.codigo_barras ||
-                                        item.cean ||
-                                        item.cod_produto;
+                agrupadas[notaId].itens.push(item);
+            });
 
-                                    const basico =
-                                        await buscarBasico(
-                                            codigo
-                                        );
-
-                                    const match =
-                                        contains(
-                                            item.descricao,
-                                            termo
-                                        )
-                                        ||
-                                        contains(
-                                            item.codigo_barras,
-                                            termo
-                                        )
-                                        ||
-                                        contains(
-                                            item.cod_produto,
-                                            termo
-                                        )
-                                        ||
-                                        contains(
-                                            basico,
-                                            termo
-                                        );
-
-                                    if (!match) {
-                                        return null;
-                                    }
-
-                                    return {
-                                        ...item,
-                                        basico
-                                    };
-                                })
-                            );
-
-                        const itensFiltrados =
-                            itensMatch.filter(Boolean);
-
-                        if (
-                            itensFiltrados.length === 0
-                        ) {
-                            return null;
-                        }
-
-                        return {
-                            ...nota,
-                            itens: itensFiltrados
-                        };
-
-                    } catch {
-
-                        return null;
-                    }
-                })
+            const listaFinal = Object.values(agrupadas).sort(
+                (a, b) =>
+                    new Date(b.data_recebimento).getTime() -
+                    new Date(a.data_recebimento).getTime()
             );
-
-            const listaFinal =
-                resultados
-                    .filter(Boolean)
-                    .sort(
-                        (a, b) =>
-                            parseDataBR(
-                                b.data_recebimento
-                            ) -
-                            parseDataBR(
-                                a.data_recebimento
-                            )
-                    );
 
             setNotas(listaFinal);
 
         } catch (err) {
-
             console.error(err);
-
         } finally {
-
             setLoading(false);
         }
     };
@@ -609,7 +424,7 @@ function ConsultaGeral() {
             )
             ||
             contains(
-                item.codigo_barras,
+                item.cean,
                 termo
             )
             ||
@@ -623,6 +438,48 @@ function ConsultaGeral() {
                 termo
             )
         );
+    };
+
+    const navegarCampos = (e, proximoRef, anteriorRef, acaoEnter) => {
+
+        switch (e.key) {
+
+            case "ArrowRight":
+            case "ArrowDown":
+
+                e.preventDefault();
+
+                proximoRef?.current?.focus();
+
+                break;
+
+            case "ArrowLeft":
+            case "ArrowUp":
+
+                e.preventDefault();
+
+                anteriorRef?.current?.focus();
+
+                break;
+
+            case "Enter":
+
+                e.preventDefault();
+
+                if (acaoEnter) {
+
+                    acaoEnter();
+
+                } else {
+
+                    proximoRef?.current?.focus();
+                }
+
+                break;
+
+            default:
+                break;
+        }
     };
 
     return (
@@ -732,68 +589,138 @@ function ConsultaGeral() {
             </Box>
 
             {/* FILTRO */}
-            <Box
+            <Paper
+                elevation={0}
                 sx={{
-                    display: 'flex',
-                    gap: 2,
-                    mb: 3
+                    p: 3,
+                    mb: 4,
+                    borderRadius: '2vh',
+                    bgcolor: 'background.alerta',
+                    border: dark
+                        ? '1px solid rgba(255,255,255,0.08)'
+                        : '1px solid rgba(0,0,0,0.08)'
                 }}
             >
 
-                <TextField
-                    fullWidth
-                    size="small"
-                    placeholder="Buscar item"
-
-                    value={busca}
-
-                    onChange={(e) =>
-                        setBusca(e.target.value)
-                    }
-
-                    onKeyDown={(e) =>
-                        e.key === "Enter"
-                        &&
-                        buscarNotas()
-                    }
-                />
-
-                <TextField
-                    type="date"
-                    size="small"
-                    sx={{ width: 220 }}
-
-                    value={dataInicio}
-
-                    onChange={(e) =>
-                        setDataInicio(
-                            e.target.value
-                        )
-                    }
-                />
-
-                <TextField
-                    type="date"
-                    size="small"
-                    sx={{ width: 220 }}
-
-                    value={dataFim}
-
-                    onChange={(e) =>
-                        setDataFim(
-                            e.target.value
-                        )
-                    }
-                />
-
-                <Button
-                    variant="contained"
-                    sx={{ minWidth: 140 }}
-                    onClick={buscarNotas}
+                <Grid
+                    container
+                    spacing={2}
+                    alignItems="center"
                 >
-                    Buscar
-                </Button>
-            </Box>
+
+                    <Grid item xs={12} md={5}>
+
+                        <TextField
+                            fullWidth
+                            size="small"
+                            placeholder="Buscar por produto"
+
+                            inputRef={buscaRef}
+
+                            value={busca}
+
+                            onChange={(e) =>
+                                setBusca(e.target.value)
+                            }
+
+                            onKeyDown={(e) =>
+                                navegarCampos(
+                                    e,
+                                    dataInicioRef,
+                                    null
+                                )
+                            }
+
+                            InputProps={{
+                                startAdornment: (
+                                    <SearchIcon
+                                        sx={{
+                                            mr: 1,
+                                            color: 'text.secondary'
+                                        }}
+                                    />
+                                )
+                            }}
+                        />
+
+                    </Grid>
+
+                    <Grid item xs={12} md={2}>
+
+                        <TextField
+                            fullWidth
+                            type="date"
+                            size="small"
+
+                            inputRef={dataInicioRef}
+
+                            value={dataInicio}
+
+                            onChange={(e) =>
+                                setDataInicio(
+                                    e.target.value
+                                )
+                            }
+
+                            onKeyDown={(e) =>
+                                navegarCampos(
+                                    e,
+                                    dataFimRef,
+                                    buscaRef
+                                )
+                            }
+                        />
+
+                    </Grid>
+
+                    <Grid item xs={12} md={2}>
+
+                        <TextField
+                            fullWidth
+                            type="date"
+                            size="small"
+
+                            inputRef={dataFimRef}
+
+                            value={dataFim}
+
+                            onChange={(e) =>
+                                setDataFim(
+                                    e.target.value
+                                )
+                            }
+
+                            onKeyDown={(e) =>
+                                navegarCampos(
+                                    e,
+                                    null,
+                                    dataInicioRef,
+                                    buscarNotas
+                                )
+                            }
+                        />
+
+                    </Grid>
+
+                    <Grid item xs={12} md={3}>
+
+                        <Button
+                            fullWidth
+                            variant="contained"
+                            size="large"
+                            startIcon={<SearchIcon />}
+                            onClick={buscarNotas}
+                            sx={{
+                                height: '40px'
+                            }}
+                        >
+                            Buscar Item
+                        </Button>
+
+                    </Grid>
+
+                </Grid>
+            </Paper>
 
             {/* LOADING */}
             {loading ? (
@@ -839,17 +766,6 @@ function ConsultaGeral() {
                                             ? nota.id
                                             : null
                                     );
-
-                                    if (
-                                        expandindo
-                                        &&
-                                        nota.itens === null
-                                    ) {
-
-                                        await buscarItensNota(
-                                            nota.id
-                                        );
-                                    }
                                 }}
 
                                 sx={{
@@ -871,7 +787,7 @@ function ConsultaGeral() {
                                         <Typography
                                             fontWeight="bold"
                                         >
-                                            📄 {nota.numero}
+                                            📄 {nota.numero}/{nota.serie}
                                         </Typography>
 
                                         <Typography
@@ -889,16 +805,27 @@ function ConsultaGeral() {
                                                 >
                                                     Obs: {nota.observacao}
                                                 </Typography>
-                                            )}
-
-                                    </Box>
-
-                                    <Chip
-                                        label={
-                                            nota.data_recebimento
+                                            )
                                         }
-                                        size="small"
-                                    />
+                                    </Box>
+                                    <Box>
+                                        <Chip
+                                            label={nota.status}
+                                            size="small"
+                                            sx={{
+                                                p: 1,
+                                                m: 2,
+                                                bgcolor: getCorStatusNota(nota.status),
+                                                color: "primary.branco",
+                                                fontWeight: "bold"
+                                            }}
+                                        />
+                                        <Chip
+                                            label={formatarData(nota.data_recebimento)}
+                                            size="small"
+                                            sx={{ padding: 1, margin: 2 }}
+                                        />
+                                    </Box>
                                 </Box>
                             </Box>
 
@@ -908,11 +835,8 @@ function ConsultaGeral() {
                                     expandedNota === nota.id
                                 }
                             >
-
                                 <Box sx={{ mt: 2 }}>
-
                                     {loadingItens[nota.id] ? (
-
                                         <Box
                                             sx={{
                                                 display: 'flex',
@@ -925,25 +849,17 @@ function ConsultaGeral() {
                                                 size={25}
                                             />
                                         </Box>
-
                                     ) : (
-
                                         <>
                                             {!nota.itens ||
                                                 nota.itens.length === 0 ? (
-
                                                 <Typography>
                                                     Nenhum item encontrado
                                                 </Typography>
-
                                             ) : (
-
                                                 <Table size="small">
-
                                                     <TableHead>
-
                                                         <TableRow>
-
                                                             <TableCell>
                                                                 LOC
                                                             </TableCell>
@@ -981,9 +897,9 @@ function ConsultaGeral() {
                                                             ) => {
 
                                                                 const cod =
-                                                                    item.codigo_barras
-                                                                    ??
                                                                     item.cean
+                                                                    ??
+                                                                    item.codire
                                                                     ??
                                                                     item.cod_produto
                                                                     ??
@@ -1065,7 +981,9 @@ function ConsultaGeral() {
                                                                             </TableCell>
 
                                                                             <TableCell>
-                                                                                {item.caixa}
+                                                                                {!item.caixa || item.caixa === "0"
+                                                                                    ? "Sem caixa"
+                                                                                    : item.caixa}
                                                                             </TableCell>
 
                                                                         </TableRow>
@@ -1171,13 +1089,13 @@ function ConsultaGeral() {
                                                                                                                 </TableCell>
 
                                                                                                                 <TableCell>
-                                                                                                                    {nota.data_recebimento}
+                                                                                                                    {formatarData(nota.data_recebimento)}
                                                                                                                 </TableCell>
 
                                                                                                                 <TableCell>
-                                                                                                                    {nota.conferente}
+                                                                                                                    {funcionarios[item.conferente]
+                                                                                                                        || "Sem conferente"}
                                                                                                                 </TableCell>
-
                                                                                                                 <TableCell>
 
                                                                                                                     <Button

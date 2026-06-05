@@ -47,8 +47,12 @@ function AtualizarCean() {
         localStorage.removeItem("user_info");
     };
 
-    const [notas, setNotas] = useState([]);
-    const [notaSelecionada, setNotaSelecionada] = useState("");
+    const [numeroNota, setNumeroNota] = useState("");
+    const [razaoSocial, setRazaoSocial] = useState("");
+    const [cnpjEmitente, setCnpjEmitente] = useState("");
+
+    const [notasEncontradas, setNotasEncontradas] = useState([]);
+    const [notaSelecionada, setNotaSelecionada] = useState(null);
 
     const [itens, setItens] = useState([]);
     const [editIndex, setEditIndex] = useState(null);
@@ -67,20 +71,69 @@ function AtualizarCean() {
     // BUSCAR NOTAS
     const buscarNotas = async () => {
 
-        setLoadingNotas(true);
-
         try {
 
-            const res = await fetch(`${API}/api/notas/listar`);
+            setLoadingNotas(true);
+
+            const hoje = new Date();
+
+            const inicio = new Date();
+            inicio.setMonth(inicio.getMonth() - 6);
+
+            const params = new URLSearchParams({
+                page: 1,
+                data_inicio: inicio.toISOString().split("T")[0],
+                data_fim: hoje.toISOString().split("T")[0],
+                sort_by: "data_emissao",
+                sort_order: "DESC"
+            });
+
+            if (numeroNota.trim()) {
+                params.append("numero", numeroNota.trim());
+            }
+
+            if (razaoSocial.trim()) {
+                params.append(
+                    "razao_social_emitente",
+                    razaoSocial.trim()
+                );
+            }
+
+            if (cnpjEmitente.trim()) {
+                params.append(
+                    "cnpj_emitente",
+                    cnpjEmitente.trim()
+                );
+            }
+
+            const res = await fetch(
+                `${API}/api/notas/listar?${params}`,
+                {
+                    headers: {
+                        "X-Auth-Token": token
+                    }
+                }
+            );
+
             const data = await res.json();
 
-            setNotas(data || []);
+            setNotasEncontradas(data.data || []);
 
-        } catch {
+            if ((data.data || []).length === 0) {
+                setSnackbar({
+                    open: true,
+                    message: "Nenhuma nota encontrada",
+                    severity: "warning"
+                });
+            }
+
+        } catch (err) {
+
+            console.error(err);
 
             setSnackbar({
                 open: true,
-                message: "Erro ao carregar notas",
+                message: "Erro ao buscar notas",
                 severity: "error"
             });
 
@@ -88,6 +141,21 @@ function AtualizarCean() {
             setLoadingNotas(false);
         }
     };
+
+    useEffect(() => {
+        const notaUrl = searchParams.get("nota");
+
+        if (!notaUrl) return;
+
+        setNumeroNota(notaUrl);
+
+    }, [searchParams]);
+
+    useEffect(() => {
+        if (numeroNota) {
+            buscarNotas();
+        }
+    }, [numeroNota]);
 
     // BUSCAR ITENS DA NOTA
     const buscarItens = async (notaId) => {
@@ -123,31 +191,6 @@ function AtualizarCean() {
         }
     };
 
-    useEffect(() => {
-        buscarNotas();
-    }, []);
-
-    useEffect(() => {
-
-        if (notas.length === 0) return;
-
-        const notaUrl = searchParams.get("nota");
-
-        if (!notaUrl) return;
-
-        const notaEncontrada = notas.find(
-            n => String(n.numero) === String(notaUrl)
-        );
-
-        if (notaEncontrada) {
-
-            setNotaSelecionada(notaUrl);
-
-            buscarItens(notaEncontrada.id);
-        }
-
-    }, [notas]);
-
     const alterarCampo = (index, campo, valor) => {
         const novos = [...itens];
 
@@ -162,43 +205,6 @@ function AtualizarCean() {
                 [campo]: valor
             }
         }));
-    };
-
-    const buscarNotaPorNumero = async () => {
-
-        if (!notaSelecionada.trim()) {
-            return;
-        }
-
-        try {
-
-            const notaEncontrada = notas.find(
-                n => String(n.numero) === String(notaSelecionada)
-            );
-
-            if (!notaEncontrada) {
-
-                setSnackbar({
-                    open: true,
-                    message: "Nota não encontrada",
-                    severity: "warning"
-                });
-
-                return;
-            }
-
-            buscarItens(notaEncontrada.id);
-
-        } catch (err) {
-
-            console.error(err);
-
-            setSnackbar({
-                open: true,
-                message: "Erro ao buscar nota",
-                severity: "error"
-            });
-        }
     };
 
     // SALVAR
@@ -323,44 +329,115 @@ function AtualizarCean() {
                 alignItems="stretch"
             >
                 <TextField
-                    label="Buscar NF por número"
+                    label="Número NF"
                     size="small"
-                    value={notaSelecionada}
-                    onChange={(e) => setNotaSelecionada(e.target.value)}
-                    onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                            buscarNotaPorNumero();
-                        }
-                    }}
-                    sx={{
-                        flex: 1,
-                        bgcolor: 'background.card',
-                        '& .MuiOutlinedInput-root': {
-                            height: "40px",
-                            '&:hover fieldset': {
-                                borderColor: 'var(--azul)',
-                            },
-                            '&.Mui-focused fieldset': {
-                                borderColor: 'var(--azul)',
-                            }
-                        }
-                    }}
+                    value={numeroNota}
+                    onChange={(e) => setNumeroNota(e.target.value)}
+                    sx={{ flex: 1 }}
+                />
+
+                <TextField
+                    label="Fornecedor"
+                    size="small"
+                    value={razaoSocial}
+                    onChange={(e) => setRazaoSocial(e.target.value)}
+                    sx={{ flex: 2 }}
+                />
+
+                <TextField
+                    label="CNPJ"
+                    size="small"
+                    value={cnpjEmitente}
+                    onChange={(e) => setCnpjEmitente(e.target.value)}
+                    sx={{ flex: 1 }}
                 />
 
                 <Button
                     variant="contained"
-                    onClick={buscarNotaPorNumero}
+                    onClick={buscarNotas}
                     sx={{
                         height: "40px",
-                        minWidth: "180px",
-                        fontSize: "0.8rem"
+                        minWidth: "140px"
                     }}
                 >
                     Buscar
                 </Button>
             </Box>
 
+            {notasEncontradas.length > 0 && (
+
+                <Paper
+                    sx={{
+                        mb: 2,
+                        maxHeight: 250,
+                        overflow: "auto",
+                        bgcolor: 'background.alerta',
+                    }}
+                >
+                    <Typography variant="h6">
+                        NOTAS ENCONTRADAS
+                    </Typography>
+                    {notasEncontradas.map((nota) => (
+
+                        <Box
+                            key={nota.id}
+                            onClick={() => {
+                                setItens([]);
+                                setItensEditados({});
+                                setEditIndex(null);
+
+                                setNotaSelecionada(nota);
+
+                                buscarItens(nota.id);
+                            }}
+                            sx={{
+                                p: 1.5,
+                                borderBottom: "1px solid",
+                                borderColor: "divider",
+                                cursor: "pointer",
+                                display: 'flex',
+                                justifyContent: 'space-around',
+                                "&:hover": {
+                                    bgcolor: "action.hover"
+                                }
+                            }}
+                        >
+                            <Typography fontWeight={600}>
+                                NF: {nota.numero}
+                            </Typography>
+                            <Typography variant="body2">
+                                {nota.fornecedor}
+                            </Typography>
+                            <Typography variant="body2">
+                                CNPJ: {nota.cnpj_emitente}
+                            </Typography>
+                        </Box>
+
+                    ))}
+                </Paper>
+
+            )}
+
             {loadingNotas && <CircularProgress size={22} />}
+
+            {notaSelecionada && (
+
+                <Paper sx={{ p: 2, mb: 2, bgcolor: 'background.alerta', }}>
+
+                    <Typography variant="h6">
+                        NOTA SELECIONADA
+                    </Typography>
+                    <Typography variant="h5">
+                        NF {notaSelecionada.numero}
+                    </Typography>
+
+                    <Typography variant="h7">
+                        {notaSelecionada.fornecedor}
+                    </Typography>
+
+                </Paper>
+
+            )}
 
             {loadingItens ? (
                 <CircularProgress size={22} />

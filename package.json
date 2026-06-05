@@ -18,7 +18,7 @@
     "auth-context": "^1.0.5",
     "axios": "^1.13.6",
     "fast-xml-parser": "^5.5.9",
-    "framer-motion": "^12.38.0",
+    "framer-motion": "^12.40.0",
     "node-forge": "^1.4.0",
     "qrcode.react": "^4.2.0",
     "qz-tray": "^2.2.6",

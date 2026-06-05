@@ -24,6 +24,8 @@ import {
     Tooltip
 } from "@mui/material";
 
+import Pagination from "@mui/material/Pagination";
+
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
@@ -83,17 +85,40 @@ function Dashboard({ tipo }) {
     const [dataFim, setDataFim] = useState("");
     const [tipoDataFiltro, setTipoDataFiltro] = useState("recebimento");
     const [funcionariosMap, setFuncionariosMap] = useState({});
+    const [pagina, setPagina] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
 
     // SS Plus Sync
     const [loadingSync, setLoadingSync] = useState(false);
 
     useEffect(() => {
-        if (token) buscarNotas();
-    }, [token]);
+
+        buscarNotas(pagina);
+    }, [
+        token,
+        pagina,
+        busca,
+        dataInicio,
+        dataFim,
+        tipoDataFiltro,
+        ordemData,
+        aba
+    ]);
 
     useEffect(() => {
         setNotasSelecionadas([]);
+        setPagina(1);
     }, [aba]);
+
+    useEffect(() => {
+        setPagina(1);
+    }, [
+        busca,
+        dataInicio,
+        dataFim,
+        tipoDataFiltro,
+        ordemData
+    ]);
 
     // Padroniza busca de notas dos últimos 7 dias
     useEffect(() => {
@@ -113,6 +138,25 @@ function Dashboard({ tipo }) {
     useEffect(() => {
         buscarFuncionarios();
     }, []);
+
+    const obterFiltroStatus = () => {
+        switch (aba) {
+            case 0:
+                return "EM_TRANSITO";
+
+            case 1:
+                return "PENDENTE,FORNECEDOR_DIRETO";
+
+            case 2:
+                return "CONFERIDA";
+
+            case 3:
+                return "";
+
+            default:
+                return "";
+        }
+    };
 
     // Busca nome dos funcionários pelo código na API
     const buscarFuncionarios = async () => {
@@ -140,47 +184,55 @@ function Dashboard({ tipo }) {
     };
 
     // Busca notas na API
-    const buscarNotas = async () => {
-        setLoadingNotas(true);
+    const buscarNotas = async (page = 1) => {
         try {
-            const response = await fetch(`${API}/api/notas/listar`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Auth-Token": token
-                }
+            setLoadingNotas(true);
+
+            const params = new URLSearchParams({
+                page,
+                data_inicio: dataInicio,
+                data_fim: dataFim,
+                tipo_data: tipoDataFiltro,
+                sort_order: ordemData.toUpperCase(),
+                status: obterFiltroStatus()
             });
+
+            if (busca.trim()) {
+                const valor = busca.trim();
+
+                if (/^\d{14}$/.test(valor)) {
+                    params.append("cnpj_emitente", valor);
+                } else if (/^\d+$/.test(valor)) {
+                    params.append("numero", valor);
+                } else {
+                    params.append("razao_social_emitente", valor);
+                }
+            }
+
+            console.log("ABA:", aba);
+            console.log("STATUS:", obterFiltroStatus());
+            console.log("URL:", `${API}/api/notas/listar?${params}`);
+
+            const response = await fetch(
+                `${API}/api/notas/listar?${params}`,
+                {
+                    headers: {
+                        "X-Auth-Token": token
+                    }
+                }
+            );
 
             const data = await response.json();
 
-            if (!response.ok) {
-                console.error("Erro ao buscar notas:", data);
-                setNotas([]);
-                return;
-            }
+            setNotas(data.data || []);
+            setTotalPages(data.total_pages || 1);
 
-            const notasArray = Array.isArray(data) ? data : [];
-
-            setNotas(notasArray);
-
-        } catch (error) {
-            console.error("Erro na requisição:", error);
-            setNotas([]);
+        } catch (err) {
+            console.error(err);
         } finally {
             setLoadingNotas(false);
         }
     };
-
-    const notasFiltradas = notas.filter(nota => {
-        const termo = busca.trim();
-        if (!termo) return true;
-
-        return (
-            nota?.numero?.toString().includes(termo) ||
-            nota?.fornecedor?.toLowerCase().includes(termo) ||
-            nota?.serie?.toString().includes(termo)
-        );
-    });
 
     const caixaInvalida = (caixa) => {
         return caixa === "0" || caixa === 0 || caixa === null || caixa === "" || caixa === undefined;
@@ -405,67 +457,6 @@ function Dashboard({ tipo }) {
 
         return new Date(`${ano}-${mes}-${dia}`);
     };
-
-    const notasFiltradasPorAba = notasFiltradas.filter(nota => {
-
-        const campoData =
-            tipoDataFiltro === "emissao"
-                ? nota.data_emissao
-                : nota.data_recebimento;
-
-        const dataNota = parseData(campoData);
-
-        // FILTRO DE DATA PARA TODAS AS ABAS
-        if (dataInicio) {
-            const inicio = new Date(dataInicio);
-            inicio.setHours(0, 0, 0, 0);
-
-            if (dataNota < inicio) return false;
-        }
-
-        if (dataFim) {
-            const fim = new Date(dataFim);
-            fim.setHours(23, 59, 59, 999);
-
-            if (dataNota > fim) return false;
-        }
-
-        // FILTRO DAS ABAS
-        if (aba === 0)
-            return nota.status === "EM_TRANSITO";
-
-        if (aba === 1)
-            return ["PENDENTE", "FORNECEDOR_DIRETO"].includes(nota.status);
-
-        if (aba === 2)
-            return nota.status === "CONFERIDA";
-
-        if (aba === 3)
-            return true;
-
-        return true;
-    });
-
-    // Ordena notas pela data de recebimento ou data de emissão
-    const notasOrdenadas = [...notasFiltradasPorAba].sort((a, b) => {
-
-        const campoDataA =
-            tipoDataFiltro === "emissao"
-                ? a.data_emissao
-                : a.data_recebimento;
-
-        const campoDataB =
-            tipoDataFiltro === "emissao"
-                ? b.data_emissao
-                : b.data_recebimento;
-
-        const dataA = parseData(campoDataA);
-        const dataB = parseData(campoDataB);
-
-        return ordemData === "asc"
-            ? dataA - dataB
-            : dataB - dataA;
-    });
 
     // Sincroniza com SS PLUS
     const pegarLocal = async () => {
@@ -757,7 +748,10 @@ function Dashboard({ tipo }) {
                                 }
                             }}
                             value={busca}
-                            onChange={(e) => setBusca(e.target.value)}
+                            onChange={(e) => {
+                                console.log("BUSCA:", e.target.value);
+                                setBusca(e.target.value);
+                            }}
                         />
 
                         <Box sx={{ display: 'flex', gap: 1 }}>
@@ -767,7 +761,11 @@ function Dashboard({ tipo }) {
                                 label="Filtrar por"
                                 size="small"
                                 value={tipoDataFiltro}
-                                onChange={(e) => setTipoDataFiltro(e.target.value)}
+
+                                onChange={(e) => {
+                                    console.log("TIPO:", e.target.value);
+                                    setTipoDataFiltro(e.target.value);
+                                }}
                                 sx={{
                                     minWidth: 170,
                                     bgcolor: 'background.default'
@@ -798,7 +796,10 @@ function Dashboard({ tipo }) {
                                 size="small"
                                 InputLabelProps={{ shrink: true }}
                                 value={dataInicio}
-                                onChange={(e) => setDataInicio(e.target.value)}
+                                onChange={(e) => {
+                                    console.log("DATA INICIO:", e.target.value);
+                                    setDataInicio(e.target.value);
+                                }}
                                 sx={{ bgcolor: 'background.default' }}
                             />
 
@@ -808,7 +809,10 @@ function Dashboard({ tipo }) {
                                 size="small"
                                 InputLabelProps={{ shrink: true }}
                                 value={dataFim}
-                                onChange={(e) => setDataFim(e.target.value)}
+                                onChange={(e) => {
+                                    console.log("DATA FIM:", e.target.value);
+                                    setDataFim(e.target.value);
+                                }}
                                 sx={{ bgcolor: 'background.default' }}
                             />
 
@@ -881,12 +885,12 @@ function Dashboard({ tipo }) {
                                 Carregando notas...
                             </Typography>
                         </Box>
-                    ) : notasOrdenadas.length === 0 ? (
+                    ) : notas.length === 0 ? (
                         <Typography>Nenhuma nota encontrada</Typography>
                     ) : (
                         <Grid container spacing={4}>
 
-                            {notasOrdenadas.map((nota, idx) => (
+                            {notas.map((nota, idx) => (
 
                                 <Grid size={{ xs: 12, md: 3 }} key={idx}>
                                     <Card
@@ -1254,7 +1258,14 @@ function Dashboard({ tipo }) {
                         </Grid>
                     )}
                 </Box>
-
+                <Box sx={{ margin: 4, display: "flex", justifyContent: "center" }}>
+                    <Pagination
+                        count={totalPages}
+                        page={pagina}
+                        onChange={(e, value) => setPagina(value)}
+                        color="primary"
+                    />
+                </Box>
                 <Dialog open={openModal} onClose={() => setOpenModal(false)} fullWidth maxWidth="md"
                     slotProps={{
                         paper: {

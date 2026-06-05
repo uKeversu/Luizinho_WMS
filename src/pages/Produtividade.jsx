@@ -73,14 +73,7 @@ import { motion } from "framer-motion";
 import { ThemeContext } from "../context/ThemeContext";
 
 // API
-const API_NOTAS =
-    "http://192.168.1.185:8077/api/notas/listar";
-
-const API_ITENS =
-    "http://192.168.1.185:8077/api/itens_nfe";
-
-const API_FUNCIONARIOS =
-    "http://192.168.1.185:8077/api/funcionarios/listar";
+const API = "http://192.168.1.185:8077/";
 
 export default function Produtividade() {
 
@@ -199,24 +192,6 @@ export default function Produtividade() {
 
     }, [dataInicio, dataFim]);
 
-    // Converte data
-    const parseDate = (dateStr) => {
-
-        if (!dateStr) return null;
-
-        const [d, m, y] = dateStr.split("-");
-
-        return new Date(
-            Number(y),
-            Number(m) - 1,
-            Number(d),
-            0,
-            0,
-            0
-        );
-
-    };
-
     // Gera patente do usuário
     const obterNivel = (xp, itens, pontosFinais, produtividade, errosCaixa) => {
 
@@ -270,217 +245,6 @@ export default function Produtividade() {
 
     };
 
-    // Gera XP do usuário
-    const calcularXP = (item) => {
-
-        return (
-            item.pontosFinais * 10
-            + item.itens * 2
-            - item.errosCaixa * 20
-        );
-
-    };
-
-    // Soma pontos com base no produto conferido
-    const calcularPontosItem = (item) => {
-
-        const desc = (item.descricao || "")
-            .toLowerCase()
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "");
-
-        // Para evitar itens leves entrarem como pesados
-        const palavrasLeves = [
-            "bucha",
-            "rolamento",
-            "kit amortecedor",
-            "kit do amortecedor",
-            "reparo",
-            "anel",
-            "arruela",
-            "porca",
-            "parafuso",
-            "trava",
-            "grampos",
-            "grampo",
-            "vedacao",
-            "coifa",
-            "tampa reservatorio",
-            "tampa radiador",
-            "filtro",
-        ];
-
-        const palavrasMedias = [
-            "coxim",
-            "kit correia",
-        ];
-
-        // Se tiver qualquer palavra leve, já retorna 2
-        if (palavrasLeves.some(p => desc.includes(p))) {
-            return 2;
-        }
-
-        // Se tiver qualquer palavra média, já retorna 5
-        if (palavrasMedias.some(p => desc.includes(p))) {
-            return 5;
-        }
-
-        // PESADOS
-        if (
-            desc.includes("balanca") ||
-            desc.includes("bandeja") ||
-            desc.includes("braco") ||
-            desc.includes("semi eixo") ||
-            desc.includes("semi-eixo") ||
-            desc.includes("deslizante") ||
-            desc.includes("comando de valvula") ||
-            desc.includes("comando valvula") ||
-            desc.includes("amortecedor") ||
-            desc.includes("caixa de direcao") ||
-            desc.includes("homocinetica completa") ||
-            desc.includes("radiador") ||
-            desc.includes("embreagem") ||
-            desc.includes("carter") ||
-            desc.includes("tampa valvula") ||
-            desc.includes("disco")
-        ) {
-            return 10;
-        }
-
-        // MÉDIO/PESADO
-        if (
-            desc.includes("junta homocinetica") ||
-            desc.includes("tulipa com trizeta") ||
-            desc.includes("pistao") ||
-            desc.includes("pastilha") ||
-            desc.includes("sapata") ||
-            desc.includes("lona")
-        ) {
-            return 7;
-        }
-
-        // MÉDIOS
-        if (
-            desc.includes("mangueira") ||
-            desc.includes("cilindro") ||
-            desc.includes("coxim") ||
-            desc.includes("pivo") ||
-            desc.includes("cabo") ||
-            desc.includes("junta") ||
-            desc.includes("bomba") ||
-            desc.includes("carcaca") ||
-            desc.includes("antichama") ||
-            desc.includes("tubo") ||
-            desc.includes("reservatorio") ||
-            desc.includes("reser") ||
-            desc.includes("parafusos cabecote") ||
-            desc.includes("terminal") ||
-            desc.includes("kit correia") ||
-            desc.includes("barra de direcao") ||
-            desc.includes("barra axial") ||
-            desc.includes("barra")
-        ) {
-            return 5;
-        }
-
-        // LEVES
-        return 2;
-    };
-
-    // Valida se item esta em caixa correta
-    const normalizarRua = (texto = "") => {
-        return texto
-            .toUpperCase()
-            .replace(/\s+/g, "")
-            .replace(/^0+/, "");
-    };
-
-    // Extrai ruas/localizações da loc_sistema
-    const extrairRuasLoc = (loc = "") => {
-        return loc
-            .toUpperCase()
-            .split("/")
-            .map(parte => {
-                const match = parte.match(/([A-Z0-9]+)/);
-                return match ? match[1] : null;
-            })
-            .filter(Boolean);
-    };
-
-    // Extrai ruas/localizações da caixa
-    const extrairRuasCaixa = (caixa = "") => {
-        const texto = caixa
-            .toUpperCase()
-            .replace(/CAIXA\s*/g, "");
-
-        return texto
-            .split("/")
-            .map(parte => {
-                const match = parte.match(/([A-Z0-9]+)/);
-                return match ? match[1] : null;
-            })
-            .filter(Boolean);
-    };
-
-    // Extrai número da localização
-    const extrairNumeroLoc = (loc = "") => {
-        const match = loc.toUpperCase().match(/(\d{3})[A-Z]/);
-
-        if (!match) return null;
-
-        return parseInt(match[1], 10);
-    };
-
-    const validarCaixa = (item) => {
-        const caixa = (item.caixa || "").toUpperCase().trim();
-
-        if (!caixa || caixa === "0") {
-            return {
-                valida: false,
-                ignorar: true,
-            };
-        }
-
-        // REGRA UNIVERSAL CAIXAS CIMA/BAIXO
-
-        const numeroLoc = extrairNumeroLoc(item.loc_sistema);
-
-        if (numeroLoc !== null) {
-
-            // CIMA → 030A até 999A
-            if (caixa.includes("CIMA")) {
-                return {
-                    valida: numeroLoc >= 30,
-                    ignorar: false,
-                };
-            }
-
-            // BAIXO → 000A até 029A
-            if (caixa.includes("BAIXO")) {
-                return {
-                    valida: numeroLoc <= 29,
-                    ignorar: false,
-                };
-            }
-        }
-
-        // REGRA DE CAIXAS PADRÃO(POR LOCALIZAÇÃO)
-
-        const ruasLoc = extrairRuasLoc(item.loc_sistema);
-        const ruasCaixa = extrairRuasCaixa(caixa);
-
-        const valida = ruasLoc.some(loc =>
-            ruasCaixa.some(cx =>
-                normalizarRua(loc) === normalizarRua(cx)
-            )
-        );
-
-        return {
-            valida,
-            ignorar: false,
-        };
-    };
-
     // Itens conferidos pelo usuário
     const abrirDetalhes = (row) => {
 
@@ -495,292 +259,33 @@ export default function Produtividade() {
     };
 
     // Carrega página com dados preenchidos
-    const carregarDados = async (
-        ini,
-        fim
-    ) => {
+    const carregarDados = async (ini, fim) => {
 
         try {
 
             setLoading(true);
 
-            const resFunc =
-                await fetch(API_FUNCIONARIOS);
-
-            const funcionarios =
-                await resFunc.json();
-
-            const mapaFuncs = {};
-
-            funcionarios.forEach((f) => {
-
-                mapaFuncs[f.codigo] = f.nome;
-
-            });
-
-            const resNotas =
-                await fetch(API_NOTAS);
-
-            const notas =
-                await resNotas.json();
-
-            const criarDataLocal = (data, fim = false) => {
-
-                const [y, m, d] = data.split("-");
-
-                return new Date(
-                    Number(y),
-                    Number(m) - 1,
-                    Number(d),
-                    fim ? 23 : 0,
-                    fim ? 59 : 0,
-                    fim ? 59 : 0
-                );
-
-            };
-
-            const inicio =
-                criarDataLocal(
-                    ini || dataInicio
-                );
-
-            const final =
-                criarDataLocal(
-                    fim || dataFim,
-                    true
-                );
-
-            const notasFiltradas =
-                notas.filter((nota) => {
-
-                    const dataNota =
-                        parseDate(
-                            nota.data_recebimento
-                        );
-
-                    if (!dataNota) return false;
-
-                    return (
-                        dataNota >= inicio
-                        && dataNota <= final
-                    );
-
-                });
-
-            const mapa = {};
-
-            for (const nota of notasFiltradas) {
-
-                try {
-
-                    const resItens =
-                        await fetch(
-                            `${API_ITENS}/${nota.id}`
-                        );
-
-                    const data =
-                        await resItens.json();
-
-                    const itens =
-                        data.items || [];
-
-                    for (const item of itens) {
-
-                        if (
-                            item.status_item === "ITEM_CONFERIDO"
-                            || Number(item.qtd_conferida) > 0
-                        ) {
-
-                            const conf =
-                                item.conferente
-                                || "SEM_CONFERENTE";
-
-                            if (!mapa[conf]) {
-
-                                mapa[conf] = {
-
-                                    conferente: conf,
-
-                                    nome:
-                                        mapaFuncs[conf]
-                                        || conf,
-
-                                    notas: 0,
-
-                                    pontos: 0,
-
-                                    descontos: 0,
-
-                                    pontosPesados: 0,
-
-                                    itens: 0,
-
-                                    errosCaixa: 0,
-
-                                    detalhes: [],
-
-                                    notasSet: new Set(),
-
-                                    ultimaConferencia:
-                                        nota.data_recebimento,
-                                };
-
-                            }
-
-                            mapa[conf]
-                                .notasSet
-                                .add(nota.id);
-
-                            const qtd =
-                                Number(
-                                    item.qtd_conferida || 1
-                                );
-
-                            const ptsUnitario =
-                                calcularPontosItem(item);
-
-                            const pts =
-                                ptsUnitario * qtd;
-
-                            const validacao =
-                                validarCaixa(item);
-
-                            if (validacao.ignorar)
-                                continue;
-
-                            mapa[conf].itens += qtd;
-
-                            mapa[conf].pontos += pts;
-
-                            if (ptsUnitario >= 10) {
-
-                                mapa[conf]
-                                    .pontosPesados += qtd;
-
-                            }
-
-                            if (!validacao.valida) {
-
-                                const descontoErro = 30;
-
-                                mapa[conf]
-                                    .descontos += descontoErro;
-
-                                mapa[conf]
-                                    .errosCaixa += 1;
-
-                                mapa[conf]
-                                    .detalhes.push({
-
-                                        tipo:
-                                            item.descricao,
-
-                                        codigo:
-                                            item.basico,
-
-                                        quantidade: qtd,
-
-                                        pontosUnitario:
-                                            ptsUnitario,
-
-                                        pontosTotal:
-                                            -descontoErro,
-
-                                        erro: true,
-
-                                        localizacao:
-                                            item.loc_sistema,
-
-                                        caixaItem:
-                                            item.caixa,
-
-                                        motivo:
-                                            `Caixa incorreta (${item.caixa})`,
-                                    });
-
-                            } else {
-
-                                mapa[conf]
-                                    .detalhes.push({
-
-                                        tipo:
-                                            item.descricao,
-
-                                        codigo:
-                                            item.basico,
-
-                                        quantidade: qtd,
-
-                                        pontosUnitario:
-                                            ptsUnitario,
-
-                                        pontosTotal:
-                                            pts,
-
-                                        erro: false,
-
-                                        localizacao:
-                                            item.loc_sistema,
-                                    });
-
-                            }
-
-                        }
-
-                    }
-
-                } catch (err) {
-
-                    console.log(err);
-
-                }
-
-            }
-
-            const resultado =
-                Object.values(mapa).map((item) => {
-
-                    item.notas =
-                        item.notasSet.size;
-
-                    const pontosFinais =
-                        item.pontos
-                        - item.descontos;
-
-                    const produtividade =
-                        item.pontos > 0
-                            ? (
-                                (
-                                    pontosFinais
-                                    / item.pontos
-                                ) * 100
-                            ).toFixed(1)
-                            : 100;
-
-                    return {
-
-                        ...item,
-
-                        pontosFinais,
-
-                        produtividade,
-
-                        xp: calcularXP({
-
-                            ...item,
-
-                            pontosFinais,
-                        }),
-
-                    };
-
-                });
-
-            resultado.sort(
-                (a, b) =>
-                    b.pontosFinais
-                    - a.pontosFinais
+            const response = await fetch(
+                `${API}/api/produtividade?data_inicio=${ini}&data_fim=${fim}`
             );
+
+            const data = await response.json();
+
+            const items = data.items || [];
+
+            const resultado = items.map(item => ({
+
+                ...item,
+
+                nivel: obterNivel(
+                    item.xp,
+                    item.itens,
+                    item.pontosFinais,
+                    item.produtividade,
+                    item.errosCaixa
+                )
+
+            }));
 
             setDados(resultado);
 
@@ -792,16 +297,12 @@ export default function Produtividade() {
 
             console.error(err);
 
-            setError(
-                "Erro ao carregar"
-            );
+            setError("Erro ao carregar");
 
         } finally {
 
             setLoading(false);
-
         }
-
     };
 
     // Icone de carregamento
@@ -1223,7 +724,6 @@ export default function Produtividade() {
                                                 </Avatar>
 
                                                 <Box>
-
                                                     <Typography
                                                         variant="h6"
                                                         fontWeight="bold"

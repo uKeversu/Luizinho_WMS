@@ -1431,40 +1431,40 @@ function Conferencia() {
 
         return `
 ^XA
-^PW520
-^LL192
+^PW480
+^LL240
 ^LH0,0
 
 ^PR3
 ^MD15
 
-^FO3,3
+^FO10,20
 ^BQN,2,6
 ^FDLA,${url}^FS
 
-^FO230,10
-^A0N,32,35
+^FO60,210
+^A0N,30,30
+^FD${unidade.id_unico}^FS
+
+^FO190,30
+^A0N,35,35
 ^FD${unidade.basico}^FS
 
-^FO230,60
+^FO190,70
 ^A0N,45,50
 ^FD${unidade.loc_sistema}^FS
 
-^FO230,115
+^FO190,140
 ^A0N,30,30
 ^FD${unidade.numero}/${unidade.serie}^FS
 
-^FO230,150
-^A0N,25,25
+^FO190,170
+^A0N,28,28
 ^FD${new Date().toLocaleString("pt-BR")}^FS
 
-^FO185,30
-^A0B,30,40
-^FD${unidade.id_unico}^FS
-
-^FO460,30
-^A0B,35,30
-^FD${(userInfo?.codigo || "")}^FS
+^FO440,70
+^A0B,35,35
+^FD${userInfo?.codigo || ""}^FS
 
 ^XZ
 
@@ -1525,7 +1525,7 @@ function Conferencia() {
             if (!data.unidades || data.unidades.length === 0) {
                 setSnackbar({
                     open: true,
-                    message: "Etiqueta não encontrada, verifique código de barras!",
+                    message: "Nenhuma etiqueta disponível",
                     severity: "warning"
                 });
                 return;
@@ -1583,32 +1583,32 @@ function Conferencia() {
 
         return `
 ^XA
-^PW400
-^LL200
+^PW480
+^LL240
 ^LH0,0
 
 ^PR3
 ^MD15
 
-^FO1,1
+^FO5,25
 ^BQN,2,8
 ^FDLA,${codigoCaixa}^FS
 
-^FO190,10
-^A0N,45,45
-^FDCaixa^FS
+^FO275,15
+^A0N,32,32
+^FDCAIXA^FS
 
-^FO190,60
-^A0N,45,45
+^FO220,50
+^A0N,50,50
 ^FD${codigoCaixa}^FS
 
-^FO190,120
-^A0N,30,30
-^FD${dataAtual}^FS
+^FO220,120
+^A0N,26,26
+^FD${new Date().toLocaleString("pt-BR")}^FS
 
-^FO190,150
-^A0N,30,30
-^FD${userInfo?.codigo || ""}^FS
+^FO220,160
+^A0N,35,35
+^FD${userInfo?.codigo}^FS
 
 ^XZ
 `;

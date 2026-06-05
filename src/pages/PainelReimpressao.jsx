@@ -55,46 +55,122 @@ function PainelReimpressao() {
     // ---------------- BUSCA ----------------
 
     const buscarNotas = async () => {
-        if (!busca) return;
+
+        if (!busca.trim()) return;
 
         setLoading(true);
 
         try {
-            const response = await fetch(`${API}/api/notas/listar`);
-            const data = await response.json();
 
-            const termo = busca.toLowerCase();
+            const hoje = new Date();
+
+            const inicio = new Date();
+            inicio.setMonth(inicio.getMonth() - 1);
+
+            let pagina = 1;
+            let totalPaginas = 1;
+
+            const todasNotas = [];
+
+            do {
+
+                const params = new URLSearchParams({
+                    page: pagina,
+                    data_inicio: inicio.toISOString().split("T")[0],
+                    data_fim: hoje.toISOString().split("T")[0],
+                    sort_by: "data_emissao",
+                    sort_order: "DESC"
+                });
+
+                const response = await fetch(
+                    `${API}/api/notas/listar?${params}`,
+                    {
+                        headers: {
+                            "X-Auth-Token": token
+                        }
+                    }
+                );
+
+                const data = await response.json();
+
+                todasNotas.push(...(data.data || []));
+
+                totalPaginas = data.total_pages || 1;
+
+                pagina++;
+
+            } while (pagina <= totalPaginas);
+
+            const termo = busca.trim().toLowerCase();
 
             const notasFiltradas = await Promise.all(
-                (data || []).map(async (nota) => {
 
-                    const respItens = await fetch(`${API}/api/itens_nfe/${nota.id}`);
-                    const dataItens = await respItens.json();
+                todasNotas.map(async (nota) => {
 
-                    const itensFiltrados = (dataItens.items || []).filter(item => {
+                    try {
 
-                        return (
-                            item.descricao?.toLowerCase().includes(termo) ||
-                            item.basico?.toLowerCase().includes(termo) ||
-                            item.cean?.toLowerCase().includes(termo) ||
-                            item.cod_produto?.toLowerCase().includes(termo)
+                        const respItens = await fetch(
+                            `${API}/api/itens_nfe/${nota.id}`,
+                            {
+                                headers: {
+                                    "X-Auth-Token": token
+                                }
+                            }
                         );
-                    });
 
-                    return {
-                        ...nota,
-                        itens: itensFiltrados
-                    };
+                        const dataItens = await respItens.json();
+
+                        const itensFiltrados =
+                            (dataItens.items || []).filter(item => {
+
+                                const texto = [
+                                    item.descricao,
+                                    item.basico,
+                                    item.cean,
+                                    item.codigo_barras,
+                                    item.cod_produto
+                                ]
+                                    .filter(Boolean)
+                                    .join(" ")
+                                    .toLowerCase();
+
+                                return texto.includes(termo);
+                            });
+
+                        return {
+                            ...nota,
+                            itens: itensFiltrados
+                        };
+
+                    } catch {
+
+                        return {
+                            ...nota,
+                            itens: []
+                        };
+                    }
                 })
             );
 
-            const resultadoFinal = notasFiltradas.filter(n => n.itens.length > 0);
+            const resultadoFinal =
+                notasFiltradas.filter(
+                    nota => nota.itens.length > 0
+                );
 
             setNotas(resultadoFinal);
 
         } catch (err) {
+
             console.error(err);
+
+            setSnackbar({
+                open: true,
+                message: "Erro ao buscar notas",
+                severity: "error"
+            });
+
         } finally {
+
             setLoading(false);
         }
     };
@@ -162,45 +238,45 @@ function PainelReimpressao() {
 
         return `
 ^XA
-^PW520
-^LL192
+^PW480
+^LL240
 ^LH0,0
 
 ^PR3
 ^MD15
 
-^FO3,3
+^FO10,20
 ^BQN,2,6
 ^FDLA,${url}^FS
 
-^FO380,3
+^FO350,5
 ^A0N,20,20
 ^FR
 ^FDREIMPRESSA^FS
 
-^FO230,30
-^A0N,32,35
+^FO60,210
+^A0N,30,30
+^FD${unidade.id_unico}^FS
+
+^FO190,30
+^A0N,35,35
 ^FD${unidade.basico}^FS
 
-^FO230,60
+^FO190,70
 ^A0N,45,50
 ^FD${unidade.loc_sistema}^FS
 
-^FO230,115
+^FO190,140
 ^A0N,30,30
 ^FD${unidade.numero}/${unidade.serie}^FS
 
-^FO230,150
-^A0N,25,25
+^FO190,170
+^A0N,28,28
 ^FD${new Date().toLocaleString("pt-BR")}^FS
 
-^FO185,30
-^A0B,30,40
-^FD${unidade.id_unico}^FS
-
-^FO460,30
-^A0B,35,30
-^FD${(userInfo?.codigo || "")}^FS
+^FO440,70
+^A0B,35,35
+^FD${userInfo?.codigo || ""}^FS
 
 ^XZ
 `;

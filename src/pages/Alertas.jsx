@@ -64,7 +64,6 @@ function Alertas() {
     // DADOS
     const [notas, setNotas] = useState([]);
     const [alertas, setAlertas] = useState([]);
-    const [cacheItens, setCacheItens] = useState({});
     const [loading, setLoading] = useState(false);
     const [loadingAlertas, setLoadingAlertas] = useState(false);
 
@@ -76,43 +75,34 @@ function Alertas() {
     const [ultimaAtualizacao, setUltimaAtualizacao] = useState(null);
 
     useEffect(() => {
-        buscarNotas();
+        buscarAlertas();
     }, []);
 
     useEffect(() => {
 
         const interval = setInterval(() => {
-            buscarNotas();
+            buscarAlertas();
         }, 60000);
 
         return () => clearInterval(interval);
 
     }, []);
 
-    useEffect(() => {
-
-        if (notas.length > 0) {
-            carregarAlertas();
-        }
-
-    }, [notas]);
-
-    const buscarNotas = async () => {
+    const buscarAlertas = async () => {
 
         setLoading(true);
 
         try {
 
-            const response = await fetch(`${API}/api/notas/listar`);
+            const response = await fetch(
+                `${API}/api/alertas`
+            );
 
             const data = await response.json();
 
-            if (response.ok) {
+            setAlertas(data.items || []);
 
-                setNotas(Array.isArray(data) ? data : []);
-
-                setUltimaAtualizacao(new Date());
-            }
+            setUltimaAtualizacao(new Date());
 
         } catch (err) {
 
@@ -121,202 +111,7 @@ function Alertas() {
         } finally {
 
             setLoading(false);
-        }
-    };
 
-    const buscarItensNota = async (id) => {
-
-        if (cacheItens[id]) {
-            return cacheItens[id];
-        }
-
-        try {
-
-            const response = await fetch(`${API}/api/itens_nfe/${id}`);
-
-            const data = await response.json();
-
-            const itens = data.items || [];
-
-            setCacheItens(prev => ({
-                ...prev,
-                [id]: itens
-            }));
-
-            return itens;
-
-        } catch (err) {
-
-            console.error(err);
-
-            return [];
-        }
-    };
-
-    const diasEntre = (data) => {
-
-        if (!data) return 0;
-
-        const [dia, mes, ano] = data.split("-");
-
-        const dataFormatada = new Date(`${ano}-${mes}-${dia}`);
-
-        const hoje = new Date();
-
-        return Math.floor(
-            (hoje - dataFormatada) / (1000 * 60 * 60 * 24)
-        );
-    };
-
-    const getPrioridade = (dias) => {
-
-        if (dias >= 7) {
-            return {
-                label: "CRÍTICO",
-                color: "#d32f2f"
-            };
-        }
-
-        if (dias >= 4) {
-            return {
-                label: "ALTO",
-                color: "#ed6c02"
-            };
-        }
-
-        return {
-            label: "MÉDIO",
-            color: "#0288d1"
-        };
-    };
-
-    const carregarAlertas = async () => {
-
-        setLoadingAlertas(true);
-
-        const CFOP_GARANTIA = ["5949", "6949"];
-        const CFOP_DEVOLUCAO = ["5662", "6202", "5202"];
-
-        const agrupados = {};
-
-        try {
-
-            for (const nota of notas) {
-
-                const itens = await buscarItensNota(nota.id);
-
-                const dias = diasEntre(nota.data_recebimento);
-
-                const alertasNota = [];
-
-                // CONFERÊNCIA
-                if (
-                    ["PENDENTE", "FORNECEDOR_DIRETO"].includes(nota.status)
-                    && dias > 2
-                ) {
-
-                    alertasNota.push({
-                        tipo: "ATRASO_CONFERENCIA",
-                        mensagem: "Nota aguardando conferência"
-                    });
-                }
-
-                // GUARDA
-                const itensPendentes = itens.filter(item => {
-
-                    const loc = item.loc_sistema
-                        ? item.loc_sistema.trim()
-                        : "";
-
-                    return (
-                        item.status_item === "ITEM_CONFERIDO" &&
-                        loc !== "LOC01" &&
-                        loc !== "LOC 01"
-                    );
-                });
-
-                if (
-                    dias > 3 &&
-                    itensPendentes.length > 0
-                ) {
-
-                    alertasNota.push({
-                        tipo: "GUARDA_PENDENTE",
-                        mensagem: `${itensPendentes.length} item(ns) aguardando guarda`
-                    });
-                }
-
-                // GARANTIA
-                const garantia = itens.filter(item =>
-                    item.cfop &&
-                    CFOP_GARANTIA.includes(
-                        item.cfop.toString().trim()
-                    )
-                );
-
-                if (garantia.length > 0) {
-
-                    alertasNota.push({
-                        tipo: "CFOP_GARANTIA",
-                        mensagem: `${garantia.length} item(ns) com CFOP de garantia`
-                    });
-                }
-
-                // DEVOLUÇÃO
-                const devolucao = itens.filter(item =>
-                    item.cfop &&
-                    CFOP_DEVOLUCAO.includes(
-                        item.cfop.toString().trim()
-                    )
-                );
-
-                if (devolucao.length > 0) {
-
-                    alertasNota.push({
-                        tipo: "CFOP_DEVOLUCAO",
-                        mensagem: `${devolucao.length} item(ns) com CFOP de devolução`
-                    });
-                }
-
-                // SEM GTIN
-                const semGTIN = itens.filter(item =>
-                    !item.cean ||
-                    item.cean === "SEM GTIN" ||
-                    item.cean === "SEMGTIN"
-                );
-
-                if (semGTIN.length > 0) {
-                    alertasNota.push({
-                        tipo: "SEM_GTIN",
-                        mensagem: `${semGTIN.length} item(ns) sem GTIN`
-                    });
-                }
-
-                if (alertasNota.length > 0) {
-
-                    agrupados[nota.id] = {
-                        nota,
-                        dias,
-                        quantidadeItens: itens.length,
-                        alertas: alertasNota,
-                        prioridade: getPrioridade(dias)
-                    };
-                }
-            }
-
-            const lista = Object.values(agrupados);
-
-            lista.sort((a, b) => b.dias - a.dias);
-
-            setAlertas(lista);
-
-        } catch (err) {
-
-            console.error(err);
-
-        } finally {
-
-            setLoadingAlertas(false);
         }
     };
 
