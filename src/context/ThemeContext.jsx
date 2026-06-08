@@ -50,6 +50,8 @@ export function ThemeProvider({ children }) {
             conferido: "#2b743d",
             achouItem: "#2b743d93",
 
+            em_conferencia: "#7c4dff",
+
             compra: '#44cc61',
             pendentes: '#dfdc20',
             conferidos: '#007bff',
@@ -86,6 +88,8 @@ export function ThemeProvider({ children }) {
             conferido: "#28a745",
             achouItem: "#28a746a9",
 
+            em_conferencia: "#7c4dff",
+
             compra: '#44cc61',
             pendentes: '#c9c600',
             conferidos: '#007bff',
@@ -115,6 +119,8 @@ export function ThemeProvider({ children }) {
                 observacaoHover: colors.observacaoHover,
                 conferido: colors.conferido,
                 achouItem: colors.achouItem,
+
+                em_conferencia: colors.em_conferencia,
 
                 compra: colors.compra,
                 pendentes: colors.pendentes,

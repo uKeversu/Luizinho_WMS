@@ -145,7 +145,7 @@ function Dashboard({ tipo }) {
                 return "EM_TRANSITO";
 
             case 1:
-                return "PENDENTE,FORNECEDOR_DIRETO";
+                return "PENDENTE,FORNECEDOR_DIRETO, EM_CONFERENCIA";
 
             case 2:
                 return "CONFERIDA";
@@ -853,7 +853,7 @@ function Dashboard({ tipo }) {
                                     notas.find(n => n.id === id)
                                 );
 
-                                const temRecebida = notasValidas.some(nota => nota.status === "PENDENTE");
+                                const temRecebida = notasValidas.some(nota => nota.status === "PENDENTE" || nota.status === "EM_CONFERENCIA");
 
                                 if (temRecebida && notasValidas.length > 1) {
                                     setSnackbar({
@@ -959,7 +959,8 @@ function Dashboard({ tipo }) {
 
                                                 {aba !== 3 &&
                                                     (nota.status === "FORNECEDOR_DIRETO" ||
-                                                        nota.status === "PENDENTE") && (
+                                                        nota.status === "PENDENTE" ||
+                                                        nota.status === "EM_CONFERENCIA") && (
                                                         <Checkbox
                                                             size="small"
                                                             checked={notasSelecionadas.includes(nota.id)}
@@ -968,7 +969,7 @@ function Dashboard({ tipo }) {
                                                                     const notaAtual = nota;
 
                                                                     if (
-                                                                        notaAtual.status === "PENDENTE" &&
+                                                                        (notaAtual.status === "PENDENTE" || notaAtual.status === "EM_CONFERENCIA") &&
                                                                         notasSelecionadas.length >= 1
                                                                     ) {
                                                                         setSnackbar({
@@ -1016,9 +1017,11 @@ function Dashboard({ tipo }) {
                                                             ? 'background.forndireto'
                                                             : nota.status === "PENDENTE"
                                                                 ? 'primary.parcial'
-                                                                : nota.status === "CONFERIDA"
-                                                                    ? 'primary.conferidos'
-                                                                    : 'primary.guardado',
+                                                                : nota.status === "EM_CONFERENCIA"
+                                                                    ? 'primary.em_conferencia'
+                                                                    : nota.status === "CONFERIDA"
+                                                                        ? 'primary.conferidos'
+                                                                        : 'primary.guardado',
                                                     color: 'primary.branco',
                                                     fontSize: '0.7rem',
                                                     fontWeight: 700

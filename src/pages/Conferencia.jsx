@@ -418,6 +418,43 @@ function Conferencia() {
         };
     }, [caixaAberta, ultimoItemScaneado]);
 
+    const registrarLogBip = async ({
+        item,
+        quantidade,
+        caixa
+    }) => {
+
+        try {
+
+            await fetch(`${API}/api/logs_conferencia`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Auth-Token": token
+                },
+                body: JSON.stringify({
+                    nota_id: item.notaId,
+                    item_id: item.id,
+                    codigo_f: userInfo?.codigo,
+
+                    codigo_produto: item.basico,
+                    codigo_barras: item.codigo_barras,
+
+                    localizacao: item.loc_sistema,
+
+                    quantidade,
+
+                    caixa: caixa.numero,
+
+                    acao: "ITEM_BIPADO"
+                })
+            });
+
+        } catch (err) {
+            console.error("Erro log bip:", err);
+        }
+    };
+
     const carregarTudo = async () => {
         try {
             setLoading(true);
@@ -1227,7 +1264,7 @@ function Conferencia() {
                     return;
                 }
 
-                // Caixa disponível → usa obrigatoriamente ela
+                // Caixa disponível -> usa obrigatoriamente ela
                 caixaDestino = caixaAtualizada || caixaDestino;
             }
 
@@ -1367,6 +1404,8 @@ function Conferencia() {
 
             // Envia itens pra API
             const sucesso = await enviarItensDaCaixa(caixaFinal);
+
+            iniciarConferencia();
 
             if (!sucesso) {
                 return;
@@ -1721,6 +1760,43 @@ function Conferencia() {
         }
     };
 
+    const iniciarConferencia = async () => {
+        try {
+            const localizacaoFinal = caixas.map(c => c.numero).join(", ");
+
+            for (const nota of notaInfo) {
+                const response = await fetch(
+                    `${API}/api/nfe/atualizar_por_nfe/${nota.serie}/${nota.numero}`,
+                    {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            status: "EM_CONFERENCIA"
+                        })
+                    }
+                );
+
+                console.log("ATUALIZANDO STATUS DA NOTA: EM_CONFERENCIA")
+
+                const text = await response.text();
+
+                if (!response.ok) {
+                    throw new Error(text || "Erro ao enviar status EM_CONFERENCIA");
+                }
+            }
+        } catch (error) {
+            console.error(error);
+            setSnackbar({
+                open: true,
+                message: "Erro ao enviar status de conferencia",
+                severity: "error"
+            });
+        }
+    }
+
     // Finalizar conferência
     const finalizarConferencia = async () => {
         try {
@@ -1881,7 +1957,7 @@ function Conferencia() {
 
         localStorage.setItem(
             `agrupamentos_${notasIds.join("_")}`,
-            JSON.stringify(selecionados )
+            JSON.stringify(selecionados)
         );
 
         setDialogAgrupamentos({
