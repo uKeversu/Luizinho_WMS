@@ -1762,7 +1762,6 @@ function Conferencia() {
 
     const iniciarConferencia = async () => {
         try {
-            const localizacaoFinal = caixas.map(c => c.numero).join(", ");
 
             for (const nota of notaInfo) {
                 const response = await fetch(
@@ -1803,7 +1802,7 @@ function Conferencia() {
             if (!notaInfo || notaInfo.length === 0) {
                 setSnackbar({
                     open: true,
-                    message: "Notas não carregadas",
+                    message: "Sincronize a nota antes de finalizar",
                     severity: "warning"
                 });
                 return;
