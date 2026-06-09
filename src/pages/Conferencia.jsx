@@ -292,6 +292,10 @@ function Conferencia() {
                 throw new Error(data?.erro || "Erro ao sincronizar");
             }
 
+            registrarLog({
+                acao: "Sincronizou nota"
+            });
+
             setSnackbar({
                 open: true,
                 message: `Sincronização concluída`,
@@ -371,23 +375,29 @@ function Conferencia() {
 
                 case "F7":
                     e.preventDefault();
-                    setModoQuantidade(prev => {
-                        const novo = !prev;
 
-                        setSnackbar({
-                            open: true,
-                            message: novo ? "Modo quantidade ATIVADO" : "Modo quantidade DESATIVADO",
-                            severity: "info"
-                        });
+                    const novoModo = !modoQuantidade;
 
-                        if (novo) {
-                            setTimeout(() => {
-                                qtdRef.current?.focus();
-                            }, 100);
-                        }
+                    setModoQuantidade(novoModo);
 
-                        return novo;
+                    setSnackbar({
+                        open: true,
+                        message: novoModo
+                            ? "Modo quantidade ATIVADO"
+                            : "Modo quantidade DESATIVADO",
+                        severity: "info"
                     });
+
+                    registrarLog({
+                        acao: novoModo
+                            ? "Modo quantidade ATIVADO"
+                            : "Modo quantidade DESATIVADO"
+                    });
+
+                    if (novoModo) {
+                        setTimeout(() => qtdRef.current?.focus(), 100);
+                    }
+
                     break;
 
                 case "F8":
@@ -416,44 +426,7 @@ function Conferencia() {
         return () => {
             window.removeEventListener("keydown", handleKeyDown);
         };
-    }, [caixaAberta, ultimoItemScaneado]);
-
-    const registrarLogBip = async ({
-        item,
-        quantidade,
-        caixa
-    }) => {
-
-        try {
-
-            await fetch(`${API}/api/logs_conferencia`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Auth-Token": token
-                },
-                body: JSON.stringify({
-                    nota_id: item.notaId,
-                    item_id: item.id,
-                    codigo_f: userInfo?.codigo,
-
-                    codigo_produto: item.basico,
-                    codigo_barras: item.codigo_barras,
-
-                    localizacao: item.loc_sistema,
-
-                    quantidade,
-
-                    caixa: caixa.numero,
-
-                    acao: "ITEM_BIPADO"
-                })
-            });
-
-        } catch (err) {
-            console.error("Erro log bip:", err);
-        }
-    };
+    }, [caixaAberta, ultimoItemScaneado, modoQuantidade]);
 
     const carregarTudo = async () => {
         try {
@@ -506,6 +479,8 @@ function Conferencia() {
                     continue;
                 }
 
+                console.log("Data itens:", dataItens)
+
                 const itensFormatados = (dataItens.items || []).map((item) => {
 
                     const itemSalvo = itensSalvos.find(i => {
@@ -527,6 +502,9 @@ function Conferencia() {
                     });
 
                     return {
+                        id: item.id,
+                        nfe_id: item.nfe_id,
+
                         descricao: item.descricao || "Item sem identificação",
                         codigo_barras: item.cean || "",
                         codigo_produto: item.cod_produto || "",
@@ -546,6 +524,7 @@ function Conferencia() {
                         caixaApi: item.caixa || null,
 
                         status: item.status_item,
+
                         notaId: nota.id,
                         notaNumero: nota.numero || "-",
                         notaSerie: nota.serie || "-"
@@ -775,6 +754,74 @@ function Conferencia() {
         }
     };
 
+    const registrarLog = async ({
+        item = null,
+        acao,
+        caixa = null,
+        quantidade = null,
+        observacao = ""
+    }) => {
+
+        try {
+
+            console.log({
+                nfe_item_id: item?.id ?? null,
+                nota_id: notaAtual?.id,
+                usuario: userInfo.codigo,
+                acao,
+                local_anterior: item?.localizacao ?? null,
+                local_novo: item?.localizacao ?? null,
+                status_anterior: item?.status ?? null,
+                status_novo: item?.status ?? null,
+                cod_produto: item?.basico ?? null,
+                cod_barras: item?.codigo_barras ?? null,
+                quantidade: quantidade ?? null,
+                caixa: caixa?.numero ?? null,
+            });
+
+            const response = await fetch(
+                `${API}/api/nfe/item/movimentacao/log`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Auth-Token": token
+                    },
+                    body: JSON.stringify({
+                        nfe_item_id: item?.id ?? null,
+                        nota_id: notaAtual?.id,
+
+                        usuario: userInfo.codigo,
+
+                        acao,
+
+                        local_anterior: item?.localizacao ?? null,
+                        local_novo: item?.localizacao ?? null,
+
+                        status_anterior: item?.status ?? null,
+                        status_novo: item?.status ?? null,
+
+                        cod_produto: item?.basico ?? null,
+                        cod_barras: item?.codigo_barras ?? null,
+
+                        quantidade: quantidade ?? null,
+
+                        caixa: caixa?.numero ?? null,
+                    })
+                }
+            );
+
+            console.log("ENVIANDO LOG:", acao)
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(text);
+            }
+
+        } catch (error) {
+            console.error("Erro ao enviar log: ", error);
+        }
+    };
+
     const getPrateleira = (localizacao) => {
         if (!localizacao) return "SEM_LOC";
 
@@ -906,6 +953,9 @@ function Conferencia() {
     const abrirCaixa = () => {
         const novaCaixa = { id: Date.now(), itens: [] };
         setCaixaAberta(novaCaixa);
+        registrarLog({
+            acao: "Abriu caixa"
+        });
     };
 
     // Fechar caixa
@@ -913,6 +963,10 @@ function Conferencia() {
         if (!caixaAberta) return;
         atualizarCaixas([...caixas, caixaAberta]);
         setCaixaAberta(null);
+        registrarLog({
+            caixa: caixaAberta,
+            acao: "Fechou caixa"
+        });
     };
 
     const confirmarFechamento = async () => {
@@ -959,6 +1013,11 @@ function Conferencia() {
         setNumeroCaixa("");
         setOpenFecharDialog(false);
 
+        registrarLog({
+            caixa: caixaAberta,
+            acao: "Fechou caixa"
+        });
+
         setSnackbar({
             open: true,
             message: `Caixa ${caixaFinal.numero} fechada`,
@@ -1003,6 +1062,11 @@ function Conferencia() {
             reaberta: true,
         });
 
+        registrarLog({
+            caixa,
+            acao: "Reabriu caixa"
+        });
+
         setSnackbar({
             open: true,
             message: `Caixa ${caixa.numero} reaberta`,
@@ -1016,6 +1080,12 @@ function Conferencia() {
             type: "remover_item",
             payload: item
         });
+        registrarLog({
+            item: item,
+            caixa: caixaAberta,
+            quantidade: 1,
+            acao: "Removeu item da caixa"
+        });
     };
 
     const abrirConfirmacaoRemoverCaixa = (caixa) => {
@@ -1023,6 +1093,10 @@ function Conferencia() {
             open: true,
             type: "remover_caixa",
             payload: caixa
+        });
+        registrarLog({
+            caixa: caixaAberta,
+            acao: "Removeu caixa vazia"
         });
     };
 
@@ -1402,6 +1476,13 @@ function Conferencia() {
                 cheia: caixaDestino.cheia ?? false
             };
 
+            if (ehCaixaNova) {
+                registrarLog({
+                    caixa: caixaFinal,
+                    acao: "Criou caixa"
+                });
+            }
+
             // Envia itens pra API
             const sucesso = await enviarItensDaCaixa(caixaFinal);
 
@@ -1410,6 +1491,20 @@ function Conferencia() {
             if (!sucesso) {
                 return;
             }
+
+            registrarLog({
+                item: itemAtual,
+                quantidade: incremento,
+                caixa: caixaFinal,
+                acao: "Escaneou item"
+            });
+
+            registrarLog({
+                item: itemAtual,
+                quantidade: incremento,
+                caixa: caixaFinal,
+                acao: `Item adicionado na caixa ${caixaFinal.numero}`
+            });
 
             const caixaAtualState = caixasRef.current.find(
                 c => c.id === caixaDestino.id
@@ -1605,6 +1700,11 @@ function Conferencia() {
 
             await imprimirViaPython(zpl);
 
+            registrarLog({
+                item,
+                acao: "Imprimiu etiqueta do item"
+            });
+
         } catch (error) {
             console.error(error);
             setSnackbar({
@@ -1659,6 +1759,11 @@ function Conferencia() {
             const zpl = gerarZPLCaixa(caixa);
 
             await imprimirViaPython(zpl);
+
+            registrarLog({
+                caixa,
+                acao: "Imprimiu etiqueta de caixa"
+            });
 
         } catch (error) {
             console.error("Erro ao imprimir caixa:", error);
@@ -1785,14 +1890,13 @@ function Conferencia() {
                 if (!response.ok) {
                     throw new Error(text || "Erro ao enviar status EM_CONFERENCIA");
                 }
+
+                registrarLog({
+                    acao: "Iniciou conferência"
+                });
             }
         } catch (error) {
             console.error(error);
-            setSnackbar({
-                open: true,
-                message: "Erro ao enviar status de conferencia",
-                severity: "error"
-            });
         }
     }
 
@@ -1895,6 +1999,10 @@ function Conferencia() {
 
             navigate("/Dashboard");
 
+            registrarLog({
+                acao: "Finalizou conferência"
+            });
+
         } catch (error) {
             console.error(error);
             setSnackbar({
@@ -1965,6 +2073,10 @@ function Conferencia() {
         });
 
         await carregarTudo();
+
+        registrarLog({
+            acao: "Agrupou caixas com localizações próximas"
+        });
 
         setSnackbar({
             open: true,
@@ -2356,6 +2468,13 @@ function Conferencia() {
                                                                     ? `Caixa ${c.numero} marcada como CHEIA`
                                                                     : `Caixa ${c.numero} marcada como DISPONÍVEL`,
                                                                 severity: novoEstado ? "error" : "success"
+                                                            });
+
+                                                            registrarLog({
+                                                                caixa: c.numero,
+                                                                acao: novoEstado
+                                                                    ? `Caixa ${c.numero} marcada como CHEIA`
+                                                                    : `Caixa ${c.numero} marcada como DISPONÍVEL`,
                                                             });
                                                         }}
                                                     >

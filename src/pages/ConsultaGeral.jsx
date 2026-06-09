@@ -242,11 +242,14 @@ function ConsultaGeral() {
             case "PENDENTE":
                 return "primary.parcial";
 
+            case "EM_CONFERENCIA":
+                return "primary.em_conferencia";
+
             case "CONFERIDA":
                 return "primary.conferidos";
 
             case "GUARDADA":
-                return "#7b1fa2";
+                return "primary.guardado";
 
             default:
                 return "#616161";
