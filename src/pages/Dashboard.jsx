@@ -379,6 +379,11 @@ function Dashboard({ tipo }) {
         }
     };
 
+    // Logs de conferência
+    const abrirHistoricoLogs = (nota) => {
+        navigate(`/HistoricoLogs/${nota.id}`);
+    };
+
     // Altera status para recebida
     const atualizarStatusNota = async (nota) => {
         if (!nota.numero || !nota.serie) {
@@ -910,7 +915,7 @@ function Dashboard({ tipo }) {
                                 value={tipoDataFiltro}
 
                                 onChange={(e) => {
-                                    console.log("TIPO:", e.target.value);
+                                    console.log("FILTRO DE DATA:", e.target.value);
                                     setTipoDataFiltro(e.target.value);
                                 }}
                                 sx={{

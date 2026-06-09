@@ -11,6 +11,7 @@ import ConsultaGeral from "./pages/ConsultaGeral"
 import PainelReimpressao from "./pages/PainelReimpressao";
 import Produtividade from "./pages/Produtividade";
 import ConsultaGuarda from "./pages/ConsultaGuarda";
+import HistoricoLogs from "./pages/HistoricoLogs";
 
 import './index.css';
 
@@ -33,6 +34,7 @@ function App() {
           <Route path="/PainelReimpressao" element={<PainelReimpressao />} />
           <Route path="/Produtividade" element={<Produtividade />} />
           <Route path="/ConsultaGuarda" element={<ConsultaGuarda />} />
+          <Route path="/HistoricoLogs/:notaId" element={<HistoricoLogs />}/>
         </Routes>
       </Router>
     </ThemeProvider>
