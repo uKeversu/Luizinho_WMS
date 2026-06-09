@@ -8,6 +8,7 @@ import {
     Grid,
     TextField,
     Button,
+    IconButton,
     Box,
     Dialog,
     DialogTitle,
@@ -21,7 +22,11 @@ import {
     Snackbar,
     Alert,
     MenuItem,
-    Tooltip
+    Tooltip,
+    FormControl,
+    Select,
+    Chip,
+    Menu
 } from "@mui/material";
 
 import Pagination from "@mui/material/Pagination";
@@ -37,6 +42,7 @@ import SyncIcon from '@mui/icons-material/Sync';
 import LocalPrintshopIcon from '@mui/icons-material/LocalPrintshop';
 import ReplayIcon from '@mui/icons-material/Replay';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import HistoryIcon from '@mui/icons-material/History';
 
 import LoginFuncionario from "../components/LoginFuncionario";
 
@@ -87,6 +93,10 @@ function Dashboard({ tipo }) {
     const [funcionariosMap, setFuncionariosMap] = useState({});
     const [pagina, setPagina] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+
+    // Etiquetas
+    const [anchorEtiqueta, setAnchorEtiqueta] = useState(null);
+    const [notaEtiqueta, setNotaEtiqueta] = useState(null);
 
     // SS Plus Sync
     const [loadingSync, setLoadingSync] = useState(false);
@@ -299,6 +309,16 @@ function Dashboard({ tipo }) {
         );
     });
 
+    const abrirMenuEtiqueta = (event, nota) => {
+        setAnchorEtiqueta(event.currentTarget);
+        setNotaEtiqueta(nota);
+    };
+
+    const fecharMenuEtiqueta = () => {
+        setAnchorEtiqueta(null);
+        setNotaEtiqueta(null);
+    };
+
     // Baixar XML da nota
     const baixarXML = (nota) => {
 
@@ -442,6 +462,59 @@ function Dashboard({ tipo }) {
 
         } finally {
             setLoadingNotasIds(prev => prev.filter(id => id !== nota.id));
+        }
+    };
+
+    // Alterar etiqueta
+    const alterarEtiqueta = async (nota, etiqueta) => {
+        if (!nota.numero || !nota.serie) {
+            console.error("Nota inválida:", nota);
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `${API}/api/nfe/atualizar_por_nfe/${nota.serie}/${nota.numero}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Auth-Token": token
+                    },
+                    body: JSON.stringify({
+                        etiqueta
+                    })
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data?.erro || "Erro ao atualizar etiqueta");
+            }
+
+            setNotas(prev =>
+                prev.map(n =>
+                    n.id === nota.id
+                        ? { ...n, etiqueta }
+                        : n
+                )
+            );
+
+            setSnackbar({
+                open: true,
+                message: `Etiqueta alterada para "${etiqueta}"`,
+                severity: "success"
+            });
+
+        } catch (error) {
+            console.error(error);
+
+            setSnackbar({
+                open: true,
+                message: error.message || "Erro ao atualizar etiqueta",
+                severity: "error"
+            });
         }
     };
 
@@ -714,6 +787,80 @@ function Dashboard({ tipo }) {
                     </Box>
                 </Backdrop>
 
+                {/* Dropdown das etiquetas*/}
+                <Menu
+                    anchorEl={anchorEtiqueta}
+                    open={Boolean(anchorEtiqueta)}
+                    onClose={fecharMenuEtiqueta}
+                    PaperProps={{
+                        sx: {
+                            bgcolor: 'background.alerta',
+                            color: 'text.primary',
+                            minWidth: 160
+                        }
+                    }}
+                >
+                    <MenuItem
+                        sx={{
+                            color: 'text.primary',
+                            '&:hover': {
+                                bgcolor: 'action.hover'
+                            }
+                        }}
+                        onClick={() => {
+                            alterarEtiqueta(notaEtiqueta, "Sem etiqueta");
+                            fecharMenuEtiqueta();
+                        }}
+                    >
+                        Sem etiqueta
+                    </MenuItem>
+
+                    <MenuItem
+                        sx={{
+                            color: 'text.primary',
+                            '&:hover': {
+                                bgcolor: 'action.hover'
+                            }
+                        }}
+                        onClick={() => {
+                            alterarEtiqueta(notaEtiqueta, "Lançada");
+                            fecharMenuEtiqueta();
+                        }}
+                    >
+                        Lançada
+                    </MenuItem>
+
+                    <MenuItem
+                        sx={{
+                            color: 'text.primary',
+                            '&:hover': {
+                                bgcolor: 'action.hover'
+                            }
+                        }}
+                        onClick={() => {
+                            alterarEtiqueta(notaEtiqueta, "Gravada");
+                            fecharMenuEtiqueta();
+                        }}
+                    >
+                        Gravada
+                    </MenuItem>
+
+                    <MenuItem
+                        sx={{
+                            color: 'text.primary',
+                            '&:hover': {
+                                bgcolor: 'action.hover'
+                            }
+                        }}
+                        onClick={() => {
+                            alterarEtiqueta(notaEtiqueta, "Cancelada");
+                            fecharMenuEtiqueta();
+                        }}
+                    >
+                        Cancelada
+                    </MenuItem>
+                </Menu>
+
                 <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: "background.default" }}>
                     <Tabs
                         value={aba}
@@ -955,8 +1102,8 @@ function Dashboard({ tipo }) {
                                                     >
                                                         Série {nota.serie}
                                                     </Typography>
-                                                </Box>
 
+                                                </Box>
                                                 {aba !== 3 &&
                                                     (nota.status === "FORNECEDOR_DIRETO" ||
                                                         nota.status === "PENDENTE" ||
@@ -994,42 +1141,100 @@ function Dashboard({ tipo }) {
                                                     )}
 
                                                 {aba !== 1 && (
-                                                    <Tooltip title="Baixar XML completo da nota">
-                                                        <Button
-                                                            onClick={() => baixarXML(nota)}
-                                                            sx={{ color: "background.paper", display: 'flex', gap: 1 }}
-                                                        >
-                                                            <FileDownloadIcon />
-                                                        </Button>
-                                                    </Tooltip>
+                                                    <Box
+                                                        sx={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: 0.5
+                                                        }}
+                                                    >
+                                                        <Tooltip title="Baixar XML completo da nota">
+                                                            <IconButton
+                                                                size="small"
+                                                                onClick={() => baixarXML(nota)}
+                                                            >
+                                                                <FileDownloadIcon fontSize="small" />
+                                                            </IconButton>
+                                                        </Tooltip>
+
+                                                        <Tooltip title="Histórico de logs">
+                                                            <IconButton
+                                                                size="small"
+                                                                onClick={() => abrirHistoricoLogs(nota)}
+                                                            >
+                                                                <HistoryIcon fontSize="small" />
+                                                            </IconButton>
+                                                        </Tooltip>
+
+                                                        <Chip
+                                                            label={nota.etiqueta?.toUpperCase() || "SEM ETIQUETA"}
+                                                            size="small"
+                                                            onClick={(e) => abrirMenuEtiqueta(e, nota)}
+                                                            sx={{
+                                                                fontWeight: 600,
+                                                                fontSize: '0.7rem',
+                                                                cursor: 'pointer',
+                                                                bgcolor:
+                                                                    nota.etiqueta === "Gravada"
+                                                                        ? "primary.gravada"
+                                                                        : nota.etiqueta === "Lançada"
+                                                                            ? "primary.lancada"
+                                                                            : nota.etiqueta === "Cancelada"
+                                                                                ? "primary.cancelada"
+                                                                                : "primary.default",
+                                                                color: "primary.branco"
+                                                            }}
+                                                        />
+                                                    </Box>
                                                 )}
                                             </Box>
 
-                                            {/* STATUS */}
-                                            <Box
-                                                sx={{
-                                                    alignSelf: 'flex-start',
-                                                    px: 1,
-                                                    py: 0.3,
-                                                    borderRadius: '999px',
-                                                    bgcolor:
-                                                        nota.status === "FORNECEDOR_DIRETO"
-                                                            ? 'background.forndireto'
-                                                            : nota.status === "PENDENTE"
-                                                                ? 'primary.parcial'
-                                                                : nota.status === "EM_CONFERENCIA"
-                                                                    ? 'primary.em_conferencia'
-                                                                    : nota.status === "CONFERIDA"
-                                                                        ? 'primary.conferidos'
-                                                                        : 'primary.guardado',
-                                                    color: 'primary.branco',
-                                                    fontSize: '0.7rem',
-                                                    fontWeight: 700
-                                                }}
-                                            >
-                                                {nota.status}
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                {/* STATUS */}
+                                                <Box
+                                                    sx={{
+                                                        alignSelf: 'flex-start',
+                                                        px: 1,
+                                                        py: 0.3,
+                                                        borderRadius: '999px',
+                                                        bgcolor:
+                                                            nota.status === "FORNECEDOR_DIRETO"
+                                                                ? 'background.forndireto'
+                                                                : nota.status === "PENDENTE"
+                                                                    ? 'primary.parcial'
+                                                                    : nota.status === "EM_CONFERENCIA"
+                                                                        ? 'primary.em_conferencia'
+                                                                        : nota.status === "CONFERIDA"
+                                                                            ? 'primary.conferidos'
+                                                                            : 'primary.guardado',
+                                                        color: 'primary.branco',
+                                                        fontSize: '0.7rem',
+                                                        fontWeight: 700
+                                                    }}
+                                                >
+                                                    {nota.status}
+                                                </Box>
+                                                {/* ORIGEM */}
+                                                <Box
+                                                    sx={{
+                                                        alignSelf: 'flex-start',
+                                                        px: 1,
+                                                        py: 0.3,
+                                                        borderRadius: '999px',
+                                                        bgcolor:
+                                                            nota.origem === "Qive"
+                                                                ? 'primary.qive'
+                                                                : nota.origem === "Manual"
+                                                                    ? 'primary.manual'
+                                                                    : 'primary.default',
+                                                        color: 'primary.branco',
+                                                        fontSize: '0.7rem',
+                                                        fontWeight: 700
+                                                    }}
+                                                >
+                                                    {nota.origem?.toUpperCase()}
+                                                </Box>
                                             </Box>
-
                                             {/* FORNECEDOR */}
                                             <Box
                                                 sx={{
@@ -1452,7 +1657,7 @@ function Dashboard({ tipo }) {
                     </Alert>
                 </Snackbar>
 
-            </Container>
+            </Container >
         )
     )
 }

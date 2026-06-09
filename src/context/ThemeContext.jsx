@@ -50,7 +50,15 @@ export function ThemeProvider({ children }) {
             conferido: "#2b743d",
             achouItem: "#2b743d93",
 
+            em_transito:"#28a745",
+            pendente:"#ff9800",
             em_conferencia: "#7c4dff",
+            conferida: "#007bff",
+            qive: "#ff2e2e",
+            manual: "#02bb74",
+            lancada: "#ffab2d",
+            gravada: "#007bff",
+            cancelada: "#ff2e2e",
 
             compra: '#44cc61',
             pendentes: '#dfdc20',
@@ -88,7 +96,15 @@ export function ThemeProvider({ children }) {
             conferido: "#28a745",
             achouItem: "#28a746a9",
 
+            em_transito:"#28a745",
+            pendente:"#ff9800",
             em_conferencia: "#7c4dff",
+            conferida: "#007bff",
+            qive: "#ff2e2e",
+            manual: "#02bb74",
+            lancada: "#ff9800",
+            gravada: "#007bff",
+            cancelada: "#ff2e2e",
 
             compra: '#44cc61',
             pendentes: '#c9c600',
@@ -120,7 +136,15 @@ export function ThemeProvider({ children }) {
                 conferido: colors.conferido,
                 achouItem: colors.achouItem,
 
+                em_transito: colors.em_transito,
+                pendente: colors.pendente,
                 em_conferencia: colors.em_conferencia,
+                conferida: colors.conferida,
+                qive: colors.qive,
+                manual: colors.manual,
+                lancada: colors.lancada,
+                gravada: colors.gravada,
+                cancelada: colors.cancelada,
 
                 compra: colors.compra,
                 pendentes: colors.pendentes,
