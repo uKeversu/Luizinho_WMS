@@ -252,6 +252,8 @@ function Recebimentos() {
                             .filter(p => p.palete.trim() !== "" || p.volume.trim() !== "")
                             .map(p => `Palete ${p.palete} - Volume ${p.volume}`).join(" | "),
                         observacao: observacao_palet,
+                        origem: "Manual",
+                        etiqueta: "Sem etiqueta",
                         itens_corrigidos: itensCorrigidos,
 
                     })
