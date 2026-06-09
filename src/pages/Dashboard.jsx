@@ -90,6 +90,7 @@ function Dashboard({ tipo }) {
     const [dataInicio, setDataInicio] = useState("");
     const [dataFim, setDataFim] = useState("");
     const [tipoDataFiltro, setTipoDataFiltro] = useState("recebimento");
+    const [etiquetaFiltro, setEtiquetaFiltro] = useState("");
     const [funcionariosMap, setFuncionariosMap] = useState({});
     const [pagina, setPagina] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -112,7 +113,8 @@ function Dashboard({ tipo }) {
         dataFim,
         tipoDataFiltro,
         ordemData,
-        aba
+        aba,
+        etiquetaFiltro
     ]);
 
     useEffect(() => {
@@ -236,6 +238,19 @@ function Dashboard({ tipo }) {
 
             setNotas(data.data || []);
             setTotalPages(data.total_pages || 1);
+
+            // Filtro por etiqueta
+            let notasFiltradas = data.data || [];
+
+            if (etiquetaFiltro) {
+                notasFiltradas = notasFiltradas.filter(
+                    nota =>
+                        (nota.etiqueta || "Sem etiqueta") ===
+                        etiquetaFiltro
+                );
+            }
+
+            setNotas(notasFiltradas);
 
         } catch (err) {
             console.error(err);
@@ -907,6 +922,46 @@ function Dashboard({ tipo }) {
                         />
 
                         <Box sx={{ display: 'flex', gap: 1 }}>
+
+                            <TextField
+                                select
+                                label="Etiqueta"
+                                size="small"
+                                value={etiquetaFiltro}
+                                onChange={(e) =>
+                                    setEtiquetaFiltro(e.target.value)
+                                }
+                                sx={{
+                                    minWidth: 170,
+                                    bgcolor: "background.default"
+                                }}
+                                SelectProps={{
+                                    MenuProps: {
+                                        PaperProps: {
+                                            sx: {
+                                                bgcolor: "background.default",
+                                                color: "text.primary"
+                                            }
+                                        }
+                                    }
+                                }}
+                            >
+                                <MenuItem value="">
+                                    Todas
+                                </MenuItem>
+                                <MenuItem value="Sem etiqueta">
+                                    Sem etiqueta
+                                </MenuItem>
+                                <MenuItem value="Lançada">
+                                    Lançada
+                                </MenuItem>
+                                <MenuItem value="Gravada">
+                                    Gravada
+                                </MenuItem>
+                                <MenuItem value="Cancelada">
+                                    Cancelada
+                                </MenuItem>
+                            </TextField>
 
                             <TextField
                                 select
