@@ -1476,12 +1476,6 @@ function Conferencia() {
                 cheia: caixaDestino.cheia ?? false
             };
 
-            if (ehCaixaNova) {
-                registrarLog({
-                    caixa: caixaFinal,
-                    acao: "Criou caixa"
-                });
-            }
 
             // Envia itens pra API
             const sucesso = await enviarItensDaCaixa(caixaFinal);
@@ -1499,12 +1493,12 @@ function Conferencia() {
                 acao: "Escaneou item"
             });
 
-            registrarLog({
-                item: itemAtual,
-                quantidade: incremento,
-                caixa: caixaFinal,
-                acao: `Item adicionado na caixa ${caixaFinal.numero}`
-            });
+            if (ehCaixaNova) {
+                registrarLog({
+                    caixa: caixaFinal,
+                    acao: "Criou caixa"
+                });
+            }
 
             const caixaAtualState = caixasRef.current.find(
                 c => c.id === caixaDestino.id
@@ -1530,6 +1524,13 @@ function Conferencia() {
 
             // Feedback
             setUltimoItemScaneado(itemAtualizado);
+
+            registrarLog({
+                item: itemAtual,
+                quantidade: incremento,
+                caixa: caixaFinal,
+                acao: `Item adicionado na caixa ${caixaFinal.numero}`
+            });
 
             setSnackbar({
                 open: true,

@@ -163,6 +163,13 @@ function HistoricoLogs() {
         return funcionario?.nome || codigo;
     };
 
+    const funcionariosMap = Object.fromEntries(
+        funcionarios.map(f => [
+            String(f.codigo),
+            f.nome
+        ])
+    );
+
     const logsFiltrados = logs.filter(log => {
 
         const termo = busca.toLowerCase();
@@ -181,7 +188,7 @@ function HistoricoLogs() {
 
         const passouUsuario =
             !usuarioFiltro ||
-            String(log.usuario)
+            (funcionariosMap[String(log.usuario)] || "")
                 .toLowerCase()
                 .includes(usuarioFiltro.toLowerCase());
 
@@ -554,7 +561,7 @@ function HistoricoLogs() {
                                     </TableCell>
 
                                     <TableCell>
-                                        {log.usuario}
+                                        {funcionariosMap[String(log.usuario)] || log.usuario}
                                     </TableCell>
 
                                 </TableRow>
