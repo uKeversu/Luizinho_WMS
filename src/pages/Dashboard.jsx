@@ -170,6 +170,44 @@ function Dashboard({ tipo }) {
         }
     };
 
+    const registrarLog = async ({
+        nota,
+        acao,
+        observacao = null,
+    }) => {
+
+        try {
+
+            const payload = {
+                nota_id: nota.id ?? null,
+                usuario: userInfo?.codigo,
+                acao,
+                observacoes: observacao
+            };
+
+            console.log("LOG ALTERAÇÃO ETIQUETA:", payload);
+
+            const response = await fetch(
+                `${API}/api/nfe/item/movimentacao/log`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Auth-Token": token
+                    },
+                    body: JSON.stringify(payload)
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(await response.text());
+            }
+
+        } catch (error) {
+            console.error("Erro ao enviar log:", error);
+        }
+    };
+
     // Busca nome dos funcionários pelo código na API
     const buscarFuncionarios = async () => {
         try {
@@ -429,6 +467,12 @@ function Dashboard({ tipo }) {
                 throw new Error(data?.erro || "Erro ao atualizar");
             }
 
+            await registrarLog({
+                nota,
+                acao: "Alterou status da nota",
+                observacao: "Novo status: PENDENTE",
+            });
+
             const formatarDataBR = () => {
                 const hoje = new Date();
                 const dia = String(hoje.getDate()).padStart(2, '0');
@@ -512,6 +556,12 @@ function Dashboard({ tipo }) {
             if (!response.ok) {
                 throw new Error(data?.erro || "Erro ao atualizar etiqueta");
             }
+
+            await registrarLog({
+                nota,
+                acao: "Alterou etiqueta da nota",
+                observacao: `Nova etiqueta: ${etiqueta}`,
+            });
 
             setNotas(prev =>
                 prev.map(n =>

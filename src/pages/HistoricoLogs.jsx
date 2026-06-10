@@ -49,6 +49,9 @@ function HistoricoLogs() {
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(false);
 
+    const [notaInfo, setNotaInfo] = useState(null);
+    const [funcionarios, setFuncionarios] = useState([]);
+
     const [busca, setBusca] = useState("");
     const [usuarioFiltro, setUsuarioFiltro] = useState("");
     const [acaoFiltro, setAcaoFiltro] = useState("");
@@ -93,6 +96,8 @@ function HistoricoLogs() {
 
     useEffect(() => {
         carregarLogs();
+        carregarFuncionarios();
+        carregarNota();
     }, []);
 
     const formatarData = (data) => {
@@ -100,6 +105,62 @@ function HistoricoLogs() {
         if (!data) return "-";
 
         return new Date(data).toLocaleString("pt-BR");
+    };
+
+    const carregarFuncionarios = async () => {
+        try {
+
+            const response = await fetch(
+                `${API}/api/funcionarios/listar`,
+                {
+                    headers: {
+                        "X-Auth-Token": token
+                    }
+                }
+            );
+
+            const data = await response.json();
+
+            setFuncionarios(data || []);
+
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const carregarNota = async () => {
+        try {
+
+            const response = await fetch(
+                `${API}/api/notas/listar?page=1&data_inicio=2026-01-01&data_fim=2026-12-31&id=${notaId}&sort_by=data_emissao&sort_order=DESC`,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Auth-Token": token
+                    }
+                }
+            );
+
+            const data = await response.json();
+            console.log(data)
+            console.log(data.data[0])
+
+            if (data.data?.length > 0) {
+                setNotaInfo(data.data[0]);
+            }
+
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const obterNomeUsuario = (codigo) => {
+
+        const funcionario = funcionarios.find(
+            f => String(f.codigo) === String(codigo)
+        );
+
+        return funcionario?.nome || codigo;
     };
 
     const logsFiltrados = logs.filter(log => {
@@ -270,6 +331,16 @@ function HistoricoLogs() {
                     />
 
                     <TextField
+                        label="Usuário"
+                        value={usuarioFiltro}
+                        onChange={(e) =>
+                            setUsuarioFiltro(
+                                e.target.value
+                            )
+                        }
+                    />
+
+                    <TextField
                         select
                         label="Filtrar ação"
                         size="small"
@@ -310,19 +381,73 @@ function HistoricoLogs() {
                             </MenuItem>
                         ))}
                     </TextField>
+                </Box>
+            </Paper>
 
-                    <TextField
-                        label="Usuário"
-                        value={usuarioFiltro}
-                        onChange={(e) =>
-                            setUsuarioFiltro(
-                                e.target.value
-                            )
-                        }
-                    />
+            {/* NOTA */}
+            <Paper
+                sx={{
+                    p: 2,
+                    mb: 3,
+                    bgcolor: "background.alerta"
+                }}
+            >
+                <Box
+                    display="flex"
+                    gap={4}
+                    flexWrap="wrap"
+                    sx={{ justifyContent: 'space-around' }}
+                >
+                    <Box>
+                        <Typography variant="caption">
+                            Nota Fiscal
+                        </Typography>
+                        <Typography variant="h6">
+                            {notaInfo?.numero}
+                        </Typography>
+                    </Box>
+                    <Box>
+                        <Typography variant="caption">
+                            Série
+                        </Typography>
+                        <Typography variant="h6">
+                            {notaInfo?.serie}
+                        </Typography>
+                    </Box>
+                    <Box>
+                        <Typography variant="caption">
+                            Fornecedor
+                        </Typography>
+                        <Typography variant="h6">
+                            {notaInfo?.fornecedor}
+                        </Typography>
+                    </Box>
+                    <Box>
+                        <Typography variant="caption">
+                            Status
+                        </Typography>
+                        <Typography variant="h6">
+                            {notaInfo?.status}
+                        </Typography>
+                    </Box>
+                    <Box>
+                        <Typography variant="caption">
+                            Emissão
+                        </Typography>
+                        <Typography variant="h6">
+                            {notaInfo?.data_emissao}
+                        </Typography>
+                    </Box>
+                    <Box>
+                        <Typography variant="caption">
+                            Importação/Recebimento
+                        </Typography>
+                        <Typography variant="h6">
+                            {notaInfo?.data_recebimento}
+                        </Typography>
+                    </Box>
 
                 </Box>
-
             </Paper>
 
             {/* RESUMO */}
@@ -333,17 +458,28 @@ function HistoricoLogs() {
                 mb={3}
                 flexWrap="wrap"
             >
-
                 <Chip
                     color="primary"
                     label={`Total Logs: ${logsFiltrados.length}`}
                 />
-
                 <Chip
                     color="success"
-                    label={`Nota: ${notaId}`}
+                    label={`Produtos movimentados: ${new Set(
+                        logsFiltrados
+                            .map(l => l.cod_produto)
+                            .filter(Boolean)
+                    ).size
+                        }`}
                 />
-
+                <Chip
+                    color="warning"
+                    label={`Usuários: ${new Set(
+                        logsFiltrados
+                            .map(l => l.usuario)
+                            .filter(Boolean)
+                    ).size
+                        }`}
+                />
             </Box>
 
             {/* TABELA */}
