@@ -132,12 +132,12 @@ function Dashboard({ tipo }) {
         ordemData
     ]);
 
-    // Padroniza busca de notas dos últimos 7 dias
+    // Padroniza busca de notas dos últimos 15 dias
     useEffect(() => {
         const hoje = new Date();
 
         const seteDiasAtras = new Date();
-        seteDiasAtras.setDate(hoje.getDate() - 7);
+        seteDiasAtras.setDate(hoje.getDate() - 15);
 
         const formatarData = (data) => {
             return data.toISOString().split("T")[0];
