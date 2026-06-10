@@ -111,18 +111,18 @@ function HistoricoLogs() {
             log.acao?.toLowerCase().includes(termo) ||
             log.cod_produto?.toLowerCase().includes(termo) ||
             log.cod_barras?.toLowerCase().includes(termo) ||
-            log.caixa?.toLowerCase().includes(termo);
+            log.caixa?.toLowerCase().includes(termo) ||
+            log.observacoes?.toLowerCase().includes(termo);
 
         const passouAcao =
             !acaoFiltro ||
             log.acao === acaoFiltro;
 
-        return passouAcao;
-
         const passouUsuario =
             !usuarioFiltro ||
             String(log.usuario)
-                .includes(usuarioFiltro);
+                .toLowerCase()
+                .includes(usuarioFiltro.toLowerCase());
 
         return (
             passouBusca &&
@@ -370,6 +370,7 @@ function HistoricoLogs() {
 
                                 <TableCell>Data/Hora</TableCell>
                                 <TableCell>Ação</TableCell>
+                                <TableCell>Observação</TableCell>
                                 <TableCell>Produto</TableCell>
                                 <TableCell>Código Barras</TableCell>
                                 <TableCell>Qtd</TableCell>
@@ -394,6 +395,10 @@ function HistoricoLogs() {
 
                                     <TableCell>
                                         {log.acao}
+                                    </TableCell>
+
+                                    <TableCell>
+                                        {log.observacoes}
                                     </TableCell>
 
                                     <TableCell>

@@ -191,6 +191,63 @@ function AtualizarCean() {
         }
     };
 
+    const registrarLog = async ({
+        item = null,
+        acao,
+        local_anterior = null,
+        local_novo = null,
+        cod_produto_anterior = null,
+        cod_produto_novo = null,
+        cod_barras_anterior = null,
+        cod_barras_novo = null,
+        observacao = null,
+    }) => {
+
+        try {
+
+            const payload = {
+                nfe_item_id: item?.id ?? null,
+                nota_id: notaSelecionada?.id ?? null,
+
+                usuario: userInfo?.codigo,
+
+                acao,
+
+                local_anterior,
+                local_novo,
+
+                cod_produto_anterior,
+                cod_produto: cod_produto_novo,
+
+                cod_barras_anterior,
+                cod_barras: cod_barras_novo,
+
+                observacoes: observacao
+            };
+
+            console.log("LOG ALTERAÇÃO ITEM:", payload);
+
+            const response = await fetch(
+                `${API}/api/nfe/item/movimentacao/log`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Auth-Token": token
+                    },
+                    body: JSON.stringify(payload)
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(await response.text());
+            }
+
+        } catch (error) {
+            console.error("Erro ao enviar log:", error);
+        }
+    };
+
     const alterarCampo = (index, campo, valor) => {
         const novos = [...itens];
 
@@ -209,21 +266,77 @@ function AtualizarCean() {
 
     // SALVAR
     const salvarItem = async (item, index) => {
-        try {
-            const res = await fetch(`${API}/api/nfe/itemcod/${item.id}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    basico: item.basico,
-                    cean: item.cean === "SEM GTIN" ? "" : item.cean,
-                    codire: item.cean === "SEM GTIN" ? "" : item.cean,
-                    loc_sistema: item.loc_sistema,
-                })
+
+        const itemOriginal = item.original;
+
+        const alteracoes = [];
+
+        if (itemOriginal.loc_sistema !== item.loc_sistema) {
+            alteracoes.push(
+                `LOC: ${itemOriginal.loc_sistema} -> ${item.loc_sistema}`
+            );
+        }
+
+        if (itemOriginal.basico !== item.basico) {
+            alteracoes.push(
+                `CÓDIGO SSPLUS: ${itemOriginal.basico} -> ${item.basico}`
+            );
+        }
+
+        if (itemOriginal.cean !== item.cean) {
+            alteracoes.push(
+                `CEAN: ${itemOriginal.cean} -> ${item.cean}`
+            );
+        }
+
+        if (alteracoes.length === 0) {
+            setSnackbar({
+                open: true,
+                message: "Nenhuma alteração realizada",
+                severity: "warning"
             });
+            return;
+        }
+
+        try {
+
+            const res = await fetch(
+                `${API}/api/nfe/itemcod/${item.id}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        basico: item.basico,
+                        cean: item.cean === "SEM GTIN" ? "" : item.cean,
+                        codire: item.cean === "SEM GTIN" ? "" : item.cean,
+                        loc_sistema: item.loc_sistema,
+                    })
+                }
+            );
 
             if (!res.ok) throw new Error(await res.text());
+
+            await registrarLog({
+                item,
+                acao: "Alterou cadastro do item",
+
+                local_anterior: itemOriginal.loc_sistema,
+                local_novo: item.loc_sistema,
+
+                cod_produto_anterior: itemOriginal.basico,
+                cod_produto_novo: item.basico,
+
+                cod_barras_anterior: itemOriginal.cean,
+                cod_barras_novo: item.cean,
+                observacao: alteracoes.join(" | ")
+            });
+
+            // atualiza o snapshot original
+            item.original = {
+                ...item
+            };
 
             setSnackbar({
                 open: true,
@@ -231,10 +344,8 @@ function AtualizarCean() {
                 severity: "success"
             });
 
-            // limpa edição
             setEditIndex(null);
 
-            // Remove do cache de alterações
             setItensEditados(prev => {
                 const copy = { ...prev };
                 delete copy[index];
@@ -242,17 +353,19 @@ function AtualizarCean() {
             });
 
         } catch (err) {
+
             setSnackbar({
                 open: true,
                 message: err.message,
                 severity: "error"
             });
+
         }
     };
 
     const handleKeyDown = (e, item, index) => {
         if (e.key === "Enter") {
-            salvarItem(item);
+            salvarItem(item, index);
 
             // Pula linha depois de salvar alteração
             const next = index + 1;
