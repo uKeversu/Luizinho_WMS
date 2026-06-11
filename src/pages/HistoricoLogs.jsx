@@ -518,6 +518,7 @@ function HistoricoLogs() {
                                 <TableCell>Código Barras</TableCell>
                                 <TableCell>Qtd</TableCell>
                                 <TableCell>Caixa</TableCell>
+                                <TableCell>LOC</TableCell>
                                 <TableCell>Usuário</TableCell>
 
                             </TableRow>
@@ -558,6 +559,10 @@ function HistoricoLogs() {
 
                                     <TableCell>
                                         {log.caixa || "-"}
+                                    </TableCell>
+
+                                    <TableCell>
+                                        {log.local_novo || "-"}
                                     </TableCell>
 
                                     <TableCell>
