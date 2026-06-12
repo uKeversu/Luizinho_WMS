@@ -69,6 +69,14 @@ function Conferencia() {
     const location = useLocation();
     const notas = location.state?.notas || [];
 
+    // Bloqueio operação manual
+    const [inicioLeitura, setInicioLeitura] = useState(null);
+    const [bloqueioManual, setBloqueioManual] = useState(false);
+    const [modalAutorizacao, setModalAutorizacao] = useState(false);
+    const [usuarioSupervisor, setUsuarioSupervisor] = useState("");
+    const [senhaSupervisor, setSenhaSupervisor] = useState("");
+    const [codigoPendente, setCodigoPendente] = useState("");
+
     const notaAtual = useMemo(() => {
         return notas.find(n => n?.id);
     }, [notas]);
@@ -259,6 +267,37 @@ function Conferencia() {
         const chaveItens = `itens_conferencia_${notasIds.join("_")}`;
         localStorage.setItem(chaveItens, JSON.stringify(itens));
     }, [itens, notasIds]);
+
+    const autorizarLeituraManual = async () => {
+
+        if (
+            senhaSupervisor === "Admin100378"
+        ) {
+
+            registrarLog({
+                acao: "Conferência manual autorizada",
+                observacao: `Código ${codigoPendente} Autorizado por ${usuarioSupervisor}`
+            });
+
+            setCodigo(codigoPendente);
+
+            setModalAutorizacao(false);
+
+            setUsuarioSupervisor("")
+            setSenhaSupervisor("")
+            setCodigoPendente("")
+
+            scanner();
+
+            return;
+        }
+
+        setSnackbar({
+            open: true,
+            message: "Usuário ou senha inválidos",
+            severity: "error"
+        });
+    };
 
     // Sincroniza com SSPLUS pelo ID da nota
     const syncSSPlus = async () => {
@@ -777,6 +816,7 @@ function Conferencia() {
                 cod_barras: item?.codigo_barras ?? null,
                 quantidade: quantidade ?? null,
                 caixa: caixa?.numero ?? null,
+                observacoes: observacao
             });
 
             const response = await fetch(
@@ -807,6 +847,8 @@ function Conferencia() {
                         quantidade: quantidade ?? null,
 
                         caixa: caixa?.numero ?? null,
+
+                        observacoes: observacao ?? null,
                     })
                 }
             );
@@ -1215,6 +1257,52 @@ function Conferencia() {
                 cheia: !prev.cheia
             };
         });
+    };
+
+    const handleCodigoKeyDown = (e) => {
+
+        if (!inicioLeitura && e.key.length === 1) {
+            setInicioLeitura(Date.now());
+        }
+
+        if (e.key === "Enter") {
+
+            const duracao = inicioLeitura
+                ? Date.now() - inicioLeitura
+                : 0;
+
+            console.log(
+                `Código: ${codigo} | Duração: ${duracao}ms`
+            );
+
+            // Código longo digitado lentamente
+            if (codigo.length >= 8 && duracao > 1000) {
+
+                setCodigoPendente(codigo);
+
+                registrarLog({
+                    acao: "Tentativa de digitação de código de barras"
+                });
+
+                setSnackbar({
+                    open: true,
+                    message: "Digitação manual detectada. Solicite autorização.",
+                    severity: "warning"
+                });
+
+                setModalAutorizacao(true);
+
+                setInicioLeitura(null);
+
+                e.preventDefault();
+
+                return;
+            }
+
+            setInicioLeitura(null);
+
+            scanner();
+        }
     };
 
     // Scanner
@@ -2252,7 +2340,19 @@ function Conferencia() {
                         size="small"
                         value={codigo}
                         onChange={(e) => setCodigo(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === "Enter") scanner(); }}
+                        onKeyDown={handleCodigoKeyDown}
+                        onPaste={(e) => {
+                            e.preventDefault();
+
+                            registrarLog({
+                                acao: "Tentativa de colar código de barras"
+                            });
+                            setSnackbar({
+                                open: true,
+                                message: "Colar códigos não é permitido",
+                                severity: "warning"
+                            });
+                        }}
                         inputRef={inputRef}
                         autoFocus
                         fullWidth
@@ -2995,6 +3095,74 @@ function Conferencia() {
                     >
                         Confirmar agrupamentos
                     </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog
+                open={modalAutorizacao}
+                onClose={() => setModalAutorizacao(false)}
+                slotProps={{
+                    paper: {
+                        sx: {
+                            bgcolor: "background.card",
+                            color: "text.primary",
+                            borderRadius: 3
+                        }
+                    }
+                }}
+            >
+                <DialogTitle>
+                    Autorização de Supervisor/Gerência
+                </DialogTitle>
+
+                <DialogContent>
+
+                    <Typography mb={2}>
+                        Digitação manual detectada.
+                    </Typography>
+
+                    <TextField
+                        fullWidth
+                        margin="dense"
+                        label="Usuário"
+                        value={usuarioSupervisor}
+                        onChange={(e) =>
+                            setUsuarioSupervisor(e.target.value)
+                        }
+                    />
+
+                    <TextField
+                        fullWidth
+                        margin="dense"
+                        label="Senha"
+                        type="password"
+                        value={senhaSupervisor}
+                        onChange={(e) =>
+                            setSenhaSupervisor(e.target.value)
+                        }
+                    />
+
+                </DialogContent>
+
+                <DialogActions>
+
+                    <Button
+                        onClick={() => {
+                            setModalAutorizacao(false);
+                            setUsuarioSupervisor("");
+                            setSenhaSupervisor("");
+                        }}
+                    >
+                        Cancelar
+                    </Button>
+
+                    <Button
+                        variant="contained"
+                        onClick={autorizarLeituraManual}
+                    >
+                        Autorizar
+                    </Button>
+
                 </DialogActions>
             </Dialog>
 
