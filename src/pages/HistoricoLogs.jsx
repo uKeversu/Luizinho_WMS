@@ -101,10 +101,11 @@ function HistoricoLogs() {
     }, []);
 
     const formatarData = (data) => {
-
         if (!data) return "-";
 
-        return new Date(data).toLocaleString("pt-BR");
+        return new Date(data + "Z").toLocaleString("pt-BR", {
+            timeZone: "America/Sao_Paulo"
+        });
     };
 
     const carregarFuncionarios = async () => {
