@@ -160,7 +160,7 @@ function Dashboard({ tipo }) {
                 return "PENDENTE,FORNECEDOR_DIRETO, EM_CONFERENCIA";
 
             case 2:
-                return "CONFERIDA";
+                return "CONFERIDA, FINALIZADO_VIA _BANCO";
 
             case 3:
                 return "";
