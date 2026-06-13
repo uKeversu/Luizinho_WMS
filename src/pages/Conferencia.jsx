@@ -1137,7 +1137,7 @@ function Conferencia() {
             payload: caixa
         });
         registrarLog({
-            caixa: caixaAberta,
+            caixa,
             acao: "Removeu caixa vazia"
         });
     };

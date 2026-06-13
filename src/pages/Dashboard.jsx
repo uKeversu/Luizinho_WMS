@@ -386,8 +386,6 @@ function Dashboard({ tipo }) {
         }
 
         try {
-
-            // Nome do arquivo
             const nomeArquivo = `NF_${nota.numero}_SERIE_${nota.serie}.xml`;
 
             // Cria blob XML
