@@ -269,24 +269,47 @@ function Conferencia() {
         localStorage.setItem(chaveItens, JSON.stringify(itens));
     }, [itens, notasIds]);
 
+    const usuariosAutorizados = [
+        {
+            nome: "Kelwin Gameiro",
+            senha: "8Kq7Zp2M4vN9xL5RtWj"
+        },
+        {
+            nome: "Fabio da Silva",
+            senha: "Y3AhD8mQ1sJ6cVn2PzX"
+        },
+        {
+            nome: "Daniel Novais",
+            senha: "F7KkR9uT3wB5yNq8LxC"
+        },
+        {
+            nome: "Mikael Henrique",
+            senha: "M2vH7pK9DdS4jWn6QzR"
+        }
+    ];
+
     const autorizarLeituraManual = async () => {
 
-        if (
-            senhaSupervisor === "Admin100378"
-        ) {
+        const usuarioValido = usuariosAutorizados.find(
+            (usuario) =>
+                usuario.nome === usuarioSupervisor.trim() &&
+                usuario.senha === senhaSupervisor
+        );
+
+        if (usuarioValido) {
 
             registrarLog({
                 acao: "Conferência manual autorizada",
-                observacao: `Código ${codigoPendente} Autorizado por ${usuarioSupervisor}`
+                observacao: `Código ${codigoPendente} autorizado por ${usuarioValido.nome}`
             });
 
             setCodigo(codigoPendente);
 
             setModalAutorizacao(false);
 
-            setUsuarioSupervisor("")
-            setSenhaSupervisor("")
-            setCodigoPendente("")
+            setUsuarioSupervisor("");
+            setSenhaSupervisor("");
+            setCodigoPendente("");
 
             scanner();
 
