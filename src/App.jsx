@@ -12,6 +12,7 @@ import PainelReimpressao from "./pages/PainelReimpressao";
 import Produtividade from "./pages/Produtividade";
 import ConsultaGuarda from "./pages/ConsultaGuarda";
 import HistoricoLogs from "./pages/HistoricoLogs";
+import ReimprimirSenhas from "./pages/ReimprimirSenhas"
 
 import './index.css';
 
@@ -35,6 +36,7 @@ function App() {
           <Route path="/Produtividade" element={<Produtividade />} />
           <Route path="/ConsultaGuarda" element={<ConsultaGuarda />} />
           <Route path="/HistoricoLogs/:notaId" element={<HistoricoLogs />}/>
+          <Route path="/ReimprimirSenhas" element={<ReimprimirSenhas/>} />
         </Routes>
       </Router>
     </ThemeProvider>

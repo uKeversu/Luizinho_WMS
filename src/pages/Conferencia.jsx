@@ -76,6 +76,7 @@ function Conferencia() {
     const [usuarioSupervisor, setUsuarioSupervisor] = useState("");
     const [senhaSupervisor, setSenhaSupervisor] = useState("");
     const [codigoPendente, setCodigoPendente] = useState("");
+    const senhaRef = useRef(null);
 
     const notaAtual = useMemo(() => {
         return notas.find(n => n?.id);
@@ -3128,6 +3129,11 @@ function Conferencia() {
                         onChange={(e) =>
                             setUsuarioSupervisor(e.target.value)
                         }
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                senhaRef.current?.focus();
+                            }
+                        }}
                     />
 
                     <TextField
@@ -3135,10 +3141,16 @@ function Conferencia() {
                         margin="dense"
                         label="Senha"
                         type="password"
+                        inputRef={senhaRef}
                         value={senhaSupervisor}
                         onChange={(e) =>
                             setSenhaSupervisor(e.target.value)
                         }
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                autorizarLeituraManual();
+                            }
+                        }}
                     />
 
                 </DialogContent>
