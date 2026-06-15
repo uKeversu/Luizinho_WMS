@@ -454,7 +454,7 @@ function Dashboard({ tipo }) {
                         "X-Auth-Token": token
                     },
                     body: JSON.stringify({
-                        status: "PENDENTE" 
+                        status: "PENDENTE"
                     })
                 }
             );

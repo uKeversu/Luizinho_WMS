@@ -1564,15 +1564,14 @@ function Conferencia() {
                 cheia: caixaDestino.cheia ?? false
             };
 
-
             // Envia itens pra API
             const sucesso = await enviarItensDaCaixa(caixaFinal);
-
-            iniciarConferencia();
 
             if (!sucesso) {
                 return;
             }
+
+            await iniciarConferencia();
 
             registrarLog({
                 item: itemAtual,
