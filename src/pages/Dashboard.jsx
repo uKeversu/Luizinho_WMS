@@ -250,10 +250,15 @@ function Dashboard({ tipo }) {
             if (busca.trim()) {
                 const valor = busca.trim();
 
-                if (/^\d{14}$/.test(valor)) {
+                if (/^\d{44}$/.test(valor)) {
+                    params.append("chave_acesso", valor);
+
+                } else if (/^\d{14}$/.test(valor)) {
                     params.append("cnpj_emitente", valor);
+
                 } else if (/^\d+$/.test(valor)) {
                     params.append("numero", valor);
+
                 } else {
                     params.append("razao_social_emitente", valor);
                 }
