@@ -43,6 +43,9 @@ function NotasEmTransito() {
     const [modalPendente, setModalPendente] = useState(false);
     const [notaSelecionada, setNotaSelecionada] = useState(null);
     const [codigoFuncionario, setCodigoFuncionario] = useState("");
+    const [motivoPendente, setMotivoPendente] = useState("");
+    const [aguardandoCracha, setAguardandoCracha] = useState(false);
+    const [tipoConfirmacao, setTipoConfirmacao] = useState("");
 
     const buscaRef = useRef(null);
     const codigoFuncionarioRef = useRef(null);
@@ -229,15 +232,83 @@ function NotasEmTransito() {
 
     const abrirModalPendente = (nota) => {
         setNotaSelecionada(nota);
+        setMotivoPendente("");
         setCodigoFuncionario("");
+        setAguardandoCracha(false);
         setModalPendente(true);
     };
 
-    const marcarComoPendente = async (nota, codigoFuncionario) => {
+    const selecionarAcao = (tipo) => {
+
+        setTipoConfirmacao(tipo);
+
+        if (tipo === "RECEBIMENTO_COMPLETO") {
+            setMotivoPendente("");
+        } else {
+            setMotivoPendente(tipo);
+        }
+
+        setAguardandoCracha(true);
+
+        setTimeout(() => {
+            codigoFuncionarioRef.current?.focus();
+        }, 100);
+    };
+
+    const selecionarMotivo = (motivo) => {
+        setMotivoPendente(motivo);
+        setAguardandoCracha(true);
+
+        setTimeout(() => {
+            codigoFuncionarioRef.current?.focus();
+        }, 100);
+    };
+
+    const handleCodigoFuncionario = (e) => {
+
+        const valor = e.target.value;
+
+        setCodigoFuncionario(valor);
+
+        if (e.key === "Enter" && valor.trim()) {
+
+            marcarComoPendente(
+                notaSelecionada,
+                valor.trim(),
+                motivoPendente
+            );
+        }
+    };
+
+    const marcarComoPendente = async (
+        nota,
+        codigoFuncionario,
+        motivo = ""
+    ) => {
 
         try {
 
             setLoadingIds(prev => [...prev, nota.id]);
+
+            const recebimentoCompleto =
+                tipoConfirmacao === "RECEBIMENTO_COMPLETO";
+
+            let observacao = "";
+
+            if (!recebimentoCompleto) {
+
+                const motivos = {
+                    FALTA_VOLUME: "Recebimento com falta de volume",
+                    FALTA_ITEM: "Recebimento com falta de item",
+                    FALTA_VOLUME_E_ITEM: "Recebimento com falta de volume e item",
+                    AVARIA: "Recebimento com avaria"
+                };
+
+                observacao =
+                    `${motivos[motivo]} | ` +
+                    `Volumes NF: ${obterVolume(nota.xml)} | ` +
+                    `Itens NF: ${obterQuantidadeTotalItens(nota.xml)}`;
+            }
 
             const response = await fetch(
                 `${API}/api/nfe/atualizar_por_nfe/${nota.serie}/${nota.numero}`,
@@ -248,7 +319,8 @@ function NotasEmTransito() {
                         "X-Auth-Token": token
                     },
                     body: JSON.stringify({
-                        status: "PENDENTE"
+                        status: "PENDENTE",
+                        observacao
                     })
                 }
             );
@@ -261,11 +333,26 @@ function NotasEmTransito() {
                 );
             }
 
-            await registrarLog({
-                nota,
-                acao: "Alterou status da nota",
-                observacao: `Novo status: PENDENTE | Funcionário: ${codigoFuncionario}`
-            });
+            if (recebimentoCompleto) {
+
+                await registrarLog({
+                    nota,
+                    acao: "Recebimento confirmado",
+                    observacao:
+                        `Recebimento completo sem observações | ` +
+                        `Funcionário: ${codigoFuncionario}`
+                });
+
+            } else {
+
+                await registrarLog({
+                    nota,
+                    acao: "Recebimento com divergência",
+                    observacao:
+                        `${observacao} | ` +
+                        `Funcionário: ${codigoFuncionario}`
+                });
+            }
 
             setNotas(prev =>
                 prev.filter(n => n.id !== nota.id)
@@ -273,7 +360,9 @@ function NotasEmTransito() {
 
             setSnackbar({
                 open: true,
-                message: `NF ${nota.numero} marcada como pendente`,
+                message: recebimentoCompleto
+                    ? `NF ${nota.numero} recebida com sucesso`
+                    : `NF ${nota.numero} marcada com observação`,
                 severity: "success"
             });
 
@@ -428,7 +517,7 @@ function NotasEmTransito() {
                                             gap: 1
                                         }}
                                     >
-                                        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around' }}>
+                                        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                                             <Typography
                                                 sx={{
                                                     fontSize: '1rem',
@@ -552,74 +641,165 @@ function NotasEmTransito() {
                     }}
                 >
                     <DialogTitle>
-                        Confirmo que recebi a nota sem volumes faltantes
+                        Confirmação de Recebimento
                     </DialogTitle>
 
                     <DialogContent>
 
                         {notaSelecionada && (
-                            <Box mt={1}>
 
-                                <Typography>
-                                    <strong>NF:</strong> {notaSelecionada.numero}
+                            <Box>
+
+                                <Typography
+                                    variant="h5"
+                                    align="center"
+                                    fontWeight="bold"
+                                    mb={2}
+                                >
+                                    NF {notaSelecionada.numero}
                                 </Typography>
 
-                                <Typography>
-                                    <strong>Fornecedor:</strong> {notaSelecionada.fornecedor}
-                                </Typography>
+                                <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around' }}>
+                                    <Typography
+                                        variant="h4"
+                                        align="center"
+                                    >
+                                        📦 {obterVolume(notaSelecionada.xml)} Volumes
+                                    </Typography>
 
-                                <Typography>
-                                    <strong>Volumes:</strong>{" "}
-                                    {obterVolume(notaSelecionada.xml)}
-                                </Typography>
+                                    <Typography
+                                        variant="h4"
+                                        align="center"
+                                        mb={3}
+                                    >
+                                        📋 {obterQuantidadeTotalItens(
+                                            notaSelecionada.xml
+                                        )} Itens
+                                    </Typography>
+                                </Box>
 
-                                <Typography>
-                                    <strong>Itens:</strong>{" "}
-                                    {obterQuantidadeTotalItens(
-                                        notaSelecionada.xml
-                                    )}
-                                </Typography>
+                                {!aguardandoCracha ? (
 
-                                <TextField
-                                    inputRef={codigoFuncionarioRef}
-                                    fullWidth
-                                    sx={{ mt: 3 }}
-                                    label="Código do Funcionário"
-                                    value={codigoFuncionario}
-                                    onChange={(e) =>
-                                        setCodigoFuncionario(e.target.value)
-                                    }
-                                />
+                                    <Grid container spacing={2}>
+
+                                        <Grid size={12}>
+                                            <Button
+                                                fullWidth
+                                                color="success"
+                                                variant="contained"
+                                                size="large"
+                                                sx={{
+                                                    height: 70,
+                                                    fontSize: "1.1rem",
+                                                    fontWeight: "bold"
+                                                }}
+                                                onClick={() =>
+                                                    selecionarAcao(
+                                                        "RECEBIMENTO_COMPLETO"
+                                                    )
+                                                }
+                                            >
+                                                ✅ Recebimento Completo
+                                            </Button>
+                                        </Grid>
+                                        <Grid size={12}>
+                                            <Button
+                                                fullWidth
+                                                size="large"
+                                                variant="contained"
+                                                onClick={() =>
+                                                    selecionarMotivo(
+                                                        "FALTA_VOLUME"
+                                                    )
+                                                }
+                                            >
+                                                📦 Falta Volume
+                                            </Button>
+                                        </Grid>
+
+                                        <Grid size={12}>
+                                            <Button
+                                                fullWidth
+                                                size="large"
+                                                variant="contained"
+                                                onClick={() =>
+                                                    selecionarMotivo(
+                                                        "FALTA_ITEM"
+                                                    )
+                                                }
+                                            >
+                                                📋 Falta Item
+                                            </Button>
+                                        </Grid>
+
+                                        <Grid size={12}>
+                                            <Button
+                                                fullWidth
+                                                size="large"
+                                                variant="contained"
+                                                onClick={() =>
+                                                    selecionarMotivo(
+                                                        "FALTA_VOLUME_E_ITEM"
+                                                    )
+                                                }
+                                            >
+                                                📦📋 Falta Volume e Item
+                                            </Button>
+                                        </Grid>
+
+                                        <Grid size={12}>
+                                            <Button
+                                                fullWidth
+                                                size="large"
+                                                variant="contained"
+                                                onClick={() =>
+                                                    selecionarMotivo(
+                                                        "AVARIA"
+                                                    )
+                                                }
+                                            >
+                                                ❌ Avaria
+                                            </Button>
+                                        </Grid>
+
+                                    </Grid>
+
+                                ) : (
+
+                                    <Box mt={2}>
+
+                                        <Typography
+                                            align="center"
+                                            variant="h6"
+                                            mb={2}
+                                        >
+                                            Informe seu código de funcionário
+                                        </Typography>
+
+                                        <TextField
+                                            inputRef={codigoFuncionarioRef}
+                                            fullWidth
+                                            autoFocus
+                                            value={codigoFuncionario}
+                                            onChange={(e) =>
+                                                setCodigoFuncionario(
+                                                    e.target.value
+                                                )
+                                            }
+                                            onKeyDown={
+                                                handleCodigoFuncionario
+                                            }
+                                        />
+
+                                    </Box>
+
+                                )}
 
                             </Box>
+
                         )}
 
                     </DialogContent>
-
-                    <DialogActions>
-
-                        <Button
-                            onClick={() =>
-                                setModalPendente(false)
-                            }
-                        >
-                            Cancelar
-                        </Button>
-
-                        <Button
-                            variant="contained"
-                            disabled={!codigoFuncionario.trim()}
-                            onClick={() =>
-                                marcarComoPendente(
-                                    notaSelecionada,
-                                    codigoFuncionario
-                                )
-                            }
-                        >
-                            Confirmar
-                        </Button>
-
-                    </DialogActions>
                 </Dialog>
 
                 <Snackbar
