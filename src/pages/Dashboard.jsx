@@ -247,6 +247,13 @@ function Dashboard({ tipo }) {
                 status: obterFiltroStatus()
             });
 
+            if (etiquetaFiltro) {
+                params.append(
+                    "etiqueta",
+                    etiquetaFiltro.toLowerCase()
+                );
+            }
+
             if (busca.trim()) {
                 const valor = busca.trim();
 
@@ -281,19 +288,6 @@ function Dashboard({ tipo }) {
 
             setNotas(data.data || []);
             setTotalPages(data.total_pages || 1);
-
-            // Filtro por etiqueta
-            let notasFiltradas = data.data || [];
-
-            if (etiquetaFiltro) {
-                notasFiltradas = notasFiltradas.filter(
-                    nota =>
-                        (nota.etiqueta || "Sem etiqueta") ===
-                        etiquetaFiltro
-                );
-            }
-
-            setNotas(notasFiltradas);
 
         } catch (err) {
             console.error(err);

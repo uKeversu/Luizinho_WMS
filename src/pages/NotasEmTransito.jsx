@@ -11,7 +11,11 @@ import {
     Snackbar,
     Alert,
     Backdrop,
-    TextField
+    TextField,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions
 } from "@mui/material";
 
 import RefreshIcon from "@mui/icons-material/Refresh";
@@ -36,8 +40,12 @@ function NotasEmTransito() {
     const [loading, setLoading] = useState(false);
     const [loadingIds, setLoadingIds] = useState([]);
     const [busca, setBusca] = useState("");
+    const [modalPendente, setModalPendente] = useState(false);
+    const [notaSelecionada, setNotaSelecionada] = useState(null);
+    const [codigoFuncionario, setCodigoFuncionario] = useState("");
 
     const buscaRef = useRef(null);
+    const codigoFuncionarioRef = useRef(null);
 
     const [snackbar, setSnackbar] = useState({
         open: false,
@@ -51,6 +59,7 @@ function NotasEmTransito() {
         }
     }, [token, busca]);
 
+    // Foca no input
     useEffect(() => {
         if (token) {
             setTimeout(() => {
@@ -58,6 +67,14 @@ function NotasEmTransito() {
             }, 100);
         }
     }, [token]);
+
+    useEffect(() => {
+        if (modalPendente) {
+            setTimeout(() => {
+                codigoFuncionarioRef.current?.focus();
+            }, 100);
+        }
+    }, [modalPendente]);
 
     const limparBusca = () => {
         setBusca("");
@@ -210,7 +227,13 @@ function NotasEmTransito() {
         }
     };
 
-    const marcarComoPendente = async (nota) => {
+    const abrirModalPendente = (nota) => {
+        setNotaSelecionada(nota);
+        setCodigoFuncionario("");
+        setModalPendente(true);
+    };
+
+    const marcarComoPendente = async (nota, codigoFuncionario) => {
 
         try {
 
@@ -241,7 +264,7 @@ function NotasEmTransito() {
             await registrarLog({
                 nota,
                 acao: "Alterou status da nota",
-                observacao: "Novo status: PENDENTE"
+                observacao: `Novo status: PENDENTE | Funcionário: ${codigoFuncionario}`
             });
 
             setNotas(prev =>
@@ -253,6 +276,8 @@ function NotasEmTransito() {
                 message: `NF ${nota.numero} marcada como pendente`,
                 severity: "success"
             });
+
+            setModalPendente(false);
 
         } catch (error) {
 
@@ -493,9 +518,7 @@ function NotasEmTransito() {
                                                     )
                                                 }
                                                 onClick={() =>
-                                                    marcarComoPendente(
-                                                        nota
-                                                    )
+                                                    abrirModalPendente(nota)
                                                 }
                                             >
                                                 {loadingIds.includes(
@@ -513,6 +536,91 @@ function NotasEmTransito() {
 
                     </Grid>
                 )}
+
+                <Dialog
+                    open={modalPendente}
+                    onClose={() => setModalPendente(false)}
+                    maxWidth="sm"
+                    fullWidth
+                    slotProps={{
+                        paper: {
+                            sx: {
+                                bgcolor: "background.card",
+                                color: "text.primary",
+                            }
+                        }
+                    }}
+                >
+                    <DialogTitle>
+                        Confirmo que recebi a nota sem volumes faltantes
+                    </DialogTitle>
+
+                    <DialogContent>
+
+                        {notaSelecionada && (
+                            <Box mt={1}>
+
+                                <Typography>
+                                    <strong>NF:</strong> {notaSelecionada.numero}
+                                </Typography>
+
+                                <Typography>
+                                    <strong>Fornecedor:</strong> {notaSelecionada.fornecedor}
+                                </Typography>
+
+                                <Typography>
+                                    <strong>Volumes:</strong>{" "}
+                                    {obterVolume(notaSelecionada.xml)}
+                                </Typography>
+
+                                <Typography>
+                                    <strong>Itens:</strong>{" "}
+                                    {obterQuantidadeTotalItens(
+                                        notaSelecionada.xml
+                                    )}
+                                </Typography>
+
+                                <TextField
+                                    inputRef={codigoFuncionarioRef}
+                                    fullWidth
+                                    sx={{ mt: 3 }}
+                                    label="Código do Funcionário"
+                                    value={codigoFuncionario}
+                                    onChange={(e) =>
+                                        setCodigoFuncionario(e.target.value)
+                                    }
+                                />
+
+                            </Box>
+                        )}
+
+                    </DialogContent>
+
+                    <DialogActions>
+
+                        <Button
+                            onClick={() =>
+                                setModalPendente(false)
+                            }
+                        >
+                            Cancelar
+                        </Button>
+
+                        <Button
+                            variant="contained"
+                            disabled={!codigoFuncionario.trim()}
+                            onClick={() =>
+                                marcarComoPendente(
+                                    notaSelecionada,
+                                    codigoFuncionario
+                                )
+                            }
+                        >
+                            Confirmar
+                        </Button>
+
+                    </DialogActions>
+                </Dialog>
 
                 <Snackbar
                     open={snackbar.open}
