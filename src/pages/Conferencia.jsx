@@ -304,13 +304,10 @@ function Conferencia() {
             });
 
             setCodigo(codigoPendente);
-
             setModalAutorizacao(false);
-
             setUsuarioSupervisor("");
             setSenhaSupervisor("");
             setCodigoPendente("");
-
             scanner();
 
             return;
@@ -321,6 +318,13 @@ function Conferencia() {
             message: "Usuário ou senha inválidos",
             severity: "error"
         });
+    };
+
+    const fecharModalAutorizacao = () => {
+        setModalAutorizacao(false);
+        setUsuarioSupervisor("");
+        setSenhaSupervisor("");
+        setCodigo("");
     };
 
     // Sincroniza com SSPLUS pelo ID da nota
@@ -3123,7 +3127,7 @@ function Conferencia() {
 
             <Dialog
                 open={modalAutorizacao}
-                onClose={() => setModalAutorizacao(false)}
+                onClose={fecharModalAutorizacao}
                 slotProps={{
                     paper: {
                         sx: {
@@ -3179,13 +3183,8 @@ function Conferencia() {
                 </DialogContent>
 
                 <DialogActions>
-
                     <Button
-                        onClick={() => {
-                            setModalAutorizacao(false);
-                            setUsuarioSupervisor("");
-                            setSenhaSupervisor("");
-                        }}
+                        onClick={fecharModalAutorizacao}
                     >
                         Cancelar
                     </Button>
