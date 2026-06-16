@@ -264,22 +264,6 @@ function NotasEmTransito() {
         }, 100);
     };
 
-    const handleCodigoFuncionario = (e) => {
-
-        const valor = e.target.value;
-
-        setCodigoFuncionario(valor);
-
-        if (e.key === "Enter" && valor.trim()) {
-
-            marcarComoPendente(
-                notaSelecionada,
-                valor.trim(),
-                motivoPendente
-            );
-        }
-    };
-
     const marcarComoPendente = async (
         nota,
         codigoFuncionario,
@@ -782,15 +766,25 @@ function NotasEmTransito() {
                                             autoFocus
                                             value={codigoFuncionario}
                                             onChange={(e) =>
-                                                setCodigoFuncionario(
-                                                    e.target.value
-                                                )
+                                                setCodigoFuncionario(e.target.value)
                                             }
-                                            onKeyDown={
-                                                handleCodigoFuncionario
-                                            }
-                                        />
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Enter") {
+                                                    e.preventDefault();
 
+                                                    const codigo =
+                                                        e.currentTarget.value.trim();
+
+                                                    if (!codigo) return;
+
+                                                    marcarComoPendente(
+                                                        notaSelecionada,
+                                                        codigo,
+                                                        motivoPendente
+                                                    );
+                                                }
+                                            }}
+                                        />
                                     </Box>
 
                                 )}

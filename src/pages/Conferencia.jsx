@@ -1593,7 +1593,7 @@ function Conferencia() {
             };
 
             // Envia itens pra API
-            const sucesso = await enviarItensDaCaixa(caixaFinal);
+            const sucesso = await enviarItensDaCaixa(caixaFinal, listaFinal);
 
             if (!sucesso) {
                 return;
