@@ -20,7 +20,7 @@ import PrintIcon from "@mui/icons-material/Print";
 
 function ReimpressaoCredenciais() {
 
-    const SENHA_ACESSO = "K9xT4mP7qW2vN8rL5cDj";
+    const SENHA_ACESSO = "K9xT4";
 
     const [autenticado, setAutenticado] = useState(false);
     const [senhaDigitada, setSenhaDigitada] = useState("");
@@ -46,7 +46,7 @@ function ReimpressaoCredenciais() {
         },
         {
             senha: "M2vH7pK9DdS4jWn6QzR",
-            nome: "Mikael Henrique"
+            nome: "Mateus Nascimento"
         }
     ];
 
@@ -79,14 +79,14 @@ function ReimpressaoCredenciais() {
 ^PW480
 ^LL240
 
-^FO60,20
-^BY1,2,35
-^BCN,35,N,N,N
+^FO50,15
+^BY2,2,45
+^BCN,45,N,N,N
 ^FD${user.nome}^FS
 
-^FO60,125
-^BY1,2,35
-^BCN,35,N,N,N
+^FO50,120
+^BY2,2,45
+^BCN,45,N,N,N
 ^FD${user.senha}^FS
 
 ^XZ
