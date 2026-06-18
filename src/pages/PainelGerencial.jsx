@@ -60,9 +60,17 @@ export default function DistribuicaoConferencia() {
     const [dialogFuncionario, setDialogFuncionario] = useState(false);
     const [funcionarioSelecionado, setFuncionarioSelecionado] = useState(null);
     const [buscaFuncionario, setBuscaFuncionario] = useState("");
+
+    const [todasNotas, setTodasNotas] = useState([]);
     const [pagina, setPagina] = useState(1);
     const [totalPaginas, setTotalPaginas] = useState(1);
     const itensPorPagina = 20;
+
+    const [openModal, setOpenModal] = useState(false);
+    const [loadingItens, setLoadingItens] = useState(false);
+    const [itensNota, setItensNota] = useState([]);
+    const [notaSelecionada, setNotaSelecionada] = useState(null);
+    const [buscaItem, setBuscaItem] = useState("");
 
     const [snackbar, setSnackbar] = useState({
         open: false,
@@ -83,6 +91,52 @@ export default function DistribuicaoConferencia() {
     useEffect(() => {
         carregarDados();
     }, [pagina, busca]);
+
+    async function carregarTodasNotas() {
+
+        let paginaAtual = 1;
+        let totalPaginasApi = 1;
+        let notasCompletas = [];
+
+        do {
+
+            const response = await axios.get(
+                `${API_URL}/api/notas/listar`,
+                {
+                    params: {
+                        page: paginaAtual,
+                        data_inicio: "2025-01-01",
+                        data_fim: "2030-01-01",
+                        sort_by: "data_recebimento",
+                        sort_order: "DESC",
+                        status: "PENDENTE,EM_CONFERENCIA"
+                    }
+                }
+            );
+
+            notasCompletas.push(
+                ...(response.data.data || [])
+            );
+
+            totalPaginasApi =
+                response.data.total_pages || 1;
+
+            paginaAtual++;
+
+        } while (paginaAtual <= totalPaginasApi);
+
+        setTodasNotas(
+            notasCompletas.map(nota => ({
+                ...nota,
+                usuarios_atribuidos:
+                    nota.usuarios_atribuidos
+                        ? JSON.parse(
+                            nota.usuarios_atribuidos
+                        )
+                        : []
+            }))
+        );
+    }
 
     async function carregarDados() {
         try {
@@ -131,6 +185,8 @@ export default function DistribuicaoConferencia() {
 
             ]);
 
+            await carregarTodasNotas();
+
             const funcionariosAtivos =
                 funcionariosResponse.data.filter(
                     funcionario =>
@@ -174,6 +230,61 @@ export default function DistribuicaoConferencia() {
 
         }
     }
+
+    const visualizarItens = async (nota) => {
+
+        try {
+
+            setLoadingItens(true);
+
+            const response = await axios.get(
+                `${API_URL}/api/itens_nfe/${nota.id}`
+            );
+
+            setItensNota(response.data.items || []);
+            setNotaSelecionada(nota);
+            setOpenModal(true);
+
+        } catch (error) {
+
+            console.error(error);
+
+            setSnackbar({
+                open: true,
+                severity: "error",
+                message: "Erro ao carregar itens"
+            });
+
+        } finally {
+
+            setLoadingItens(false);
+
+        }
+    };
+
+    const itensFiltrados = itensNota.filter(item => {
+
+        const termo = buscaItem.toLowerCase();
+
+        return (
+            item.descricao?.toLowerCase().includes(termo) ||
+            item.cod_produto?.toLowerCase().includes(termo) ||
+            item.basico?.toLowerCase().includes(termo) ||
+            item.cean?.includes(termo)
+        );
+
+    });
+
+    const caixaInvalida = (caixa) => {
+        if (!caixa) return true;
+        const valor = String(caixa).trim().toUpperCase();
+        return (
+            valor === "" ||
+            valor === "0" ||
+            valor === "NULL" ||
+            valor === "SEM CAIXA"
+        );
+    };
 
     function prioridadeColor(prioridade) {
 
@@ -376,17 +487,13 @@ export default function DistribuicaoConferencia() {
     const atribuicoesPorFuncionario =
         funcionarios
             .map(funcionario => ({
-
                 ...funcionario,
-
-                notas:
-                    notas.filter(
-                        nota =>
-                            nota.usuarios_atribuidos?.includes(
-                                funcionario.codigo
-                            )
-                    )
-
+                notas: todasNotas.filter(
+                    nota =>
+                        nota.usuarios_atribuidos?.includes(
+                            funcionario.codigo
+                        )
+                )
             }))
             .filter(
                 funcionario =>
@@ -418,23 +525,21 @@ export default function DistribuicaoConferencia() {
         });
 
     const notasAtribuidas =
-        notas.filter(
-            nota =>
-                nota.usuarios_atribuidos?.length
+        todasNotas.filter(
+            nota => nota.usuarios_atribuidos?.length > 0
         ).length;
 
     const notasSemAtribuicao =
-        notas.length - notasAtribuidas;
+        todasNotas.length - notasAtribuidas;
 
     const conferentesComNotas =
         funcionarios.filter(funcionario =>
-
-            notas.some(nota =>
-                nota.usuarios_atribuidos?.includes(
-                    funcionario.codigo
-                )
+            todasNotas.some(
+                nota =>
+                    nota.usuarios_atribuidos?.includes(
+                        funcionario.codigo
+                    )
             )
-
         ).length;
 
     const funcionariosMap = Object.fromEntries(
@@ -587,7 +692,7 @@ export default function DistribuicaoConferencia() {
                                 variant="h4"
                                 color="primary"
                             >
-                                {notas.length}
+                                {todasNotas.length}
                             </Typography>
 
                             <Typography>
@@ -664,10 +769,29 @@ export default function DistribuicaoConferencia() {
 
                 </CardContent>
             </Card>
-
             <Grid container spacing={3}>
 
                 <Grid size={{ xs: 12, md: 8 }}>
+                    <Box
+                        display="flex"
+                        justifyContent="center"
+                        mt={3} mb={3}
+                    >
+                        <Pagination
+                            page={pagina}
+                            count={totalPaginas}
+                            color="primary"
+                            size="large"
+                            onChange={(_, value) =>
+                                setPagina(value)
+                            }
+                            sx={{
+                                "& .MuiPaginationItem-root": {
+                                    color: "text.primary"
+                                }
+                            }}
+                        />
+                    </Box>
                     <Card
                         sx={{
                             bgcolor: "background.card",
@@ -700,8 +824,8 @@ export default function DistribuicaoConferencia() {
                                             key={nota.id}
                                             size={{
                                                 xs: 12,
-                                                md: 6,
-                                                xl: 4
+                                                md: 3,
+                                                xl: 3
                                             }}
                                         >
                                             <Card
@@ -827,7 +951,7 @@ export default function DistribuicaoConferencia() {
                                                         gap={1}
                                                         flexWrap="wrap"
                                                     >
-                                                        <Chip sx={{ color: 'primary.branco' }}
+                                                        <Chip sx={{ color: 'primary.branco', fontSize: '0.65rem' }}
                                                             size="small"
                                                             label={(nota.prioridade ||
                                                                 "SEM PRIORIDADE").toUpperCase()
@@ -836,7 +960,7 @@ export default function DistribuicaoConferencia() {
                                                                 nota.prioridade
                                                             )}
                                                         />
-                                                        <Chip sx={{ color: 'primary.branco' }}
+                                                        <Chip sx={{ color: 'primary.branco', fontSize: '0.65rem'  }}
                                                             size="small"
                                                             variant="contained"
                                                             label={`${diasPendentes} dia(s)`}
@@ -848,6 +972,15 @@ export default function DistribuicaoConferencia() {
                                                                         : "success"
                                                             }
                                                         />
+                                                        <Button
+                                                            fullWidth
+                                                            size="small"
+                                                            variant="contained"
+                                                            sx={{ mt: 2 }}
+                                                            onClick={() => visualizarItens(nota)}
+                                                        >
+                                                            Ver Itens
+                                                        </Button>
                                                     </Box>
 
                                                     {nota.usuarios_atribuidos?.length > 0 && (
@@ -1267,6 +1400,164 @@ export default function DistribuicaoConferencia() {
 
                 </DialogActions>
 
+            </Dialog>
+
+            <Dialog open={openModal} onClose={() => setOpenModal(false)} fullWidth maxWidth="md"
+                slotProps={{
+                    paper: {
+                        sx: {
+                            bgcolor: "background.card",
+                            color: "text.primary",
+                        }
+                    }
+                }}>
+                <DialogTitle>
+                    Itens da NF {notaSelecionada?.numero}
+                </DialogTitle>
+                <TextField
+                    label="Buscar por item"
+                    variant="outlined"
+                    size="small"
+                    sx={{
+                        mb: 2, display: 'flex', margin: 'auto', width: '90%', bgcolor: 'inputBg',
+                        '& .MuiOutlinedInput-root': {
+                            '&:hover fieldset': {
+                                borderColor: 'primary.main',
+                            },
+                            '&.Mui-focused fieldset': {
+                                borderColor: 'primary.main',
+                            }
+                        }
+                    }}
+                    value={buscaItem}
+                    onChange={(e) => setBuscaItem(e.target.value)}
+                />
+                <DialogContent sx={{ mt: 2 }} dividers>
+
+                    {loadingItens ? (
+
+                        <Box
+                            sx={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                minHeight: "250px",
+                                flexDirection: 'column'
+                            }}
+                        >
+                            <CircularProgress />
+                            <Typography
+                                mt={2}
+                                sx={{
+                                    color: 'text.secondary'
+                                }}
+                            >
+                                Carregando itens...
+                            </Typography>
+                        </Box>
+
+                    ) : itensNota.length === 0 ? (
+
+                        <Typography>Nenhum item encontrado</Typography>
+
+                    ) : (
+
+                        itensFiltrados.map((item, index) => {
+
+                            return (
+
+                                <Card
+                                    key={index}
+                                    sx={{
+                                        mt: 1,
+                                        mb: 1,
+                                        p: 1.5,
+                                        borderRadius: '1vh',
+                                        boxShadow: '0vh 0.1vh 0.5vh background.sombra',
+                                        bgcolor: 'background.default',
+                                        fontSize: '0.85rem'
+                                    }}
+                                >
+
+                                    {/* Linha 1 */}
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <Typography>
+                                            <strong>{item.basico || item.cod_produto || "-"}</strong>
+                                        </Typography>
+
+                                        <Typography sx={{
+                                            color:
+                                                item.status_item === "PENDENTE" ? "primary.pendentes" :
+                                                    item.status_item === "FORNECEDOR_DIRETO" ? "primary.pendentes" :
+                                                        item.status_item === "ITEM_CONFERIDO" ? "primary.conferidos" :
+                                                            item.status_item === "CONFERIDO_PARCIAL" ? "primary.parcial" :
+                                                                item.status_item === "ITEM_GUARDADO" ? "primary.guardado" :
+                                                                    item.status_item === "ITEM_VENDIDO" ? "primary.vendido" :
+                                                                        item.status_item === "ITEM_DEVOLVIDO" ? "primary.devolvido" :
+                                                                            item.status_item === "GARANTIA" ? "primary.garantia" :
+                                                                                item.status_item === "EM_TRANSITO" ? "primary.observacao" :
+                                                                                    "var(--em-transito)"
+                                        }}>
+                                            <strong>Status:</strong> {item.status_item || "SEM STATUS"}
+                                        </Typography>
+                                    </Box>
+
+                                    {/* Linha 2 */}
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <Typography
+                                            sx={{
+                                                fontSize: '0.8rem',
+                                                whiteSpace: 'nowrap',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis'
+                                            }}
+                                        >
+                                            {item.descricao || item.xProd}
+                                        </Typography>
+
+                                        <Typography sx={{ fontSize: '0.8rem' }}>
+                                            {funcionariosMap[String(item.conferente).trim()] || item.conferente || "-"}
+                                        </Typography>
+                                    </Box>
+
+                                    {/* Linha 3 */}
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
+                                        <Typography>{item.loc_sistema || "-"}</Typography>
+                                        <Typography>
+                                            {item.qtd_conferida || 0} / {Number(item.quantidade_comercial)}
+                                        </Typography>
+                                    </Box>
+
+                                    {/* Linha 4 */}
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
+                                        <Typography sx={{ fontSize: '0.75rem' }}>
+                                            {item.cean || item.codigo_barras || "-"}
+                                        </Typography>
+
+                                        <Typography sx={{ fontSize: '0.75rem' }}>
+                                            {caixaInvalida(item.caixa)
+                                                ? "SEM CAIXA"
+                                                : `Caixa ${item.caixa}`
+                                            }
+                                        </Typography>
+                                    </Box>
+
+                                </Card>
+                            );
+                        })
+                    )}
+
+                </DialogContent>
+                <DialogActions>
+                    <Button sx={{ color: "primary.branco", bgcolor: 'primary.cancelar', '&:hover': { bgcolor: 'primary.cancelarHover' } }}
+                        onClick={() => {
+                            setOpenModal(false);
+                            setBuscaItem("");
+                        }}
+                    >
+                        Fechar
+                    </Button>
+                </DialogActions>
             </Dialog>
 
             <Snackbar

@@ -1256,7 +1256,7 @@ function Dashboard({ tipo }) {
                                                         {aba !== 1 && aba !== 3 && aba !== 4 &&
                                                             (nota.prioridade === "URGENTE" ||
                                                                 nota.prioridade === "ALTA" ||
-                                                                nota.prioridade === "MÉDIA" ||
+                                                                nota.prioridade === "MEDIA" ||
                                                                 nota.prioridade === "BAIXA") && (
                                                                 <Box
                                                                     sx={{
