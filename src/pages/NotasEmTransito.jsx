@@ -20,6 +20,7 @@ import {
 
 import RefreshIcon from "@mui/icons-material/Refresh";
 import ClearIcon from "@mui/icons-material/Clear";
+import SearchIcon from "@mui/icons-material/Search";
 
 import LoginFuncionario from "../components/LoginFuncionario";
 
@@ -61,7 +62,7 @@ function NotasEmTransito() {
         if (token) {
             buscarNotas();
         }
-    }, [token, busca]);
+    }, [token]);
 
     // Foca no input
     useEffect(() => {
@@ -449,21 +450,39 @@ function NotasEmTransito() {
                         fullWidth
                         value={busca}
                         onChange={(e) => setBusca(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                buscarNotas();
+                            }
+                        }}
                     />
+
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        startIcon={<SearchIcon />}
+                        onClick={buscarNotas}
+                        sx={{minWidth: '15vh'}}
+                    >
+                        Buscar
+                    </Button>
 
                     <Button
                         variant="outlined"
                         color="primary"
                         startIcon={<ClearIcon />}
                         onClick={limparBusca}
+                        sx={{minWidth: '15vh'}}
                     >
                         Limpar
                     </Button>
 
                     <Button
-                        variant="contained"
+                        variant="outlined"
+                        color="primary"
                         startIcon={<RefreshIcon />}
                         onClick={atualizarTela}
+                        sx={{minWidth: '15vh'}}
                     >
                         Atualizar
                     </Button>
