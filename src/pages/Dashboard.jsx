@@ -170,6 +170,25 @@ function Dashboard({ tipo }) {
         }
     };
 
+    const obterFiltroFunc = () => {
+        switch (aba) {
+            case 0:
+                return "";
+
+            case 1:
+                return `${userInfo?.codigo}`;
+
+            case 2:
+                return "";
+
+            case 3:
+                return "";
+
+            default:
+                return "";
+        }
+    };
+
     const registrarLog = async ({
         nota,
         acao,
@@ -244,7 +263,8 @@ function Dashboard({ tipo }) {
                 data_fim: dataFim,
                 tipo_data: tipoDataFiltro,
                 sort_order: ordemData.toUpperCase(),
-                status: obterFiltroStatus()
+                status: obterFiltroStatus(),
+                usuarios_atribuidos: obterFiltroFunc()
             });
 
             if (etiquetaFiltro) {
@@ -273,6 +293,7 @@ function Dashboard({ tipo }) {
 
             console.log("ABA:", aba);
             console.log("STATUS:", obterFiltroStatus());
+            console.log("BUSCANDO NOTAS DO FUNCIONÁRIO:", obterFiltroFunc());
             console.log("URL:", `${API}/api/notas/listar?${params}`);
 
             const response = await fetch(
@@ -937,7 +958,7 @@ function Dashboard({ tipo }) {
                         centered
                     >
                         <Tab label="Em Trânsito" />
-                        <Tab label="Pendentes" />
+                        <Tab label="Minhas notas" />
                         <Tab label="Conferidas" />
                         <Tab label="Histórico" />
                     </Tabs>
@@ -1140,7 +1161,7 @@ function Dashboard({ tipo }) {
                             </Typography>
                         </Box>
                     ) : notas.length === 0 ? (
-                        <Typography>Nenhuma nota encontrada</Typography>
+                        <Typography>Nenhuma nota foi atribuída ao seu usuário.</Typography>
                     ) : (
                         <Grid container spacing={4}>
 
