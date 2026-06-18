@@ -340,16 +340,16 @@ function Conferencia() {
 
         setLoadingSync(true);
 
-        console.log("SINCRONIZANDO A NOTA:", notaAtual.id)
+        console.log("SINCRONIZANDO A NOTA:", notaAtual.id, "NF:", notaAtual.numero)
 
         try {
-            const response = await fetch(`${API}/api/sync_nfe`, {
+            const response = await fetch(`${API}/api/sync/nfe_item_x_local_sistema`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    nfe_id: notaAtual.id
+                    
                 })
             });
 
