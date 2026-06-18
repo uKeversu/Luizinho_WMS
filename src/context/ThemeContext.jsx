@@ -50,15 +50,22 @@ export function ThemeProvider({ children }) {
             conferido: "#2b743d",
             achouItem: "#2b743d93",
 
-            em_transito:"#28a745",
-            pendente:"#ff9800",
+            em_transito: "#28a745",
+            pendente: "#ff9800",
             em_conferencia: "#7c4dff",
             conferida: "#007bff",
+
             qive: "#ff2e2e",
             manual: "#02bb74",
-            lancada: "#ffab2d",
+
+            lancada: "#ff9800",
             gravada: "#007bff",
             cancelada: "#ff2e2e",
+
+            urgente: "#ff2e2e",
+            alta: "#ff9800",
+            media: "#007bff",
+            baixa: "#28a745",
 
             compra: '#44cc61',
             pendentes: '#dfdc20',
@@ -96,15 +103,22 @@ export function ThemeProvider({ children }) {
             conferido: "#28a745",
             achouItem: "#28a746a9",
 
-            em_transito:"#28a745",
-            pendente:"#ff9800",
+            em_transito: "#28a745",
+            pendente: "#ff9800",
             em_conferencia: "#7c4dff",
             conferida: "#007bff",
+
             qive: "#ff2e2e",
             manual: "#02bb74",
+
             lancada: "#ff9800",
             gravada: "#007bff",
             cancelada: "#ff2e2e",
+
+            urgente: "#ff2e2e",
+            alta: "#ff9800",
+            media: "#007bff",
+            baixa: "#28a745",
 
             compra: '#44cc61',
             pendentes: '#c9c600',
@@ -145,6 +159,11 @@ export function ThemeProvider({ children }) {
                 lancada: colors.lancada,
                 gravada: colors.gravada,
                 cancelada: colors.cancelada,
+
+                urgente: colors.urgente,
+                alta: colors.alta,
+                media: colors.media,
+                baixa: colors.baixa,
 
                 compra: colors.compra,
                 pendentes: colors.pendentes,

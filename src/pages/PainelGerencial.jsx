@@ -29,6 +29,8 @@ import {
     DialogActions
 } from "@mui/material";
 
+import Pagination from "@mui/material/Pagination";
+
 import PersonIcon from "@mui/icons-material/Person";
 import LogoutIcon from "@mui/icons-material/Logout";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -58,6 +60,9 @@ export default function DistribuicaoConferencia() {
     const [dialogFuncionario, setDialogFuncionario] = useState(false);
     const [funcionarioSelecionado, setFuncionarioSelecionado] = useState(null);
     const [buscaFuncionario, setBuscaFuncionario] = useState("");
+    const [pagina, setPagina] = useState(1);
+    const [totalPaginas, setTotalPaginas] = useState(1);
+    const itensPorPagina = 20;
 
     const [snackbar, setSnackbar] = useState({
         open: false,
@@ -77,12 +82,38 @@ export default function DistribuicaoConferencia() {
 
     useEffect(() => {
         carregarDados();
-    }, []);
+    }, [pagina, busca]);
 
     async function carregarDados() {
         try {
 
             setLoading(true);
+
+            const params = {
+                page: pagina,
+                data_inicio: "2025-01-01",
+                data_fim: "2030-01-01",
+                sort_by: "data_recebimento",
+                sort_order: "DESC",
+                status: "PENDENTE,EM_CONFERENCIA"
+            };
+
+            if (busca.trim()) {
+                const valor = busca.trim();
+
+                if (/^\d{44}$/.test(valor)) {
+                    params.chave_acesso = valor;
+
+                } else if (/^\d{14}$/.test(valor)) {
+                    params.cnpj_emitente = valor;
+
+                } else if (/^\d+$/.test(valor)) {
+                    params.numero = valor;
+
+                } else {
+                    params.razao_social_emitente = valor;
+                }
+            }
 
             const [
                 notasResponse,
@@ -91,16 +122,7 @@ export default function DistribuicaoConferencia() {
 
                 axios.get(
                     `${API_URL}/api/notas/listar`,
-                    {
-                        params: {
-                            page: 1,
-                            data_inicio: "2025-01-01",
-                            data_fim: "2030-01-01",
-                            sort_by: "data_recebimento",
-                            sort_order: "DESC",
-                            status: "PENDENTE,EM_CONFERENCIA"
-                        }
-                    }
+                    { params }
                 ),
 
                 axios.get(
@@ -132,7 +154,7 @@ export default function DistribuicaoConferencia() {
                 );
 
             setNotas(notasTratadas);
-
+            setTotalPaginas(notasResponse.data.total_pages || 1);
             setFuncionarios(funcionariosAtivos);
 
         } catch (error) {
@@ -634,9 +656,10 @@ export default function DistribuicaoConferencia() {
                         fullWidth
                         label="Buscar NF, fornecedor ou CNPJ"
                         value={busca}
-                        onChange={(e) =>
-                            setBusca(e.target.value)
-                        }
+                        onChange={(e) => {
+                            setBusca(e.target.value);
+                            setPagina(1);
+                        }}
                     />
 
                 </CardContent>
@@ -664,7 +687,7 @@ export default function DistribuicaoConferencia() {
 
                             <Grid container spacing={2}>
 
-                                {notasFiltradas.map((nota) => {
+                                {notas.map((nota) => {
 
                                     const diasPendentes =
                                         calcularDiasPendentes(
@@ -869,7 +892,28 @@ export default function DistribuicaoConferencia() {
                             </Grid>
                         </CardContent>
                     </Card>
+                    <Box
+                        display="flex"
+                        justifyContent="center"
+                        mt={3} mb={3}
+                    >
+                        <Pagination
+                            page={pagina}
+                            count={totalPaginas}
+                            color="primary"
+                            size="large"
+                            onChange={(_, value) =>
+                                setPagina(value)
+                            }
+                            sx={{
+                                "& .MuiPaginationItem-root": {
+                                    color: "text.primary"
+                                }
+                            }}
+                        />
+                    </Box>
                 </Grid>
+
                 <Grid size={{ xs: 12, md: 4 }}>
                     <Card sx={{ bgcolor: 'background.card' }}>
                         <CardContent>
@@ -1235,14 +1279,12 @@ export default function DistribuicaoConferencia() {
                     }))
                 }
             >
-
                 <Alert
                     severity={snackbar.severity}
                     variant="filled"
                 >
                     {snackbar.message}
                 </Alert>
-
             </Snackbar>
 
             {loading && (

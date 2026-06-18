@@ -96,6 +96,7 @@ function NotasEmTransito() {
     };
 
     const registrarLog = async ({
+        usuario,
         nota,
         acao,
         observacao = null
@@ -113,7 +114,7 @@ function NotasEmTransito() {
                     },
                     body: JSON.stringify({
                         nota_id: nota.id,
-                        usuario: userInfo?.codigo,
+                        usuario: usuario,
                         acao,
                         observacoes: observacao
                     })

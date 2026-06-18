@@ -155,16 +155,14 @@ function Dashboard({ tipo }) {
         switch (aba) {
             case 0:
                 return "EM_TRANSITO";
-
             case 1:
                 return "PENDENTE,FORNECEDOR_DIRETO, EM_CONFERENCIA";
-
             case 2:
+                return "PENDENTE,FORNECEDOR_DIRETO, EM_CONFERENCIA";
+            case 3:
                 return "CONFERIDA, FINALIZADO_VIA _BANCO";
-
             case 3:
                 return "";
-
             default:
                 return "";
         }
@@ -174,16 +172,14 @@ function Dashboard({ tipo }) {
         switch (aba) {
             case 0:
                 return "";
-
             case 1:
-                return `${userInfo?.codigo}`;
-
-            case 2:
                 return "";
-
+            case 2:
+                return `${userInfo?.codigo}`;
             case 3:
                 return "";
-
+            case 4:
+                return "";
             default:
                 return "";
         }
@@ -749,8 +745,9 @@ function Dashboard({ tipo }) {
                         <strong>
                             {aba === 0 && "Notas em Trânsito"}
                             {aba === 1 && "Notas Recebidas"}
-                            {aba === 2 && "Notas Conferidas"}
-                            {aba === 3 && "Histórico"}
+                            {aba === 2 && `Notas de ${userInfo?.nome}`}
+                            {aba === 3 && "Notas Conferidas"}
+                            {aba === 4 && "Histórico"}
                         </strong>
                     </Typography>
                     <Box>
@@ -958,6 +955,7 @@ function Dashboard({ tipo }) {
                         centered
                     >
                         <Tab label="Em Trânsito" />
+                        <Tab label="Pendentes" />
                         <Tab label="Minhas notas" />
                         <Tab label="Conferidas" />
                         <Tab label="Histórico" />
@@ -1118,7 +1116,7 @@ function Dashboard({ tipo }) {
                         </Button>
                     </Box>
 
-                    {aba === 1 && aba !== 3 && (
+                    {aba === 2 && aba !== 3 && aba !== 4 && aba !== 1 && (
                         <Button
                             variant="contained"
                             sx={{ mb: 2 }}
@@ -1215,7 +1213,8 @@ function Dashboard({ tipo }) {
                                                             fontSize: '1rem',
                                                             fontWeight: 700,
                                                             color: 'primary.main',
-                                                            lineHeight: 1
+                                                            lineHeight: 1,
+                                                            whiteSpace: 'nowrap'
                                                         }}
                                                     >
                                                         NF {nota.numero}
@@ -1230,45 +1229,74 @@ function Dashboard({ tipo }) {
                                                     >
                                                         Série {nota.serie}
                                                     </Typography>
-
                                                 </Box>
-                                                {aba !== 3 &&
-                                                    (nota.status === "FORNECEDOR_DIRETO" ||
-                                                        nota.status === "PENDENTE" ||
-                                                        nota.status === "EM_CONFERENCIA") && (
-                                                        <Checkbox
-                                                            size="small"
-                                                            checked={notasSelecionadas.includes(nota.id)}
-                                                            onChange={(e) => {
-                                                                if (e.target.checked) {
-                                                                    const notaAtual = nota;
 
-                                                                    if (
-                                                                        (notaAtual.status === "PENDENTE" || notaAtual.status === "EM_CONFERENCIA") &&
-                                                                        notasSelecionadas.length >= 1
-                                                                    ) {
-                                                                        setSnackbar({
-                                                                            open: true,
-                                                                            message: "Só é permitido uma nota por vez",
-                                                                            severity: "warning"
-                                                                        });
-                                                                        return;
+                                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', width: '100%' }}>
+                                                    {aba !== 1 && aba !== 3 && aba !== 4 &&
+                                                        (nota.prioridade === "URGENTE" ||
+                                                            nota.prioridade === "ALTA" ||
+                                                            nota.prioridade === "MÉDIA" ||
+                                                            nota.prioridade === "BAIXA") && (
+                                                            <Box
+                                                                sx={{
+                                                                    px: 1,
+                                                                    py: 0.3,
+                                                                    borderRadius: '999px',
+                                                                    bgcolor:
+                                                                        nota.prioridade === "URGENTE"
+                                                                            ? 'primary.urgente'
+                                                                            : nota.prioridade === "ALTA"
+                                                                                ? 'primary.alta'
+                                                                                : nota.prioridade === "MEDIA"
+                                                                                    ? 'primary.media'
+                                                                                    : nota.prioridade === "BAIXA"
+                                                                                        ? 'primary.baixa'
+                                                                                        : 'primary.default',
+                                                                    color: 'primary.branco',
+                                                                    fontSize: '0.7rem',
+                                                                    fontWeight: 700
+                                                                }}
+                                                            >
+                                                                {nota.prioridade?.toUpperCase()}
+                                                            </Box>
+                                                        )}
+                                                    {aba !== 1 && aba !== 3 && aba !== 4 &&
+                                                        (nota.status === "FORNECEDOR_DIRETO" ||
+                                                            nota.status === "PENDENTE" ||
+                                                            nota.status === "EM_CONFERENCIA") && (
+                                                            <Checkbox
+                                                                size="small"
+                                                                checked={notasSelecionadas.includes(nota.id)}
+                                                                onChange={(e) => {
+                                                                    if (e.target.checked) {
+                                                                        const notaAtual = nota;
+
+                                                                        if (
+                                                                            (notaAtual.status === "PENDENTE" || notaAtual.status === "EM_CONFERENCIA") &&
+                                                                            notasSelecionadas.length >= 1
+                                                                        ) {
+                                                                            setSnackbar({
+                                                                                open: true,
+                                                                                message: "Só é permitido uma nota por vez",
+                                                                                severity: "warning"
+                                                                            });
+                                                                            return;
+                                                                        }
+
+                                                                        setNotasSelecionadas(prev => [
+                                                                            ...prev,
+                                                                            nota.id
+                                                                        ]);
+                                                                    } else {
+                                                                        setNotasSelecionadas(prev =>
+                                                                            prev.filter(id => id !== nota.id)
+                                                                        );
                                                                     }
-
-                                                                    setNotasSelecionadas(prev => [
-                                                                        ...prev,
-                                                                        nota.id
-                                                                    ]);
-                                                                } else {
-                                                                    setNotasSelecionadas(prev =>
-                                                                        prev.filter(id => id !== nota.id)
-                                                                    );
-                                                                }
-                                                            }}
-                                                        />
-                                                    )}
-
-                                                {aba !== 1 && (
+                                                                }}
+                                                            />
+                                                        )}
+                                                </Box>
+                                                {aba !== 2 && (
                                                     <Box
                                                         sx={{
                                                             display: 'flex',
@@ -1559,7 +1587,7 @@ function Dashboard({ tipo }) {
                                                     Ver itens
                                                 </Button>
 
-                                                {aba !== 3 && nota.status === "EM_TRANSITO" && (
+                                                {aba !== 3 && aba !== 4 && nota.status === "EM_TRANSITO" && (
                                                     <Button
                                                         fullWidth
                                                         variant="contained"
