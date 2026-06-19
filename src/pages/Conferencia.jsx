@@ -349,7 +349,7 @@ function Conferencia() {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    
+
                 })
             });
 
@@ -889,6 +889,153 @@ function Conferencia() {
 
         } catch (error) {
             console.error("Erro ao enviar log: ", error);
+        }
+    };
+
+    const iniciarConferencia = async () => {
+        try {
+            for (const nota of notaInfo) {
+                const response = await fetch(
+                    `${API}/api/nfe/atualizar_por_nfe/${nota.serie}/${nota.numero}`,
+                    {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            status: "EM_CONFERENCIA"
+                        })
+                    }
+                );
+
+                console.log("ATUALIZANDO STATUS DA NOTA: EM_CONFERENCIA")
+
+                const text = await response.text();
+
+                if (!response.ok) {
+                    throw new Error(text || "Erro ao enviar status EM_CONFERENCIA");
+                }
+
+                registrarLog({
+                    acao: "Iniciou conferência"
+                });
+
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function atribuirNotas() {
+        try {
+            console.log(`Atribuindo nota ${notaAtual.numero} ao usuário ${userInfo?.nome}...`)
+            console.log(`Prioridade da NF ${notaAtual?.numero}: ${notaAtual?.prioridade}`)
+            const response = await fetch(
+                `${API}/api/notas/atribuir`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        nota_id: notaAtual?.id,
+                        usuarios: [userInfo?.codigo],
+                        prioridade: notaAtual?.prioridade
+                    })
+                }
+            );
+
+            const data = await response.json();
+
+            console.log("STATUS:", response.status);
+            console.log("RETORNO:", data);
+
+            if (!response.ok) {
+                throw new Error(data.erro || "Erro ao atribuir nota");
+            }
+
+        } catch (error) {
+            console.error(error);
+            console.log(error)
+        } finally {
+            console.log(`Nota atribuida somente ao usuario ${userInfo?.nome}`)
+
+        }
+    }
+
+    // Fecha caixa e envia para API
+    const enviarItensDaCaixa = async (caixa, itensAtualizados = itens) => {
+        try {
+
+            const itensDaCaixa = itensAtualizados.filter(i =>
+                i.caixaId === caixa.id
+            );
+
+            if (itensDaCaixa.length === 0) return true;
+
+            for (const item of itensDaCaixa) {
+
+                const codigoEnvio =
+                    item.codigo_barras && item.codigo_barras !== "SEM GTIN"
+                        ? item.codigo_barras
+                        : item.codigo_produto;
+
+                if (!codigoEnvio) {
+                    setSnackbar({
+                        open: true,
+                        message: "Código inválido para envio",
+                        severity: "error"
+                    });
+                    return false;
+                }
+
+                console.log("ENVIANDO PARA API A CAIXA: ", caixa.numero)
+
+                const response = await fetch(
+                    `${API}/api/atualizar_item/${item.notaId}/${codigoEnvio}`,
+                    {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            status_item: item.conferido === item.quantidade
+                                ? "ITEM_CONFERIDO"
+                                : "CONFERIDO_PARCIAL",
+
+                            caixa: caixa.numero,
+                            conferente: userInfo?.codigo,
+                            qtd_conferida: item.conferido
+                        })
+                    }
+                );
+
+                if (response.status === 401) {
+                    logout();
+                    return false;
+                }
+
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(text);
+                }
+            }
+
+            return true;
+
+        } catch (error) {
+            console.error(error);
+
+            setSnackbar({
+                open: true,
+                message: `Erro ao enviar itens da caixa ${caixa.numero}`,
+                severity: "error"
+            });
+
+            return false;
         }
     };
 
@@ -1600,6 +1747,7 @@ function Conferencia() {
             }
 
             await iniciarConferencia();
+            await atribuirNotas();
 
             registrarLog({
                 item: itemAtual,
@@ -1906,115 +2054,6 @@ function Conferencia() {
             return novo;
         });
     };
-
-    // Fecha caixa e envia para API
-    const enviarItensDaCaixa = async (caixa, itensAtualizados = itens) => {
-        try {
-
-            const itensDaCaixa = itensAtualizados.filter(i =>
-                i.caixaId === caixa.id
-            );
-
-            if (itensDaCaixa.length === 0) return true;
-
-            for (const item of itensDaCaixa) {
-
-                const codigoEnvio =
-                    item.codigo_barras && item.codigo_barras !== "SEM GTIN"
-                        ? item.codigo_barras
-                        : item.codigo_produto;
-
-                if (!codigoEnvio) {
-                    setSnackbar({
-                        open: true,
-                        message: "Código inválido para envio",
-                        severity: "error"
-                    });
-                    return false;
-                }
-
-                console.log("ENVIANDO PARA API A CAIXA: ", caixa.numero)
-
-                const response = await fetch(
-                    `${API}/api/atualizar_item/${item.notaId}/${codigoEnvio}`,
-                    {
-                        method: "PUT",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${token}`
-                        },
-                        body: JSON.stringify({
-                            status_item: item.conferido === item.quantidade
-                                ? "ITEM_CONFERIDO"
-                                : "CONFERIDO_PARCIAL",
-
-                            caixa: caixa.numero,
-                            conferente: userInfo?.codigo,
-                            qtd_conferida: item.conferido
-                        })
-                    }
-                );
-
-                if (response.status === 401) {
-                    logout();
-                    return false;
-                }
-
-                if (!response.ok) {
-                    const text = await response.text();
-                    throw new Error(text);
-                }
-            }
-
-            return true;
-
-        } catch (error) {
-            console.error(error);
-
-            setSnackbar({
-                open: true,
-                message: `Erro ao enviar itens da caixa ${caixa.numero}`,
-                severity: "error"
-            });
-
-            return false;
-        }
-    };
-
-    const iniciarConferencia = async () => {
-        try {
-
-            for (const nota of notaInfo) {
-                const response = await fetch(
-                    `${API}/api/nfe/atualizar_por_nfe/${nota.serie}/${nota.numero}`,
-                    {
-                        method: "PUT",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${token}`
-                        },
-                        body: JSON.stringify({
-                            status: "EM_CONFERENCIA"
-                        })
-                    }
-                );
-
-                console.log("ATUALIZANDO STATUS DA NOTA: EM_CONFERENCIA")
-
-                const text = await response.text();
-
-                if (!response.ok) {
-                    throw new Error(text || "Erro ao enviar status EM_CONFERENCIA");
-                }
-
-                registrarLog({
-                    acao: "Iniciou conferência"
-                });
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    }
 
     // Finalizar conferência
     const finalizarConferencia = async () => {

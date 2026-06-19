@@ -72,6 +72,10 @@ export default function DistribuicaoConferencia() {
     const [notaSelecionada, setNotaSelecionada] = useState(null);
     const [buscaItem, setBuscaItem] = useState("");
 
+    const [filtroAtribuicao, setFiltroAtribuicao] = useState("TODAS");
+    const [filtroStatus, setFiltroStatus] = useState("TODOS");
+    const [filtroPrioridade, setFiltroPrioridade] = useState("TODAS");
+
     const [snackbar, setSnackbar] = useState({
         open: false,
         severity: "success",
@@ -90,7 +94,13 @@ export default function DistribuicaoConferencia() {
 
     useEffect(() => {
         carregarDados();
-    }, [pagina, busca]);
+    }, [
+        pagina,
+        busca,
+        filtroStatus,
+        filtroAtribuicao,
+        filtroPrioridade
+    ]);
 
     async function carregarTodasNotas() {
 
@@ -148,9 +158,22 @@ export default function DistribuicaoConferencia() {
                 data_inicio: "2025-01-01",
                 data_fim: "2030-01-01",
                 sort_by: "data_recebimento",
-                sort_order: "DESC",
-                status: "PENDENTE,EM_CONFERENCIA"
+                sort_order: "DESC"
             };
+
+            if (filtroStatus !== "TODOS") {
+                params.status = filtroStatus;
+            } else {
+                params.status = "PENDENTE,EM_CONFERENCIA";
+            }
+
+            if (filtroAtribuicao !== "TODAS") {
+                params.atribuicao = filtroAtribuicao;
+            }
+
+            if (filtroPrioridade !== "TODAS") {
+                params.prioridade = filtroPrioridade;
+            }
 
             if (busca.trim()) {
                 const valor = busca.trim();
@@ -374,7 +397,6 @@ export default function DistribuicaoConferencia() {
                             }
                         )
                 )
-
             );
 
             setSnackbar({
@@ -754,21 +776,122 @@ export default function DistribuicaoConferencia() {
                 </Grid>
             </Grid>
 
-            <Card sx={{ mb: 3, bgcolor: 'background.card' }}>
+            <Card sx={{ mb: 3, bgcolor: "background.card" }}>
                 <CardContent>
+                    <Grid container spacing={2} alignItems="center">
 
-                    <TextField
-                        fullWidth
-                        label="Buscar NF, fornecedor ou CNPJ"
-                        value={busca}
-                        onChange={(e) => {
-                            setBusca(e.target.value);
-                            setPagina(1);
-                        }}
-                    />
+                        {/* Busca */}
+                        <Grid size={{ xs: 12, md: 6 }}>
+                            <TextField
+                                fullWidth
+                                label="Buscar NF, fornecedor ou CNPJ"
+                                value={busca}
+                                onChange={(e) => {
+                                    setBusca(e.target.value);
+                                    setPagina(1);
+                                }}
+                            />
+                        </Grid>
 
+                        {/* Atribuição */}
+                        <Grid size={{ xs: 12, md: 2 }}>
+                            <FormControl fullWidth>
+                                <InputLabel>Atribuição</InputLabel>
+                                <Select
+                                    value={filtroAtribuicao}
+                                    label="Atribuição"
+                                    onChange={(e) =>
+                                        setFiltroAtribuicao(e.target.value)
+                                    }
+                                    MenuProps={{
+                                        PaperProps: {
+                                            sx: {
+                                                bgcolor: "background.default",
+                                                color: "text.primary",
+                                            },
+                                        },
+                                    }}
+                                >
+                                    <MenuItem value="TODAS">Todas</MenuItem>
+                                    <MenuItem value="ATRIBUIDAS">
+                                        Apenas atribuídas
+                                    </MenuItem>
+                                    <MenuItem value="SEM_ATRIBUICAO">
+                                        Sem atribuição
+                                    </MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Grid>
+
+                        {/* Status */}
+                        <Grid size={{ xs: 12, md: 2 }}>
+                            <FormControl fullWidth>
+                                <InputLabel>Status</InputLabel>
+                                <Select
+                                    value={filtroStatus}
+                                    label="Status"
+                                    onChange={(e) =>
+                                        setFiltroStatus(e.target.value)
+                                    }
+                                    MenuProps={{
+                                        PaperProps: {
+                                            sx: {
+                                                bgcolor: "background.default",
+                                                color: "text.primary",
+                                            },
+                                        },
+                                    }}
+                                >
+                                    <MenuItem value="TODOS">Todos</MenuItem>
+                                    <MenuItem value="PENDENTE">
+                                        Pendente
+                                    </MenuItem>
+                                    <MenuItem value="EM_CONFERENCIA">
+                                        Em Conferência
+                                    </MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Grid>
+                        {/* Prioridade */}
+                        <Grid size={{ xs: 12, md: 2 }}>
+                            <FormControl fullWidth>
+                                <InputLabel>Prioridade</InputLabel>
+                                <Select
+                                    value={filtroPrioridade}
+                                    label="Prioridade"
+                                    onChange={(e) =>
+                                        setFiltroPrioridade(e.target.value)
+                                    }
+                                    MenuProps={{
+                                        PaperProps: {
+                                            sx: {
+                                                bgcolor: "background.default",
+                                                color: "text.primary",
+                                            },
+                                        },
+                                    }}
+                                >
+                                    <MenuItem value="TODAS">Todas</MenuItem>
+                                    <MenuItem value="URGENTE">
+                                        Urgente
+                                    </MenuItem>
+                                    <MenuItem value="ALTA">
+                                        Alta
+                                    </MenuItem>
+                                    <MenuItem value="MEDIA">
+                                        Média
+                                    </MenuItem>
+                                    <MenuItem value="BAIXA">
+                                        Baixa
+                                    </MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Grid>
+
+                    </Grid>
                 </CardContent>
             </Card>
+
             <Grid container spacing={3}>
 
                 <Grid size={{ xs: 12, md: 8 }}>
@@ -960,7 +1083,7 @@ export default function DistribuicaoConferencia() {
                                                                 nota.prioridade
                                                             )}
                                                         />
-                                                        <Chip sx={{ color: 'primary.branco', fontSize: '0.65rem'  }}
+                                                        <Chip sx={{ color: 'primary.branco', fontSize: '0.65rem' }}
                                                             size="small"
                                                             variant="contained"
                                                             label={`${diasPendentes} dia(s)`}
@@ -1127,36 +1250,21 @@ export default function DistribuicaoConferencia() {
                                         MenuProps={{
                                             PaperProps: {
                                                 sx: {
-                                                    bgcolor: "background.alerta",
-
-                                                    "& .MuiMenuItem-root": {
-                                                        bgcolor: "background.alerta",
-                                                        color: "text.primary"
-                                                    },
-
-                                                    "& .MuiMenuItem-root:hover": {
-                                                        bgcolor: "primary.card"
-                                                    },
-
-                                                    "& .Mui-selected": {
-                                                        bgcolor: "primary.main"
-                                                    }
-                                                }
-                                            }
+                                                    bgcolor: "background.default",
+                                                    color: "text.primary",
+                                                },
+                                            },
                                         }}
                                     >
                                         <MenuItem value="URGENTE">
                                             URGENTE
                                         </MenuItem>
-
                                         <MenuItem value="ALTA">
                                             ALTA
                                         </MenuItem>
-
                                         <MenuItem value="MEDIA">
                                             MÉDIA
                                         </MenuItem>
-
                                         <MenuItem value="BAIXA">
                                             BAIXA
                                         </MenuItem>
@@ -1277,8 +1385,6 @@ export default function DistribuicaoConferencia() {
                     </Card>
                 </Grid>
             </Grid>
-
-
 
             <Dialog
                 open={dialogFuncionario}
