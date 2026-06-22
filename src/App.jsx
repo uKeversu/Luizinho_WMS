@@ -15,6 +15,7 @@ import HistoricoLogs from "./pages/HistoricoLogs";
 import ReimprimirSenhas from "./pages/ReimprimirSenhas"
 import NotasEmTransito from "./pages/NotasEmTransito";
 import PainelGerencial from './pages/PainelGerencial'
+import RetiradaParaVenda from "./pages/RetiradaParaVenda"
 
 import './index.css';
 
@@ -41,6 +42,7 @@ function App() {
           <Route path="/ReimprimirSenhas" element={<ReimprimirSenhas/>} />
           <Route path="/NotasEmTransito" element={<NotasEmTransito/>} />
           <Route path="/PainelGerencial" element={<PainelGerencial/>} />
+          <Route path="/RetiradaParaVenda" element={<RetiradaParaVenda/>} />
         </Routes>
       </Router>
     </ThemeProvider>
