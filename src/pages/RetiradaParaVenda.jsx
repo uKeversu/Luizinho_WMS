@@ -46,7 +46,6 @@ function RetiradaParaVenda() {
 
     const [nota, setNota] = useState(null);
     const [itensNota, setItensNota] = useState([]);
-    const [produtoInfo, setProdutoInfo] = useState(null);
     const [itemSelecionado, setItemSelecionado] = useState(null);
 
     const chaveRef = useRef(null);
@@ -54,20 +53,11 @@ function RetiradaParaVenda() {
     const condicionalRef = useRef(null);
     const funcionarioRef = useRef(null);
 
+    const condicionalValida = /^C\d{23}$/;
+
     useEffect(() => {
         chaveRef.current?.focus();
     }, []);
-
-    useEffect(() => {
-        if (
-            /^\d{7}$/.test(funcionario) &&
-            nota &&
-            itemSelecionado &&
-            /^\d{6}-\d$/.test(condicional)
-        ) {
-            registrarRetirada();
-        }
-    }, [funcionario]);
 
     const buscarNota = async () => {
 
@@ -122,6 +112,17 @@ function RetiradaParaVenda() {
 
         const data = await response.json();
 
+        if (!data.items?.length) {
+            setSnackbar({
+                open: true,
+                severity: "error",
+                message: "Nenhum item encontrado para esta NF"
+            });
+
+            setNota(null);
+            return;
+        }
+
         setItensNota(data.items || []);
     };
 
@@ -152,7 +153,9 @@ function RetiradaParaVenda() {
 
         setItemSelecionado(item);
 
-        condicionalRef.current?.focus();
+        setTimeout(() => {
+            condicionalRef.current?.focus();
+        }, 50);
     };
 
     const registrarLog = async ({
@@ -300,33 +303,32 @@ function RetiradaParaVenda() {
                         <Grid size={12}>
                             <TextField
                                 inputRef={condicionalRef}
-                                onFocus={(e) => e.target.select()}
                                 fullWidth
                                 label="Código da Condicional"
                                 value={condicional}
                                 error={
                                     condicional.length > 0 &&
-                                    !/^\d{6}-\d$/.test(condicional)
+                                    !condicionalValida.test(condicional)
                                 }
                                 helperText={
                                     condicional.length > 0 &&
-                                        !/^\d{6}-\d$/.test(condicional)
-                                        ? "Formato esperado: 123456-1"
+                                        !condicionalValida.test(condicional)
+                                        ? "Formato esperado: C00010178531640529000002"
                                         : ""
                                 }
                                 onChange={(e) =>
-                                    setCondicional(e.target.value)
+                                    setCondicional(e.target.value.toUpperCase())
                                 }
                                 onKeyDown={(e) => {
 
                                     if (e.key !== "Enter") return;
 
-                                    if (!/^\d{6}-\d$/.test(condicional)) {
+                                    if (!condicionalValida.test(condicional)) {
 
                                         setSnackbar({
                                             open: true,
                                             severity: "error",
-                                            message: "Condicional inválida. Ex: 123456-1"
+                                            message: "Código de condicional inválido"
                                         });
 
                                         return;
@@ -360,7 +362,10 @@ function RetiradaParaVenda() {
                                         registrarRetirada();
                                     }
                                 }}
-                                disabled={!itemSelecionado || !/^\d{6}-\d$/.test(condicional)}
+                                disabled={
+                                    !itemSelecionado ||
+                                    !condicionalValida.test(condicional)
+                                }
                             />
                         </Grid>
 
@@ -416,9 +421,9 @@ function RetiradaParaVenda() {
                         variant="contained"
                         disabled={
                             !nota ||
-                            !produto ||
-                            !/^\d{7}$/.test(funcionario) ||
-                            !/^\d{6}-\d$/.test(condicional)
+                            !itemSelecionado ||
+                            !condicionalValida.test(condicional) ||
+                            !/^\d{7}$/.test(funcionario)
                         }
                         onClick={registrarRetirada}
                     >
