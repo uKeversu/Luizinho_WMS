@@ -78,7 +78,7 @@ function AtualizarCean() {
             const hoje = new Date();
 
             const inicio = new Date();
-            inicio.setMonth(inicio.getMonth() - 6);
+            inicio.setMonth(inicio.getMonth() - 24);
 
             const params = new URLSearchParams({
                 page: 1,
@@ -602,7 +602,7 @@ function AtualizarCean() {
                                             bgcolor: camposVazios
                                                 ? 'background.alerta'
                                                 : hasChanges
-                                                    ? '#fff3cd'
+                                                    ? 'text.primary'
                                                     : 'inherit',
 
                                             transition: "0.2s",
@@ -718,8 +718,8 @@ function AtualizarCean() {
                                             )}
                                         </TableCell>
 
-                                        {/* AÇÃO */}
-                                        <TableCell align="right" sx={{ p: 0.5 }}>
+                                        {/* SALVAR ALTERAÇÃO */}
+                                        <TableCell sx={{ p: 0.5 }}>
                                             <Button
                                                 variant="contained"
                                                 size="small"
@@ -734,7 +734,6 @@ function AtualizarCean() {
                                                 Salvar
                                             </Button>
                                         </TableCell>
-
                                     </TableRow>
                                 );
                             })}
