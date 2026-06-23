@@ -152,9 +152,8 @@ function RetiradaParaVenda() {
         }
 
         setItemSelecionado(item);
-
         setTimeout(() => {
-            condicionalRef.current?.focus();
+            funcionarioRef.current?.focus();
         }, 50);
     };
 
@@ -215,8 +214,7 @@ function RetiradaParaVenda() {
                 item: itemSelecionado,
                 acao: "Retirado para venda",
                 observacao:
-                    `Condicional ${condicional} | ` +
-                    `Item ${itemSelecionado?.basico}`
+                    `O item ${itemSelecionado?.basico} foi pego para venda`
             });
 
             setSnackbar({
@@ -248,7 +246,7 @@ function RetiradaParaVenda() {
     };
 
     return (
-        <Container maxWidth="md" sx={{ mt: 10 }}>
+        <Container maxWidth="md" sx={{ mt: 15 }}>
 
             <Card sx={{ bgcolor: 'background.default' }}>
                 <CardContent>
@@ -302,46 +300,6 @@ function RetiradaParaVenda() {
 
                         <Grid size={12}>
                             <TextField
-                                inputRef={condicionalRef}
-                                fullWidth
-                                label="Código da Condicional"
-                                value={condicional}
-                                error={
-                                    condicional.length > 0 &&
-                                    !condicionalValida.test(condicional)
-                                }
-                                helperText={
-                                    condicional.length > 0 &&
-                                        !condicionalValida.test(condicional)
-                                        ? "Formato esperado: C00010178531640529000002"
-                                        : ""
-                                }
-                                onChange={(e) =>
-                                    setCondicional(e.target.value.toUpperCase())
-                                }
-                                onKeyDown={(e) => {
-
-                                    if (e.key !== "Enter") return;
-
-                                    if (!condicionalValida.test(condicional)) {
-
-                                        setSnackbar({
-                                            open: true,
-                                            severity: "error",
-                                            message: "Código de condicional inválido"
-                                        });
-
-                                        return;
-                                    }
-
-                                    funcionarioRef.current?.focus();
-                                }}
-                                disabled={!itemSelecionado}
-                            />
-                        </Grid>
-
-                        <Grid size={12}>
-                            <TextField
                                 inputRef={funcionarioRef}
                                 onFocus={(e) => e.target.select()}
                                 fullWidth
@@ -363,8 +321,7 @@ function RetiradaParaVenda() {
                                     }
                                 }}
                                 disabled={
-                                    !itemSelecionado ||
-                                    !condicionalValida.test(condicional)
+                                    !itemSelecionado
                                 }
                             />
                         </Grid>
@@ -422,7 +379,6 @@ function RetiradaParaVenda() {
                         disabled={
                             !nota ||
                             !itemSelecionado ||
-                            !condicionalValida.test(condicional) ||
                             !/^\d{7}$/.test(funcionario)
                         }
                         onClick={registrarRetirada}
