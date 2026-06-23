@@ -69,6 +69,9 @@ function Conferencia() {
     const location = useLocation();
     const notas = location.state?.notas || [];
 
+    // Logs
+    const [logsRetiradaVenda, setLogsRetiradaVenda] = useState([]);
+
     // Bloqueio operação manual
     const [inicioLeitura, setInicioLeitura] = useState(null);
     const [bloqueioManual, setBloqueioManual] = useState(false);
@@ -253,6 +256,12 @@ function Conferencia() {
 
     }, [notasIds]);
 
+    useEffect(() => {
+        if (notaAtual?.id) {
+            carregarLogsRetiradaVenda();
+        }
+    }, [notaAtual?.id]);
+
     // Sempre que caixas mudar, salva no local storage
     useEffect(() => {
         if (!notasIds || notasIds.length === 0) return;
@@ -325,6 +334,33 @@ function Conferencia() {
         setUsuarioSupervisor("");
         setSenhaSupervisor("");
         setCodigo("");
+    };
+
+    const carregarLogsRetiradaVenda = async () => {
+        try {
+            const response = await fetch(
+                `${API}/api/nfe/item/movimentacao/log?nota_id=${notaAtual?.id}`,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Auth-Token": token
+                    }
+                }
+            );
+
+            const data = await response.json();
+
+            if (response.ok) {
+                setLogsRetiradaVenda(
+                    (data.logs || []).filter(
+                        log => log.acao === "Retirado para venda"
+                    )
+                );
+            }
+
+        } catch (error) {
+            console.error("Erro ao buscar logs:", error);
+        }
     };
 
     // Sincroniza com SSPLUS pelo ID da nota
@@ -2766,6 +2802,68 @@ function Conferencia() {
                                 </DialogActions>
                             </Dialog>
                         </Card>
+
+                        <Card
+                            sx={{
+                                p: 2,
+                                mt: 2,
+                                boxShadow: '0vh 0.1vh 0.5vh var(--sombra)',
+                                bgcolor: 'background.alerta'
+                            }}
+                        >
+                            <Typography variant="h6" sx={{ mb: 1 }}>
+                                Itens retirados para venda ({logsRetiradaVenda.length})
+                            </Typography>
+
+                            {logsRetiradaVenda.length === 0 ? (
+                                <Typography variant="body2">
+                                    Nenhum item retirado para venda.
+                                </Typography>
+                            ) : (
+                                logsRetiradaVenda.map((log) => (
+                                    <Box
+                                        key={log.id}
+                                        sx={{
+                                            py: 0.5,
+                                            borderBottom: '1px solid',
+                                            borderColor: 'divider'
+                                        }}
+                                    >
+                                        <Typography
+                                            variant="caption"
+                                            color="text.secondary"
+                                            sx={{
+                                                display: "block",
+                                                mt: 0.3
+                                            }}
+                                        >
+                                            {log.observacoes}
+                                        </Typography>
+                                        <Box
+                                            sx={{
+                                                display: "flex",
+                                                justifyContent: "space-between",
+                                                flexWrap: "wrap",
+                                                gap: 1
+                                            }}
+                                        >
+                                            <Typography variant="caption">
+                                                <strong>{log.cod_barras}</strong>
+                                            </Typography>
+
+                                            <Typography variant="caption">
+                                                {log.usuario}
+                                            </Typography>
+
+                                            <Typography variant="caption">
+                                                {new Date(log.data_hora).toLocaleString("pt-BR")}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                ))
+                            )}
+                        </Card>
+
                         <Card sx={{ p: 2, mt: 2, boxShadow: '0vh 0.1vh 0.5vh var(--sombra)', bgcolor: 'background.alerta' }}>
                             <Typography variant="h6">Observações</Typography>
 
