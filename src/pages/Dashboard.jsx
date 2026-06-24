@@ -1665,7 +1665,9 @@ function Dashboard({ tipo }) {
                         color="primary"
                     />
                 </Box>
-                <Dialog open={openModal} onClose={() => setOpenModal(false)} fullWidth maxWidth="md"
+                <Dialog open={openModal} onClose={() => {
+                    setOpenModal(false), setBuscaItem("")
+                }} fullWidth maxWidth="md"
                     slotProps={{
                         paper: {
                             sx: {

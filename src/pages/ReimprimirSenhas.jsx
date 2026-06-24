@@ -77,16 +77,16 @@ function ReimpressaoCredenciais() {
     const gerarZPL = (user) => `
 ^XA
 ^PW480
-^LL240
+^LL220
 
 ^FO50,15
-^BY2,2,45
-^BCN,45,N,N,N
+^BY1.8,2,35
+^BCN,35,N,N,N
 ^FD${user.nome}^FS
 
-^FO50,120
-^BY2,2,45
-^BCN,45,N,N,N
+^FO50,100
+^BY1.5,2,30
+^BCN,35,N,N,N
 ^FD${user.senha}^FS
 
 ^XZ

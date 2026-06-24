@@ -1044,7 +1044,7 @@ function Conferencia() {
 
                             caixa: caixa.numero,
                             conferente: userInfo?.codigo,
-                            qtd_conferida: item.conferido
+                            qtd_conferida: item.conferido,
                         })
                     }
                 );
@@ -1081,7 +1081,7 @@ function Conferencia() {
         // Pega só a primeira parte das localizações, antes do espaço
         return localizacao.split(" ")[0];
     };
-
+    
     const obterOuCriarCaixa = (localizacao) => {
 
         const prateleira = getPrateleira(localizacao);
