@@ -33,23 +33,23 @@ function ReimpressaoCredenciais() {
 
     const usuarios = [
         {
-            senha: "8Kq7Zp2M4vN9xL5RtWj",
+            senha: "8Kq7Zp2M4vN9xL",
             nome: "Kelwin Gameiro"
         },
         {
-            senha: "Y3AhD8mQ1sJ6cVn2PzX",
+            senha: "Y3AhD8mQ1sJ6cV",
             nome: "Fabio da Silva"
         },
         {
-            senha: "F7KkR9uT3wB5yNq8LxC",
+            senha: "F7KkR9uT3wB5yN",
             nome: "Daniel Novais"
         },
         {
-            senha: "M2vH7pK9DdS4jWn6QzR",
+            senha: "M2vH7pK9DdS4jW",
             nome: "Mateus Nascimento"
         },
         {
-            senha: "L5vN1pK7DtS8v3Wn6Qk0",
+            senha: "L5vN1pK7DtS8v3W",
             nome: "Vinicius Pires"
         }
     ];
@@ -83,14 +83,14 @@ function ReimpressaoCredenciais() {
 ^PW480
 ^LL220
 
-^FO50,15
-^BY1.4,2,30
-^BCN,35,N,N,N
+^FO10,75
+^BY1.5,5,35
+^BCN,50,N,N,N
 ^FD${user.nome}^FS
 
-^FO50,100
-^BY1.4,2,30
-^BCN,35,N,N,N
+^FO10,150
+^BY1.5,5,35
+^BCN,50,N,N,N
 ^FD${user.senha}^FS
 
 ^XZ
