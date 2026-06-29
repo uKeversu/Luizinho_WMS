@@ -280,20 +280,24 @@ function Conferencia() {
 
     const usuariosAutorizados = [
         {
-            nome: "Kelwin Gameiro",
-            senha: "8Kq7Zp2M4vN9xL5RtWj"
+            senha: "8Kq7Zp2M4vN9xL5RtWj",
+            nome: "Kelwin Gameiro"
         },
         {
-            nome: "Fabio da Silva",
-            senha: "Y3AhD8mQ1sJ6cVn2PzX"
+            senha: "Y3AhD8mQ1sJ6cVn2PzX",
+            nome: "Fabio da Silva"
         },
         {
-            nome: "Daniel Novais",
-            senha: "F7KkR9uT3wB5yNq8LxC"
+            senha: "F7KkR9uT3wB5yNq8LxC",
+            nome: "Daniel Novais"
         },
         {
-            nome: "Mikael Henrique",
-            senha: "M2vH7pK9DdS4jWn6QzR"
+            senha: "M2vH7pK9DdS4jWn6QzR",
+            nome: "Mateus Nascimento"
+        },
+        {
+            senha: "L5vN1pK7DtS8v3Wn6Qk0",
+            nome: "Vinicius Pires"
         }
     ];
 
@@ -1081,7 +1085,7 @@ function Conferencia() {
         // Pega só a primeira parte das localizações, antes do espaço
         return localizacao.split(" ")[0];
     };
-    
+
     const obterOuCriarCaixa = (localizacao) => {
 
         const prateleira = getPrateleira(localizacao);

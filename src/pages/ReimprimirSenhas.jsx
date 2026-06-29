@@ -47,6 +47,10 @@ function ReimpressaoCredenciais() {
         {
             senha: "M2vH7pK9DdS4jWn6QzR",
             nome: "Mateus Nascimento"
+        },
+        {
+            senha: "L5vN1pK7DtS8v3Wn6Qk0",
+            nome: "Vinicius Pires"
         }
     ];
 
@@ -80,12 +84,12 @@ function ReimpressaoCredenciais() {
 ^LL220
 
 ^FO50,15
-^BY1.8,2,35
+^BY1.4,2,30
 ^BCN,35,N,N,N
 ^FD${user.nome}^FS
 
 ^FO50,100
-^BY1.5,2,30
+^BY1.4,2,30
 ^BCN,35,N,N,N
 ^FD${user.senha}^FS
 
