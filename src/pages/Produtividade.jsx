@@ -81,30 +81,23 @@ export default function Produtividade() {
 
     // STATES
     const [loading, setLoading] = useState(true);
-
     const [dados, setDados] = useState([]);
-
     const [error, setError] = useState(null);
-
     const [tab, setTab] = useState(0);
 
     const [dataInicio, setDataInicio] = useState("");
-
     const [dataFim, setDataFim] = useState("");
 
     const [lastUpdate, setLastUpdate] = useState(null);
 
     const [openDetalhes, setOpenDetalhes] =
         useState(false);
-
     const [detalhesSelecionados,
         setDetalhesSelecionados] = useState([]);
-
     const [nomeSelecionado,
         setNomeSelecionado] = useState("");
 
     const [openRanks, setOpenRanks] = useState(false);
-
     const [imagemFullscreen, setImagemFullscreen] =
         useState(false);
 

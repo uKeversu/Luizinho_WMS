@@ -1031,8 +1031,11 @@ function Conferencia() {
                     return false;
                 }
 
+                const hoje = new Date().toISOString().slice(0, 19).replace("T", " ")
                 console.log("ENVIANDO PARA API A CAIXA: ", caixa.numero)
-
+                console.log("LOCALIZAÇÃO EM CONFERENCIA: ", item.localizacao)
+                console.log("LOCALIZAÇÃO EM CONFERENCIA: ", item.localizacao)
+                
                 const response = await fetch(
                     `${API}/api/atualizar_item/${item.notaId}/${codigoEnvio}`,
                     {
@@ -1049,9 +1052,13 @@ function Conferencia() {
                             caixa: caixa.numero,
                             conferente: userInfo?.codigo,
                             qtd_conferida: item.conferido,
+                            loc_em_conferencia: item.localizacao,
+                            data_conferencia: hoje
                         })
                     }
                 );
+
+                console.log("STATUS_ENVIO_CAIXA:", response.status);
 
                 if (response.status === 401) {
                     logout();
