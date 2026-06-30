@@ -561,7 +561,8 @@ function AtualizarCean() {
                         maxHeight: "78vh",
                         boxShadow: '0vh 0.1vh 0.5vh var(--sombra)',
                         bgcolor: 'background.tabela',
-                        color: 'text.primary'
+                        color: 'text.primary',
+                        mb: 5
                     }}
                 >
                     <Table stickyHeader size="small">
