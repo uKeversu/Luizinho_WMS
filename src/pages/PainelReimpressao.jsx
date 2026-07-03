@@ -46,6 +46,8 @@ function PainelReimpressao() {
     const [unidadesItem, setUnidadesItem] = useState({});
     const [loadingUnidades, setLoadingUnidades] = useState({});
 
+    const [modoImpressao, setModoImpressao] = useState("completa");
+
     const [snackbar, setSnackbar] = useState({
         open: false,
         message: "",
@@ -233,7 +235,7 @@ function PainelReimpressao() {
 
     // ---------------- IMPRESSÃO ----------------
 
-    const gerarZPL = (unidade, qr) => {
+    const gerarZPLCompleta = (unidade, qr) => {
         const url = `http://192.168.1.82:4173/Rastreio/${unidade.id_unico}`;
 
         return `
@@ -280,6 +282,47 @@ function PainelReimpressao() {
 
 ^XZ
 `;
+    };
+
+    const gerarZPLBarcode = (unidade) => {
+        const cean = unidade.codire
+        console.log(unidade.codire)
+        return `
+^XA
+^PW400
+^LL180
+^LH0,0
+
+^FO150,30
+^A0N,25,25
+^FD${unidade.basico}^FS
+
+^FO10,80
+^BY3,100
+^BCN,100,Y,N,N
+^FD${cean}^FS
+
+^FO10,150
+^A0N,25,25
+^FD${cean}^FS
+
+^XZ
+`;
+    };
+
+    const gerarZPL = async (unidade) => {
+
+        if (modoImpressao === "barcode") {
+            return gerarZPLBarcode(unidade);
+        }
+
+        const resQr = await fetch(
+            `${API}/api/nfe/unidade/imprimir/${unidade.id_unico}`
+        );
+
+        const qr = await resQr.json();
+
+        return gerarZPLCompleta(unidade, qr);
     };
 
     const imprimirViaPython = async (zpl) => {
@@ -335,19 +378,8 @@ function PainelReimpressao() {
 
     const imprimirUnidade = async (unidade) => {
         try {
-
-            const resQr = await fetch(
-                `${API}/api/nfe/unidade/imprimir/${unidade.id_unico}`
-            );
-
-            const qr = await resQr.json();
-
-            if (!qr.qr_url) return;
-
-            const zpl = gerarZPL(unidade, qr);
-
+            const zpl = await gerarZPL(unidade);
             await imprimirViaPython(zpl);
-
         } catch (error) {
             console.error(error);
         }
@@ -413,6 +445,22 @@ function PainelReimpressao() {
                         <pre id="resultado"></pre>
                     </Box>
                 </Box>
+            </Box>
+
+            <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+                <Button
+                    variant={modoImpressao === "completa" ? "contained" : "outlined"}
+                    onClick={() => setModoImpressao("completa")}
+                >
+                    Etiqueta completa
+                </Button>
+
+                <Button
+                    variant={modoImpressao === "barcode" ? "contained" : "outlined"}
+                    onClick={() => setModoImpressao("barcode")}
+                >
+                    Código de barras
+                </Button>
             </Box>
 
             {/* BUSCA */}
@@ -508,7 +556,7 @@ function PainelReimpressao() {
                                                                             <TableHead>
                                                                                 <TableRow>
                                                                                     <TableCell>ID ÚNICO</TableCell>
-                                                                                    <TableCell>Ação</TableCell>
+                                                                                    <TableCell>AÇÃO</TableCell>
                                                                                 </TableRow>
                                                                             </TableHead>
 
@@ -523,7 +571,7 @@ function PainelReimpressao() {
                                                                                                 variant="contained"
                                                                                                 onClick={() => imprimirUnidade(un)}
                                                                                             >
-                                                                                                Reimprimir
+                                                                                                IMPRIMIR
                                                                                             </Button>
                                                                                         </TableCell>
                                                                                     </TableRow>
