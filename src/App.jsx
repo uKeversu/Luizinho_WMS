@@ -14,8 +14,13 @@ import ConsultaGuarda from "./pages/ConsultaGuarda";
 import HistoricoLogs from "./pages/HistoricoLogs";
 import ReimprimirSenhas from "./pages/ReimprimirSenhas"
 import NotasEmTransito from "./pages/NotasEmTransito";
-import PainelGerencial from './pages/PainelGerencial'
-import RetiradaParaVenda from "./pages/RetiradaParaVenda"
+import PainelGerencial from './pages/PainelGerencial';
+import RetiradaParaVenda from "./pages/RetiradaParaVenda";
+import Temporadas from "./pages/Temporadas";
+import Loja from "./pages/Loja";
+import PainelGames from "./pages/PainelGames";
+import PerfilJogador from "./pages/PerfilJogador";
+import TarefasAvulsas from "./pages/TarefasAvulsas";
 
 import './index.css';
 
@@ -38,11 +43,16 @@ function App() {
           <Route path="/PainelReimpressao" element={<PainelReimpressao />} />
           <Route path="/Produtividade" element={<Produtividade />} />
           <Route path="/ConsultaGuarda" element={<ConsultaGuarda />} />
-          <Route path="/HistoricoLogs/:notaId" element={<HistoricoLogs />}/>
-          <Route path="/ReimprimirSenhas" element={<ReimprimirSenhas/>} />
-          <Route path="/NotasEmTransito" element={<NotasEmTransito/>} />
-          <Route path="/PainelGerencial" element={<PainelGerencial/>} />
-          <Route path="/RetiradaParaVenda" element={<RetiradaParaVenda/>} />
+          <Route path="/HistoricoLogs/:notaId" element={<HistoricoLogs />} />
+          <Route path="/ReimprimirSenhas" element={<ReimprimirSenhas />} />
+          <Route path="/NotasEmTransito" element={<NotasEmTransito />} />
+          <Route path="/PainelGerencial" element={<PainelGerencial />} />
+          <Route path="/RetiradaParaVenda" element={<RetiradaParaVenda />} />
+          <Route path="/Temporadas" element={<Temporadas />} />
+          <Route path="/Loja" element={<Loja />} />
+          <Route path="/PainelGames" element={<PainelGames />} />
+          <Route path="/games/perfil/:codigo" element={<PerfilJogador />}/>
+          <Route path="/TarefasAvulsas" element={<TarefasAvulsas />} />
         </Routes>
       </Router>
     </ThemeProvider>

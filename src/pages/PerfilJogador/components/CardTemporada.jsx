@@ -1,0 +1,115 @@
+import {
+    Box,
+    Card,
+    Chip,
+    Divider,
+    LinearProgress,
+    Stack,
+    Typography
+} from "@mui/material";
+
+import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import StarsIcon from "@mui/icons-material/Stars";
+import MilitaryTechIcon from "@mui/icons-material/MilitaryTech";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import TimerIcon from "@mui/icons-material/Timer";
+
+import { estiloCard, tituloCard } from "../styles";
+
+export default function CardTemporada({
+    temporada = {},
+    saldo = 0
+}) {
+
+    const progressoDias = (() => {
+
+        if (!temporada.data_inicio || !temporada.data_fim) return 0;
+
+        const inicio = new Date(temporada.data_inicio);
+        const fim = new Date(temporada.data_fim);
+        const hoje = new Date();
+
+        const total = fim - inicio;
+        const restante = fim - hoje;
+
+        if (total <= 0) return 100;
+
+        const valor = ((total - restante) / total) * 100;
+
+        return Math.max(0, Math.min(100, valor));
+
+    })();
+
+    return (
+
+        <Card
+            sx={{
+                ...estiloCard,
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between"
+            }}
+        >
+            <Box>
+                <Typography sx={tituloCard}>
+                    TEMPORADA
+                </Typography>
+
+                <Typography
+                    mt={2}
+                    fontSize={34}
+                    fontWeight={800}
+                    color="#FFD54F"
+                >
+                    {temporada.nome || "---"}
+                </Typography>
+
+                <Typography
+                    color="#90caf9"
+                    mt={0.5}
+                >
+                    {temporada.data_inicio} • {temporada.data_fim}
+                </Typography>
+            </Box>
+
+            <Box mt={3}>
+
+                <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                    mb={1}
+                >
+                    <Box sx={{display: 'flex'}}>
+                        <Typography color="#BDBDBD">
+                            Progresso da Temporada
+                        </Typography>
+                        <Typography color="#90caf9" sx={{ml: 2}}>
+                            {Math.round(progressoDias)}%
+                        </Typography>
+                    </Box>
+
+                    <Chip
+                        icon={<TimerIcon />}
+                        label={`${temporada.dias_restantes ?? 0} dias restantes`}
+                        color="warning"
+                        sx={{color: "white"}}
+                    />
+                </Stack>
+
+                <LinearProgress
+                    variant="determinate"
+                    value={progressoDias}
+                    sx={{
+                        height: 10,
+                        borderRadius: 5
+                    }}
+                />
+
+
+            </Box>
+        </Card>
+
+    );
+
+}

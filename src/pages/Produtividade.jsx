@@ -1,4 +1,5 @@
 import { useEffect, useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 
 import {
     Container,
@@ -44,6 +45,7 @@ import {
     LocalFireDepartment as LocalFireDepartmentIcon,
     Stars as StarsIcon,
     WorkspacePremium as WorkspacePremiumIcon,
+    Storefront as Storefront,
 } from "@mui/icons-material";
 
 import {
@@ -76,6 +78,8 @@ import { ThemeContext } from "../context/ThemeContext";
 const API = "http://192.168.1.185:8077/";
 
 export default function Produtividade() {
+
+    const navigate = useNavigate();
 
     const { dark } = useContext(ThemeContext);
 
@@ -440,6 +444,24 @@ export default function Produtividade() {
                     Atualizar
                 </Button>
 
+                <Button
+                    variant="contained"
+                    color="success"
+                    startIcon={<Storefront />}
+                    onClick={() => navigate("/Loja")}
+                >
+                    Loja SigelCoins
+                </Button>
+
+                <Button
+                    variant="contained"
+                    color="warning"
+                    startIcon={<EmojiEventsIcon />}
+                    onClick={() => navigate("/Temporadas")}
+                >
+                    Temporadas Anteriores
+                </Button>
+
                 <IconButton
                     onClick={() => setOpenRanks(true)}
                     sx={{
@@ -712,6 +734,9 @@ export default function Produtividade() {
                                                         fontSize:
                                                             28,
                                                     }}
+                                                    onClick={() =>
+                                                        navigate(`/games/perfil/${row.conferente}`)
+                                                    }
                                                 >
                                                     {index + 1}
                                                 </Avatar>
@@ -2591,11 +2616,8 @@ export default function Produtividade() {
                     >
 
                         <Table>
-
                             <TableHead>
-
                                 <TableRow>
-
                                     <TableCell sx={{ color: "#fff" }}>
                                         Item
                                     </TableCell>
@@ -2611,9 +2633,7 @@ export default function Produtividade() {
                                     <TableCell sx={{ color: "#fff" }}>
                                         Resultado
                                     </TableCell>
-
                                 </TableRow>
-
                             </TableHead>
 
                             <TableBody>
@@ -2624,9 +2644,7 @@ export default function Produtividade() {
                                         <TableRow
                                             key={index}
                                         >
-
                                             <TableCell>
-
                                                 <Typography
                                                     fontWeight="bold"
                                                     color={textColor}
@@ -2651,38 +2669,28 @@ export default function Produtividade() {
                                             </TableCell>
 
                                             <TableCell>
-
                                                 <Typography color={textColor}>
                                                     {item.quantidade}x
                                                 </Typography>
-
                                             </TableCell>
 
                                             <TableCell >
-
                                                 {!item.erro ? (
-
                                                     <Typography color={textColor}>
 
                                                         {item.quantidade}
                                                         {" x "}
                                                         {item.pontosUnitario}
                                                         {" pts"}
-
                                                     </Typography>
-
                                                 ) : (
-
                                                     <Typography color="error.main">
                                                         Caixa {item.caixaItem}
                                                     </Typography>
-
                                                 )}
-
                                             </TableCell>
 
                                             <TableCell>
-
                                                 <Chip
                                                     label={
                                                         item.erro
@@ -2695,22 +2703,14 @@ export default function Produtividade() {
                                                             : "success"
                                                     }
                                                 />
-
                                             </TableCell>
-
                                         </TableRow>
-
                                     )
                                 )}
-
                             </TableBody>
-
                         </Table>
-
                     </TableContainer>
-
                 </DialogContent>
-
             </Dialog>
 
             <Dialog
