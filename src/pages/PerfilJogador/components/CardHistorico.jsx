@@ -363,7 +363,7 @@ export default function CardHistorico({
 
                     <Typography color="gray">
 
-                        Nenhuma coleção iniciada.
+                        Nenhuma coleção completa.
 
                     </Typography>
 

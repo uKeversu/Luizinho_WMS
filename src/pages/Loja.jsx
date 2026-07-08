@@ -13,7 +13,9 @@ import {
     Tab,
     Card,
     CardContent,
-    CircularProgress
+    CircularProgress,
+    Snackbar,
+    Alert
 } from "@mui/material";
 
 import {
@@ -22,16 +24,16 @@ import {
     ArrowBack
 } from "@mui/icons-material";
 
+import PersonIcon from '@mui/icons-material/Person';
+
 import { motion } from "framer-motion";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ThemeContext } from "../context/ThemeContext";
 
 export default function Loja() {
 
     const navigate = useNavigate();
     const { dark } = useContext(ThemeContext);
-
-    const { codigo } = useParams();
 
     const [categoria, setCategoria] = useState(0);
 
@@ -41,10 +43,13 @@ export default function Loja() {
     const [itens, setItens] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const [userInfo, setUserInfo] = useState(() => {
-        const user = localStorage.getItem("user_info");
-        return user ? JSON.parse(user) : null;
+    const [snack, setSnack] = useState({
+        open: false,
+        message: "",
+        severity: "success"
     });
+
+    const userInfo = JSON.parse(localStorage.getItem("user_info") || "{}");
 
     const categorias = [
         "avatar",
@@ -53,45 +58,105 @@ export default function Loja() {
         "efeito"
     ];
 
-    useEffect(() => {
+    // CARREGA DADOS
+    const fetchData = async () => {
+        try {
+            setLoading(true);
 
-        async function fetchData() {
-            try {
-                setLoading(true);
+            const [lojaRes, perfilRes] = await Promise.all([
+                axios.get("http://192.168.1.185:8077/api/loja/catalogo"),
+                axios.get(`http://192.168.1.185:8077/api/loja/perfil/${userInfo.codigo}`)
+            ]);
 
-                const [lojaRes, perfilRes] = await Promise.all([
-                    axios.get("http://192.168.1.185:8077/api/loja/catalogo"),
-                    axios.get(`http://192.168.1.185:8077/api/loja/perfil/${userInfo?.codigo}`)
-                ]);
+            const perfil = perfilRes.data;
 
-                const perfil = perfilRes.data;
+            setSaldo(perfil.saldo);
+            setEquipados(perfil.equipados || {});
 
-                setSaldo(perfil.saldo);
-                setEquipados(perfil.equipados || {});
+            const itensFormatados = lojaRes.data.items.map(item => {
 
-                const itensFormatados = lojaRes.data.items.map(item => {
+                const equipadoAtual = perfil.equipados?.[item.categoria];
 
-                    const tipoEquipado = perfil.equipados?.[item.categoria];
+                return {
+                    ...item,
+                    possui: false, // inventário
+                    equipado: equipadoAtual?.id === item.id
+                };
+            });
 
-                    return {
-                        ...item,
-                        possui: false,
-                        equipado: tipoEquipado?.id === item.id
-                    };
-                });
+            setItens(itensFormatados);
 
-                setItens(itensFormatados);
-
-            } catch (err) {
-                console.error("Erro ao carregar loja/perfil:", err);
-            } finally {
-                setLoading(false);
-            }
+        } catch (err) {
+            console.error(err);
+            showSnack("Erro ao carregar loja", "error");
+        } finally {
+            setLoading(false);
         }
+    };
 
+    useEffect(() => {
         fetchData();
+    }, []);
 
-    }, [codigo]);
+    const showSnack = (message, severity = "success") => {
+        setSnack({
+            open: true,
+            message,
+            severity
+        });
+    };
+
+    // COMPRAR ITEM
+    const comprarItem = async (item) => {
+
+        try {
+
+            const res = await axios.post(
+                "http://192.168.1.185:8077/api/loja/comprar",
+                {
+                    codigo: userInfo.codigo,
+                    item_id: item.id
+                }
+            );
+
+            showSnack(`Comprou ${item.nome}!`);
+
+            setSaldo(res.data.saldo_atual);
+
+            fetchData();
+
+        } catch (err) {
+            showSnack(
+                err.response?.data?.erro || "Erro ao comprar",
+                "error"
+            );
+        }
+    };
+
+    // 🎮 EQUIPAR
+    const equipar = async (item) => {
+
+        try {
+
+            await axios.post(
+                "http://192.168.1.185:8077/api/loja/equipar",
+                {
+                    codigo: userInfo.codigo,
+                    item_id: item.id
+                }
+            );
+
+            showSnack(`${item.nome} equipado!`);
+
+            fetchData();
+
+        } catch (err) {
+            showSnack(
+                err.response?.data?.erro || "Erro ao equipar",
+                "error"
+            );
+        }
+    };
 
     const filtrados = useMemo(() => {
         return itens.filter(
@@ -100,13 +165,13 @@ export default function Loja() {
     }, [categoria, itens]);
 
     return (
-        <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
+        <Container maxWidth="xl" sx={{ mt: 4, mb: 2 }}>
 
             {/* HEADER */}
             <Paper sx={{
                 p: 4,
                 borderRadius: 4,
-                mb: 4,
+                mb: 2,
                 background: dark
                     ? "linear-gradient(135deg,#161616,#0d0d0d)"
                     : "linear-gradient(135deg,#ffffff,#f5f5f5)"
@@ -122,20 +187,29 @@ export default function Loja() {
                             Personalize seu perfil
                         </Typography>
                     </Box>
-
-                    <Button
-                        variant="contained"
-                        startIcon={<ArrowBack />}
-                        onClick={() => navigate("/Produtividade")}
-                    >
-                        Voltar
-                    </Button>
-
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <PersonIcon
+                            sx={{
+                                color: "background.paper",
+                                mr: 1
+                            }}
+                        />
+                        <Typography sx={{ mr: 2 }}>
+                            {userInfo?.nome}
+                        </Typography>
+                        <Button
+                            variant="contained"
+                            startIcon={<ArrowBack />}
+                            onClick={() => navigate("/Produtividade")}
+                        >
+                            Voltar
+                        </Button>
+                    </Box>
                 </Box>
             </Paper>
 
-            {/* SALDO REAL */}
-            <Paper sx={{ p: 3, borderRadius: 4, mb: 4, bgcolor: 'background.default' }}>
+            {/* SALDO */}
+            <Paper sx={{ p: 3, borderRadius: 4, mb: 2, bgcolor: 'background.default' }}>
                 <Box display="flex" alignItems="center" gap={2}>
                     <MonetizationOn color="warning" />
                     <Typography variant="h5" fontWeight="bold">
@@ -145,7 +219,7 @@ export default function Loja() {
             </Paper>
 
             {/* TABS */}
-            <Paper sx={{ mb: 4, borderRadius: 4, bgcolor: 'background.default' }}>
+            <Paper sx={{ mb: 2, borderRadius: 4, bgcolor: 'background.default' }}>
                 <Tabs
                     value={categoria}
                     onChange={(_, v) => setCategoria(v)}
@@ -171,7 +245,7 @@ export default function Loja() {
                         <Grid item xs={12} sm={6} md={4} lg={3} key={item.id}>
                             <motion.div whileHover={{ y: -5 }}>
 
-                                <Card sx={{ height: "100%", bgcolor: 'background.default' }}>
+                                <Card sx={{ height: "100%", bgcolor: 'background.default', mb: 5 }}>
                                     <CardContent sx={{ textAlign: "center" }}>
 
                                         <Typography sx={{ fontSize: 70 }}>
@@ -182,7 +256,7 @@ export default function Loja() {
                                             {item.nome}
                                         </Typography>
 
-                                        <Typography variant="body2" sx={{ opacity: 0.7 }}>
+                                        <Typography variant="body2" sx={{ opacity: 0.6 }}>
                                             {item.rarity || item.raridade}
                                         </Typography>
 
@@ -194,18 +268,7 @@ export default function Loja() {
 
                                         <Box mt={3}>
 
-                                            {!item.equipado ? (
-
-                                                <Button
-                                                    fullWidth
-                                                    variant="contained"
-                                                    color="primary"
-                                                >
-                                                    Comprar
-                                                </Button>
-
-                                            ) : (
-
+                                            {item.equipado ? (
                                                 <Button
                                                     fullWidth
                                                     variant="contained"
@@ -213,7 +276,26 @@ export default function Loja() {
                                                 >
                                                     Equipado
                                                 </Button>
+                                            ) : (
+                                                <Button
+                                                    fullWidth
+                                                    variant="contained"
+                                                    onClick={() => comprarItem(item)}
+                                                >
+                                                    Comprar
+                                                </Button>
+                                            )}
 
+                                            {/* Equipar só se já tiver */}
+                                            {!item.equipado && (
+                                                <Button
+                                                    fullWidth
+                                                    sx={{ mt: 1 }}
+                                                    variant="outlined"
+                                                    onClick={() => equipar(item)}
+                                                >
+                                                    Equipar
+                                                </Button>
                                             )}
 
                                         </Box>
@@ -228,6 +310,17 @@ export default function Loja() {
 
                 </Grid>
             )}
+
+            {/* SNACKBAR */}
+            <Snackbar
+                open={snack.open}
+                autoHideDuration={3000}
+                onClose={() => setSnack({ ...snack, open: false })}
+            >
+                <Alert severity={snack.severity}>
+                    {snack.message}
+                </Alert>
+            </Snackbar>
 
         </Container>
     );

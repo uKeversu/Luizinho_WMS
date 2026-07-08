@@ -52,25 +52,18 @@ export default function CardTemporada({
             }}
         >
             <Box>
-                <Typography sx={tituloCard}>
-                    TEMPORADA
-                </Typography>
-
-                <Typography
-                    mt={2}
-                    fontSize={34}
-                    fontWeight={800}
-                    color="#FFD54F"
-                >
-                    {temporada.nome || "---"}
-                </Typography>
-
-                <Typography
-                    color="#90caf9"
-                    mt={0.5}
-                >
-                    {temporada.data_inicio} • {temporada.data_fim}
-                </Typography>
+                <Box
+                    component="img"
+                    src="/banner_seasons/banner_temporada_genesis.png"
+                    alt="banner_season_genesis"
+                    sx={{
+                        width: "100%",
+                        height: 350,
+                        objectFit: "cover",
+                        borderRadius: 2,
+                        mt: 2
+                    }}
+                />
             </Box>
 
             <Box mt={3}>
@@ -80,20 +73,27 @@ export default function CardTemporada({
                     justifyContent="space-between"
                     mb={1}
                 >
-                    <Box sx={{display: 'flex'}}>
+                    <Box sx={{ display: 'flex' }}>
                         <Typography color="#BDBDBD">
                             Progresso da Temporada
                         </Typography>
-                        <Typography color="#90caf9" sx={{ml: 2}}>
+                        <Typography color="#90caf9" sx={{ ml: 2 }}>
                             {Math.round(progressoDias)}%
                         </Typography>
                     </Box>
+
+                    <Typography
+                        color="#90caf9"
+                        mt={0.5}
+                    >
+                        {temporada.data_inicio} • {temporada.data_fim}
+                    </Typography>
 
                     <Chip
                         icon={<TimerIcon />}
                         label={`${temporada.dias_restantes ?? 0} dias restantes`}
                         color="warning"
-                        sx={{color: "white"}}
+                        sx={{ color: "white" }}
                     />
                 </Stack>
 

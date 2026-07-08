@@ -1035,7 +1035,7 @@ function Conferencia() {
                 console.log("ENVIANDO PARA API A CAIXA: ", caixa.numero)
                 console.log("LOCALIZAÇÃO EM CONFERENCIA: ", item.localizacao)
                 console.log("LOCALIZAÇÃO EM CONFERENCIA: ", item.localizacao)
-                
+
                 const response = await fetch(
                     `${API}/api/atualizar_item/${item.notaId}/${codigoEnvio}`,
                     {
@@ -1427,23 +1427,6 @@ function Conferencia() {
             message: "Item removido da caixa",
             severity: "info"
         });
-    };
-
-    const buscarCaixasDisponiveis = async () => {
-        try {
-            setLoadingCaixas(true);
-
-            const response = await fetch(`${API}/api/caixas_para_guarda/listar`);
-            const data = await response.json();
-
-            if (response.ok) {
-                setCaixasDisponiveis(data || []);
-            }
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoadingCaixas(false);
-        }
     };
 
     // Valida caixa

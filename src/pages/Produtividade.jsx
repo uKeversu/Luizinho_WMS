@@ -74,6 +74,13 @@ import { motion } from "framer-motion";
 
 import { ThemeContext } from "../context/ThemeContext";
 
+import {
+    MOLDURAS,
+    EFEITOS,
+    AVATARES,
+    TITULOS,
+} from "../cosmetics";
+
 // API
 const API = "http://192.168.1.185:8077/";
 
@@ -104,6 +111,8 @@ export default function Produtividade() {
     const [openRanks, setOpenRanks] = useState(false);
     const [imagemFullscreen, setImagemFullscreen] =
         useState(false);
+
+    const [cosmeticos, setCosmeticos] = useState({});
 
     // Cores
     const textColor = dark
@@ -140,10 +149,6 @@ export default function Produtividade() {
         "&:hover": {
 
             transform: "translateY(-4px)",
-
-            boxShadow: dark
-                ? "0 0 45px rgba(0,255,120,0.18)"
-                : "0 14px 30px rgba(0,0,0,0.12)",
         },
     };
 
@@ -290,6 +295,47 @@ export default function Produtividade() {
                 new Date().toLocaleTimeString()
             );
 
+            const perfis = await Promise.all(
+                items.map(async (item) => {
+                    try {
+                        const res = await fetch(
+                            `${API}/api/loja/perfil/${item.conferente}`
+                        );
+
+                        const perfil = await res.json();
+
+                        return {
+                            codigo: item.conferente,
+                            avatar: perfil.equipados?.avatar?.icone || "👤",
+                            titulo: perfil.equipados?.titulo?.nome || "Iniciante",
+                            moldura: perfil.equipados?.moldura?.nome || "Sem moldura",
+                            efeito: perfil.equipados?.efeito?.nome || "Sem efeito",
+                        };
+                    } catch {
+                        return {
+                            codigo: item.conferente,
+                            avatar: "👤",
+                            titulo: "Iniciante",
+                            moldura: "Sem moldura",
+                            efeito: "Sem efeito",
+                        };
+                    }
+                })
+            );
+
+            const mapa = {};
+
+            perfis.forEach((p) => {
+                mapa[p.codigo] = {
+                    avatar: p.avatar,
+                    titulo: p.titulo,
+                    moldura: p.moldura,
+                    efeito: p.efeito,
+                };
+            });
+
+            setCosmeticos(mapa);
+
         } catch (err) {
 
             console.error(err);
@@ -372,6 +418,7 @@ export default function Produtividade() {
             sx={{
                 mt: 4,
                 mb: 6,
+                zoom: "90%"
             }}
         >
 
@@ -543,6 +590,20 @@ export default function Produtividade() {
                                 row.errosCaixa
                             );
 
+                        const cosmetico = cosmeticos[row.conferente] || {};
+
+                        const moldura =
+                            MOLDURAS[cosmetico.moldura] ||
+                            MOLDURAS.default;
+
+                        const efeito =
+                            EFEITOS[cosmetico.efeito] ||
+                            EFEITOS.default;
+
+                        const titulo =
+                            TITULOS[cosmetico.titulo] ||
+                            TITULOS.default;
+
                         return (
 
                             <Grid
@@ -575,22 +636,8 @@ export default function Produtividade() {
                                             pb: 3,
                                             px: 3,
 
-                                            border: `1px solid ${nivel.cor}55`,
-
-                                            boxShadow: `
-                                                0 0 20px ${nivel.cor}22,
-                                                0 0 60px ${nivel.cor}11
-                                            `,
-
-                                            background: dark
-                                                ? `
-                                                linear-gradient(
-                                                180deg,
-                                                ${nivel.cor}15 0%,
-                                                #111 35%
-                                                )
-                                                `
-                                                : "#fff",
+                                            background: efeito.background,
+                                            boxShadow: efeito.cardGlow,
                                         }}
                                     >
 
@@ -635,7 +682,6 @@ export default function Produtividade() {
                                                 alignItems: "center",
                                             }}
                                         >
-
                                             <motion.img
                                                 src={nivel.imagem}
                                                 alt={nivel.nome}
@@ -725,20 +771,21 @@ export default function Produtividade() {
                                                     sx={{
                                                         width: 70,
                                                         height: 70,
-                                                        bgcolor:
-                                                            nivel.cor,
+                                                        bgcolor: "background.default",
                                                         color:
-                                                            "#ffffff",
+                                                            "primary.branco",
                                                         fontWeight:
                                                             "bold",
                                                         fontSize:
                                                             28,
+                                                        border: `3px solid ${moldura.borderColor}`,
+                                                        boxShadow: moldura.glow,
                                                     }}
                                                     onClick={() =>
                                                         navigate(`/games/perfil/${row.conferente}`)
                                                     }
                                                 >
-                                                    {index + 1}
+                                                    {cosmeticos[row.conferente]?.avatar}
                                                 </Avatar>
 
                                                 <Box>
@@ -748,6 +795,15 @@ export default function Produtividade() {
                                                         color={textColor}
                                                     >
                                                         {row.nome}
+                                                    </Typography>
+                                                    <Typography
+                                                        variant="h7"
+                                                        color={textColor}
+                                                        sx={{
+                                                            color: titulo.color,
+                                                        }}
+                                                    >
+                                                        {cosmeticos[row.conferente]?.titulo}
                                                     </Typography>
                                                 </Box>
 
@@ -1163,6 +1219,8 @@ export default function Produtividade() {
                                                             row.produtividade,
                                                             row.errosCaixa
                                                         );
+
+
                                                     return (
 
                                                         <TableRow

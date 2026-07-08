@@ -75,6 +75,7 @@ export default function PerfilJogador() {
                 minHeight: "100vh",
                 p: 2,
                 background: "background.default",
+                zoom: "80%"
             }}
         >
 
@@ -83,8 +84,7 @@ export default function PerfilJogador() {
                     display: "grid",
 
                     gridTemplateColumns: "380px 1fr",
-
-                    gridTemplateRows: "240px 1fr 260px",
+                    gridTemplateRows: "auto auto auto",
 
                     gap: 2,
 
@@ -116,7 +116,7 @@ export default function PerfilJogador() {
                     />
                 </Box>
 
-                <Box sx={{ gridArea: "inventario", mt: 2 }}>
+                <Box sx={{ gridArea: "inventario" }}>
                     <CardInventario
                         inventario={perfil.inventario}
                         equipados={perfil.equipados}
@@ -127,7 +127,6 @@ export default function PerfilJogador() {
                 <Box
                     sx={{
                         gridArea: "inferior",
-
                         display: "grid",
                         gridTemplateColumns: "2fr 1fr",
                         gap: 2

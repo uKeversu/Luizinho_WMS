@@ -15,6 +15,8 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.9",
     "@mui/material": "^7.3.9",
+    "@tsparticles/react": "^4.3.1",
+    "@tsparticles/slim": "^4.3.1",
     "auth-context": "^1.0.5",
     "axios": "^1.13.6",
     "fast-xml-parser": "^5.5.9",
