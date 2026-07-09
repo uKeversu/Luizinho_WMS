@@ -47,7 +47,7 @@ import {
     WorkspacePremium as WorkspacePremiumIcon,
     Storefront as Storefront,
 } from "@mui/icons-material";
-
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import {
     ResponsiveContainer,
     PieChart,
@@ -523,6 +523,22 @@ export default function Produtividade() {
                     }}
                 >
                     ?
+                </IconButton>
+                <IconButton
+                    onClick={() =>
+                        navigate("/")
+                    }
+                    sx={{
+                        bgcolor: "#1a1a1a",
+                        color: "#fff",
+                        width: "50px",
+                        height: "50px",
+                        "&:hover": {
+                            bgcolor: "#2a2a2a",
+                        },
+                    }}
+                >
+                    <ArrowBackIcon />
                 </IconButton>
 
             </Box>
