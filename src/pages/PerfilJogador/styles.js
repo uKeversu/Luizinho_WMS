@@ -56,6 +56,9 @@ export const corRaridade = (raridade) => {
 
     switch (raridade) {
 
+        case "MITICO":
+            return "#00d335";
+
         case "LENDARIO":
             return "#ff9800";
 

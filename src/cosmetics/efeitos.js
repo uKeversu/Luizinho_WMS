@@ -24,7 +24,7 @@ export const EFEITOS = {
 
     "Explosão Total": {
         background: "linear-gradient(135deg,#3b0a00,#111827)",
-        cardGlow: "0 0 30px #ff5722",
+        cardGlow: "0 0 30px #ff0000",
         nomeGlow: "0 0 12px #ff9800",
 
         accent: "#ff5722",
@@ -44,7 +44,7 @@ export const EFEITOS = {
         animation: "speed"
     },
 
-    "Fumaça da Arquibancada": {
+    "Fumaça da Gaviões": {
         background: "linear-gradient(135deg,#202020,#111827)",
         cardGlow: "0 0 25px #bdbdbd",
         nomeGlow: "0 0 10px #ffffff",
@@ -64,6 +64,37 @@ export const EFEITOS = {
         overlay: "radial-gradient(circle at bottom, rgba(58, 154, 183, 0.3), transparent 70%)",
 
         animation: "kraken"
+    },
+
+    "Fúria dos Raios": {
+        background: "linear-gradient(135deg,#0d1b2a,#1b263b)",
+        cardGlow: "0 0 22px #42a5f5",
+        nomeGlow: "0 0 12px #90caf9",
+        accent: "#42a5f5",
+        overlay: "radial-gradient(circle at top, rgba(66,165,245,.30), transparent 65%)",
+        animation: "lightning"
+    },
+
+    "Constelação Celeste": {
+        background: "linear-gradient(135deg,#00173a,#003e91)",
+        cardGlow: "0 0 22px #3fa9ff",
+        nomeGlow: "0 0 14px #89d4ff",
+        accent: "#2196f3",
+        overlay:
+            "radial-gradient(circle at 50% 20%, rgba(255,255,255,.12), transparent 70%)",
+        animation: "constellation"
+
+    },
+
+    "Despertar do Leviatã": {
+        background: "linear-gradient(135deg,#00110b,#02281d)",
+        cardGlow: "0 0 30px #00ff99",
+        nomeGlow: "0 0 18px #7dffcb",
+        accent: "#00ff99",
+        overlay:
+            "radial-gradient(circle at 50% 35%, rgba(0,255,153,.22), transparent 70%)",
+        animation: "leviathan"
+
     },
 
     default: {
