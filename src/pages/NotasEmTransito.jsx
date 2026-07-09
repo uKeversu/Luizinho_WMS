@@ -456,6 +456,12 @@ function NotasEmTransito() {
                                 buscarNotas();
                             }
                         }}
+                        autoComplete="off"
+                        inputProps={{
+                            spellCheck: false,
+                            autoCorrect: "off",
+                            autoCapitalize: "off",
+                        }}
                     />
 
                     <Button
@@ -463,7 +469,7 @@ function NotasEmTransito() {
                         color="primary"
                         startIcon={<SearchIcon />}
                         onClick={buscarNotas}
-                        sx={{minWidth: '15vh'}}
+                        sx={{ minWidth: '15vh' }}
                     >
                         Buscar
                     </Button>
@@ -473,7 +479,7 @@ function NotasEmTransito() {
                         color="primary"
                         startIcon={<ClearIcon />}
                         onClick={limparBusca}
-                        sx={{minWidth: '15vh'}}
+                        sx={{ minWidth: '15vh' }}
                     >
                         Limpar
                     </Button>
@@ -483,7 +489,7 @@ function NotasEmTransito() {
                         color="primary"
                         startIcon={<RefreshIcon />}
                         onClick={atualizarTela}
-                        sx={{minWidth: '15vh'}}
+                        sx={{ minWidth: '15vh' }}
                     >
                         Atualizar
                     </Button>
@@ -822,6 +828,12 @@ function NotasEmTransito() {
                                                                 motivoPendente
                                                             );
                                                         }
+                                                    }}
+                                                    autoComplete="off"
+                                                    inputProps={{
+                                                        spellCheck: false,
+                                                        autoCorrect: "off",
+                                                        autoCapitalize: "off",
                                                     }}
                                                 />
                                                 <Box mt={2}>

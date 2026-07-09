@@ -276,6 +276,12 @@ function RetiradaParaVenda() {
                                         buscarNota();
                                     }
                                 }}
+                                autoComplete="off"
+                                inputProps={{
+                                    spellCheck: false,
+                                    autoCorrect: "off",
+                                    autoCapitalize: "off",
+                                }}
                             />
                         </Grid>
 
@@ -295,6 +301,12 @@ function RetiradaParaVenda() {
                                     }
                                 }}
                                 disabled={!nota}
+                                autoComplete="off"
+                                inputProps={{
+                                    spellCheck: false,
+                                    autoCorrect: "off",
+                                    autoCapitalize: "off",
+                                }}
                             />
                         </Grid>
 
@@ -323,6 +335,12 @@ function RetiradaParaVenda() {
                                 disabled={
                                     !itemSelecionado
                                 }
+                                autoComplete="off"
+                                inputProps={{
+                                    spellCheck: false,
+                                    autoCorrect: "off",
+                                    autoCapitalize: "off",
+                                }}
                             />
                         </Grid>
 

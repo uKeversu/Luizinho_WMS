@@ -46,6 +46,7 @@ import {
     Stars as StarsIcon,
     WorkspacePremium as WorkspacePremiumIcon,
     Storefront as Storefront,
+    Warehouse,
 } from "@mui/icons-material";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import {
@@ -539,6 +540,22 @@ export default function Produtividade() {
                     }}
                 >
                     <ArrowBackIcon />
+                </IconButton>
+                <IconButton
+                    onClick={() => {
+                        window.location.href = "http://192.168.1.185:3001/mevf/rank";
+                    }}
+                    sx={{
+                        bgcolor: "#1a1a1a",
+                        color: "#fff",
+                        width: "50px",
+                        height: "50px",
+                        "&:hover": {
+                            bgcolor: "#2a2a2a",
+                        },
+                    }}
+                >
+                    <Warehouse />
                 </IconButton>
 
             </Box>

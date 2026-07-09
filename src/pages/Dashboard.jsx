@@ -651,21 +651,18 @@ function Dashboard({ tipo }) {
 
             if (response.ok) {
                 const {
-                    atualizados = 0,
                     erros = 0,
-                    nao_encontrados = 0,
+                    inseridos = 0,
                     total_processados = 0
-                } = data || {};
+                } = data.estatisticas || {};
 
                 console.log("Total processados:", total_processados)
-                console.log("Atualizados:", atualizados)
+                console.log("Atualizados:", inseridos)
                 console.log("Erros:", erros)
-                console.log("Não encontrados:", nao_encontrados)
 
                 const semDados =
                     total_processados === 0 &&
-                    atualizados === 0 &&
-                    nao_encontrados === 0 &&
+                    inseridos === 0 &&
                     erros === 0;
 
                 if (semDados) {
@@ -677,7 +674,7 @@ function Dashboard({ tipo }) {
                 } else {
                     snackbarData = {
                         open: true,
-                        message: `Processados: ${total_processados} | Atualizados: ${atualizados} | Não encontrados: ${nao_encontrados}`,
+                        message: `Processados: ${total_processados} | Atualizados: ${inseridos} | Erros: ${erros}`,
                         severity: erros > 0 ? "warning" : "success"
                     };
                 }
