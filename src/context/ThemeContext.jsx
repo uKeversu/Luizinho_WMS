@@ -39,6 +39,7 @@ export function ThemeProvider({ children }) {
             branco: "#FFFFFF",
             alerta: "#1d1d1d",
             tabela: "#1d1d1d",
+            editado: "#afafaf71",
 
             confirmar: "#02bb31",
             confirmarHover: "#009425",
@@ -92,6 +93,7 @@ export function ThemeProvider({ children }) {
             branco: "#FFFFFF",
             alerta: "#f3f3f3",
             tabela: "#e6e6e6",
+            editado: "#afafaf71",
 
             confirmar: "#02bb31",
             confirmarHover: "#009425",
@@ -187,7 +189,8 @@ export function ThemeProvider({ children }) {
                 dialog: colors.dialog,
                 sombra: colors.sombra,
                 alerta: colors.alerta,
-                tabela: colors.tabela
+                tabela: colors.tabela,
+                editado: colors.editado
             },
 
             text: {
