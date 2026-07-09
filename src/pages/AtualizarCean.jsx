@@ -603,7 +603,7 @@ function AtualizarCean() {
                                             bgcolor: camposVazios
                                                 ? 'background.alerta'
                                                 : hasChanges
-                                                    ? 'text.primary'
+                                                    ? 'background.tabela'
                                                     : 'inherit',
 
                                             transition: "0.2s",
