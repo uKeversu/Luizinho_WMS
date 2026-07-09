@@ -69,6 +69,10 @@ function ConsultaGeral() {
     const cacheNotas = useRef({});
     const [loading, setLoading] = useState(false);
 
+    const [logsNotas, setLogsNotas] = useState({});
+    const [loadingLogs, setLoadingLogs] = useState({});
+    const cacheLogs = useRef({});
+
     const [busca, setBusca] = useState("");
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -327,6 +331,62 @@ function ConsultaGeral() {
         }
     };
 
+    const buscarLogsNota = async (notaId) => {
+
+        if (cacheLogs.current[notaId]) {
+            setLogsNotas(prev => ({
+                ...prev,
+                [notaId]: cacheLogs.current[notaId]
+            }));
+            return;
+        }
+
+        setLoadingLogs(prev => ({
+            ...prev,
+            [notaId]: true
+        }));
+
+        try {
+
+            const response = await fetch(
+                `${API}/api/nfe/item/movimentacao/log?nota_id=${notaId}`
+            );
+
+            const data = await response.json();
+
+            cacheLogs.current[notaId] = data.logs || [];
+
+            setLogsNotas(prev => ({
+                ...prev,
+                [notaId]: data.logs || []
+            }));
+
+        } finally {
+
+            setLoadingLogs(prev => ({
+                ...prev,
+                [notaId]: false
+            }));
+        }
+    };
+
+    const getLogConferencia = (notaId, item) => {
+
+        const logs = logsNotas[notaId] || [];
+
+        return logs
+            .filter(log =>
+                log.acao === "Escaneou item" &&
+                (
+                    log.cod_barras?.trim() === item.cean?.trim() ||
+                    log.cod_produto?.trim() === item.basico?.trim()
+                )
+            )
+            .sort((a, b) =>
+                new Date(b.data_hora) - new Date(a.data_hora)
+            )[0];
+    };
+
     // UNIDADES
     const buscarUnidades = async (codBarras) => {
 
@@ -515,7 +575,6 @@ function ConsultaGeral() {
                     borderRadius: '2vh'
                 }}
             >
-
                 <Typography
                     variant="h4"
                     sx={{
@@ -529,7 +588,6 @@ function ConsultaGeral() {
                 </Typography>
 
                 <Box>
-
                     <Box
                         sx={{
                             display: 'flex',
@@ -769,6 +827,9 @@ function ConsultaGeral() {
                                             ? nota.id
                                             : null
                                     );
+                                    if (expandindo) {
+                                        buscarLogsNota(nota.id);
+                                    }
                                 }}
 
                                 sx={{
@@ -1070,14 +1131,12 @@ function ConsultaGeral() {
 
                                                                                                 <TableBody>
 
-                                                                                                    {(unidadesItem[cod] || [])
-                                                                                                        .map((un) => (
+                                                                                                    {(unidadesItem[cod] || []).map((un) => {
 
-                                                                                                            <TableRow
-                                                                                                                key={
-                                                                                                                    un.id_unico
-                                                                                                                }
-                                                                                                            >
+                                                                                                        const log = getLogConferencia(nota.id, item);
+
+                                                                                                        return (
+                                                                                                            <TableRow key={un.id_unico}>
 
                                                                                                                 <TableCell>
                                                                                                                     {un.id_unico}
@@ -1092,31 +1151,29 @@ function ConsultaGeral() {
                                                                                                                 </TableCell>
 
                                                                                                                 <TableCell>
-                                                                                                                    {formatarData(nota.data_recebimento)}
+                                                                                                                    {log ? formatarData(log.data_hora) : "-"}
                                                                                                                 </TableCell>
 
                                                                                                                 <TableCell>
-                                                                                                                    {funcionarios[item.conferente]
-                                                                                                                        || "Sem conferente"}
+                                                                                                                    {log
+                                                                                                                        ? funcionarios[log.usuario] || log.usuario
+                                                                                                                        : "Sem conferente"}
                                                                                                                 </TableCell>
-                                                                                                                <TableCell>
 
+                                                                                                                <TableCell>
                                                                                                                     <Button
-
+                                                                                                                        disabled
                                                                                                                         onClick={() =>
-                                                                                                                            navigate(
-                                                                                                                                `/Rastreio/${un.id_unico}`
-                                                                                                                            )
+                                                                                                                            navigate(`/Rastreio/${un.id_unico}`)
                                                                                                                         }
                                                                                                                     >
                                                                                                                         Histórico
                                                                                                                     </Button>
-
                                                                                                                 </TableCell>
 
                                                                                                             </TableRow>
-                                                                                                        ))}
-
+                                                                                                        );
+                                                                                                    })}
                                                                                                 </TableBody>
 
                                                                                             </Table>

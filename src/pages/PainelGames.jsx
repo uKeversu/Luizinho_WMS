@@ -449,7 +449,7 @@ export default function PainelGames() {
                             <Button
                                 variant="contained"
                                 startIcon={
-                                    <EmojiEvents />
+                                    <History />
                                 }
                                 onClick={() =>
                                     navigate("/Temporadas")
@@ -474,7 +474,7 @@ export default function PainelGames() {
                             <Button
                                 variant="contained"
                                 startIcon={
-                                    <History />
+                                    <EmojiEvents />
                                 }
                                 onClick={() =>
                                     navigate("/Produtividade")

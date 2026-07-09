@@ -5,11 +5,15 @@ export const TITULOS = {
     },
 
     "Rei dos Mares": {
-        color: "#00d5ff",
+        color: "#fffb15",
     },
 
     "Kamikaze": {
-        color: "#ff4444",
+        color: "#ff1d1d",
+    },
+
+    "Rei das Entregas": {
+        color: "#64ebfd",
     },
 
     default: {

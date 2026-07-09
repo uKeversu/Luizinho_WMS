@@ -1,0 +1,2580 @@
+.efeito-overlay {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border-radius: inherit;
+}
+
+.efeito-overlay .particle {
+    position: absolute;
+    display: none;
+}
+
+/* ==========================
+   AURA ARCANA
+========================== */
+
+.pulse-overlay {
+    background: radial-gradient(circle at center,
+            rgba(176, 92, 255, .18),
+            transparent 70%);
+}
+
+.pulse-overlay::before {
+
+    content: "";
+
+    position: absolute;
+
+    width: 260px;
+    height: 260px;
+
+    left: 50%;
+    top: 50%;
+
+    transform: translate(-50%, -50%);
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(circle,
+            rgba(176, 92, 255, .35),
+            transparent 70%);
+
+    animation: pulse 3s ease-in-out infinite;
+}
+
+/* Partículas */
+
+.pulse-overlay .particle {
+
+    display: block;
+
+    position: absolute;
+
+    width: 5px;
+    height: 5px;
+
+    border-radius: 50%;
+
+    background: #b05cff;
+
+    box-shadow:
+        0 0 4px #b05cff,
+        0 0 8px #b05cff,
+        0 0 14px #d18cff;
+
+    left: calc(5% + (var(--i) * 6%));
+
+    bottom: -30px;
+
+    opacity: .8;
+
+    animation:
+        arcanaFloat calc(4s + var(--i) * .2s) linear infinite;
+
+    animation-delay:
+        calc(var(--i) * -.25s);
+}
+
+/* Cada bolinha com tamanho diferente */
+
+.pulse-overlay .particle:nth-child(2n) {
+    width: 3px;
+    height: 3px;
+}
+
+.pulse-overlay .particle:nth-child(3n) {
+    width: 7px;
+    height: 7px;
+    background: #ffffff;
+}
+
+.pulse-overlay .particle:nth-child(4n) {
+    background: #d18cff;
+}
+
+/* ==========================
+   ANIMAÇÕES
+========================== */
+
+@keyframes pulse {
+
+    0% {
+        transform: translate(-50%, -50%) scale(.9);
+        opacity: .3;
+    }
+
+    50% {
+        transform: translate(-50%, -50%) scale(1.15);
+        opacity: .8;
+    }
+
+    100% {
+        transform: translate(-50%, -50%) scale(.9);
+        opacity: .3;
+    }
+
+}
+
+@keyframes arcanaFloat {
+
+    0% {
+        transform:
+            translateY(0) translateX(0) scale(.4);
+
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    40% {
+        transform:
+            translateY(-120px) translateX(-8px);
+    }
+
+    70% {
+        transform:
+            translateY(-240px) translateX(10px);
+    }
+
+    100% {
+        transform:
+            translateY(-420px) translateX(-5px) scale(1.2);
+
+        opacity: 0;
+    }
+
+}
+
+/* ==========================
+   MARÉ DIVINA
+========================== */
+
+.wave-overlay {
+
+    background:
+        linear-gradient(180deg,
+            rgba(0, 180, 255, .10),
+            transparent 70%);
+
+}
+
+/* Grande onda girando lentamente */
+
+.wave-overlay::before {
+
+    content: "";
+
+    position: absolute;
+
+    width: 340px;
+    height: 340px;
+
+    left: 50%;
+    top: 55%;
+
+    transform: translate(-50%, -50%);
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(circle,
+            rgba(0, 180, 255, .22),
+            transparent 70%);
+
+    filter: blur(12px);
+
+    animation:
+        wavePulse 6s ease-in-out infinite,
+        waveRotate 18s linear infinite;
+
+}
+
+/* Bolhas */
+
+.wave-overlay .particle {
+
+    display: block;
+
+    position: absolute;
+
+    width: 8px;
+    height: 8px;
+
+    border-radius: 50%;
+
+    /* aparência de vidro */
+
+    background:
+        radial-gradient(circle at 30% 30%,
+            rgba(255, 255, 255, .95) 0%,
+            rgba(255, 255, 255, .35) 20%,
+            rgba(120, 220, 255, .18) 45%,
+            rgba(120, 220, 255, .05) 70%,
+            transparent 100%);
+
+    border: 1px solid rgba(180, 240, 255, .45);
+
+    box-shadow:
+        inset -1px -1px 2px rgba(255, 255, 255, .25);
+
+    left: calc(4% + (var(--i) * 6%));
+
+    bottom: -35px;
+
+    opacity: .65;
+
+    animation:
+        bubbleRise calc(5s + var(--i)*.18s) linear infinite;
+
+    animation-delay:
+        calc(var(--i) * -.35s);
+
+}
+
+/* bolhas menores */
+
+.wave-overlay .particle:nth-child(2n) {
+
+    width: 3px;
+    height: 3px;
+
+}
+
+/* bolhas maiores */
+
+.wave-overlay .particle:nth-child(3n) {
+    background: transparent;
+    border: 2px solid rgba(200, 245, 255, .55);
+    box-shadow: none;
+    width: 8px;
+    height: 8px;
+}
+
+/* bolhas leve cor */
+
+.wave-overlay .particle:nth-child(4n) {
+
+    background:
+        radial-gradient(circle at 35% 35%,
+            rgba(255, 255, 255, .9),
+            rgba(120, 220, 255, .15) 55%,
+            transparent 100%);
+
+}
+
+/* bolhas brancas */
+
+.wave-overlay .particle:nth-child(5n) {
+    background: white;
+    box-shadow:
+        0 0 5px white,
+        0 0 16px #7fe8ff;
+
+}
+
+/* ==========================
+   ANIMAÇÕES
+========================== */
+
+@keyframes bubbleRise {
+
+    0% {
+
+        transform:
+            translateY(0) translateX(0) scale(.3);
+
+        opacity: 0;
+
+    }
+
+    10% {
+
+        opacity: .7;
+
+    }
+
+    30% {
+
+        transform:
+            translateY(-90px) translateX(4px);
+
+    }
+
+    55% {
+
+        transform:
+            translateY(-200px) translateX(-4px);
+
+    }
+
+    80% {
+        transform:
+            translateY(-320px) translateX(3px);
+    }
+
+    100% {
+        transform:
+            translateY(-450px) translateX(-2px) scale(1);
+        opacity: 0;
+    }
+
+}
+
+@keyframes wavePulse {
+
+    0% {
+        opacity: .25;
+        transform: translate(-50%, -50%) scale(.92);
+    }
+
+    50% {
+        opacity: .65;
+        transform: translate(-50%, -50%) scale(1.08);
+    }
+
+    100% {
+        opacity: .25;
+        transform: translate(-50%, -50%) scale(.92);
+    }
+
+}
+
+@keyframes waveRotate {
+
+    from {
+        transform:
+            translate(-50%, -50%) rotate(0deg);
+    }
+
+    to {
+        transform:
+            translate(-50%, -50%) rotate(360deg);
+    }
+
+}
+
+/* ==========================
+   EXPLOSÃO TOTAL
+========================== */
+
+.blast-overlay {
+
+    background:
+        radial-gradient(circle at center,
+            rgba(255, 180, 0, .04),
+            rgba(255, 60, 0, .025) 40%,
+            transparent 70%);
+
+}
+
+/* Núcleo de energia */
+
+.blast-overlay::before {
+
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    background:
+        radial-gradient(circle,
+            rgba(255, 255, 180, .28) 0%,
+            rgba(255, 170, 0, .10) 20%,
+            rgba(255, 70, 0, .05) 40%,
+            transparent 72%);
+
+    filter: blur(14px);
+
+    animation: blastPulse 1.8s ease-in-out infinite;
+
+}
+
+/* Onda de impacto */
+
+.blast-overlay::after {
+
+    content: "";
+
+    position: absolute;
+
+    width: 240px;
+    height: 240px;
+
+    left: 50%;
+    top: 50%;
+
+    transform: translate(-50%, -50%);
+
+    border-radius: 50%;
+
+    border: 2px solid rgba(255, 220, 120, .15);
+
+    animation:
+        shockwave 2.5s linear infinite;
+
+}
+
+/* ==========================
+   FAÍSCAS
+========================== */
+
+.blast-overlay .particle {
+
+    display: block;
+
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 4px;
+    height: 18px;
+
+    border-radius: 999px;
+
+    background:
+        linear-gradient(to top,
+            rgba(255, 40, 0, 0),
+            #ff5c00,
+            #ffe27a);
+
+    transform-origin: bottom center;
+
+    opacity: .55;
+
+    box-shadow:
+        0 0 4px #ff7300,
+        0 0 10px #ff9a00;
+
+    animation:
+        sparkFly calc(1.3s + var(--i)*.03s) linear infinite;
+
+    animation-delay:
+        calc(var(--i) * -.05s);
+
+}
+
+/* tamanhos diferentes */
+
+.blast-overlay .particle:nth-child(2n) {
+
+    height: 12px;
+    width: 3px;
+
+}
+
+.blast-overlay .particle:nth-child(3n) {
+
+    height: 22px;
+    width: 5px;
+
+}
+
+.blast-overlay .particle:nth-child(5n) {
+
+    width: 2px;
+    height: 10px;
+
+    background:
+        linear-gradient(to top,
+            transparent,
+            #fff4a8);
+
+}
+
+/* ângulos */
+
+.blast-overlay .particle:nth-child(1) {
+    --angle: 0deg;
+}
+
+.blast-overlay .particle:nth-child(2) {
+    --angle: 12deg;
+}
+
+.blast-overlay .particle:nth-child(3) {
+    --angle: 24deg;
+}
+
+.blast-overlay .particle:nth-child(4) {
+    --angle: 36deg;
+}
+
+.blast-overlay .particle:nth-child(5) {
+    --angle: 48deg;
+}
+
+.blast-overlay .particle:nth-child(6) {
+    --angle: 60deg;
+}
+
+.blast-overlay .particle:nth-child(7) {
+    --angle: 72deg;
+}
+
+.blast-overlay .particle:nth-child(8) {
+    --angle: 84deg;
+}
+
+.blast-overlay .particle:nth-child(9) {
+    --angle: 96deg;
+}
+
+.blast-overlay .particle:nth-child(10) {
+    --angle: 108deg;
+}
+
+.blast-overlay .particle:nth-child(11) {
+    --angle: 120deg;
+}
+
+.blast-overlay .particle:nth-child(12) {
+    --angle: 132deg;
+}
+
+.blast-overlay .particle:nth-child(13) {
+    --angle: 144deg;
+}
+
+.blast-overlay .particle:nth-child(14) {
+    --angle: 156deg;
+}
+
+.blast-overlay .particle:nth-child(15) {
+    --angle: 168deg;
+}
+
+.blast-overlay .particle:nth-child(16) {
+    --angle: 180deg;
+}
+
+.blast-overlay .particle:nth-child(17) {
+    --angle: 192deg;
+}
+
+.blast-overlay .particle:nth-child(18) {
+    --angle: 204deg;
+}
+
+.blast-overlay .particle:nth-child(19) {
+    --angle: 216deg;
+}
+
+.blast-overlay .particle:nth-child(20) {
+    --angle: 228deg;
+}
+
+.blast-overlay .particle:nth-child(21) {
+    --angle: 240deg;
+}
+
+.blast-overlay .particle:nth-child(22) {
+    --angle: 252deg;
+}
+
+.blast-overlay .particle:nth-child(23) {
+    --angle: 264deg;
+}
+
+.blast-overlay .particle:nth-child(24) {
+    --angle: 276deg;
+}
+
+.blast-overlay .particle:nth-child(25) {
+    --angle: 288deg;
+}
+
+.blast-overlay .particle:nth-child(26) {
+    --angle: 300deg;
+}
+
+.blast-overlay .particle:nth-child(27) {
+    --angle: 312deg;
+}
+
+.blast-overlay .particle:nth-child(28) {
+    --angle: 324deg;
+}
+
+.blast-overlay .particle:nth-child(29) {
+    --angle: 336deg;
+}
+
+.blast-overlay .particle:nth-child(30) {
+    --angle: 348deg;
+}
+
+/* ==========================
+   ANIMAÇÕES
+========================== */
+
+@keyframes blastPulse {
+
+    0% {
+        transform: scale(.9);
+        opacity: .22;
+    }
+
+    50% {
+        transform: scale(1.08);
+        opacity: .45;
+    }
+
+    100% {
+        transform: scale(.9);
+        opacity: .22;
+    }
+
+}
+
+@keyframes shockwave {
+
+    0% {
+
+        transform:
+            translate(-50%, -50%) scale(.25);
+
+        opacity: .8;
+
+    }
+
+    100% {
+
+        transform:
+            translate(-50%, -50%) scale(2.3);
+
+        opacity: 0;
+
+    }
+
+}
+
+@keyframes sparkFly {
+
+    0% {
+
+        transform:
+            rotate(var(--angle)) translateY(0) scale(.4);
+
+        opacity: 0;
+
+    }
+
+    10% {
+
+        opacity: 1;
+
+    }
+
+    100% {
+
+        transform:
+            rotate(var(--angle)) translateY(-220px) scale(1);
+
+        opacity: 0;
+
+    }
+
+}
+
+/* ==========================
+   VELOCIDADE MÁXIMA
+========================== */
+
+.speed-overlay {
+
+    overflow: hidden;
+
+    background:
+        linear-gradient(90deg,
+            rgba(0, 180, 255, .02),
+            rgba(255, 255, 255, .03),
+            rgba(0, 180, 255, .02));
+
+}
+
+/* Fluxo principal */
+
+.speed-overlay::before {
+
+    content: "";
+
+    position: absolute;
+    inset: -40%;
+
+    background:
+
+        repeating-linear-gradient(-18deg,
+
+            transparent 0px,
+
+            transparent 28px,
+
+            rgba(120, 220, 255, .08) 31px,
+
+            rgba(255, 255, 255, .14) 34px,
+
+            transparent 38px,
+
+            transparent 62px);
+
+    animation:
+        speedFlow 1.4s linear infinite;
+
+}
+
+/* Luz azul */
+
+.speed-overlay::after {
+
+    content: "";
+
+    position: absolute;
+
+    width: 320px;
+    height: 320px;
+
+    left: -120px;
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    border-radius: 50%;
+
+    background:
+
+        radial-gradient(circle,
+
+            rgba(0, 180, 255, .18),
+
+            rgba(0, 180, 255, .08),
+
+            transparent 70%);
+
+    filter: blur(35px);
+
+    animation:
+        speedGlow 2s ease-in-out infinite;
+
+}
+
+.speed-overlay .particle {
+
+    display: block;
+
+    position: absolute;
+
+    left: -80px;
+
+    top: calc(2% + var(--i) * 3%);
+
+    width: 42px;
+
+    height: 2px;
+
+    border-radius: 999px;
+
+    background:
+
+        linear-gradient(90deg,
+
+            rgba(255, 255, 255, 0),
+
+            rgba(160, 230, 255, .9),
+
+            white);
+
+    box-shadow:
+
+        0 0 8px #57d5ff;
+
+    animation:
+
+        speedParticle calc(1.4s + var(--i)*.05s) linear infinite;
+
+    animation-delay:
+        calc(var(--i) * -.18s);
+
+}
+
+.speed-overlay .particle:nth-child(3n) {
+
+    width: 70px;
+
+    height: 3px;
+
+    opacity: .8;
+
+}
+
+.speed-overlay .particle:nth-child(5n) {
+
+    width: 90px;
+
+    height: 4px;
+
+    box-shadow:
+
+        0 0 10px #5de3ff,
+
+        0 0 22px #5de3ff;
+
+}
+
+.speed-overlay .particle:nth-child(7n) {
+
+    width: 6px;
+
+    height: 6px;
+
+    border-radius: 50%;
+
+    background: white;
+
+    box-shadow:
+
+        0 0 10px white,
+
+        0 0 20px #57d5ff;
+
+}
+
+@keyframes speedFlow {
+
+    from {
+
+        transform:
+            translateX(-120px);
+
+    }
+
+    to {
+
+        transform:
+            translateX(120px);
+
+    }
+
+}
+
+@keyframes speedGlow {
+
+    0% {
+
+        transform:
+            translateY(-50%) scale(.9);
+
+        opacity: .3;
+
+    }
+
+    50% {
+
+        transform:
+            translateY(-50%) scale(1.2);
+
+        opacity: .65;
+
+    }
+
+    100% {
+
+        transform:
+            translateY(-50%) scale(.9);
+
+        opacity: .3;
+
+    }
+
+}
+
+@keyframes speedParticle {
+
+    from {
+
+        transform:
+
+            translateX(-100px);
+
+        opacity: 0;
+
+    }
+
+    10% {
+
+        opacity: 1;
+
+    }
+
+    100% {
+
+        transform:
+
+            translateX(700px);
+
+        opacity: 0;
+
+    }
+
+}
+
+
+/* ==========================
+   FUMAÇA DA ARQUIBANCADA
+========================== */
+
+.smoke-overlay {
+
+    background:
+        radial-gradient(circle at center,
+            rgba(255, 255, 255, .03),
+            rgba(120, 120, 120, .04) 45%,
+            rgba(0, 0, 0, .08) 100%);
+
+}
+
+/* ==========================
+   FUMAÇA BRANCA
+========================== */
+
+.smoke-overlay::before {
+
+    content: "";
+
+    position: absolute;
+
+    width: 700px;
+    height: 700px;
+
+    left: -260px;
+    bottom: -360px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(circle,
+
+            rgba(255, 255, 255, .22),
+
+            rgba(255, 255, 255, .14) 30%,
+
+            rgba(255, 255, 255, .07) 55%,
+
+            transparent 82%);
+
+    filter: blur(70px);
+
+    animation:
+        smokeWhite 18s ease-in-out infinite;
+
+}
+
+/* ==========================
+   FUMAÇA PRETA + SINALIZADOR
+========================== */
+
+.smoke-overlay::after {
+
+    content: "";
+
+    position: absolute;
+
+    width: 760px;
+    height: 760px;
+
+    right: -280px;
+    bottom: -390px;
+
+    border-radius: 50%;
+
+    background:
+
+        radial-gradient(circle at 50% 72%,
+
+            rgba(255, 60, 60, .20),
+
+            rgba(255, 40, 0, .10) 18%,
+
+            transparent 36%),
+
+        radial-gradient(circle,
+
+            rgba(0, 0, 0, .22),
+
+            rgba(0, 0, 0, .14) 32%,
+
+            rgba(0, 0, 0, .06) 58%,
+
+            transparent 84%);
+
+    filter: blur(80px);
+
+    animation:
+
+        smokeBlack 20s ease-in-out infinite,
+
+        flare 2.5s ease-in-out infinite;
+
+}
+
+/* ==========================
+   PARTÍCULAS
+========================== */
+
+.smoke-overlay .particle {
+
+    display: block;
+
+    position: absolute;
+
+    left: calc(3% + var(--i) * 3.2%);
+
+    bottom: -30px;
+
+    border-radius: 50%;
+
+    animation-delay: calc(var(--i) * -.45s);
+
+}
+
+/* Cinzas */
+
+.smoke-overlay .particle:nth-child(3n+1) {
+
+    width: 3px;
+    height: 3px;
+
+    background: #d8d8d8;
+
+    opacity: .28;
+
+    animation:
+        ashRise calc(8s + var(--i)*.15s) linear infinite;
+
+}
+
+/* Brasas */
+
+.smoke-overlay .particle:nth-child(3n+2) {
+
+    width: 3px;
+    height: 3px;
+
+    background: #ff9a00;
+
+    box-shadow:
+        0 0 6px orange,
+        0 0 12px red;
+
+    opacity: .5;
+
+    animation:
+        ashRise calc(7s + var(--i)*.12s) linear infinite;
+
+}
+
+/* Mini fumaças */
+
+.smoke-overlay .particle:nth-child(3n) {
+
+    width: 18px;
+    height: 18px;
+
+    background:
+        radial-gradient(circle,
+            rgba(255, 255, 255, .10),
+            rgba(180, 180, 180, .05),
+            transparent);
+
+    filter: blur(6px);
+
+    opacity: .18;
+
+    animation:
+        smokeParticle calc(11s + var(--i)*.2s) ease-in-out infinite;
+
+}
+
+/* GRANDES NUVENS DE FUMAÇA */
+
+.smoke-overlay .particle:nth-child(4n) {
+
+    width: 70px;
+    height: 70px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(circle,
+            rgba(255, 255, 255, 0.548) 100%,
+            rgba(56, 56, 56, 0.548) 100%,
+            transparent 80%);
+
+    filter: blur(16px);
+
+    opacity: .22;
+
+    animation:
+        bigSmoke calc(16s + var(--i)*.25s) ease-in-out infinite;
+
+}
+
+.smoke-overlay .particle:nth-child(7n) {
+
+    width: 95px;
+    height: 95px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(circle,
+            rgba(255, 255, 255, 0.548) 0%,
+            rgba(56, 56, 56, 0.548) 45%,
+            transparent 80%);
+
+    filter: blur(22px);
+
+    opacity: .20;
+
+    animation:
+        bigSmoke calc(20s + var(--i)*.3s) ease-in-out infinite;
+
+}
+
+.smoke-overlay .particle:nth-child(9n) {
+
+    width: 120px;
+    height: 120px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(circle,
+            rgba(255, 255, 255, 0.1),
+            rgba(180, 180, 180, .05),
+            transparent 82%);
+
+    filter: blur(30px);
+
+    opacity: .14;
+
+    animation:
+        bigSmokeSlow calc(24s + var(--i)*.4s) ease-in-out infinite;
+
+}
+
+/* ==========================
+   ANIMAÇÕES
+========================== */
+
+@keyframes smokeWhite {
+
+    0% {
+
+        transform:
+            translate(0, 0) scale(.96) rotate(0deg);
+
+    }
+
+    30% {
+
+        transform:
+            translate(40px, -35px) scale(1.08) rotate(2deg);
+
+    }
+
+    70% {
+
+        transform:
+            translate(-30px, -60px) scale(1.14) rotate(-2deg);
+
+    }
+
+    100% {
+
+        transform:
+            translate(0, 0) scale(.96) rotate(0deg);
+
+    }
+
+}
+
+@keyframes smokeBlack {
+
+    0% {
+
+        transform:
+            translate(0, 0) scale(1);
+
+    }
+
+    35% {
+
+        transform:
+            translate(-45px, -25px) scale(1.1);
+
+    }
+
+    70% {
+
+        transform:
+            translate(25px, -60px) scale(1.18);
+
+    }
+
+    100% {
+
+        transform:
+            translate(0, 0) scale(1);
+
+    }
+
+}
+
+@keyframes flare {
+
+    0% {
+
+        filter: blur(80px) brightness(.85);
+
+    }
+
+    50% {
+
+        filter: blur(80px) brightness(1.45);
+
+    }
+
+    100% {
+
+        filter: blur(80px) brightness(.85);
+
+    }
+
+}
+
+@keyframes ashRise {
+
+    0% {
+
+        transform:
+            translateY(0) translateX(0) scale(.4);
+
+        opacity: 0;
+
+    }
+
+    20% {
+
+        opacity: .45;
+
+    }
+
+    40% {
+
+        transform:
+            translateY(-80px) translateX(-10px);
+
+    }
+
+    70% {
+
+        transform:
+            translateY(-170px) translateX(12px);
+
+    }
+
+    100% {
+
+        transform:
+            translateY(-280px) translateX(-8px) scale(1);
+
+        opacity: 0;
+
+    }
+
+}
+
+@keyframes smokeParticle {
+
+    0% {
+
+        transform:
+            translateY(0) translateX(0) scale(.5);
+
+        opacity: 0;
+
+    }
+
+    20% {
+
+        opacity: .18;
+
+    }
+
+    50% {
+
+        transform:
+            translateY(-80px) translateX(12px) scale(1);
+
+    }
+
+    80% {
+
+        transform:
+            translateY(-170px) translateX(-12px) scale(1.3);
+
+    }
+
+    100% {
+
+        transform:
+            translateY(-260px) translateX(6px) scale(1.5);
+
+        opacity: 0;
+
+    }
+
+}
+
+
+@keyframes bigSmoke {
+
+    0% {
+
+        transform:
+            translateY(40px) translateX(0) scale(.65);
+
+        opacity: 0;
+
+    }
+
+    20% {
+
+        opacity: .22;
+
+    }
+
+    45% {
+
+        transform:
+            translateY(-40px) translateX(25px) scale(1);
+
+    }
+
+    70% {
+
+        transform:
+            translateY(-120px) translateX(-30px) scale(1.2);
+
+    }
+
+    100% {
+
+        transform:
+            translateY(-230px) translateX(15px) scale(1.45);
+
+        opacity: 0;
+
+    }
+
+}
+
+@keyframes bigSmokeSlow {
+
+    0% {
+
+        transform:
+            translateY(30px) translateX(0) scale(.8);
+
+        opacity: 0;
+
+    }
+
+    20% {
+
+        opacity: .15;
+
+    }
+
+    50% {
+
+        transform:
+            translateY(-70px) translateX(-40px) scale(1.1);
+
+    }
+
+    80% {
+
+        transform:
+            translateY(-170px) translateX(35px) scale(1.35);
+
+    }
+
+    100% {
+
+        transform:
+            translateY(-280px) translateX(-20px) scale(1.7);
+
+        opacity: 0;
+
+    }
+
+}
+
+
+/* ==========================
+   KRAKEN
+========================== */
+
+.kraken-overlay {
+
+    overflow: hidden;
+
+    background:
+
+        radial-gradient(circle at 50% 35%,
+            rgba(0, 255, 220, .05),
+            rgba(0, 140, 150, .05) 25%,
+            rgba(0, 45, 70, .16) 60%,
+            rgba(0, 0, 0, .28) 100%);
+
+}
+
+.kraken-overlay::before {
+    content: "";
+    position: absolute;
+    width: 120px;
+    height: 300px;
+    left: -40px;
+    bottom: -60px;
+    border-radius:
+        70% 30% 20% 80% / 90% 70% 30% 20%;
+    background:
+        linear-gradient(90deg,
+            rgba(0, 0, 0, .85),
+            rgba(55, 44, 20, 0.85),
+            rgba(0, 0, 0, .5));
+    box-shadow:
+        inset -20px 0 30px rgba(255, 196, 0, 0.08),
+        0 0 40px rgba(0, 0, 0, .8);
+    filter: blur(3px);
+    transform-origin:
+        bottom center;
+    animation:
+        giantTentacleLeft 8s ease-in-out infinite;
+}
+
+.kraken-overlay::after {
+    content: "";
+    position: absolute;
+    width: 130px;
+    height: 350px;
+    right: -50px;
+    bottom: -40px;
+    border-radius:
+        30% 70% 80% 20% / 70% 90% 20% 40%;
+    background:
+        linear-gradient(270deg,
+            rgba(0, 0, 0, .9),
+            rgba(55, 44, 20, 0.85),
+            rgba(0, 0, 0, .45));
+    box-shadow:
+        inset -20px 0 30px rgba(255, 196, 0, 0.08),
+        0 0 50px rgba(0, 0, 0, .9);
+    filter: blur(4px);
+    animation:
+        giantTentacleRight 10s ease-in-out infinite;
+}
+
+@keyframes giantTentacleLeft {
+    0% {
+        transform:
+            rotate(-18deg) translateY(20px);
+    }
+
+    50% {
+        transform:
+            rotate(10deg) translateY(-20px);
+    }
+
+    100% {
+        transform:
+            rotate(-18deg) translateY(20px);
+    }
+}
+
+@keyframes giantTentacleRight {
+    0% {
+        transform:
+            rotate(18deg) translateY(20px);
+    }
+
+    50% {
+        transform:
+            rotate(-12deg) translateY(-30px);
+    }
+
+    100% {
+        transform:
+            rotate(18deg) translateY(20px);
+    }
+}
+
+.kraken-overlay .particle:nth-child(n+15):nth-child(-n+22) {
+
+
+    display: block;
+
+
+    position: absolute;
+
+
+    width: 12px;
+    height: 12px;
+
+
+    border-radius: 50%;
+
+
+
+    background:
+
+        rgba(0, 255, 220, .25);
+
+
+
+    box-shadow:
+
+
+        0 0 8px #00ffd5;
+
+
+
+    left: calc(5% + var(--i)*12%);
+
+
+    bottom: 20%;
+
+
+    animation:
+
+        suctionGlow 4s ease-in-out infinite;
+
+
+}
+
+@keyframes suctionGlow{
+
+
+    0%,100%{
+
+        opacity:.2;
+
+        transform:scale(.8);
+
+    }
+
+
+    50%{
+
+        opacity:.8;
+
+        transform:scale(1.3);
+
+    }
+
+}
+
+/* ==========================
+   TENTÁCULOS SECUNDÁRIOS
+========================== */
+
+/*
+   Partículas 15 até 22 viram tentáculos
+*/
+
+.kraken-overlay .particle:nth-child(n+15):nth-child(-n+22) {
+
+    display: block;
+
+    position: absolute;
+
+    width: 350px;
+    height: 180px;
+
+    bottom: -120px;
+
+    left: calc(5% + var(--i) * 5%);
+
+    border-radius:
+
+        50% 50% 20% 20% / 80% 80% 20% 20%;
+
+    background:
+
+        linear-gradient(180deg,
+
+            rgba(55, 44, 20, 0.85),
+
+            rgba(0, 0, 0, .65));
+
+
+    filter: blur(8px);
+
+
+    opacity: .45;
+
+
+    transform-origin: bottom center;
+
+
+    animation:
+
+        miniTentacle calc(7s + var(--i)*.35s) ease-in-out infinite;
+
+
+    animation-delay:
+
+        calc(var(--i) * -.4s);
+
+}
+
+.kraken-overlay .particle:nth-child(n+15):nth-child(-n+22)::after {
+
+    content: "";
+
+    position: absolute;
+
+    width: 6px;
+    height: 6px;
+
+    left: 50%;
+
+    top: 25%;
+
+    border-radius: 50%;
+
+
+    background:
+
+        rgba(255, 136, 0, 0.35);
+
+
+    box-shadow:
+
+        0 30px rgba(255, 219, 100, 0.25),
+        0 60px rgba(255, 193, 100, 0.18);
+
+
+}
+
+@keyframes miniTentacle {
+
+    0% {
+
+        transform:
+
+            rotate(-8deg) scaleY(.85);
+
+    }
+
+
+    25% {
+
+        transform:
+
+            rotate(5deg) scaleY(1.05);
+
+    }
+
+
+    50% {
+
+        transform:
+
+            rotate(12deg) scaleY(1.15);
+
+    }
+
+
+    75% {
+
+        transform:
+
+            rotate(-4deg) scaleY(1);
+
+    }
+
+
+    100% {
+
+        transform:
+
+            rotate(-8deg) scaleY(.85);
+
+    }
+
+}
+
+/* ==========================
+   PLÂNCTON BIOLUMINESCENTE
+========================== */
+
+.kraken-overlay .particle:nth-child(n+1):nth-child(-n+8) {
+
+    display: block;
+
+    position: absolute;
+
+
+    width: 5px;
+    height: 5px;
+
+
+    left: calc(8% + var(--i) * 10%);
+
+    bottom: -20px;
+
+
+    border-radius: 50%;
+
+
+    background:
+
+        radial-gradient(circle,
+
+            white 0%,
+
+            #63fff0 35%,
+
+            transparent 75%);
+
+
+
+    box-shadow:
+
+        0 0 8px #4dfff0,
+
+        0 0 18px #00cbb8;
+
+
+    opacity: .6;
+
+
+    animation:
+
+        planktonFloat calc(8s + var(--i)*.5s) ease-in-out infinite;
+
+
+    animation-delay:
+
+        calc(var(--i)*-.8s);
+
+}
+
+.kraken-overlay .particle:nth-child(2n) {
+
+    width: 3px;
+    height: 3px;
+
+}
+
+
+.kraken-overlay .particle:nth-child(3n) {
+
+    width: 8px;
+    height: 8px;
+
+}
+
+@keyframes planktonFloat {
+
+
+    0% {
+
+        transform:
+
+            translateY(0) translateX(0) scale(.5);
+
+
+        opacity: .15;
+
+    }
+
+
+    25% {
+
+        opacity: .8;
+
+    }
+
+
+    50% {
+
+        transform:
+
+            translateY(-100px) translateX(20px) scale(1);
+
+    }
+
+
+    75% {
+
+        transform:
+
+            translateY(-180px) translateX(-15px);
+
+    }
+
+
+    100% {
+
+        transform:
+
+            translateY(-300px) translateX(10px) scale(.8);
+
+
+        opacity: 0;
+
+    }
+
+}
+
+/* ==========================
+   BOLHAS
+========================== */
+
+
+.kraken-overlay .particle:nth-child(n+9):nth-child(-n+14) {
+
+    display: block;
+
+
+    position: absolute;
+
+
+    width: 18px;
+    height: 18px;
+
+
+    left: calc(10% + var(--i) * 12%);
+
+
+    bottom: -40px;
+
+
+    border-radius: 50%;
+
+
+    background:
+
+        radial-gradient(circle at 30% 30%,
+
+            rgba(255, 255, 255, .8),
+
+            rgba(120, 255, 240, .15),
+
+            transparent 70%);
+
+
+
+    border:
+
+        1px solid rgba(150, 255, 245, .35);
+
+
+
+    box-shadow:
+
+        inset -2px -2px 5px rgba(255, 255, 255, .2);
+
+
+
+    animation:
+
+        bubbleRise calc(10s + var(--i)*.6s) linear infinite;
+
+
+    animation-delay:
+
+        calc(var(--i)*-1s);
+
+}
+
+.kraken-overlay .particle:nth-child(10n) {
+
+    width: 8px;
+    height: 8px;
+
+}
+
+
+.kraken-overlay .particle:nth-child(12n) {
+
+    width: 25px;
+    height: 25px;
+
+    opacity: .35;
+
+}
+
+@keyframes bubbleRise {
+
+
+    0% {
+
+        transform:
+
+            translateY(0) translateX(0) scale(.4);
+
+
+        opacity: 0;
+
+    }
+
+
+    20% {
+
+        opacity: .5;
+
+    }
+
+
+    50% {
+
+        transform:
+
+            translateY(-120px) translateX(12px);
+
+    }
+
+
+    80% {
+
+        transform:
+
+            translateY(-250px) translateX(-15px);
+
+    }
+
+
+    100% {
+
+        transform:
+
+            translateY(-380px) translateX(5px) scale(1);
+
+
+        opacity: 0;
+
+    }
+
+}
+
+/* ==========================
+   OLHOS DO KRAKEN
+========================== */
+
+
+/*
+   Partículas 23 e 24
+   viram os olhos
+*/
+
+
+.kraken-overlay .particle:nth-child(23),
+.kraken-overlay .particle:nth-child(24) {
+
+    display: block;
+
+    position: absolute;
+
+
+    width: 22px;
+    height: 22px;
+
+
+    top: 35%;
+
+
+    border-radius: 50%;
+
+
+    background:
+
+        radial-gradient(circle,
+
+            #d9fff8 0%,
+
+            #ff6600 25%,
+
+            #664200 45%,
+
+            rgba(0, 0, 0, .9) 65%);
+
+
+
+    box-shadow:
+
+        0 0 15px #ff9900,
+
+        0 0 35px rgba(255, 153, 0, 0.8);
+
+
+
+    opacity: 0;
+
+
+    animation:
+
+        krakenEye 12s ease-in-out infinite;
+
+}
+
+.kraken-overlay .particle:nth-child(23) {
+
+    left: 42%;
+
+}
+
+
+.kraken-overlay .particle:nth-child(24) {
+
+    left: 52%;
+
+}
+
+@keyframes krakenEye {
+
+
+    0% {
+
+        opacity: 0;
+
+        transform:
+
+            scale(.3);
+
+    }
+
+
+    55% {
+
+        opacity: 0;
+
+    }
+
+
+    60% {
+
+        opacity: .9;
+
+        transform:
+
+            scale(1);
+
+    }
+
+
+    66% {
+
+        opacity: 1;
+
+    }
+
+
+    72% {
+
+        opacity: .4;
+
+    }
+
+
+    78% {
+
+        opacity: 0;
+
+        transform:
+
+            scale(.5);
+
+    }
+
+
+    100% {
+
+        opacity: 0;
+
+    }
+
+}
+
+.kraken-overlay {
+
+    position: relative;
+
+}
+
+
+/* sombra passando */
+
+.kraken-overlay {
+
+    animation:
+
+        deepPressure 8s ease-in-out infinite;
+
+}
+
+@keyframes deepPressure {
+
+
+    0% {
+
+        filter:
+
+            brightness(.9);
+
+    }
+
+
+    40% {
+
+        filter:
+
+            brightness(1.05);
+
+    }
+
+
+    60% {
+
+        filter:
+
+            brightness(.85);
+
+    }
+
+
+    100% {
+
+        filter:
+
+            brightness(.9);
+
+    }
+
+}
+
+/* ==========================
+   SOMBRAS DO ABISMO
+========================== */
+
+
+.kraken-overlay .particle:nth-child(n+25):nth-child(-n+30) {
+
+    display: block;
+
+
+    position: absolute;
+
+
+    width: 80px;
+    height: 80px;
+
+
+    left: calc(10% + var(--i)*8%);
+
+
+    bottom: -50px;
+
+
+    border-radius: 50%;
+
+
+    background:
+
+        radial-gradient(circle,
+
+            rgba(0, 0, 0, .35),
+
+            transparent 70%);
+
+
+
+    filter: blur(20px);
+
+
+
+    animation:
+
+        abyssShadow calc(14s + var(--i)*.8s) ease-in-out infinite;
+
+}
+
+@keyframes abyssShadow {
+
+
+    0% {
+
+        transform:
+
+            translateY(80px) scale(.7);
+
+
+        opacity: 0;
+
+    }
+
+
+    30% {
+
+        opacity: .4;
+
+    }
+
+
+    60% {
+
+        transform:
+
+            translateY(-80px) translateX(40px) scale(1.2);
+
+    }
+
+    100% {
+
+        transform:
+
+            translateY(-250px) translateX(-30px) scale(1.5);
+
+
+        opacity: 0;
+
+    }
+
+}
+
+/* ==========================
+   ONDA DO ABISMO
+========================== */
+
+.kraken-overlay .particle:nth-child(25)::before {
+
+    content: "";
+
+    position: absolute;
+
+
+    width: 280px;
+    height: 280px;
+
+
+    left: 50%;
+    top: 50%;
+
+
+    transform:
+
+        translate(-50%, -50%);
+
+
+
+    border-radius: 50%;
+
+
+    border:
+
+        1px solid rgba(255, 166, 0, 0.18);
+
+
+
+    box-shadow:
+
+        0 0 40px rgba(255, 153, 0, 0.12);
+
+
+
+    animation:
+
+        abyssWave 7s ease-out infinite;
+
+}
+
+@keyframes abyssWave {
+
+
+    0% {
+
+        transform:
+
+            translate(-50%, -50%) scale(.3);
+
+
+        opacity: .8;
+
+    }
+
+
+    100% {
+
+        transform:
+
+            translate(-50%, -50%) scale(1.8);
+
+
+        opacity: 0;
+
+    }
+
+}
+
+.kraken-overlay {
+
+    isolation: isolate;
+
+}
+
+
+.kraken-overlay::selection {
+
+    background: none;
+
+}
+
+
+/* brilho passando */
+
+.kraken-overlay {
+
+    background-size: 200% 200%;
+
+
+    animation:
+
+        waterMove 12s ease-in-out infinite;
+
+}
+
+@keyframes waterMove {
+
+
+    0% {
+
+        background-position:
+
+            0% 50%;
+
+    }
+
+
+    50% {
+
+        background-position:
+
+            100% 40%;
+
+    }
+
+
+    100% {
+
+        background-position:
+
+            0% 50%;
+
+    }
+
+}
+
+.kraken-overlay .particle:nth-child(26)::after {
+
+    content: "";
+
+
+    position: absolute;
+
+
+    width: 220px;
+    height: 220px;
+
+
+    left: 50%;
+    top: 50%;
+
+
+    transform:
+
+        translate(-50%, -50%);
+
+
+
+    border-radius: 50%;
+
+
+    background:
+
+        radial-gradient(circle,
+
+            rgba(255, 153, 0, 0.12),
+
+            transparent 70%);
+
+
+
+    filter: blur(25px);
+
+
+
+    animation:
+
+        krakenEnergy 5s ease-in-out infinite;
+
+}
+
+@keyframes krakenEnergy {
+
+
+    0% {
+
+        transform:
+
+            translate(-50%, -50%) scale(.8);
+
+
+        opacity: .3;
+
+    }
+
+
+    50% {
+
+        transform:
+
+            translate(-50%, -50%) scale(1.2);
+
+
+        opacity: .7;
+
+    }
+
+
+    100% {
+
+        transform:
+
+            translate(-50%, -50%) scale(.8);
+
+
+        opacity: .3;
+
+    }
+
+}
+
+.kraken-overlay .particle:nth-child(27),
+.kraken-overlay .particle:nth-child(28) {
+
+    width: 3px;
+    height: 35px;
+
+
+    border-radius: 999px;
+
+
+    background:
+
+        linear-gradient(transparent,
+
+            rgba(160, 255, 255, .7));
+
+
+    filter:
+
+        blur(1px);
+
+
+
+    animation:
+
+        waterDrop 5s linear infinite;
+
+}
+
+@keyframes waterDrop {
+
+
+    from {
+
+        transform:
+
+            translateY(-120px);
+
+
+        opacity: 0;
+
+    }
+
+
+    30% {
+
+        opacity: .5;
+
+    }
+
+
+    to {
+
+        transform:
+
+            translateY(300px);
+
+
+        opacity: 0;
+
+    }
+
+}
+
+.kraken-overlay {
+
+    animation:
+
+        krakenBreath 9s ease-in-out infinite;
+
+}
+
+@keyframes krakenBreath {
+
+
+    0% {
+
+        transform:
+
+            scale(1);
+
+    }
+
+
+    50% {
+
+        transform:
+
+            scale(1.015);
+
+    }
+
+    100% {
+
+        transform:
+
+            scale(1);
+
+    }
+
+}
