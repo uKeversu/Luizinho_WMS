@@ -380,48 +380,119 @@ function Conferencia() {
 
         setLoadingSync(true);
 
-        console.log("SINCRONIZANDO A NOTA:", notaAtual.id, "NF:", notaAtual.numero)
+        const tempoMinimo = 2000;
+        const inicio = Date.now();
+
+        let snackbarData = null;
 
         try {
-            const response = await fetch(`${API}/api/sync/nfe_item_x_local_sistema`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
+            // 1 - Atualiza locais do SS Plus
+            const responseLocal = await fetch(
+                "http://192.168.1.185:8077/api/sync/local_sistema",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        todos: true
+                    })
+                }
+            );
 
-                })
-            });
+            const dataLocal = await responseLocal.json();
 
-            const data = await response.json();
+            if (!responseLocal.ok) {
+                throw new Error("Erro ao buscar localizações no SS Plus");
+            }
 
-            if (!response.ok) {
-                throw new Error(data?.erro || "Erro ao sincronizar");
+            const {
+                erros = 0,
+                inseridos = 0,
+                total_processados = 0
+            } = dataLocal.estatisticas || {};
+
+            console.log("Total processados:", total_processados);
+            console.log("Atualizados:", inseridos);
+            console.log("Erros:", erros);
+
+            // 2 - Sincroniza a nota
+            console.log(
+                "SINCRONIZANDO A NOTA:",
+                notaAtual.id,
+                "NF:",
+                notaAtual.numero
+            );
+
+            const responseSync = await fetch(
+                `${API}/api/sync/nfe_item_x_local_sistema`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                    })
+                }
+            );
+
+            const dataSync = await responseSync.json();
+
+            if (!responseSync.ok) {
+                throw new Error(dataSync?.erro || "Erro ao sincronizar nota");
             }
 
             registrarLog({
                 acao: "Sincronizou nota"
             });
 
-            setSnackbar({
-                open: true,
-                message: `Sincronização concluída`,
-                severity: "success"
-            });
-
             await carregarTudo();
 
-        } catch (err) {
-            console.error("Erro sync:", err);
+            const semDados =
+                total_processados === 0 &&
+                inseridos === 0 &&
+                erros === 0;
 
-            setSnackbar({
+            if (semDados) {
+                snackbarData = {
+                    open: true,
+                    message: "Nenhum item para sincronizar",
+                    severity: "info"
+                };
+            } else {
+                snackbarData = {
+                    open: true,
+                    message: "Nota sincronizada",
+                    severity: "success"
+                };
+            }
+
+        } catch (err) {
+            console.error(err);
+
+            snackbarData = {
                 open: true,
-                message: "Erro ao conectar com API",
+                message: err.message || "Erro ao sincronizar com SS Plus",
                 severity: "error"
-            });
+            };
 
         } finally {
-            setLoadingSync(false);
+            const tempoPassado = Date.now() - inicio;
+            const tempoRestante = tempoMinimo - tempoPassado;
+
+            const finalizar = () => {
+                setLoadingSync(false);
+
+                if (snackbarData) {
+                    setSnackbar(snackbarData);
+                }
+            };
+
+            if (tempoRestante > 0) {
+                setTimeout(finalizar, tempoRestante);
+            } else {
+                finalizar();
+            }
         }
     };
 

@@ -13,6 +13,7 @@ import {
     TableRow,
     TextField,
     CircularProgress,
+    Backdrop,
     Snackbar,
     Alert,
     Button,
@@ -25,6 +26,7 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import SyncIcon from '@mui/icons-material/Sync';
 
 function AtualizarCean() {
 
@@ -61,6 +63,8 @@ function AtualizarCean() {
     const [loadingNotas, setLoadingNotas] = useState(false);
     const [loadingItens, setLoadingItens] = useState(false);
     const [searchParams] = useSearchParams();
+
+    const [loadingSync, setLoadingSync] = useState(false);
 
     const [snackbar, setSnackbar] = useState({
         open: false,
@@ -381,6 +385,116 @@ function AtualizarCean() {
         }
     };
 
+    const syncSSPlus = async () => {
+        setLoadingSync(true);
+
+        const tempoMinimo = 2000;
+        const inicio = Date.now();
+
+        let snackbarData = null;
+
+        try {
+            // 1 - Atualiza locais do SS Plus
+            const responseLocal = await fetch(
+                "http://192.168.1.185:8077/api/sync/local_sistema",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        todos: true
+                    })
+                }
+            );
+
+            const dataLocal = await responseLocal.json();
+
+            if (!responseLocal.ok) {
+                throw new Error("Erro ao buscar localizações no SS Plus");
+            }
+
+            const {
+                erros = 0,
+                inseridos = 0,
+                total_processados = 0
+            } = dataLocal.estatisticas || {};
+
+            console.log("Total processados:", total_processados);
+            console.log("Atualizados:", inseridos);
+            console.log("Erros:", erros);
+
+            const responseSync = await fetch(
+                `${API}/api/sync/nfe_item_x_local_sistema`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                    })
+                }
+            );
+
+            const dataSync = await responseSync.json();
+
+            if (!responseSync.ok) {
+                throw new Error(dataSync?.erro || "Erro ao sincronizar nota");
+            }
+
+            registrarLog({
+                acao: "Sincronizou nota"
+            });
+
+            const semDados =
+                total_processados === 0 &&
+                inseridos === 0 &&
+                erros === 0;
+
+            if (semDados) {
+                snackbarData = {
+                    open: true,
+                    message: "Nenhum item para sincronizar",
+                    severity: "info"
+                };
+            } else {
+                snackbarData = {
+                    open: true,
+                    message: "Itens sincronizados",
+                    severity: "success"
+                };
+            }
+
+        } catch (err) {
+            console.error(err);
+
+            snackbarData = {
+                open: true,
+                message: err.message || "Erro ao sincronizar com SS Plus",
+                severity: "error"
+            };
+
+        } finally {
+            const tempoPassado = Date.now() - inicio;
+            const tempoRestante = tempoMinimo - tempoPassado;
+            buscarItens(notaSelecionada.id);
+
+            const finalizar = () => {
+                setLoadingSync(false);
+
+                if (snackbarData) {
+                    setSnackbar(snackbarData);
+                }
+            };
+
+            if (tempoRestante > 0) {
+                setTimeout(finalizar, tempoRestante);
+            } else {
+                finalizar();
+            }
+        }
+    };
+
     return (
         <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "background.default" }}>
             {/* Header */}
@@ -422,6 +536,24 @@ function AtualizarCean() {
                         )}
                     </Box>
                     <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
+                        <Tooltip title="Buscar códigos e localizações do SS Plus">
+                            <Button
+                                id="btnAtualizar" onClick={syncSSPlus}
+                                disabled={loadingSync}
+                                size="small"
+                                sx={{
+                                    color: "background.paper",
+                                    display: 'flex',
+                                    gap: 0.5,
+                                    fontSize: '0.75rem',
+                                    minWidth: 'auto',
+                                    padding: '4px 8px',
+                                    whiteSpace: 'nowrap'
+                                }}>
+                                SS Plus Sync
+                                {<SyncIcon />}
+                            </Button>
+                        </Tooltip>
                         <Button
                             onClick={() => navigate("/Dashboard")}
                             sx={{ color: "background.paper", display: 'flex', gap: 1 }}
@@ -433,6 +565,19 @@ function AtualizarCean() {
                     </Box>
                 </Box>
             </Box>
+
+            {/* Loading de sincronização SS Plus*/}
+            <Backdrop
+                open={loadingSync}
+                sx={{ zIndex: (theme) => theme.zIndex.drawer + 999 }}
+            >
+                <Box textAlign="center">
+                    <CircularProgress sx={{ color: "background.paper" }} color="inherit" />
+                    <Typography mt={2} sx={{ color: "background.paper" }}>
+                        Sincronizando itens com o SS Plus...
+                    </Typography>
+                </Box>
+            </Backdrop>
 
             {/* BUSCA NOTA */}
             <Box
@@ -516,7 +661,7 @@ function AtualizarCean() {
                             }}
                         >
                             <Typography fontWeight={600}>
-                                NF: {nota.numero}
+                                NF: {nota.numero}-{nota.serie}
                             </Typography>
                             <Typography variant="body2">
                                 {nota.fornecedor}
@@ -541,7 +686,7 @@ function AtualizarCean() {
                         NOTA SELECIONADA
                     </Typography>
                     <Typography variant="h5">
-                        NF {notaSelecionada.numero}
+                        NF {notaSelecionada.numero}-{notaSelecionada.serie}
                     </Typography>
 
                     <Typography variant="h7">
@@ -756,11 +901,21 @@ function AtualizarCean() {
                 <Alert
                     severity={snackbar.severity}
                     variant="filled"
+                    sx={{
+                        color: 'primary.branco',
+
+                        "& .MuiAlert-icon": {
+                            color: 'primary.branco'
+                        },
+
+                        "& .MuiAlert-action": {
+                            color: 'primary.branco'
+                        }
+                    }}
                 >
                     {snackbar.message}
                 </Alert>
             </Snackbar>
-
         </Container>
     );
 }
