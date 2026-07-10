@@ -60,16 +60,16 @@ export const corRaridade = (raridade) => {
             return "#00d335";
 
         case "LENDARIO":
-            return "#ff9800";
+            return "#FF9800";
 
         case "EPICO":
             return "#9C27B0";
 
         case "RARO":
-            return "#2196F3";
+            return "#E53935";
 
         case "INCOMUM":
-            return "#4CAF50";
+            return "#2196F3";
 
         default:
             return "#607D8B";

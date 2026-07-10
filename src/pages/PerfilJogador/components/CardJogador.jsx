@@ -37,7 +37,8 @@ export default function CardJogador({
     equipados,
     codigo,
     funcionarios = [],
-    saldo
+    saldo,
+    preview = false
 }) {
 
     const navigate = useNavigate();
@@ -187,19 +188,20 @@ export default function CardJogador({
                         {codigo}
                     </Typography>
 
-                    <Button
-                        onClick={() =>
-                            navigate("/Produtividade")
-                        }
-                        sx={{
-                            color: "background.paper",
-                            gap: 1,
-                            borderRadius: "20%"
-                        }}
-                    >
-                        <ArrowBackIcon />
-                    </Button>
-
+                    {!preview && (
+                        <Button
+                            onClick={() =>
+                                navigate("/Produtividade")
+                            }
+                            sx={{
+                                color: "background.paper",
+                                gap: 1,
+                                borderRadius: "20%"
+                            }}
+                        >
+                            <ArrowBackIcon />
+                        </Button>
+                    )}
                 </Box>
 
                 {/* AVATAR */}

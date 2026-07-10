@@ -1,4 +1,6 @@
 import { useState, useMemo, useContext, useEffect } from "react";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 import {
@@ -15,7 +17,10 @@ import {
     CardContent,
     CircularProgress,
     Snackbar,
-    Alert
+    Alert,
+    Dialog,
+    DialogContent,
+    IconButton
 } from "@mui/material";
 
 import {
@@ -24,10 +29,11 @@ import {
     ArrowBack
 } from "@mui/icons-material";
 
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import PersonIcon from '@mui/icons-material/Person';
 
-import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import CardJogador from "./PerfilJogador/components/CardJogador";
+
 import { ThemeContext } from "../context/ThemeContext";
 
 export default function Loja() {
@@ -58,6 +64,22 @@ export default function Loja() {
         "efeito"
     ];
 
+    const [previewOpen, setPreviewOpen] = useState(false);
+    const [previewEquipados, setPreviewEquipados] = useState({});
+    const [perfilPreview, setPerfilPreview] = useState(null);
+    const [funcionarios, setFuncionarios] = useState([]);
+
+    // CARREGA FUNCIONÁRIOS PARA USAR NO PREVIEW
+    useEffect(() => {
+        async function carregarFuncionarios() {
+            const { data } = await axios.get(
+                "http://192.168.1.185:8077/api/funcionarios/listar"
+            );
+            setFuncionarios(data);
+        }
+        carregarFuncionarios();
+    }, []);
+
     // CARREGA DADOS
     const fetchData = async () => {
         try {
@@ -72,6 +94,11 @@ export default function Loja() {
 
             setSaldo(perfil.saldo);
             setEquipados(perfil.equipados || {});
+            setPerfilPreview({
+                perfil: perfil.perfil,
+                codigo: perfil.codigo,
+                saldo: perfil.saldo
+            });
 
             const itensFormatados = lojaRes.data.items.map(item => {
 
@@ -109,6 +136,15 @@ export default function Loja() {
             severity
         });
     };
+
+    function visualizar(item) {
+        const novoEquipado = {
+            ...equipados
+        };
+        novoEquipado[item.categoria] = item;
+        setPreviewEquipados(novoEquipado);
+        setPreviewOpen(true);
+    }
 
     // COMPRAR ITEM
     const comprarItem = async (item) => {
@@ -299,7 +335,15 @@ export default function Loja() {
                                         />
 
                                         <Box mt={3}>
-
+                                            <Button
+                                                fullWidth
+                                                variant="outlined"
+                                                startIcon={<VisibilityIcon />}
+                                                sx={{ mb: 1 }}
+                                                onClick={() => visualizar(item)}
+                                            >
+                                                Visualizar
+                                            </Button>
                                             {item.equipado ? (
                                                 <Button
                                                     fullWidth
@@ -340,6 +384,45 @@ export default function Loja() {
 
                 </Grid>
             )}
+
+            <Dialog
+                open={previewOpen}
+                onClose={() => setPreviewOpen(false)}
+                maxWidth="md"
+                fullWidth
+                slotProps={{
+                    paper: {
+                        sx: {
+                            width: 430,
+                            maxWidth: "95vw",
+                            borderRadius: 4,
+                            bgcolor: "transparent",
+                            boxShadow: "none",
+                            overflow: "visible"
+                        }
+                    }
+                }}
+            >
+                <DialogContent
+                    sx={{
+                        p: 0,
+                        bgcolor: "transparent",
+                        display: "flex",
+                        justifyContent: "center"
+                    }}
+                >
+                    {perfilPreview && (
+                        <CardJogador
+                            perfil={perfilPreview.perfil}
+                            codigo={perfilPreview.codigo}
+                            saldo={perfilPreview.saldo}
+                            funcionarios={funcionarios}
+                            equipados={previewEquipados}
+                            preview
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
 
             {/* SNACKBAR */}
             <Snackbar
