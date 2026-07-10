@@ -196,42 +196,56 @@ export default function Produtividade() {
     // Gera patente do usuário
     const obterNivel = (xp, itens, pontosFinais, produtividade, errosCaixa) => {
 
-        if (xp >= 300000 && itens >= 10000 && pontosFinais >= 15000 && produtividade >= 98)
+        if (xp >= 1000000 && itens >= 25000 && pontosFinais >= 70000 && produtividade >= 100)
             return {
-                nome: "LENDARIO",
+                nome: "TRANSCENDENTAL",
+                cor: "#3256f5",
+                imagem: "/ranks/icone-transcendental.png",
+            };
+
+        else if (xp >= 750000 && itens >= 15000 && pontosFinais >= 50000 && produtividade >= 98)
+            return {
+                nome: "LENDÁRIO",
                 cor: "#a724ff",
                 imagem: "/ranks/icone-lendario.png",
             };
 
-        else if (xp >= 200000 && itens >= 5000 && pontosFinais >= 10000 && produtividade >= 95)
+        else if (xp >= 500000 && itens >= 10000 && pontosFinais >= 30000 && produtividade >= 95)
             return {
                 nome: "MESTRE",
                 cor: "#ff2929",
                 imagem: "/ranks/icone-mestre.png",
             };
 
-        else if (xp >= 150000 && itens >= 3000 && pontosFinais >= 5000 && produtividade >= 90)
+        else if (xp >= 300000 && itens >= 7000 && pontosFinais >= 20000 && produtividade >= 90)
             return {
                 nome: "ESMERALDA",
                 cor: "#06c730",
                 imagem: "/ranks/icone-esmeralda.png",
             };
 
-        else if (xp >= 100000 && itens >= 2000 && pontosFinais >= 3000 && produtividade >= 85)
+        else if (xp >= 150000 && itens >= 5000 && pontosFinais >= 10000 && produtividade >= 85)
             return {
                 nome: "DIAMANTE",
                 cor: "#00d5ff",
                 imagem: "/ranks/icone-diamante.png",
             };
 
-        else if (xp >= 70000 && itens >= 1500 && pontosFinais >= 1000 && produtividade >= 80)
+        else if (xp >= 100000 && itens >= 3000 && pontosFinais >= 7500 && produtividade >= 80)
+            return {
+                nome: "PLATINA",
+                cor: "#b0e0e6",
+                imagem: "/ranks/icone-platina.png",
+            };
+
+        else if (xp >= 70000 && itens >= 2000 && pontosFinais >= 5000 && produtividade >= 75)
             return {
                 nome: "OURO",
                 cor: "#FFD700",
                 imagem: "/ranks/icone-ouro.png",
             };
 
-        else if (xp >= 30000 && itens >= 800 && pontosFinais >= 500 && produtividade >= 75)
+        else if (xp >= 30000 && itens >= 1000 && pontosFinais >= 3000 && produtividade >= 70)
             return {
                 nome: "PRATA",
                 cor: "#9c9c9c",
@@ -243,8 +257,8 @@ export default function Produtividade() {
             cor: "#d17920",
             imagem: "/ranks/icone-bronze.png",
         };
-
     };
+
 
     // Itens conferidos pelo usuário
     const abrirDetalhes = (row) => {
@@ -3032,12 +3046,11 @@ export default function Produtividade() {
                             <Chip
                                 label="🥉 BRONZE — 0 XP"
                                 sx={{
-                                    bgcolor: "#7a4b22",
+                                    bgcolor: "#d37625",
                                     color: "#fff",
                                     fontWeight: "bold",
                                 }}
                             />
-
                             <Chip
                                 label="🥈 PRATA — 30.000 XP"
                                 sx={{
@@ -3046,47 +3059,58 @@ export default function Produtividade() {
                                     fontWeight: "bold",
                                 }}
                             />
-
                             <Chip
                                 label="🥇 OURO — 70.000 XP"
                                 sx={{
-                                    bgcolor: "#d6a500",
+                                    bgcolor: "#dfac06",
                                     color: "#fff",
                                     fontWeight: "bold",
                                 }}
                             />
-
                             <Chip
-                                label="💎 DIAMANTE — 100.000 XP"
+                                label="✦ PLATINA — 100.000 XP"
+                                sx={{
+                                    bgcolor: "#73d7e4",
+                                    color: "#fff",
+                                    fontWeight: "bold",
+                                }}
+                            />
+                            <Chip
+                                label="💎 DIAMANTE — 150.000 XP"
                                 sx={{
                                     bgcolor: "#00bfff",
                                     color: "#fff",
                                     fontWeight: "bold",
                                 }}
                             />
-
                             <Chip
-                                label="🟢 ESMERALDA — 150.000 XP"
+                                label="❇️ ESMERALDA — 300.000 XP"
                                 sx={{
                                     bgcolor: "#00b140",
                                     color: "#fff",
                                     fontWeight: "bold",
                                 }}
                             />
-
                             <Chip
-                                label="👑 MESTRE — 200.000 XP"
+                                label="👑 MESTRE — 500.000 XP"
                                 sx={{
-                                    bgcolor: "#d10000",
+                                    bgcolor: "#fa1c1c",
                                     color: "#fff",
                                     fontWeight: "bold",
                                 }}
                             />
-
                             <Chip
-                                label="🦅 LENDÁRIO — 300.000 XP"
+                                label="🦅 LENDÁRIO — 750.000 XP"
                                 sx={{
-                                    bgcolor: "#7b00ff",
+                                    bgcolor: "#9129ff",
+                                    color: "#fff",
+                                    fontWeight: "bold",
+                                }}
+                            />
+                            <Chip
+                                label="🌌 TRANSCENDENTAL — 1.000.000 XP"
+                                sx={{
+                                    bgcolor: "#1e46f8",
                                     color: "#fff",
                                     fontWeight: "bold",
                                 }}

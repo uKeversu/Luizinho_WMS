@@ -70,8 +70,11 @@ export default function CardJogador({
             case "OURO":
                 return "#e4c518";
 
+            case "PLATINA":
+                return "#73d7e4";
+
             case "DIAMANTE":
-                return "#00BCD4";
+                return "#00bfff";
 
             case "ESMERALDA":
                 return "#2ed12e";
@@ -79,8 +82,11 @@ export default function CardJogador({
             case "MESTRE":
                 return "#b02727";
 
-            case "LENDARIO":
-                return "#9C27B0";
+            case "LENDÁRIO":
+                return "#a724ff";
+
+            case "TRANSCENDENTAL":
+                return "#3256f5";
 
             default:
                 return "#666";

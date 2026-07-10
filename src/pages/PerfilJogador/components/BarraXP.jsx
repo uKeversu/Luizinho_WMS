@@ -4,10 +4,12 @@ const PATENTES = [
     { nome: "BRONZE", xp: 0 },
     { nome: "PRATA", xp: 30000 },
     { nome: "OURO", xp: 70000 },
-    { nome: "DIAMANTE", xp: 100000 },
-    { nome: "ESMERALDA", xp: 150000 },
-    { nome: "MESTRE", xp: 200000 },
-    { nome: "LENDÁRIO", xp: 300000 }
+    { nome: "PLATINA", xp: 100000 },
+    { nome: "DIAMANTE", xp: 150000 },
+    { nome: "ESMERALDA", xp: 300000 },
+    { nome: "MESTRE", xp: 500000 },
+    { nome: "LENDÁRIO", xp: 750000 },
+    { nome: "TRANSCENDENTAL", xp: 1000000 }
 ];
 
 function getProgressoXP(xp) {
