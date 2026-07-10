@@ -153,28 +153,26 @@ export default function Produtividade() {
         },
     };
 
-    // Carrega últimos 7 dias
+    // Carrega do primeiro dia do mês até o dia atual
     useEffect(() => {
-
         const hoje = new Date();
 
-        const seteDias = new Date();
+        // Primeiro dia do mês
+        const primeiroDia = new Date(
+            hoje.getFullYear(),
+            hoje.getMonth(),
+            1
+        );
 
-        seteDias.setDate(hoje.getDate() - 7);
+        const fmt = (d) => d.toISOString().split("T")[0];
 
-        const fmt = (d) =>
-            d.toISOString().split("T")[0];
-
-        const ini = fmt(seteDias);
-
+        const ini = fmt(primeiroDia);
         const fim = fmt(hoje);
 
         setDataInicio(ini);
-
         setDataFim(fim);
 
         carregarDados(ini, fim);
-
     }, []);
 
     // Auto refresh a cada 5min
