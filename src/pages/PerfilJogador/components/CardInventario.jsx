@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import {
     Box,
     Card,
@@ -12,6 +14,8 @@ import {
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 import { estiloCard, tituloCard, corRaridade } from "../styles";
+
+import { Tabs, Tab } from "@mui/material";
 
 export default function CardInventario({
     inventario = [],
@@ -37,6 +41,31 @@ export default function CardInventario({
             item: equipados?.efeito
         }
     ];
+
+    const [abaCategoria, setAbaCategoria] = useState("avatar");
+
+    const ordemRaridade = {
+        COMUM: 1,
+        INCOMUM: 2,
+        RARO: 3,
+        EPICO: 4,
+        LENDARIO: 5,
+        MITICO: 6,
+        DIVINO: 7
+    };
+
+    const categorias = [
+        { value: "avatar", label: "Avatar" },
+        { value: "moldura", label: "Moldura" },
+        { value: "titulo", label: "Título" },
+        { value: "efeito", label: "Efeito" }
+    ];
+
+    const itensFiltrados = inventario
+        .filter(item => item.categoria === abaCategoria)
+        .sort((a, b) => {
+            return ordemRaridade[b.raridade] - ordemRaridade[a.raridade];
+        });
 
     return (
 
@@ -188,6 +217,37 @@ export default function CardInventario({
 
             </Typography>
 
+            <Tabs
+                value={abaCategoria}
+                onChange={(e, v) => setAbaCategoria(v)}
+                variant="scrollable"
+                scrollButtons="auto"
+                sx={{
+                    mb: 2, "& .MuiTabs-indicator": {
+                        display: "none",
+                    },
+                }}
+            >
+                {categorias.map(cat => (
+                    <Tab
+                        key={cat.value}
+                        value={cat.value}
+                        label={`${cat.label} (${inventario.filter(i => i.categoria === cat.value).length
+                            })`}
+                        sx={{
+                            borderRadius: 2,
+                            mx: 0.5,
+                            transition: ".2s",
+                            "&.Mui-selected": {
+                                bgcolor: "#111827",
+                                color: "#FFD54F",
+                                fontWeight: 700,
+                            },
+                        }}
+                    />
+                ))}
+            </Tabs>
+
             <Grid
                 container
                 spacing={1}
@@ -197,83 +257,52 @@ export default function CardInventario({
                 }}
             >
 
-                {inventario.length === 0 && (
-
+                {itensFiltrados.length === 0 && (
                     <Grid item xs={12}>
-
                         <Typography color="gray">
-
                             Nenhum item desbloqueado.
-
                         </Typography>
-
                     </Grid>
-
                 )}
 
-                {inventario.map((item) => (
+                {itensFiltrados.map(item => (
 
                     <Grid
                         item
                         xs={3}
                         key={item.id}
                     >
-
                         <Tooltip
                             title={item.descricao}
                         >
-
                             <Card
-
                                 sx={{
-
                                     bgcolor: "#111827",
-
                                     border: `2px solid ${corRaridade(item.raridade)}`,
-
                                     p: 1,
-
+                                    m: 1,
                                     position: "relative",
-
                                     textAlign: "center",
-
                                     cursor: "pointer",
-
                                     transition: ".2s",
-
                                     "&:hover": {
-
                                         transform: "scale(1.05)",
-
                                         boxShadow:
-                                            `0 0 20px ${corRaridade(item.raridade)}`
-
+                                            `0 0 5px ${corRaridade(item.raridade)}`
                                     }
-
                                 }}
-
                             >
 
                                 {item.equipado && (
-
                                     <CheckCircleIcon
-
                                         sx={{
-
                                             position: "absolute",
-
                                             right: 4,
-
                                             top: 4,
-
                                             color: "#4CAF50",
-
                                             fontSize: 18
-
                                         }}
-
                                     />
-
                                 )}
 
                                 <Typography fontSize={28}>
@@ -281,17 +310,11 @@ export default function CardInventario({
                                 </Typography>
 
                                 <Typography
-
                                     color="white"
-
                                     fontSize={11}
-
                                     fontWeight={700}
-
                                 >
-
                                     {item.nome}
-
                                 </Typography>
 
                             </Card>
@@ -303,7 +326,7 @@ export default function CardInventario({
                 ))}
 
             </Grid>
-          
+
         </Card>
 
     );

@@ -1,5 +1,5 @@
 export const MOLDURAS = {
-    "Fogo Infernal": {
+    "Chama Ardente": {
         borderColor: "#ff0000",
         glow: "0 0 12px #ff0000, 0 0 30px #ff4800",
     },

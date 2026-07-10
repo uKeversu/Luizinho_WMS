@@ -572,6 +572,11 @@ export default function Produtividade() {
                         setTab(v)
                     }
                     variant="scrollable"
+                    sx={{
+                        "& .MuiTabs-indicator": {
+                            display: "none",
+                        },
+                    }}
                 >
 
                     <Tab
@@ -811,6 +816,7 @@ export default function Produtividade() {
                                                             28,
                                                         border: `3px solid ${moldura.borderColor}`,
                                                         boxShadow: moldura.glow,
+                                                        cursor: "pointer",
                                                     }}
                                                     onClick={() =>
                                                         navigate(`/games/perfil/${row.conferente}`)
@@ -824,6 +830,10 @@ export default function Produtividade() {
                                                         variant="h6"
                                                         fontWeight="bold"
                                                         color={textColor}
+                                                        sx={{
+                                                            cursor: "pointer",
+                                                        }}
+                                                        onClick={() => navigate(`/games/perfil/${row.conferente}`)}
                                                     >
                                                         {row.nome}
                                                     </Typography>

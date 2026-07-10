@@ -136,6 +136,8 @@ export default function PerfilJogador() {
                     <CardMissoes
                         missoes={perfil.missoes}
                         conquistas={perfil.conquistas}
+                        atualizarPerfil={carregar}
+                        codigoPerfil={perfil.codigo}
                     />
 
                     <CardHistorico

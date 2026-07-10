@@ -1,3 +1,5 @@
+import axios from "axios";
+
 import {
     Box,
     Card,
@@ -8,7 +10,8 @@ import {
     Accordion,
     AccordionSummary,
     AccordionDetails,
-    Stack
+    Stack,
+    Button
 } from "@mui/material";
 
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -19,7 +22,11 @@ import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 
 import { estiloCard, tituloCard } from "../styles";
 
-export default function CardMissoes({ missoes }) {
+export default function CardMissoes({ missoes, atualizarPerfil, codigoPerfil }) {
+
+    const userInfo = JSON.parse(localStorage.getItem("user_info") || "{}");
+
+    const podeResgatar = String(userInfo.codigo) === String(codigoPerfil);
 
     const categorias = [
         {
@@ -35,6 +42,21 @@ export default function CardMissoes({ missoes }) {
             dados: missoes?.mensais || []
         }
     ];
+
+    const resgatarMissao = async (id) => {
+
+        try {
+            await axios.post(
+                `http://192.168.1.185:8077/api/missoes/${userInfo.codigo}/${id}/resgatar`
+            );
+
+            atualizarPerfil();
+
+        } catch (err) {
+            console.error(err);
+            alert("Erro ao resgatar recompensa.");
+        }
+    };
 
     return (
 
@@ -282,25 +304,35 @@ export default function CardMissoes({ missoes }) {
 
                                                 </Stack>
 
-                                                {
-
-                                                    missao.recompensa_recebida &&
-
-                                                    <Typography
-
-                                                        mt={2}
-
-                                                        color="#4caf50"
-
-                                                        fontWeight="bold"
-
-                                                    >
-
-                                                        ✔ Recompensa já resgatada
-
-                                                    </Typography>
-
-                                                }
+                                                <Box mt={2}>
+                                                    {podeResgatar && (
+                                                        missao.recompensa_recebida ? (
+                                                            <Typography
+                                                                color="#4caf50"
+                                                                fontWeight="bold"
+                                                            >
+                                                                ✔ Recompensa já resgatada
+                                                            </Typography>
+                                                        ) : missao.concluida ? (
+                                                            <Button
+                                                                fullWidth
+                                                                variant="contained"
+                                                                color="success"
+                                                                onClick={() => resgatarMissao(missao.id)}
+                                                            >
+                                                                Resgatar recompensa
+                                                            </Button>
+                                                        ) : (
+                                                            <Button
+                                                                fullWidth
+                                                                disabled
+                                                                variant="contained"
+                                                            >
+                                                                Em andamento
+                                                            </Button>
+                                                        )
+                                                    )}
+                                                </Box>
 
                                             </Card>
 

@@ -77,9 +77,13 @@ export default function Loja() {
 
                 const equipadoAtual = perfil.equipados?.[item.categoria];
 
+                const possui = perfil.inventario?.some(
+                    i => i.id === item.id
+                );
+
                 return {
                     ...item,
-                    possui: false, // inventário
+                    possui,
                     equipado: equipadoAtual?.id === item.id
                 };
             });
@@ -133,7 +137,7 @@ export default function Loja() {
         }
     };
 
-    // 🎮 EQUIPAR
+    // EQUIPAR ITEM
     const equipar = async (item) => {
 
         try {
@@ -156,6 +160,34 @@ export default function Loja() {
                 "error"
             );
         }
+    };
+
+    // DESEQUIPAR ITEM
+    const desequipar = async (item) => {
+
+        try {
+
+            await axios.post(
+                "http://192.168.1.185:8077/api/loja/desequipar",
+                {
+                    codigo: userInfo.codigo,
+                    categoria: item.categoria
+                }
+            );
+
+            showSnack(`${item.nome} desequipado!`);
+
+            fetchData();
+
+        } catch (err) {
+
+            showSnack(
+                err.response?.data?.erro || "Erro ao desequipar",
+                "error"
+            );
+
+        }
+
     };
 
     const filtrados = useMemo(() => {
@@ -271,10 +303,20 @@ export default function Loja() {
                                             {item.equipado ? (
                                                 <Button
                                                     fullWidth
-                                                    variant="contained"
-                                                    color="success"
+                                                    color="error"
+                                                    variant="outlined"
+                                                    onClick={() => desequipar(item)}
                                                 >
-                                                    Equipado
+                                                    Desequipar
+                                                </Button>
+                                            ) : item.possui ? (
+                                                <Button
+                                                    fullWidth
+                                                    variant="outlined"
+                                                    sx={{ mt: 1 }}
+                                                    onClick={() => equipar(item)}
+                                                >
+                                                    Equipar
                                                 </Button>
                                             ) : (
                                                 <Button
@@ -283,18 +325,6 @@ export default function Loja() {
                                                     onClick={() => comprarItem(item)}
                                                 >
                                                     Comprar
-                                                </Button>
-                                            )}
-
-                                            {/* Equipar só se já tiver */}
-                                            {!item.equipado && (
-                                                <Button
-                                                    fullWidth
-                                                    sx={{ mt: 1 }}
-                                                    variant="outlined"
-                                                    onClick={() => equipar(item)}
-                                                >
-                                                    Equipar
                                                 </Button>
                                             )}
 
