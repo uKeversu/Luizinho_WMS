@@ -31,7 +31,7 @@ export default function CardHistorico({
     function corPosicao(posicao){
 
         if(posicao === 1)
-            return "#FFD700";
+            return "#e7c505";
 
         if(posicao === 2)
             return "#C0C0C0";

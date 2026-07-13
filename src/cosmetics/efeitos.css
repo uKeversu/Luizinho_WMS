@@ -369,6 +369,7 @@
         transform:
             translate(-50%, -50%) rotate(0deg);
     }
+
     to {
         transform:
             translate(-50%, -50%) rotate(360deg);
@@ -380,6 +381,7 @@
         transform:
             translate(-50%, -50%) rotate(360deg);
     }
+
     to {
         transform:
             translate(-50%, -50%) rotate(0deg);
@@ -387,11 +389,13 @@
 }
 
 @keyframes manaFog {
+
     0%,
     100% {
         transform:
             translateX(-25px) scale(1);
     }
+
     50% {
         transform:
             translateX(25px) scale(1.08);
@@ -399,12 +403,14 @@
 }
 
 @keyframes corePulse {
+
     0%,
     100% {
         transform:
             translate(-50%, -50%) scale(.9);
         opacity: .45;
     }
+
     50% {
         transform:
             translate(-50%, -50%) scale(1.18);
@@ -413,12 +419,14 @@
 }
 
 @keyframes lightBreath {
+
     0%,
     100% {
         transform:
             translate(-50%, -50%) scale(.95);
         opacity: .25;
     }
+
     50% {
         transform:
             translate(-50%, -50%) scale(1.12);
@@ -432,17 +440,21 @@
             translateY(0) translateX(0) rotate(0deg) scale(.3);
         opacity: 0;
     }
+
     10% {
         opacity: .8;
     }
+
     30% {
         transform:
             translateY(-120px) translateX(-8px) rotate(120deg);
     }
+
     60% {
         transform:
             translateY(-250px) translateX(10px) rotate(220deg);
     }
+
     100% {
         transform:
             translateY(-470px) translateX(-6px) rotate(360deg) scale(1.2);
@@ -455,6 +467,7 @@
         transform:
             translate(-50%, -50%) rotate(0deg);
     }
+
     to {
         transform:
             translate(-50%, -50%) rotate(360deg);
@@ -467,9 +480,11 @@
             translate(-50%, -50%) scale(.5);
         opacity: .6;
     }
+
     70% {
         opacity: .25;
     }
+
     100% {
         transform:
             translate(-50%, -50%) scale(2.2);
@@ -483,13 +498,16 @@
             translateY(25px) rotate(0deg);
         opacity: 0;
     }
+
     15% {
         opacity: .65;
     }
+
     50% {
         transform:
             translateY(-35px) rotate(180deg);
     }
+
     100% {
         transform:
             translateY(-120px) rotate(360deg);
@@ -498,11 +516,13 @@
 }
 
 @keyframes starTwinkle {
+
     0%,
     100% {
         opacity: .25;
         transform: scale(.8);
     }
+
     50% {
         opacity: 1;
         transform: scale(1.45);
@@ -510,6 +530,7 @@
 }
 
 @keyframes burst {
+
     0%,
     82%,
     100% {
@@ -517,9 +538,11 @@
         transform:
             translate(-50%, -50%) scale(.4);
     }
+
     86% {
         opacity: .9;
     }
+
     90% {
         transform:
             translate(-50%, -50%) scale(2.2);
@@ -528,10 +551,12 @@
 }
 
 @keyframes shinePulse {
+
     0%,
     100% {
         opacity: .12;
     }
+
     50% {
         opacity: .35;
     }
@@ -3335,9 +3360,9 @@
 
 }
 
-/* ==========================
+/* ==========================================================
    DESPERTAR DO LEVIATÃ
-========================== */
+========================================================== */
 
 .leviathan-overlay {
 
@@ -3351,33 +3376,37 @@
 
     background:
 
-        radial-gradient(circle at 50% -10%,
-            rgba(70, 180, 255, .12),
-            transparent 45%),
+        radial-gradient(circle at 50% -15%,
+            rgba(90, 190, 255, .18),
+            transparent 35%),
+
+        radial-gradient(circle at 50% 130%,
+            rgba(0, 120, 170, .25),
+            transparent 70%),
 
         linear-gradient(180deg,
+            #01070b 0%,
+            #02151d 18%,
+            #032a37 38%,
+            #044a56 62%,
+            #03363d 82%,
+            #011215 100%);
 
-            #010c0d 0%,
-
-            #022527 18%,
-
-            #034542 45%,
-
-            #065f5b 70%,
-
-            #022020 100%);
+    --leviathan-cycle: 18s;
 
 }
 
-/* Água */
+/* ==========================================================
+   ÁGUA
+========================================================== */
 
-.leviathan-overlay::before {
-
-    content: "";
+.leviathan-water {
 
     position: absolute;
 
-    inset: -30%;
+    inset: -40%;
+
+    opacity: .28;
 
     background:
 
@@ -3385,396 +3414,85 @@
 
             transparent 0px,
 
-            transparent 22px,
+            transparent 18px,
 
-            rgba(90, 170, 255, .035) 24px,
+            rgba(150, 220, 255, .05) 22px,
 
             transparent 28px);
-
-    opacity: .55;
 
     filter: blur(1px);
 
     animation:
 
-        waterFlow 18s linear infinite;
+        leviathanWater 26s linear infinite;
 
 }
 
-/* Névoa */
+/* ==========================================================
+   CORRENTE
+========================================================== */
 
-.leviathan-fog {
+.leviathan-current {
 
     position: absolute;
 
-    inset: -20%;
+    inset: -30%;
+
+    opacity: .18;
 
     background:
 
-        radial-gradient(circle,
+        repeating-linear-gradient(115deg,
 
-            rgba(0, 180, 255, .10),
+            transparent 0px,
 
-            transparent 65%),
+            transparent 14px,
 
-        radial-gradient(circle at 80% 30%,
+            rgba(180, 240, 255, .04) 16px,
 
-            rgba(0, 255, 255, .05),
-
-            transparent 55%);
-
-    filter: blur(40px);
-
-    animation:
-
-        abyssFog 12s ease-in-out infinite;
-
-}
-
-/* Redemoinho */
-
-.leviathan-vortex {
-
-    position: absolute;
-
-    left: 50%;
-
-    top: 55%;
-
-    width: 360px;
-
-    height: 360px;
-
-    transform: translate(-50%, -50%);
-
-    border-radius: 50%;
-
-    background:
-
-        conic-gradient(transparent,
-
-            rgba(40, 170, 255, .18),
-
-            transparent,
-
-            rgba(0, 255, 255, .08),
-
-            transparent,
-
-            rgba(40, 170, 255, .18),
-
-            transparent);
-
-    filter: blur(2px);
-
-    animation:
-
-        vortexSpin 18s linear infinite;
-
-}
-
-/* ==========================
-   BOLHAS
-========================== */
-
-.leviathan-overlay .particle {
-
-    position: absolute;
-
-    display: block;
-
-    bottom: -60px;
-
-    left: calc(5% + var(--i) * 6%);
-
-    width: calc(4px + var(--size, 0) * 1px);
-    height: calc(4px + var(--size, 0) * 1px);
-
-    border-radius: 50%;
-
-    background:
-
-        radial-gradient(circle at 30% 30%,
-            rgba(255, 255, 255, .95),
-            rgba(120, 220, 255, .55) 55%,
-            rgba(0, 180, 255, .15) 100%);
-
-    box-shadow:
-
-        0 0 8px rgba(140, 230, 255, .5),
-
-        inset 0 0 5px rgba(255, 255, 255, .4);
-
-    opacity: .45;
-
-    animation:
-
-        bubbleRise calc(10s + var(--i) * .3s) linear infinite;
-
-    animation-delay:
-
-        calc(var(--i) * -.45s);
-
-}
-
-.leviathan-overlay .particle:nth-child(2n) {
-
-    opacity: .25;
-
-}
-
-.leviathan-overlay .particle:nth-child(3n) {
-
-    opacity: .55;
-
-}
-
-.leviathan-overlay .particle:nth-child(4n) {
-
-    filter: blur(.4px);
-
-}
-
-/* ==========================
-   TENTÁCULOS
-========================== */
-
-.leviathan-tentacle-left {
-
-    position: absolute;
-
-    left: -55px;
-
-    bottom: -170px;
-
-    width: 60px;
-
-    height: 480px;
-
-    opacity: .10;
-
-    border-radius:
-        55% 45% 70% 30% 90% 10% 65% 35%;
-
-    background:
-
-        radial-gradient(ellipse at 30% 20%,
-
-            rgba(90, 255, 220, .18),
-
-            transparent 18%),
-
-        linear-gradient(90deg,
-
-            #010d0a,
-
-            #023c34 22%,
-
-            #0b7359 45%,
-
-            #034038 70%,
-
-            #010d0c);
-
-    box-shadow:
-
-        inset -12px 0 18px rgba(0, 255, 255, .08),
-
-        inset 8px 0 14px rgba(255, 255, 255, .03),
-
-        0 0 18px rgba(0, 180, 255, .10);
-
-    filter:
-
-        blur(.5px);
-
-    transform-origin:
-
-        center bottom;
-
-    animation:
-
-        tentacleLeft 11s ease-in-out infinite;
-
-}
-
-.leviathan-tentacle-right {
-
-    position: absolute;
-
-    right: -55px;
-
-    bottom: -190px;
-
-    width: 60px;
-
-    height: 420px;
-
-    opacity: .10;
-
-    border-radius:
-
-        45% 55% 30% 70% 10% 90% 35% 65%;
-
-    background:
-
-        radial-gradient(ellipse at 70% 20%,
-
-            rgba(90, 255, 220, .15),
-
-            transparent 18%),
-
-        linear-gradient(-90deg,
-
-            #010d0a,
-
-            #023c34 22%,
-
-            #0b7359 45%,
-
-            #034038 70%,
-
-            #010d0c);
-
-    box-shadow:
-
-        inset 12px 0 18px rgba(0, 255, 255, .08),
-
-        inset -8px 0 14px rgba(255, 255, 255, .03),
-
-        0 0 18px rgba(0, 180, 255, .10);
-
-    filter:
-
-        blur(.5px);
-
-    transform-origin:
-
-        center bottom;
-
-    animation:
-
-        tentacleRight 13s ease-in-out infinite;
-
-}
-
-/* ==========================
-   OLHOS
-========================== */
-
-.leviathan-eye {
-
-    position: absolute;
-
-    top: 5%;
-
-    width: 48px;
-
-    height: 18px;
-
-    border-radius: 50%;
-
-    background:
-
-        radial-gradient(circle,
-
-            #ffffff,
-
-            #79f2ff 25%,
-
-            #00b8ff 60%,
-
-            transparent 80%);
-
-    box-shadow:
-
-        0 0 12px #79f2ff,
-
-        0 0 28px #00cfff,
-
-        0 0 60px rgba(0, 180, 255, .45);
-
-    filter: blur(.3px);
-
-    opacity: 0;
-
-    animation:
-
-        leviathanBlink 18s infinite;
-
-}
-
-.eye-left {
-
-    left: 34%;
-
-}
-
-.eye-right {
-
-    right: 34%;
-
-}
-
-/* ==========================
-   SOMBRA DO LEVIATÃ
-========================== */
-
-.leviathan-shadow {
-
-    position: absolute;
-
-    left: -40%;
-
-    top: 42%;
-
-    width: 520px;
-
-    height: 180px;
-
-    opacity: .05;
-
-    pointer-events: none;
-
-    filter: blur(12px);
-
-    background:
-
-        radial-gradient(ellipse at center,
-
-            rgba(40, 170, 255, .75),
-
-            rgba(20, 80, 150, .18),
-
-            transparent 72%);
-
-    animation:
-
-        leviathanSwim 24s linear infinite;
-
-}
-
-.leviathan-flash {
-
-    position: absolute;
-
-    inset: 0;
-
-    background:
-        radial-gradient(circle,
-            rgba(120, 220, 255, .35),
-            transparent 70%);
-
-    opacity: 0;
-
-    pointer-events: none;
+            transparent 34px);
 
     mix-blend-mode: screen;
 
     animation:
-        abyssFlash 18s infinite;
+
+        leviathanCurrent 18s linear infinite;
 
 }
+
+/* ==========================================================
+   ONDAS
+========================================================== */
+
+.leviathan-wave {
+
+    position: absolute;
+
+    inset: -25%;
+
+    opacity: .22;
+
+    background:
+
+        repeating-radial-gradient(circle,
+
+            transparent 0px,
+
+            transparent 42px,
+
+            rgba(140, 220, 255, .035) 46px,
+
+            transparent 52px);
+
+    animation:
+
+        leviathanWave 40s linear infinite;
+
+}
+
+/* ==========================================================
+   PROFUNDIDADE
+========================================================== */
 
 .leviathan-dark {
 
@@ -3782,296 +3500,65 @@
 
     inset: 0;
 
-    background: #000;
-
-    opacity: 0;
-
-    animation:
-
-        abyssDarkness 18s infinite;
-
-}
-
-.leviathan-wave {
-
-    position: absolute;
-
-    inset: -20%;
-
     background:
 
-        repeating-radial-gradient(circle at center,
+        radial-gradient(circle at center,
 
-            transparent 0px,
+            transparent 15%,
 
-            transparent 34px,
+            rgba(0, 0, 0, .12) 45%,
 
-            rgba(120, 210, 255, .025) 36px,
+            rgba(0, 0, 0, .45) 100%);
 
-            transparent 39px);
+    mix-blend-mode: multiply;
 
     animation:
 
-        waveMove 22s linear infinite;
+        abyssBreath 18s ease-in-out infinite;
 
 }
 
-@keyframes waterFlow {
+/* ==========================================================
+   PARTE 1 - ANIMAÇÕES
+========================================================== */
+
+@keyframes leviathanWater {
 
     from {
 
         transform:
-            translateY(0) rotate(0deg);
+            rotate(0deg) translateY(0);
 
     }
 
     to {
 
         transform:
-            translateY(-40px) rotate(360deg);
+            rotate(360deg) translateY(-60px);
 
     }
 
 }
 
-@keyframes abyssFog {
-
-    0%,
-    100% {
-
-        transform:
-            translateX(-30px) scale(1);
-
-    }
-
-    50% {
-
-        transform:
-            translateX(35px) scale(1.08);
-
-    }
-
-}
-
-@keyframes vortexSpin {
+@keyframes leviathanCurrent {
 
     from {
 
         transform:
-            translate(-50%, -50%) rotate(0);
+            translateX(-80px) translateY(40px);
 
     }
 
     to {
 
         transform:
-            translate(-50%, -50%) rotate(360deg);
+            translateX(80px) translateY(-40px);
 
     }
 
 }
 
-@keyframes bubbleRise {
-
-    0% {
-
-        transform:
-            translateY(0) translateX(0) scale(.4);
-
-        opacity: 0;
-
-    }
-
-    10% {
-
-        opacity: .5;
-
-    }
-
-    40% {
-
-        transform:
-            translateY(-140px) translateX(-8px);
-
-    }
-
-    70% {
-
-        transform:
-            translateY(-280px) translateX(12px);
-
-    }
-
-    100% {
-
-        transform:
-            translateY(-520px) translateX(-5px) scale(1.3);
-
-        opacity: 0;
-
-    }
-
-}
-
-@keyframes tentacleLeft {
-
-    0%,
-    100% {
-        transform:
-            rotate(8deg) translateY(0) scaleY(1);
-    }
-
-    25% {
-        transform:
-            rotate(2deg) translateY(-6px) scaleY(1.02);
-    }
-
-    50% {
-        transform:
-            rotate(-10deg) translateY(-12px) scaleY(.98);
-    }
-
-    75% {
-        transform:
-            rotate(0deg) translateY(-4px) scaleY(1.01);
-    }
-}
-
-
-@keyframes tentacleRight {
-
-    0%,
-    100% {
-        transform:
-            rotate(-8deg) translateY(0) scaleY(1);
-    }
-
-    25% {
-        transform:
-            rotate(-2deg) translateY(-5px) scaleY(1.02);
-    }
-
-    50% {
-        transform:
-            rotate(10deg) translateY(-10px) scaleY(.98);
-    }
-
-    75% {
-        transform:
-            rotate(1deg) translateY(-3px) scaleY(1.01);
-    }
-}
-
-@keyframes leviathanBlink {
-
-    0%,
-    58%,
-    100% {
-
-        opacity: 0;
-
-        transform:
-            scale(.6);
-
-    }
-
-    60% {
-
-        opacity: 1;
-
-    }
-
-    64% {
-
-        opacity: .15;
-
-    }
-
-    66% {
-
-        opacity: 1;
-
-    }
-
-    80% {
-
-        opacity: .85;
-
-    }
-
-    90% {
-
-        opacity: 0;
-
-    }
-
-}
-
-@keyframes abyssFlash {
-
-    0%,
-    59%,
-    100% {
-
-        opacity: 0;
-
-    }
-
-    60% {
-
-        opacity: .9;
-
-    }
-
-    62% {
-
-        opacity: 0;
-
-    }
-
-}
-
-@keyframes abyssDarkness {
-
-    0%,
-    56%,
-    100% {
-
-        opacity: 0;
-
-    }
-
-    58% {
-
-        opacity: .35;
-
-    }
-
-    65% {
-
-        opacity: 0;
-
-    }
-
-}
-
-@keyframes leviathanSwim {
-
-    from {
-
-        left: -45%;
-
-    }
-
-    to {
-
-        left: 120%;
-
-    }
-
-}
-
-@keyframes waveMove {
+@keyframes leviathanWave {
 
     from {
 
@@ -4087,4 +3574,2678 @@
 
     }
 
+}
+
+@keyframes abyssBreath {
+
+    0%,
+    55%,
+    100% {
+
+        opacity: .55;
+
+    }
+
+    58% {
+
+        opacity: .92;
+
+    }
+
+    62% {
+
+        opacity: .82;
+
+    }
+
+    70% {
+
+        opacity: .58;
+
+    }
+
+}
+
+/* ==========================================================
+   PARTE 2 - ANIMAÇÕES
+========================================================== */
+
+@keyframes leviathanFogOne {
+
+    0% {
+
+        transform:
+            translate(-40px, -20px) scale(1);
+
+    }
+
+    50% {
+
+        transform:
+            translate(35px, 30px) scale(1.12);
+
+    }
+
+    100% {
+
+        transform:
+            translate(-40px, -20px) scale(1);
+
+    }
+
+}
+
+@keyframes leviathanFogTwo {
+
+    0% {
+
+        transform:
+            translate(20px, -25px) scale(1.05);
+
+    }
+
+    50% {
+
+        transform:
+            translate(-30px, 20px) scale(.94);
+
+    }
+
+    100% {
+
+        transform:
+            translate(20px, -25px) scale(1.05);
+
+    }
+
+}
+
+@keyframes leviathanRayOne {
+
+    0% {
+
+        transform:
+            rotate(-18deg) translateX(-80px);
+
+        opacity: .06;
+
+    }
+
+    50% {
+
+        transform:
+            rotate(-14deg) translateX(50px);
+
+        opacity: .22;
+
+    }
+
+    100% {
+
+        transform:
+            rotate(-18deg) translateX(-80px);
+
+        opacity: .06;
+
+    }
+
+}
+
+@keyframes leviathanRayTwo {
+
+    0% {
+
+        transform:
+            rotate(18deg) translateX(90px);
+
+        opacity: .04;
+
+    }
+
+    50% {
+
+        transform:
+            rotate(14deg) translateX(-60px);
+
+        opacity: .16;
+
+    }
+
+    100% {
+
+        transform:
+            rotate(18deg) translateX(90px);
+
+        opacity: .04;
+
+    }
+
+}
+
+@keyframes leviathanDust {
+
+    from {
+
+        transform:
+
+            translateY(80px) translateX(0) scale(.4);
+
+        opacity: 0;
+
+    }
+
+    15% {
+
+        opacity: .20;
+
+    }
+
+    45% {
+
+        transform:
+
+            translateY(-120px) translateX(10px);
+
+    }
+
+    75% {
+
+        transform:
+
+            translateY(-240px) translateX(-8px);
+
+    }
+
+    to {
+
+        transform:
+
+            translateY(-420px) translateX(18px) scale(1.2);
+
+        opacity: 0;
+
+    }
+
+}
+
+/* ==========================================================
+   PARTE 3 - ANIMAÇÕES
+========================================================== */
+
+@keyframes leviathanVortexSpin {
+
+    from {
+
+        transform:
+            translate(-50%, -50%) rotate(0deg);
+
+    }
+
+    to {
+
+        transform:
+            translate(-50%, -50%) rotate(360deg);
+
+    }
+
+}
+
+@keyframes leviathanInnerSpin {
+
+    from {
+
+        transform: rotate(0deg);
+
+    }
+
+    to {
+
+        transform: rotate(-360deg);
+
+    }
+
+}
+
+@keyframes leviathanVortexPulse {
+
+    0%,
+    55%,
+    100% {
+
+        transform:
+
+            translate(-50%, -50%) scale(.96);
+
+        filter:
+
+            blur(2px) brightness(.9);
+
+    }
+
+    60% {
+
+        transform:
+
+            translate(-50%, -50%) scale(1.16);
+
+        filter:
+
+            blur(5px) brightness(1.9);
+
+    }
+
+    64% {
+
+        transform:
+
+            translate(-50%, -50%) scale(1.03);
+
+    }
+
+}
+
+@keyframes leviathanCore {
+
+    0%,
+    100% {
+
+        transform:
+
+            scale(.92);
+
+        opacity: .82;
+
+    }
+
+    50% {
+
+        transform:
+
+            scale(1.08);
+
+        opacity: 1;
+
+    }
+
+}
+
+/* ==========================================================
+   PARTE 4 - ANIMAÇÕES
+========================================================== */
+
+@keyframes leviathanShadowFloat {
+
+    0% {
+
+        transform:
+
+            translate(-50%, -50%) rotate(-2deg) scale(.95);
+
+    }
+
+    25% {
+
+        transform:
+
+            translate(-48%, -51%) rotate(1deg) scale(1);
+
+    }
+
+    50% {
+
+        transform:
+
+            translate(-52%, -49%) rotate(2deg) scale(1.04);
+
+    }
+
+    75% {
+
+        transform:
+
+            translate(-49%, -52%) rotate(-1deg) scale(.98);
+
+    }
+
+    100% {
+
+        transform:
+
+            translate(-50%, -50%) rotate(-2deg) scale(.95);
+
+    }
+
+}
+
+@keyframes leviathanShadowBreath {
+
+    0%,
+    55%,
+    100% {
+
+        opacity: .08;
+
+        filter:
+
+            blur(30px);
+
+    }
+
+    60% {
+
+        opacity: .24;
+
+        filter:
+
+            blur(18px);
+
+    }
+
+    66% {
+
+        opacity: .18;
+
+        filter:
+
+            blur(24px);
+
+    }
+
+}
+
+/* ==========================================================
+   PARTE 6 - ANIMAÇÕES
+========================================================== */
+
+@keyframes leviathanEyes {
+
+    0%,
+    58%,
+    100% {
+
+        opacity: 0;
+
+        transform:
+
+            scale(.65);
+
+    }
+
+    60% {
+
+        opacity: 1;
+
+        transform:
+
+            scale(1);
+
+    }
+
+    64% {
+
+        opacity: .12;
+
+    }
+
+    66% {
+
+        opacity: 1;
+
+    }
+
+    72% {
+
+        transform:
+
+            translateX(-4px);
+
+    }
+
+    78% {
+
+        transform:
+
+            translateX(4px);
+
+    }
+
+    84% {
+
+        transform:
+
+            translateX(0);
+
+    }
+
+    92% {
+
+        opacity: 0;
+
+    }
+
+}
+
+@keyframes leviathanPupil {
+
+    0%,
+    58%,
+    100% {
+
+        transform:
+
+            translate(-50%, -50%) scale(.5);
+
+    }
+
+    60% {
+
+        transform:
+
+            translate(-50%, -50%) scale(1);
+
+    }
+
+    72% {
+
+        transform:
+
+            translate(-58%, -50%);
+
+    }
+
+    78% {
+
+        transform:
+
+            translate(-42%, -50%);
+
+    }
+
+    84% {
+
+        transform:
+
+            translate(-50%, -50%);
+
+    }
+
+}
+
+/* ==========================================================
+   PARTE 7 - ANIMAÇÕES FLASH
+========================================================== */
+
+@keyframes leviathanFlash {
+
+    0%,
+    58%,
+    100% {
+
+        opacity: 0;
+
+        transform:
+
+            scale(.8);
+
+    }
+
+    60% {
+
+        opacity: 1;
+
+        transform:
+
+            scale(1.25);
+
+    }
+
+    62% {
+
+        opacity: .18;
+
+    }
+
+    64% {
+
+        opacity: .8;
+
+    }
+
+    70% {
+
+        opacity: 0;
+
+        transform:
+
+            scale(1.6);
+
+    }
+
+}
+
+/* ==========================
+   NÉVOA
+========================== */
+
+.leviathan-fog {
+
+    position: absolute;
+
+    inset: -30%;
+
+    pointer-events: none;
+
+    filter: blur(55px);
+
+    mix-blend-mode: screen;
+
+}
+
+.leviathan-fog.fog-1 {
+
+    opacity: .22;
+
+    background:
+
+        radial-gradient(circle at 30% 45%,
+            rgba(0, 220, 255, .18),
+            transparent 45%),
+
+        radial-gradient(circle at 75% 25%,
+            rgba(90, 170, 255, .14),
+            transparent 40%),
+
+        radial-gradient(circle at 55% 85%,
+            rgba(0, 120, 255, .10),
+            transparent 55%);
+
+    animation:
+        leviathanFogOne 22s ease-in-out infinite;
+
+}
+
+.leviathan-fog.fog-2 {
+
+    opacity: .12;
+
+    background:
+
+        radial-gradient(circle at 80% 70%,
+            rgba(120, 255, 255, .18),
+            transparent 35%),
+
+        radial-gradient(circle at 20% 20%,
+            rgba(0, 180, 255, .10),
+            transparent 45%);
+
+    animation:
+        leviathanFogTwo 28s ease-in-out infinite;
+
+}
+
+
+/* ==========================
+   RAIOS DE LUZ
+========================== */
+
+.leviathan-light-ray {
+
+    position: absolute;
+
+    top: -35%;
+
+    width: 45%;
+
+    height: 180%;
+
+    opacity: .18;
+
+    filter: blur(10px);
+
+    mix-blend-mode: screen;
+
+    background:
+
+        linear-gradient(90deg,
+
+            transparent,
+
+            rgba(180, 240, 255, .32),
+
+            rgba(120, 220, 255, .12),
+
+            transparent);
+
+}
+
+.ray-1 {
+
+    left: -10%;
+
+    transform: rotate(-18deg);
+
+    animation:
+
+        leviathanRayOne 18s ease-in-out infinite;
+
+}
+
+.ray-2 {
+
+    right: -15%;
+
+    transform: rotate(18deg);
+
+    opacity: .12;
+
+    animation:
+
+        leviathanRayTwo 20s ease-in-out infinite;
+
+}
+
+
+/* ==========================
+   SEDIMENTOS
+========================== */
+
+.leviathan-dust {
+
+    position: absolute;
+
+    left: calc(var(--i) * 2.2%);
+
+    top: calc(var(--i) * 3%);
+
+    width: calc(1px + var(--size) * 1px);
+
+    height: calc(1px + var(--size) * 1px);
+
+    border-radius: 50%;
+
+    background:
+
+        rgba(190, 240, 255, .85);
+
+    opacity: .18;
+
+    box-shadow:
+
+        0 0 6px rgba(180, 240, 255, .25);
+
+    animation:
+        leviathanDust 18s linear infinite;
+
+    animation-delay:
+
+        calc(var(--i) * -.6s);
+
+}
+
+/* REDEMOINHO */
+
+.leviathan-vortex {
+
+    position: absolute;
+
+    left: 50%;
+
+    top: 56%;
+
+    width: 480px;
+
+    height: 480px;
+
+    transform: translate(-50%, -50%);
+
+    border-radius: 50%;
+
+    pointer-events: none;
+
+    opacity: .55;
+
+    mix-blend-mode: screen;
+
+    filter:
+
+        blur(2px) saturate(1.2);
+
+    background:
+
+        radial-gradient(circle at center,
+
+            rgba(255, 255, 255, .18) 0%,
+
+            rgba(120, 220, 255, .12) 10%,
+
+            rgba(0, 180, 255, .10) 18%,
+
+            transparent 28%),
+
+
+        repeating-conic-gradient(from 0deg,
+
+            transparent 0deg,
+
+            rgba(120, 220, 255, .08) 4deg,
+
+            transparent 9deg,
+
+            rgba(0, 120, 255, .12) 14deg,
+
+            transparent 20deg),
+
+        radial-gradient(circle,
+
+            transparent 45%,
+
+            rgba(0, 150, 255, .08) 62%,
+
+            transparent 76%);
+
+    animation:
+        leviathanVortexSpin 18s linear infinite,
+        leviathanVortexPulse 18s ease-in-out infinite;
+
+}
+
+.leviathan-vortex::before {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 12%;
+
+    border-radius: 50%;
+
+    background:
+
+        repeating-conic-gradient(from 180deg,
+
+            rgba(180, 240, 255, .08),
+
+            transparent 12deg,
+
+            rgba(0, 180, 255, .10) 20deg,
+
+            transparent 28deg);
+
+    filter:
+
+        blur(3px);
+
+    animation:
+
+        leviathanInnerSpin 18s linear infinite reverse;
+
+}
+
+.leviathan-vortex::after {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 28%;
+
+    border-radius: 50%;
+
+    background:
+
+        radial-gradient(circle,
+
+            rgba(0, 0, 0, .75),
+
+            rgba(0, 25, 35, .92),
+
+            transparent 75%);
+
+    box-shadow:
+
+        0 0 60px rgba(0, 180, 255, .12),
+
+        inset 0 0 35px rgba(120, 220, 255, .10);
+
+    animation:
+
+        leviathanCore 18s ease-in-out infinite;
+
+}
+
+/* SOMBRA COLOSSAL */
+
+.leviathan-shadow {
+
+    position: absolute;
+
+    left: 50%;
+
+    top: 58%;
+
+    width: 720px;
+
+    height: 340px;
+
+    transform:
+
+        translate(-50%, -50%);
+
+    pointer-events: none;
+
+    opacity: .12;
+
+    filter:
+
+        blur(28px);
+
+    mix-blend-mode: multiply;
+
+    animation:
+        leviathanShadowFloat 18s ease-in-out infinite,
+        leviathanShadowBreath var(--leviathan-cycle) ease-in-out infinite;
+
+}
+
+/* Corpo */
+
+.leviathan-shadow::before {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    border-radius:
+
+        60% 40% 55% 45% / 45% 55% 45% 55%;
+
+    background:
+
+        radial-gradient(ellipse at center,
+
+            rgba(5, 20, 30, .95),
+
+            rgba(2, 10, 18, .92) 45%,
+
+            rgba(0, 0, 0, .82) 70%,
+
+            transparent 100%);
+
+}
+
+/* Cabeça */
+
+.leviathan-shadow::after {
+
+    content: "";
+
+    position: absolute;
+
+    left: 52%;
+
+    top: 18%;
+
+    width: 230px;
+
+    height: 150px;
+
+    transform:
+
+        translateX(-50%);
+
+    border-radius:
+
+        65% 35% 60% 40% / 45% 55% 45% 55%;
+
+    background:
+
+        radial-gradient(ellipse at center,
+
+            rgba(8, 30, 42, .96),
+
+            rgba(2, 8, 16, .94),
+
+            transparent 90%);
+
+}
+
+/* ==========================================================
+   NADADEIRAS
+========================================================== */
+
+.shadow-fin {
+
+    position: absolute;
+
+    top: 36%;
+
+    width: 180px;
+
+    height: 90px;
+
+    opacity: .45;
+
+    filter: blur(18px);
+
+    background:
+
+        radial-gradient(ellipse,
+
+            rgba(0, 0, 0, .9),
+
+            transparent 80%);
+
+}
+
+.fin-left {
+
+    left: 8%;
+
+    transform:
+
+        rotate(-28deg);
+
+}
+
+.fin-right {
+
+    right: 8%;
+
+    transform:
+
+        rotate(28deg);
+
+}
+
+/* ==========================================================
+   LEVIATÃ 2.0
+   PARTE 6 - ROSTO E OLHOS
+========================================================== */
+
+.leviathan-face {
+
+    position: absolute;
+
+    left: 50%;
+
+    top: 34%;
+
+    width: 320px;
+
+    height: 120px;
+
+    transform: translateX(-50%);
+
+    pointer-events: none;
+
+}
+
+/* ==========================
+   OLHOS
+========================== */
+
+.leviathan-eye {
+
+    position: absolute;
+
+    width: 72px;
+
+    height: 28px;
+
+    border-radius: 50%;
+
+    overflow: hidden;
+
+    opacity: 0;
+
+    background:
+
+        radial-gradient(circle at center,
+
+            #ffffff 0%,
+
+            #b9ffff 12%,
+
+            #64ebff 28%,
+
+            #00cfff 52%,
+
+            #0088ff 74%,
+
+            transparent 100%);
+
+    box-shadow:
+
+        0 0 10px #9fffff,
+
+        0 0 25px #5fdfff,
+
+        0 0 50px rgba(0, 220, 255, .65),
+
+        0 0 100px rgba(0, 180, 255, .28);
+
+    animation:
+        leviathanEyes var(--leviathan-cycle) infinite;
+
+}
+
+.eye-left {
+
+    left: 10px;
+
+}
+
+.eye-right {
+
+    right: 10px;
+
+}
+
+/* ==========================
+   PUPILA
+========================== */
+
+.leviathan-pupil {
+
+    position: absolute;
+
+    left: 50%;
+
+    top: 50%;
+
+    width: 12px;
+
+    height: 18px;
+
+    transform: translate(-50%, -50%);
+
+    border-radius: 50%;
+
+    background: #021116;
+
+    box-shadow:
+
+        0 0 8px rgba(0, 0, 0, .8);
+
+    animation:
+
+        leviathanPupil 18s infinite;
+
+}
+
+/* ==========================================================
+   LEVIATÃ 2.0
+   PARTE 7 - DESPERTAR
+========================================================== */
+
+.leviathan-flash {
+
+    position: absolute;
+
+    inset: -20%;
+
+    pointer-events: none;
+
+    opacity: 0;
+
+    mix-blend-mode: screen;
+
+    background:
+
+        radial-gradient(circle at center,
+
+            rgba(255, 255, 255, .75),
+
+            rgba(120, 230, 255, .42) 22%,
+
+            rgba(0, 180, 255, .22) 45%,
+
+            transparent 72%);
+
+    animation:
+        leviathanFlash var(--leviathan-cycle) infinite;
+
+}
+
+
+@keyframes waterReflection {
+
+    from {
+
+        stroke-dashoffset: 620;
+
+    }
+
+    to {
+
+        stroke-dashoffset: -620;
+
+    }
+
+}
+
+@keyframes tentacleBreath {
+
+    0%,
+    100% {
+
+        transform: scaleX(1);
+
+    }
+
+    50% {
+
+        transform: scaleX(1.035);
+
+    }
+
+}
+
+@keyframes waterReflectionTwo {
+
+    from {
+
+        stroke-dashoffset: -520;
+
+    }
+
+    to {
+
+        stroke-dashoffset: 520;
+
+    }
+
+}
+
+@keyframes tentacleFloat {
+
+    0%,
+    100% {
+
+        transform:
+
+            translateY(0px);
+
+    }
+
+    50% {
+
+        transform:
+
+            translateY(-12px);
+
+    }
+
+}
+
+.leviathan-tentacles {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 5;
+}
+
+/* ==========================================================
+   TENTÁCULOS DE FUNDO - PROFUNDIDADE
+========================================================== */
+
+
+.background-tentacles {
+
+
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    z-index: 2;
+
+
+}
+
+
+
+/* ==========================================================
+   MATERIAL
+========================================================== */
+
+
+.deep-tentacle path {
+
+
+    fill:
+
+        url(#deepShadow);
+
+
+    stroke:
+
+        rgba(40, 180, 210, .18);
+
+
+    stroke-width:
+
+        8;
+
+
+    opacity:
+
+        .28;
+
+
+
+    filter:
+
+        blur(10px) drop-shadow(0 0 35px rgba(0, 80, 120, .35));
+
+
+
+}
+
+
+
+
+
+/* ==========================================================
+   DISTÂNCIA
+========================================================== */
+
+
+.deep-left {
+
+
+    transform-origin:
+
+        bottom center;
+
+
+
+    animation:
+
+        deepTentacleLeft 22s ease-in-out infinite;
+
+
+}
+
+
+
+.deep-right {
+
+
+    transform-origin:
+
+        bottom center;
+
+
+
+    animation:
+
+        deepTentacleRight 26s ease-in-out infinite;
+
+
+}
+
+
+
+.deep-center {
+
+
+    opacity: .55;
+
+
+    transform-origin:
+
+        bottom center;
+
+
+
+    animation:
+
+        deepTentacleCenter 30s ease-in-out infinite;
+
+
+}
+
+
+
+
+
+/* ==========================================================
+   MOVIMENTO LENTO
+========================================================== */
+
+
+@keyframes deepTentacleLeft {
+
+
+    0%,
+    100% {
+
+
+        transform:
+
+            rotate(-8deg) translateY(0);
+
+
+    }
+
+
+
+    50% {
+
+
+        transform:
+
+            rotate(5deg) translateY(-25px);
+
+
+    }
+
+
+}
+
+
+
+
+
+@keyframes deepTentacleRight {
+
+
+    0%,
+    100% {
+
+
+        transform:
+
+            rotate(8deg) translateY(0);
+
+
+    }
+
+
+
+    50% {
+
+
+        transform:
+
+            rotate(-5deg) translateY(-18px);
+
+
+    }
+
+
+}
+
+
+
+
+
+@keyframes deepTentacleCenter {
+
+
+    0%,
+    100% {
+
+
+        transform:
+
+            scaleY(1) translateY(0);
+
+
+    }
+
+
+
+    50% {
+
+
+        transform:
+
+            scaleY(1.05) translateY(-15px);
+
+
+    }
+
+
+}
+
+/* ==========================================================
+   LEVIATÃ - SISTEMA DE VENTOSAS
+========================================================== */
+
+.leviathan-front .suctions {
+
+    pointer-events: none;
+
+}
+
+/* ==========================================================
+   CORPO EXTERNO DA VENTOSA
+========================================================== */
+
+
+.leviathan-front .suctions .cup {
+
+    fill: url(#suctionSkin);
+
+    stroke: rgba(180, 245, 255, .8);
+
+    stroke-width: .8;
+
+    filter:
+        drop-shadow(0 0 4px rgba(40, 210, 255, .75));
+
+    transform-origin: center;
+
+    animation:
+        suctionPulse 9s ease-in-out infinite,
+        suctionGlow 6s ease-in-out infinite;
+}
+
+/* ==========================================================
+   NÚCLEO INTERNO
+========================================================== */
+
+
+.leviathan-front .suctions .core {
+
+
+    fill: url(#suctionCenter);
+
+
+    opacity: .9;
+
+
+    filter:
+
+        drop-shadow(0 0 5px rgba(255, 255, 255, .9));
+
+
+    animation:
+
+        suctionGlow 2.2s ease-in-out infinite;
+
+
+}
+
+
+
+/* ==========================================================
+   VARIAÇÃO DE VIDA ENTRE AS VENTOSAS
+========================================================== */
+
+
+.leviathan-front .suctions g:nth-child(2n) .cup {
+
+    animation-delay: -.8s;
+
+}
+
+
+.leviathan-front .suctions g:nth-child(3n) .cup {
+
+    animation-delay: -1.6s;
+
+}
+
+
+
+.leviathan-front .suctions g:nth-child(4n) .core {
+
+    animation-delay: -1.2s;
+
+}
+
+
+
+
+
+/* ==========================================================
+   PULSAÇÃO DA VENTOSA
+========================================================== */
+
+
+@keyframes suctionPulse {
+
+
+    0%,
+    100% {
+
+        transform:
+
+            scale(1);
+
+        opacity: .85;
+
+    }
+
+
+
+    50% {
+
+        transform:
+
+            scale(1.15);
+
+        opacity: 1;
+
+    }
+
+
+}
+
+
+
+/* ==========================================================
+   BRILHO DO CENTRO
+========================================================== */
+
+
+@keyframes suctionGlow {
+
+
+    0%,
+    100% {
+
+        opacity: .55;
+
+        transform:
+
+            scale(.85);
+
+    }
+
+
+
+    50% {
+
+        opacity: 1;
+
+        transform:
+
+            scale(1.25);
+
+    }
+
+
+}
+
+
+
+
+
+/* ==========================================================
+   PELE DO TENTÁCULO
+========================================================== */
+
+
+.leviathan-front .skin {
+
+
+    fill:
+
+        url(#leviathanSkin);
+
+
+
+    filter:
+
+        url(#wetSkin);
+
+
+}
+
+
+
+
+
+/* ==========================================================
+   SOMBRA ORGÂNICA
+========================================================== */
+
+
+.leviathan-front .shadow {
+
+
+    fill: none;
+
+
+    stroke:
+
+        rgba(0, 0, 0, .75);
+
+
+    stroke-width:
+
+        18;
+
+
+    opacity: .65;
+
+
+    filter:
+
+        blur(3px);
+
+
+
+}
+
+
+
+
+
+/* ==========================================================
+   LINHAS DE BRILHO MOLHADO
+========================================================== */
+
+
+.leviathan-front .highlight {
+
+
+    fill: none;
+
+
+    stroke:
+
+        rgba(190, 250, 255, .65);
+
+
+    stroke-width:
+
+        7;
+
+
+    stroke-linecap:
+
+        round;
+
+
+
+    filter:
+
+        drop-shadow(0 0 8px rgba(80, 220, 255, .8));
+
+
+
+    opacity: .65;
+
+
+}
+
+
+
+
+
+/* ==========================================================
+   REFLEXO LÍQUIDO PRINCIPAL
+========================================================== */
+
+
+.leviathan-front .wet-line {
+
+
+    fill: none;
+
+
+    stroke:
+
+        url(#movingReflection);
+
+
+    stroke-width:
+
+        14;
+
+
+    stroke-linecap:
+
+        round;
+
+
+
+    opacity:
+
+        .45;
+
+
+
+    animation:
+
+        liquidReflection 6s linear infinite;
+
+
+}
+
+
+
+
+
+@keyframes liquidReflection {
+
+
+    0% {
+
+
+        stroke-dasharray:
+
+            40 600;
+
+
+        stroke-dashoffset:
+
+            600;
+
+
+    }
+
+
+
+    100% {
+
+
+        stroke-dasharray:
+
+            40 600;
+
+
+        stroke-dashoffset:
+
+            -600;
+
+
+    }
+
+
+}
+
+
+
+
+
+
+/* ==========================================================
+   MICRO TEXTURA NA PELE
+========================================================== */
+
+
+.leviathan-front .segment {
+
+
+    position: relative;
+
+
+}
+
+
+
+
+
+/* ==========================================================
+   BRILHO DE BORDA SUBMERSO
+========================================================== */
+
+
+.leviathan-front {
+
+
+    filter:
+
+        url(#softShadow);
+
+
+}
+
+
+
+
+
+/* ==========================================================
+   AURA AO REDOR DO TENTÁCULO
+========================================================== */
+
+
+.leviathan-front::after {
+
+
+    content: "";
+
+
+    position: absolute;
+
+
+    inset: 0;
+
+
+
+    background:
+
+
+        radial-gradient(ellipse,
+
+            rgba(40, 220, 255, .18),
+
+            transparent 65%);
+
+
+
+    opacity: .5;
+
+
+
+    pointer-events: none;
+
+
+}
+
+/* ==========================================================
+   LEVIATÃ 2.0
+   ANIMAÇÃO EM CADEIA DOS TENTÁCULOS
+========================================================== */
+
+
+/* ==========================================================
+   CONFIGURAÇÃO DOS SEGMENTOS
+========================================================== */
+
+
+.leviathan-front .segment {
+
+
+    transform-box: fill-box;
+
+    transform-origin: center bottom;
+
+
+}
+
+
+
+/* ==========================================================
+   BASE
+   Movimento pesado
+========================================================== */
+
+
+.leviathan-front .segment.base {
+    animation:
+        tentacleBaseMove 18s ease-in-out infinite;
+
+
+}
+
+
+
+
+
+/* ==========================================================
+   MEIO
+   acompanha com atraso
+========================================================== */
+
+
+.leviathan-front .segment.mid {
+    transform-origin:
+        center bottom;
+
+    animation:
+        tentacleMidMove 18s ease-in-out infinite;
+
+    animation-delay:
+        -.8s;
+}
+
+/* ==========================================================
+   PONTA
+========================================================== */
+
+.leviathan-front .segment.tip {
+    transform-origin:
+        center bottom;
+
+    animation:
+        tentacleTipMove 18s ease-in-out infinite;
+
+    animation-delay:
+        -1.6s;
+}
+
+/* ==========================================================
+   BASE
+========================================================== */
+
+
+@keyframes tentacleBaseMove {
+
+
+    0% {
+
+
+        transform:
+
+            rotate(0deg) translateY(0);
+
+
+    }
+
+
+
+    25% {
+
+
+        transform:
+
+            rotate(2deg) translateY(-5px);
+
+
+    }
+
+
+
+    50% {
+
+
+        transform:
+
+            rotate(-3deg) translateY(-12px);
+
+
+    }
+
+
+
+    75% {
+
+
+        transform:
+
+            rotate(1deg) translateY(-5px);
+
+
+    }
+
+
+
+    100% {
+
+
+        transform:
+
+            rotate(0deg) translateY(0);
+
+
+    }
+
+
+}
+
+
+
+
+
+
+/* ==========================================================
+   MEIO
+========================================================== */
+
+
+@keyframes tentacleMidMove {
+
+
+    0% {
+
+
+        transform:
+
+            rotate(0deg) translateX(0);
+
+
+    }
+
+
+
+    25% {
+
+
+        transform:
+
+            rotate(-5deg) translateX(-4px);
+
+
+    }
+
+
+
+    50% {
+
+
+        transform:
+
+            rotate(7deg) translateX(6px);
+
+
+    }
+
+
+
+    75% {
+
+
+        transform:
+
+            rotate(-3deg) translateX(-3px);
+
+
+    }
+
+
+
+    100% {
+
+
+        transform:
+
+            rotate(0deg) translateX(0);
+
+
+    }
+
+
+}
+
+
+
+
+
+
+/* ==========================================================
+   PONTA
+========================================================== */
+
+
+@keyframes tentacleTipMove {
+
+
+    0% {
+
+
+        transform:
+
+            rotate(0deg);
+
+
+    }
+
+
+
+    20% {
+
+
+        transform:
+
+            rotate(12deg);
+
+
+    }
+
+
+
+    45% {
+
+
+        transform:
+
+            rotate(-15deg);
+
+
+    }
+
+
+
+    70% {
+
+
+        transform:
+
+            rotate(8deg);
+
+
+    }
+
+
+
+    100% {
+
+
+        transform:
+
+            rotate(0deg);
+
+
+    }
+
+
+}
+
+
+
+
+
+
+/* ==========================================================
+   REFLEXO ACOMPANHA O MOVIMENTO
+========================================================== */
+
+
+.leviathan-front .wet-line {
+
+
+    transform-box:
+
+        fill-box;
+
+
+    transform-origin:
+
+        center;
+
+
+
+    animation:
+
+        wetFlow 5s linear infinite;
+
+
+}
+
+
+
+@keyframes wetFlow {
+
+
+    0% {
+
+
+        opacity: .25;
+
+
+        transform:
+
+            translateX(-10px);
+
+
+    }
+
+
+
+    50% {
+
+
+        opacity: .8;
+
+
+        transform:
+
+            translateX(10px);
+
+
+    }
+
+
+
+    100% {
+
+
+        opacity: .25;
+
+
+        transform:
+
+            translateX(-10px);
+
+
+    }
+
+
+}
+
+
+
+
+
+
+/* ==========================================================
+   VENTOSAS ACOMPANHAM O MOVIMENTO
+========================================================== */
+
+
+.leviathan-front .suctions {
+
+
+    transform-box:
+
+        fill-box;
+
+
+    transform-origin:
+
+        center;
+
+
+
+    animation:
+
+        suctionWave 8s ease-in-out infinite;
+
+
+}
+
+
+
+
+
+@keyframes suctionWave {
+
+
+    0% {
+
+
+        transform:
+
+            translateY(0);
+
+
+    }
+
+
+
+    50% {
+
+
+        transform:
+
+            translateY(-8px);
+
+
+    }
+
+
+
+    100% {
+
+
+        transform:
+
+            translateY(0);
+
+
+    }
+
+
+}
+
+
+
+
+
+
+/* ==========================================================
+   PEQUENA CONTRAÇÃO DO CORPO
+========================================================== */
+
+
+.leviathan-front {
+
+    animation:
+
+        leviathanMuscle 12s ease-in-out infinite;
+
+
+}
+
+
+
+
+@keyframes leviathanMuscle {
+
+
+    0%,
+    100% {
+
+
+        transform:
+
+            scaleX(1);
+
+
+    }
+
+
+
+    50% {
+
+
+        transform:
+
+            scaleX(1.025);
+
+
+    }
+
+
+}
+
+/* ==========================================================
+   LEVIATÃ LENDÁRIO
+   ACABAMENTO FINAL
+========================================================== */
+
+
+/* ==========================================================
+   PELE ORGÂNICA
+========================================================== */
+
+
+.leviathan-front .skin {
+
+
+    fill:
+
+        url(#leviathanSkin);
+
+
+
+    filter:
+
+        url(#wetSkin);
+
+
+
+    stroke:
+
+        rgba(180, 245, 255, .12);
+
+
+
+    stroke-width:
+
+        2;
+
+
+
+}
+
+
+
+
+
+/* ==========================================================
+   VOLUME DA CARNE
+========================================================== */
+
+
+.leviathan-front .segment {
+
+
+    filter:
+
+        drop-shadow(0 15px 25px rgba(0, 0, 0, .55));
+
+
+}
+
+
+
+
+
+/* ==========================================================
+   BRILHO MOLHADO
+========================================================== */
+
+
+.leviathan-front .highlight {
+
+
+    stroke:
+
+        rgba(220, 255, 255, .75);
+
+
+
+    stroke-linecap:
+
+        round;
+
+
+
+    filter:
+
+        drop-shadow(0 0 8px rgba(80, 220, 255, .8));
+
+
+
+    animation:
+
+        skinShimmer 7s ease-in-out infinite;
+
+
+}
+
+
+
+@keyframes skinShimmer {
+
+
+    0%,
+    100% {
+
+
+        opacity: .35;
+
+
+    }
+
+
+
+    50% {
+
+
+        opacity: .9;
+
+
+    }
+
+
+}
+
+
+
+
+
+/* ==========================================================
+   REFLEXO LÍQUIDO CORRENDO
+========================================================== */
+
+
+.leviathan-front .wet-line {
+    stroke:
+        url(#movingReflection);
+    stroke-width:
+        18;
+    opacity:
+        .65;
+    mix-blend-mode:
+        screen;
+    stroke-dasharray:
+        60 500;
+    animation:
+        liquidSkinMove 5s linear infinite;
+}
+
+@keyframes liquidSkinMove {
+    from {
+        stroke-dashoffset:
+            600;
+    }
+    to {
+        stroke-dashoffset:
+            -600;
+    }
+}
+
+/* ==========================================================
+   SOMBRA ENTRE SEGMENTOS
+========================================================== */
+
+.leviathan-front .segment+.segment {
+    filter:
+        brightness(.92);
+}
+
+/* ==========================================================
+   VENTOSAS PREMIUM
+========================================================== */
+
+.leviathan-front .cup {
+    fill:
+        url(#suctionSkin);
+
+    stroke:
+        rgba(220, 255, 255, .9);
+
+    stroke-width:
+        .7;
+}
+
+.leviathan-front .core {
+    fill:
+        url(#suctionCenter);
+
+    filter:
+        drop-shadow(0 0 6px white);
+}
+
+/* ==========================================================
+   MICRO GOTAS NO CORPO
+========================================================== */
+
+
+.leviathan-front::before {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        radial-gradient(circle,
+            rgba(255, 255, 255, .8) 0 1px,
+            transparent 2px);
+
+    background-size:
+        22px 35px;
+
+    opacity:
+        .12;
+
+    mix-blend-mode:
+        screen;
+
+    animation:
+        waterDroplets 12s linear infinite;
+}
+@keyframes waterDroplets {
+    0% {
+        background-position:
+            0 0;
+    }
+    100% {
+        background-position:
+            0 120px;
+    }
+}
+
+/* ==========================================================
+   AURA ABISSAL
+========================================================== */
+
+.leviathan-front {
+    animation:
+        leviathanMuscle 18s ease-in-out infinite;
+
+    filter:
+        drop-shadow(0 0 18px rgba(0, 220, 255, .35)) drop-shadow(0 0 45px rgba(0, 120, 255, .25));
+}
+
+/* ==========================================================
+   PARTÍCULAS DE ENERGIA AO REDOR
+========================================================== */
+
+
+.leviathan-overlay::after {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    background:
+        radial-gradient(circle at 50% 60%,
+            rgba(120, 240, 255, .15),
+            transparent 25%);
+
+    animation:
+        abyssEnergy 14s ease-in-out infinite;
+}
+
+@keyframes abyssEnergy {
+
+    0%,
+    100% {
+        opacity: .3;
+        transform:
+            scale(1);
+    }
+
+    50% {
+        opacity: .8;
+       transform:
+            scale(1.08);
+    }
+}
+
+/* ==========================================================
+   PROFUNDIDADE FINAL
+========================================================== */
+
+.background-tentacles {
+    filter:
+        blur(2px);
+    opacity:
+        .85;
+}
+
+.deep-tentacle path {
+    opacity:
+        .35;
+}
+
+/* ==========================================================
+   TENTÁCULO PRINCIPAL EM DESTAQUE
+========================================================== */
+
+.leviathan-front {
+    z-index:
+        10;
 }
