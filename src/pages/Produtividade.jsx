@@ -2864,7 +2864,7 @@ export default function Produtividade() {
                     {/* BANNER */}
                     <Box
                         component="img"
-                        src="/ranks/banner-ranks.png"
+                        src="/ranks/banner.png"
                         onClick={() =>
                             setImagemFullscreen(true)
                         }
@@ -3175,7 +3175,7 @@ export default function Produtividade() {
 
                     <Box
                         component="img"
-                        src="/ranks/banner-ranks.png"
+                        src="/ranks/banner.png"
                         sx={{
                             maxWidth: "100%",
                             maxHeight: "100%",
