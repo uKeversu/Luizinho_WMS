@@ -884,8 +884,16 @@ export default function CardJogador({
                                 }}
                             />
                         ))}
+
                     </>
                 )}
+                {Array.from({ length: 50 }).map((_, i) => (
+                    <span
+                        key={i}
+                        className="particle"
+                        style={{ "--i": i }}
+                    />
+                ))}
 
             </Box>
 
