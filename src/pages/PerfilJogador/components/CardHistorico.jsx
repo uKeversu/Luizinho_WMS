@@ -11,7 +11,8 @@ import {
     TableContainer,
     TableRow,
     Paper,
-    Avatar
+    Avatar,
+    LinearProgress
 } from "@mui/material";
 
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -28,27 +29,31 @@ export default function CardHistorico({
 
 }) {
 
-    function corPosicao(posicao){
+    function corPosicao(posicao) {
 
-        if(posicao === 1)
+        if (posicao === 1)
             return "#e7c505";
 
-        if(posicao === 2)
+        if (posicao === 2)
             return "#C0C0C0";
 
-        if(posicao === 3)
+        if (posicao === 3)
             return "#CD7F32";
 
         return "#90caf9";
 
     }
 
-    return(
+    const colecoesIniciadas = colecoes.filter(
+        (c) => c.itens_usuario > 0
+    );
+
+    return (
 
         <Card
             sx={{
                 ...estiloCard,
-                height:"100%",
+                height: "100%",
                 mb: 5
             }}
         >
@@ -69,7 +74,7 @@ export default function CardHistorico({
             >
 
                 <EmojiEventsIcon
-                    sx={{color:"#FFD700"}}
+                    sx={{ color: "#FFD700" }}
                 />
 
                 <Typography
@@ -96,8 +101,8 @@ export default function CardHistorico({
                     <TableContainer
                         component={Paper}
                         sx={{
-                            bgcolor:"#101826",
-                            mb:3
+                            bgcolor: "#101826",
+                            mb: 3
                         }}
                     >
 
@@ -123,7 +128,7 @@ export default function CardHistorico({
 
                                 {
 
-                                    historico.map((t)=>(
+                                    historico.map((t) => (
 
                                         <TableRow
                                             key={t.temporada_id}
@@ -146,9 +151,9 @@ export default function CardHistorico({
                                                         bgcolor:
                                                             corPosicao(t.posicao),
 
-                                                        color:"#000",
+                                                        color: "#000",
 
-                                                        fontWeight:700
+                                                        fontWeight: 700
 
                                                     }}
 
@@ -182,7 +187,7 @@ export default function CardHistorico({
 
             }
 
-            <Divider sx={{my:2}}/>
+            <Divider sx={{ my: 2 }} />
 
             {/* ============================ */}
             {/* CONQUISTAS */}
@@ -196,7 +201,7 @@ export default function CardHistorico({
             >
 
                 <WorkspacePremiumIcon
-                    sx={{color:"#ff9800"}}
+                    sx={{ color: "#ff9800" }}
                 />
 
                 <Typography
@@ -239,7 +244,7 @@ export default function CardHistorico({
 
                         {
 
-                            conquistas.map((c)=>(
+                            conquistas.map((c) => (
 
                                 <Card
 
@@ -247,9 +252,9 @@ export default function CardHistorico({
 
                                     sx={{
 
-                                        bgcolor:"#111827",
+                                        bgcolor: "#111827",
 
-                                        p:2
+                                        p: 2
 
                                     }}
 
@@ -259,15 +264,15 @@ export default function CardHistorico({
 
                                         sx={{
 
-                                            bgcolor:"#1d2638",
+                                            bgcolor: "#1d2638",
 
-                                            mb:1,
+                                            mb: 1,
 
-                                            width:50,
+                                            width: 50,
 
-                                            height:50,
+                                            height: 50,
 
-                                            fontSize:30
+                                            fontSize: 30
 
                                         }}
 
@@ -307,7 +312,7 @@ export default function CardHistorico({
 
                                         color="warning"
 
-                                        sx={{mt:1}}
+                                        sx={{ mt: 1 }}
 
                                     />
 
@@ -321,7 +326,7 @@ export default function CardHistorico({
 
             }
 
-            <Divider sx={{my:2}}/>
+            <Divider sx={{ my: 2 }} />
 
             {/* ============================ */}
             {/* COLEÇÕES */}
@@ -340,7 +345,7 @@ export default function CardHistorico({
             >
 
                 <CollectionsBookmarkIcon
-                    sx={{color:"#42a5f5"}}
+                    sx={{ color: "#42a5f5" }}
                 />
 
                 <Typography
@@ -358,75 +363,68 @@ export default function CardHistorico({
             </Box>
 
             {
-
-                colecoes.length===0 ?
-
+                colecoesIniciadas.length === 0 ?
                     <Typography color="gray">
-
-                        Nenhuma coleção completa.
-
+                       Nenhuma coleção encontrada.
                     </Typography>
-
                     :
-
-                    colecoes.map((c)=>(
-
+                    colecoesIniciadas.map((c) => (
                         <Card
-
                             key={c.id}
-
                             sx={{
-
-                                bgcolor:"#111827",
-
-                                p:2,
-
-                                mb:2
-
+                                bgcolor: "#111827",
+                                p: 2,
+                                mb: 2,
+                                border: "1px solid rgba(255,255,255,.08)"
                             }}
-
                         >
 
-                            <Typography
-
-                                color="white"
-
-                                fontWeight="bold"
-
+                            <Box
+                                display="flex"
+                                justifyContent="space-between"
+                                alignItems="center"
+                                mb={1}
                             >
 
-                                {c.nome}
+                                <Typography
+                                    color="white"
+                                    fontWeight="bold"
+                                >
+                                    {c.nome}
+                                </Typography>
 
-                            </Typography>
+                                <Chip
+                                    size="small"
+                                    color={c.completa ? "success" : "default"}
+                                    label={
+                                        c.completa
+                                            ? "COMPLETA"
+                                            : `${c.itens_usuario}/${c.total_itens}`
+                                    }
+                                />
+
+                            </Box>
+
+                            <LinearProgress
+                                variant="determinate"
+                                value={c.progresso}
+                                sx={{
+                                    height: 8,
+                                    borderRadius: 4,
+                                    mb: 1
+                                }}
+                            />
 
                             <Typography
-
                                 color="gray"
-
-                                fontSize={13}
-
+                                fontSize={12}
                             >
-
-                                {c.descricao}
-
-                            </Typography>
-
-                            <Typography
-
-                                color="#FFD54F"
-
-                                mt={1}
-
-                            >
-
-                                ⭐ {c.bonus}
-
+                                {c.itens_usuario} de {c.total_itens} itens coletados
                             </Typography>
 
                         </Card>
 
                     ))
-
             }
 
         </Card>

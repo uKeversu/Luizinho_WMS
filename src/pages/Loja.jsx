@@ -226,6 +226,34 @@ export default function Loja() {
 
     };
 
+    function corRaridade(raridade) {
+        switch (raridade) {
+            case "MITICO":
+                return "#00d335";
+
+            case "LENDARIO":
+                return "#FF9800";
+
+            case "EPICO":
+                return "#9C27B0";
+
+            case "RARO":
+                return "#E53935";
+
+            case "INCOMUM":
+                return "#2196F3";
+
+            default:
+                return "#607D8B";
+        }
+    }
+
+    function nomeColecao(colecao) {
+        if (!colecao) return "-";
+
+        return colecao.replace(/^\S+\s/, "");
+    }
+
     const filtrados = useMemo(() => {
         return itens.filter(
             i => i.categoria === categorias[categoria]
@@ -299,6 +327,32 @@ export default function Loja() {
                     <Tab label="⚡ Efeitos" />
                 </Tabs>
             </Paper>
+            <Paper
+                sx={{
+                    p: 2,
+                    mb: 2,
+                    borderRadius: 3,
+                    bgcolor: "background.default"
+                }}
+            >
+                <Typography
+                    variant="subtitle2"
+                    fontWeight="bold"
+                    mb={1}
+                >
+                    Raridade dos Itens
+                </Typography>
+
+                <Box display="flex" gap={2} flexWrap="wrap">
+
+                    <Typography sx={{ color: "#2196F3", fontWeight: 700 }}>Incomum</Typography>
+                    <Typography sx={{ color: "#E53935", fontWeight: 700 }}>Raro</Typography>
+                    <Typography sx={{ color: "#9C27B0", fontWeight: 700 }}>Épico</Typography>
+                    <Typography sx={{ color: "#FF9800", fontWeight: 700 }}>Lendário</Typography>
+                    <Typography sx={{ color: "#00d335", fontWeight: 700 }}>Mítico</Typography>
+
+                </Box>
+            </Paper>
 
             {/* LOADING */}
             {loading ? (
@@ -313,7 +367,34 @@ export default function Loja() {
                         <Grid item xs={12} sm={6} md={4} lg={3} key={item.id}>
                             <motion.div whileHover={{ y: -5 }}>
 
-                                <Card sx={{ height: "100%", bgcolor: 'background.default', mb: 5 }}>
+                                <Card
+                                    sx={{
+                                        position: "relative",
+                                        height: "100%",
+                                        bgcolor: "background.default",
+                                        mb: 5,
+                                        border: `2px solid ${corRaridade(item.raridade)}`,
+                                        transition: "0.25s",
+                                        "&:hover": {
+                                            boxShadow: `0 0 18px ${corRaridade(item.raridade)}80`,
+                                            transform: "translateY(-2px)"
+                                        }
+                                    }}
+                                >
+                                    <Chip
+                                        label={nomeColecao(item.colecao)}
+                                        size="small"
+                                        sx={{
+                                            position: "absolute",
+                                            top: 12,
+                                            right: 12,
+                                            bgcolor: "rgba(0,0,0,.45)",
+                                            color: "#fff",
+                                            backdropFilter: "blur(8px)",
+                                            fontSize: "11px"
+                                        }}
+                                    />
+
                                     <CardContent sx={{ textAlign: "center" }}>
 
                                         <Typography sx={{ fontSize: 70 }}>
@@ -324,12 +405,8 @@ export default function Loja() {
                                             {item.nome}
                                         </Typography>
 
-                                        <Typography variant="body2" sx={{ opacity: 0.6 }}>
-                                            {item.rarity || item.raridade}
-                                        </Typography>
-
                                         <Chip
-                                            sx={{ mt: 2, color: 'white' }}
+                                            sx={{ mt: 2, color: "white" }}
                                             color="warning"
                                             label={`${item.preco.toLocaleString()} SigelCoins`}
                                         />

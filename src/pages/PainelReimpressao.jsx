@@ -64,115 +64,20 @@ function PainelReimpressao() {
 
         try {
 
-            const hoje = new Date();
-
-            const inicio = new Date();
-            inicio.setMonth(inicio.getMonth() - 1);
-
-            let pagina = 1;
-            let totalPaginas = 1;
-
-            const todasNotas = [];
-
-            do {
-
-                const params = new URLSearchParams({
-                    page: pagina,
-                    data_inicio: inicio.toISOString().split("T")[0],
-                    data_fim: hoje.toISOString().split("T")[0],
-                    sort_by: "data_emissao",
-                    sort_order: "DESC"
-                });
-
-                const response = await fetch(
-                    `${API}/api/notas/listar?${params}`,
-                    {
-                        headers: {
-                            "X-Auth-Token": token
-                        }
+            const response = await fetch(
+                `${API}/api/reimpressao/buscar?termo=${encodeURIComponent(busca)}`,
+                {
+                    headers: {
+                        "X-Auth-Token": token
                     }
-                );
-
-                const data = await response.json();
-
-                todasNotas.push(...(data.data || []));
-
-                totalPaginas = data.total_pages || 1;
-
-                pagina++;
-
-            } while (pagina <= totalPaginas);
-
-            const termo = busca.trim().toLowerCase();
-
-            const notasFiltradas = await Promise.all(
-
-                todasNotas.map(async (nota) => {
-
-                    try {
-
-                        const respItens = await fetch(
-                            `${API}/api/itens_nfe/${nota.id}`,
-                            {
-                                headers: {
-                                    "X-Auth-Token": token
-                                }
-                            }
-                        );
-
-                        const dataItens = await respItens.json();
-
-                        const itensFiltrados =
-                            (dataItens.items || []).filter(item => {
-
-                                const texto = [
-                                    item.descricao,
-                                    item.basico,
-                                    item.cean,
-                                    item.codigo_barras,
-                                    item.cod_produto
-                                ]
-                                    .filter(Boolean)
-                                    .join(" ")
-                                    .toLowerCase();
-
-                                return texto.includes(termo);
-                            });
-
-                        return {
-                            ...nota,
-                            itens: itensFiltrados
-                        };
-
-                    } catch {
-
-                        return {
-                            ...nota,
-                            itens: []
-                        };
-                    }
-                })
+                }
             );
 
-            const resultadoFinal =
-                notasFiltradas.filter(
-                    nota => nota.itens.length > 0
-                );
+            const data = await response.json();
 
-            setNotas(resultadoFinal);
-
-        } catch (err) {
-
-            console.error(err);
-
-            setSnackbar({
-                open: true,
-                message: "Erro ao buscar notas",
-                severity: "error"
-            });
+            setNotas(data);
 
         } finally {
-
             setLoading(false);
         }
     };
@@ -181,61 +86,63 @@ function PainelReimpressao() {
 
     const buscarUnidades = async (item) => {
 
-        const codigo =
-            item.cean ||
-            item.codigo_barras ||
-            item.cod_produto;
-
-        if (!codigo) return;
-
-        if (unidadesItem[codigo]) return;
+        if (unidadesItem[item.id]) return;
 
         setLoadingUnidades(prev => ({
             ...prev,
-            [codigo]: true
+            [item.id]: true
         }));
 
         try {
+
             const response = await fetch(
-                `${API}/api/nfe/unidades/nao_impressas/codire/${codigo}`
+                `${API}/api/reimpressao/unidades/${item.id}`,
+                {
+                    headers: {
+                        "X-Auth-Token": token
+                    }
+                }
             );
 
             const data = await response.json();
 
             setUnidadesItem(prev => ({
                 ...prev,
-                [codigo]: data.unidades || []
+                [item.id]: data.unidades || []
             }));
 
-        } catch (error) {
-            console.error(error);
+        } catch (e) {
+
+            console.error(e);
+
         } finally {
+
             setLoadingUnidades(prev => ({
                 ...prev,
-                [codigo]: false
+                [item.id]: false
             }));
+
         }
+
     };
 
-    const handleExpandItem = (notaId, item) => {
+    const handleExpandItem = (item) => {
 
-        const codigo =
-            item.cean ||
-            item.cod_produto;
-
-        const key = `${notaId}-${codigo}`;
+        const key = item.id;
 
         const novo = expandedItem === key ? null : key;
+
         setExpandedItem(novo);
 
         if (novo) {
             buscarUnidades(item);
         }
+
     };
 
     // ---------------- IMPRESSÃO ----------------
 
-    const gerarZPLCompleta = (unidade, qr) => {
+    const gerarZPLCompleta = (unidade) => {
         const url = `http://192.168.1.82:4173/Rastreio/${unidade.id_unico}`;
 
         return `
@@ -285,8 +192,9 @@ function PainelReimpressao() {
     };
 
     const gerarZPLBarcode = (unidade) => {
-        const cean = unidade.codire
-        console.log(unidade.codire)
+        const cean =
+            unidade.cean ||
+            unidade.cod_produto;
         return `
 ^XA
 ^PW400
@@ -310,20 +218,15 @@ function PainelReimpressao() {
 `;
     };
 
-    const gerarZPL = async (unidade) => {
+    const gerarZPL = (unidade) => {
 
         if (modoImpressao === "barcode") {
             return gerarZPLBarcode(unidade);
         }
 
-        const resQr = await fetch(
-            `${API}/api/nfe/unidade/imprimir/${unidade.id_unico}`
-        );
+        return gerarZPLCompleta(unidade);
 
-        const qr = await resQr.json();
-
-        return gerarZPLCompleta(unidade, qr);
-    };
+    }
 
     const imprimirViaPython = async (zpl) => {
         try {
@@ -378,7 +281,7 @@ function PainelReimpressao() {
 
     const imprimirUnidade = async (unidade) => {
         try {
-            const zpl = await gerarZPL(unidade);
+            const zpl = gerarZPL(unidade);
             await imprimirViaPython(zpl);
         } catch (error) {
             console.error(error);
@@ -387,9 +290,12 @@ function PainelReimpressao() {
 
     const imprimirLote = async (lista) => {
 
-        for (const unidade of lista) {
-            await imprimirUnidade(unidade);
-        }
+        const zpl = lista
+            .map(gerarZPL)
+            .join("\n");
+
+        await imprimirViaPython(zpl);
+
     };
 
     // ---------------- UI ----------------
@@ -502,14 +408,9 @@ function PainelReimpressao() {
                                 <Table size="small">
                                     <TableBody>
 
-                                        {nota.itens.map((item, idx) => {
+                                        {nota.itens.map((item) => {
 
-                                            const codigo =
-                                                item.cean ||
-                                                item.cod_produto ||
-                                                `idx-${idx}`;
-
-                                            const key = `${nota.id}-${codigo}`;
+                                            const key = item.id;
 
                                             return (
                                                 <Fragment key={key}>
@@ -518,7 +419,7 @@ function PainelReimpressao() {
                                                     <TableRow
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            handleExpandItem(nota.id, item);
+                                                            handleExpandItem(item)
                                                         }}
                                                         sx={{ cursor: "pointer" }}
                                                     >
@@ -533,20 +434,20 @@ function PainelReimpressao() {
 
                                                             <Collapse in={expandedItem === key}>
 
-                                                                {loadingUnidades[codigo] ? (
+                                                                {loadingUnidades[item.id] ? (
                                                                     <CircularProgress size={20} />
                                                                 ) : (
 
                                                                     <>
                                                                         <Typography fontSize={12}>
-                                                                            {unidadesItem[codigo]?.length || 0} etiquetas disponíveis
+                                                                            {item.etiquetas_disponiveis} etiquetas disponíveis
                                                                         </Typography>
 
                                                                         <Button
                                                                             startIcon={<PrintIcon />}
                                                                             sx={{ mb: 1 }}
                                                                             onClick={() =>
-                                                                                imprimirLote(unidadesItem[codigo] || [])
+                                                                                imprimirLote(unidadesItem[item.id] || [])
                                                                             }
                                                                         >
                                                                             Imprimir todos
@@ -561,7 +462,7 @@ function PainelReimpressao() {
                                                                             </TableHead>
 
                                                                             <TableBody>
-                                                                                {(unidadesItem[codigo] || []).map((un) => (
+                                                                                {(unidadesItem[item.id] || []).map((un) => (
                                                                                     <TableRow key={un.id_unico}>
                                                                                         <TableCell>{un.id_unico}</TableCell>
 

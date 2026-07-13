@@ -142,6 +142,8 @@ export default function PerfilJogador() {
 
                     <CardHistorico
                         historico={perfil.historico}
+                        colecoes={perfil.colecoes}
+                        conquistas={perfil.conquistas}
                     />
 
                 </Box>
