@@ -280,7 +280,7 @@ function Conferencia() {
 
     const usuariosAutorizados = [
         {
-            senha: "8Kq7Zp2M4vN9xL",
+            senha: "4Kq7Zp2M4vN1yX",
             nome: "Kelwin Gameiro"
         },
         {
@@ -2030,12 +2030,24 @@ function Conferencia() {
 
     const imprimirEtiqueta = async (item) => {
         try {
-            const codigo =
-                item.codigo_barras && item.codigo_barras !== "SEM GTIN"
-                    ? item.codigo_barras
-                    : item.codigo_produto;
+            if (!item.id) {
+                setSnackbar({
+                    open: true,
+                    message: "Item não encontrado.",
+                    severity: "error"
+                });
+                return;
+            }
 
-            const res = await fetch(`${API}/api/nfe/unidades/nao_impressas/codire/${codigo}`);
+            const res = await fetch(
+                `${API}/api/reimpressao/unidades/${item.id}`
+            );
+            console.log(item.id)
+
+            if (!res.ok) {
+                throw new Error("Erro ao buscar unidades.");
+            }
+
             const data = await res.json();
 
             if (!data.unidades || data.unidades.length === 0) {
@@ -2047,8 +2059,10 @@ function Conferencia() {
                 return;
             }
 
+            console.log(data.unidades)
+
             // AQUI ENTRA A FILA LOCAL
-            const chaveFila = `fila_${codigo}`;
+            const chaveFila = `fila_${item.id}`;
 
             let fila = JSON.parse(localStorage.getItem(chaveFila) || "[]");
 

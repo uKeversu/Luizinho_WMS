@@ -208,9 +208,7 @@ export default function CardHistorico({
                     color="white"
                     fontWeight="bold"
                 >
-
                     Conquistas
-
                 </Typography>
 
             </Box>

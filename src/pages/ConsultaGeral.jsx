@@ -379,7 +379,7 @@ function ConsultaGeral() {
                 log.acao === "Escaneou item" &&
                 (
                     log.cod_barras?.trim() === item.cean?.trim() ||
-                    log.cod_produto?.trim() === item.basico?.trim()
+                    log.cod_produto?.trim() === item.cod_produto?.trim()
                 )
             )
             .sort((a, b) =>
@@ -388,78 +388,56 @@ function ConsultaGeral() {
     };
 
     // UNIDADES
-    const buscarUnidades = async (codBarras) => {
+    const buscarUnidades = async (itemId) => {
 
-        if (!codBarras) return;
+        if (!itemId) return;
 
-        // CACHE
-        if (cacheUnidades.current[codBarras]) {
-
+        if (cacheUnidades.current[itemId]) {
             setUnidadesItem(prev => ({
                 ...prev,
-                [codBarras]:
-                    cacheUnidades.current[codBarras]
+                [itemId]: cacheUnidades.current[itemId]
             }));
-
-            return;
-        }
-
-        // EVITA DUPLO LOAD
-        if (loadingUnidades[codBarras]) {
             return;
         }
 
         setLoadingUnidades(prev => ({
             ...prev,
-            [codBarras]: true
+            [itemId]: true
         }));
 
         try {
 
             const response = await fetch(
-                `${API}/api/nfe/unidades/nao_impressas/codire/${codBarras}`
+                `${API}/api/reimpressao/unidades/${itemId}`
             );
 
             const data = await response.json();
 
-            const lista =
-                Array.isArray(data.unidades)
-                    ? data.unidades
-                    : [];
+            const lista = data.unidades || [];
 
-            cacheUnidades.current[codBarras] =
-                lista;
+            cacheUnidades.current[itemId] = lista;
 
             setUnidadesItem(prev => ({
                 ...prev,
-                [codBarras]: lista
-            }));
-
-        } catch (err) {
-
-            console.error(err);
-
-            setUnidadesItem(prev => ({
-                ...prev,
-                [codBarras]: []
+                [itemId]: lista
             }));
 
         } finally {
 
             setLoadingUnidades(prev => ({
                 ...prev,
-                [codBarras]: false
+                [itemId]: false
             }));
+
         }
     };
 
     const handleExpandItem = (
         notaId,
-        codBarras
+        itemId
     ) => {
 
-        const key =
-            `${notaId}-${codBarras}`;
+        const key = itemId;
 
         const novo =
             expandedItem === key
@@ -469,7 +447,7 @@ function ConsultaGeral() {
         setExpandedItem(novo);
 
         if (novo) {
-            buscarUnidades(codBarras);
+            buscarUnidades(itemId)
         }
     };
 
@@ -969,8 +947,7 @@ function ConsultaGeral() {
                                                                     ??
                                                                     `idx-${idx}`;
 
-                                                                const key =
-                                                                    `${nota.id}-${cod}`;
+                                                                const key = item.id;
 
                                                                 return (
 
@@ -987,7 +964,7 @@ function ConsultaGeral() {
 
                                                                                 handleExpandItem(
                                                                                     nota.id,
-                                                                                    cod
+                                                                                    item.id
                                                                                 );
                                                                             }}
 
@@ -1077,7 +1054,8 @@ function ConsultaGeral() {
                                                                                         }}
                                                                                     >
 
-                                                                                        {loadingUnidades[cod] ? (
+                                                                                        {loadingUnidades[item.id] ? (
+
 
                                                                                             <Box
                                                                                                 sx={{
@@ -1131,7 +1109,7 @@ function ConsultaGeral() {
 
                                                                                                 <TableBody>
 
-                                                                                                    {(unidadesItem[cod] || []).map((un) => {
+                                                                                                    {(unidadesItem[item.id] || []).map((un) => {
 
                                                                                                         const log = getLogConferencia(nota.id, item);
 
