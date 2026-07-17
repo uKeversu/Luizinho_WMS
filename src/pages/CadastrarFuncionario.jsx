@@ -206,6 +206,12 @@ function CadastroFuncionario() {
                                 }
                             }
                         }}
+                        autoComplete="off"
+                        inputProps={{
+                            spellCheck: false,
+                            autoCorrect: "off",
+                            autoCapitalize: "off",
+                        }}
                     />
 
                     <TextField
@@ -224,6 +230,12 @@ function CadastroFuncionario() {
                                     borderColor: 'var(--azul)',
                                 }
                             }
+                        }}
+                        autoComplete="off"
+                        inputProps={{
+                            spellCheck: false,
+                            autoCorrect: "off",
+                            autoCapitalize: "off",
                         }}
                     />
 

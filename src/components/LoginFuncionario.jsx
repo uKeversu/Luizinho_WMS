@@ -106,6 +106,12 @@ function LoginFuncionario({ onLogin }) {
             }
           }}
           onKeyDown={(e) => e.key === "Enter" && fazerLogin()}
+          autoComplete="off"
+          inputProps={{
+            spellCheck: false,
+            autoCorrect: "off",
+            autoCapitalize: "off",
+          }}
         />
 
         <Button

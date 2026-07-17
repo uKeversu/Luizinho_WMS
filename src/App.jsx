@@ -20,7 +20,7 @@ import Temporadas from "./pages/Temporadas";
 import Loja from "./pages/Loja";
 import PainelGames from "./pages/PainelGames";
 import PerfilJogador from "./pages/PerfilJogador";
-import TarefasAvulsas from "./pages/TarefasAvulsas";
+import Tarefas from "./pages/Tarefas";
 
 import './index.css';
 
@@ -52,7 +52,7 @@ function App() {
           <Route path="/Loja" element={<Loja />} />
           <Route path="/PainelGames" element={<PainelGames />} />
           <Route path="/games/perfil/:codigo" element={<PerfilJogador />}/>
-          <Route path="/TarefasAvulsas" element={<TarefasAvulsas />} />
+          <Route path="/Tarefas" element={<Tarefas />} />
         </Routes>
       </Router>
     </ThemeProvider>

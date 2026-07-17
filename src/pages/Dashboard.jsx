@@ -838,7 +838,15 @@ function Dashboard({ tipo }) {
                             <Tooltip title="Consultar notas e itens">
                                 <Button
                                     onClick={() => navigate("/ConsultaGeral")}
-                                    sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}
+                                    sx={{
+                                        color: "background.paper",
+                                        display: 'flex',
+                                        gap: 0.5,
+                                        fontSize: '0.75rem',
+                                        minWidth: 'auto',
+                                        padding: '4px 8px',
+                                        whiteSpace: 'nowrap'
+                                    }}
                                 >
                                     Consulta Geral
                                     <SearchIcon />
@@ -848,7 +856,15 @@ function Dashboard({ tipo }) {
                             <Tooltip title="Consultar guarda de itens">
                                 <Button
                                     onClick={() => navigate("/ConsultaGuarda")}
-                                    sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}
+                                    sx={{
+                                        color: "background.paper",
+                                        display: 'flex',
+                                        gap: 0.5,
+                                        fontSize: '0.75rem',
+                                        minWidth: 'auto',
+                                        padding: '4px 8px',
+                                        whiteSpace: 'nowrap'
+                                    }}
                                 >
                                     Guardas
                                     <Inventory2Icon />
@@ -858,7 +874,15 @@ function Dashboard({ tipo }) {
                             <Tooltip title="Tela de recebimento">
                                 <Button
                                     onClick={() => navigate("/")}
-                                    sx={{ color: "var(--branco)", display: 'flex', gap: 1 }}
+                                    sx={{
+                                        color: "background.paper",
+                                        display: 'flex',
+                                        gap: 0.5,
+                                        fontSize: '0.75rem',
+                                        minWidth: 'auto',
+                                        padding: '4px 8px',
+                                        whiteSpace: 'nowrap'
+                                    }}
                                 >
                                     Recebimento
                                     <LocalShippingIcon />

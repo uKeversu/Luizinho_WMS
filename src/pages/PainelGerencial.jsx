@@ -26,7 +26,8 @@ import {
     Dialog,
     DialogTitle,
     DialogContent,
-    DialogActions
+    DialogActions, 
+    Tooltip
 } from "@mui/material";
 
 import Pagination from "@mui/material/Pagination";
@@ -34,6 +35,7 @@ import Pagination from "@mui/material/Pagination";
 import PersonIcon from "@mui/icons-material/Person";
 import LogoutIcon from "@mui/icons-material/Logout";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import AssignmentIcon from "@mui/icons-material/Assignment";
 
 const API_URL = "http://192.168.1.185:8077";
 
@@ -647,37 +649,42 @@ export default function DistribuicaoConferencia() {
 
                 <Box>
                     <Box
-                        sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "right"
-                        }}
-                    >
-                        <PersonIcon
                             sx={{
-                                color: "background.paper",
-                                mr: 1
-                            }}
-                        />
-
-                        <Typography
-                            sx={{
-                                color: "background.paper"
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'right'
                             }}
                         >
-                            {userInfo?.nome}
-                        </Typography>
 
-                        <Button
-                            size="small"
-                            onClick={logout}
-                            sx={{
-                                color: "background.paper"
-                            }}
-                        >
-                            <LogoutIcon />
-                        </Button>
-                    </Box>
+                            <PersonIcon
+                                sx={{
+                                    color: "background.paper",
+                                    pr: 1
+                                }}
+                            />
+
+                            <Typography
+                                sx={{
+                                    color: "background.paper",
+                                    fontSize: '0.9rem'
+                                }}
+                            >
+                                {userInfo?.nome}
+                            </Typography>
+
+                            {token && (
+
+                                <Button
+                                    size="small"
+                                    onClick={logout}
+                                    sx={{
+                                        color: "background.paper"
+                                    }}
+                                >
+                                    <LogoutIcon />
+                                </Button>
+                            )}
+                        </Box>
 
                     <Box
                         sx={{
@@ -685,17 +692,44 @@ export default function DistribuicaoConferencia() {
                             justifyContent: "right"
                         }}
                     >
-                        <Button
-                            onClick={() =>
-                                navigate("/Dashboard")
-                            }
-                            sx={{
-                                color: "background.paper"
-                            }}
-                        >
-                            Voltar
-                            <ArrowBackIcon sx={{ ml: 1 }} />
-                        </Button>
+                        <Tooltip title="Gestão de colaboradores">
+                            <Button
+                                onClick={() =>
+                                    navigate("/Tarefas")
+                                }
+                                sx={{
+                                    color: "background.paper",
+                                    display: 'flex',
+                                    gap: 0.5,
+                                    fontSize: '0.75rem',
+                                    minWidth: 'auto',
+                                    padding: '4px 8px',
+                                    whiteSpace: 'nowrap'
+                                }}
+                            >
+                                TAREFAS
+                                <AssignmentIcon />
+                            </Button>
+                        </Tooltip>
+                        <Tooltip title="Retornar ao dashboard">
+                            <Button
+                                onClick={() =>
+                                    navigate("/Dashboard")
+                                }
+                                 sx={{
+                                        color: "background.paper",
+                                        display: 'flex',
+                                        gap: 0.5,
+                                        fontSize: '0.75rem',
+                                        minWidth: 'auto',
+                                        padding: '4px 8px',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                            >
+                                VOLTAR
+                                <ArrowBackIcon />
+                            </Button>
+                        </Tooltip>
                     </Box>
 
                 </Box>

@@ -32,6 +32,7 @@ export function ThemeProvider({ children }) {
             paper: "#FFFFFF",
             subPaper: "rgba(255,255,255,0.7)",
             card: "#121212",
+            drawer: "#000000",
             text: "#ffffff",
             forndireto: "#383838",
             inputBg: "#2a2a2a",
@@ -86,6 +87,7 @@ export function ThemeProvider({ children }) {
             paper: "#f3f3f3",
             subPaper: "rgba(255,255,255,0.7)",
             card: "#f3f3f3",
+            drawer: "#dadada",
             text: "#08060d",
             forndireto: "#f3f3f3",
             inputBg: "#ffffff",
@@ -190,7 +192,8 @@ export function ThemeProvider({ children }) {
                 sombra: colors.sombra,
                 alerta: colors.alerta,
                 tabela: colors.tabela,
-                editado: colors.editado
+                editado: colors.editado,
+                drawer: colors.drawer
             },
 
             text: {
