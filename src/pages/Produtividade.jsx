@@ -1438,26 +1438,28 @@ export default function Produtividade() {
                                                                     fontWeight: "bold"
                                                                 }}
                                                                     label={
-                                                                        row.produtividade >= 99
+                                                                        row.produtividade >= 100
                                                                             ? "MASTER"
                                                                             :
-                                                                            row.produtividade >= 95
+                                                                            row.produtividade >= 99
                                                                                 ? "ELITE"
-                                                                                : row.produtividade >= 85
+                                                                                : row.produtividade >= 98
                                                                                     ? "ÓTIMO"
-                                                                                    : row.produtividade >= 70
+                                                                                    : row.produtividade >= 95
                                                                                         ? "OK"
                                                                                         : "CRÍTICO"
                                                                     }
                                                                     color={
-                                                                        row.produtividade >= 99
+                                                                        row.produtividade >= 100
                                                                             ? "warning"
                                                                             :
-                                                                            row.produtividade >= 95
-                                                                                ? "info"
-                                                                                : row.produtividade >= 70
-                                                                                    ? "success"
-                                                                                    : "error"
+                                                                            row.produtividade >= 99
+                                                                                ? "success"
+                                                                                : row.produtividade >= 98
+                                                                                    ? "info"
+                                                                                    : row.produtividade >= 95
+                                                                                        ? "secondary"
+                                                                                        : "error"
                                                                     }
                                                                 />
 
@@ -2460,9 +2462,9 @@ export default function Produtividade() {
                                                     )}
 
                                                     {row.pontosFinais >= 30000 &&
-                                                        row.pontosPesados >= 500 &&
+                                                        row.pontosPesados >= 1000 &&
                                                         row.errosCaixa <= 3 &&
-                                                        row.produtividade >= 99 && (
+                                                        row.produtividade >= 100 && (
                                                             <Chip
                                                                 label="🔮 MÍSTICO"
                                                                 sx={{
@@ -3024,14 +3026,11 @@ export default function Produtividade() {
                                     </Typography>
                                 </Paper>
                             </Grid>
-
                         </Grid>
-
                     </Box>
 
                     {/* RANKS */}
                     <Box sx={{ px: 4, pb: 5 }}>
-
                         <Typography
                             variant="h5"
                             fontWeight="bold"
@@ -3042,7 +3041,6 @@ export default function Produtividade() {
                         </Typography>
 
                         <Stack spacing={2}>
-
                             <Chip
                                 label="🥉 BRONZE — 0 XP"
                                 sx={{
@@ -3110,18 +3108,16 @@ export default function Produtividade() {
                             <Chip
                                 label="🌌 TRANSCENDENTAL — 1.000.000 XP"
                                 sx={{
-                                    bgcolor: "#1e46f8",
+                                    background:
+                                        "linear-gradient(135deg, #ffd900 0%, #00b8ff 40%, #7740f7 70%, #002a94 100%)",
                                     color: "#fff",
-                                    fontWeight: "bold",
+                                    fontWeight: 700,
+                                    textShadow: "0 0 4px rgba(0,0,0,.4)",
                                 }}
                             />
-
                         </Stack>
-
                     </Box>
-
                 </DialogContent>
-
             </Dialog>
 
             <Dialog
@@ -3172,24 +3168,17 @@ export default function Produtividade() {
                         p: 4,
                     }}
                 >
-
                     <Box
                         component="img"
                         src="/ranks/banner.png"
                         sx={{
                             maxWidth: "100%",
                             maxHeight: "100%",
-
                             objectFit: "contain",
                         }}
                     />
-
                 </Box>
-
             </Dialog>
-
         </Container >
-
     );
-
 }

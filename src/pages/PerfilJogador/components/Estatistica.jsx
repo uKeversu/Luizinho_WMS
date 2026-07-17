@@ -33,7 +33,7 @@ export default function Estatistica({
                 sx={{
                     color: cor,
                     fontWeight: 700,
-                    fontSize: 20
+                    fontSize: 18
                 }}
 
             >
