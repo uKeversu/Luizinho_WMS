@@ -592,6 +592,12 @@ function AtualizarCean() {
                     value={numeroNota}
                     onChange={(e) => setNumeroNota(e.target.value)}
                     sx={{ flex: 1 }}
+                    autoComplete="off"
+                    inputProps={{
+                        spellCheck: false,
+                        autoCorrect: "off",
+                        autoCapitalize: "off",
+                    }}
                 />
 
                 <TextField
@@ -600,6 +606,12 @@ function AtualizarCean() {
                     value={razaoSocial}
                     onChange={(e) => setRazaoSocial(e.target.value)}
                     sx={{ flex: 2 }}
+                    autoComplete="off"
+                    inputProps={{
+                        spellCheck: false,
+                        autoCorrect: "off",
+                        autoCapitalize: "off",
+                    }}
                 />
 
                 <TextField
@@ -608,6 +620,12 @@ function AtualizarCean() {
                     value={cnpjEmitente}
                     onChange={(e) => setCnpjEmitente(e.target.value)}
                     sx={{ flex: 1 }}
+                    autoComplete="off"
+                    inputProps={{
+                        spellCheck: false,
+                        autoCorrect: "off",
+                        autoCapitalize: "off",
+                    }}
                 />
 
                 <Button

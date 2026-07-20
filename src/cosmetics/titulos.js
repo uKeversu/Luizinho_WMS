@@ -28,6 +28,10 @@ export const TITULOS = {
         color: "#fffb15",
     },
 
+    "Gavião da Fiel": {
+        color: "#ffffff",
+    },
+
     "Soberano Ancestral": {
         color: "#00ff62",
         textShadow:

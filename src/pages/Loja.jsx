@@ -378,7 +378,8 @@ export default function Loja() {
                                         "&:hover": {
                                             boxShadow: `0 0 18px ${corRaridade(item.raridade)}80`,
                                             transform: "translateY(-2px)"
-                                        }
+                                        },
+                                        zoom: '0.9'
                                     }}
                                 >
                                     <Chip

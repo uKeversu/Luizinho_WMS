@@ -541,7 +541,12 @@ function ConsultaGuarda() {
                                     null
                                 )
                             }
-
+                            autoComplete="off"
+                            inputProps={{
+                                spellCheck: false,
+                                autoCorrect: "off",
+                                autoCapitalize: "off",
+                            }}
                             InputProps={{
                                 startAdornment: (
                                     <SearchIcon
@@ -928,7 +933,8 @@ function ConsultaGuarda() {
                     sx={{
                         borderRadius: '2vh',
                         overflow: 'hidden',
-                        bgcolor: 'background.alerta'
+                        bgcolor: 'background.alerta',
+                        zoom: '0.9'
                     }}
                 >
 

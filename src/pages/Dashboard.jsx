@@ -749,7 +749,8 @@ function Dashboard({ tipo }) {
                         p: 2,
                         bgcolor: 'var(--azul)',
                         mb: 4,
-                        borderRadius: '2vh'
+                        borderRadius: '2vh',
+                        zoom: '0.9',
                     }}
                 >
                     <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "background.paper" }}>
@@ -1013,12 +1014,19 @@ function Dashboard({ tipo }) {
                                     '&.Mui-focused fieldset': {
                                         borderColor: 'var(--azul)',
                                     }
-                                }
+                                },
+                                zoom: '0.9'
                             }}
                             value={busca}
                             onChange={(e) => {
                                 console.log("BUSCA:", e.target.value);
                                 setBusca(e.target.value);
+                            }}
+                            autoComplete="off"
+                            inputProps={{
+                                spellCheck: false,
+                                autoCorrect: "off",
+                                autoCapitalize: "off",
                             }}
                         />
 
@@ -1034,7 +1042,8 @@ function Dashboard({ tipo }) {
                                 }
                                 sx={{
                                     minWidth: 170,
-                                    bgcolor: "background.default"
+                                    bgcolor: "background.default",
+                                    zoom: '0.9'
                                 }}
                                 SelectProps={{
                                     MenuProps: {
@@ -1076,7 +1085,8 @@ function Dashboard({ tipo }) {
                                 }}
                                 sx={{
                                     minWidth: 170,
-                                    bgcolor: 'background.default'
+                                    bgcolor: 'background.default',
+                                    zoom: '0.9'
                                 }}
                                 SelectProps={{
                                     MenuProps: {
@@ -1108,7 +1118,7 @@ function Dashboard({ tipo }) {
                                     console.log("DATA INICIO:", e.target.value);
                                     setDataInicio(e.target.value);
                                 }}
-                                sx={{ bgcolor: 'background.default' }}
+                                sx={{ bgcolor: 'background.default', zoom: '0.9' }}
                             />
 
                             <TextField
@@ -1121,7 +1131,7 @@ function Dashboard({ tipo }) {
                                     console.log("DATA FIM:", e.target.value);
                                     setDataFim(e.target.value);
                                 }}
-                                sx={{ bgcolor: 'background.default' }}
+                                sx={{ bgcolor: 'background.default', zoom: '0.9' }}
                             />
 
                             <Button
@@ -1130,6 +1140,7 @@ function Dashboard({ tipo }) {
                                     setDataInicio("");
                                     setDataFim("");
                                 }}
+                                sx={{ zoom: '0.9' }}
                             >
                                 Limpar
                             </Button>
@@ -1143,7 +1154,8 @@ function Dashboard({ tipo }) {
                                 minWidth: "180px",
                                 maxHeight: "100%",
                                 bgcolor: 'var(--azul)',
-                                '&:hover': { bgcolor: 'var(--azul-hover)' }
+                                '&:hover': { bgcolor: 'var(--azul-hover)' },
+                                zoom: '0.9'
                             }}
                         >
                             {ordemData === "asc" ? "Mais recentes" : "Mais antigas"}
@@ -1224,11 +1236,12 @@ function Dashboard({ tipo }) {
                                                 height: '100%',
                                                 display: 'flex',
                                                 flexDirection: 'column',
-
+                                                zoom: '0.9',
                                                 '&:hover': {
                                                     transform: 'translateY(-2px)',
                                                     boxShadow: '0 6px 16px rgba(0,0,0,0.12)',
-                                                }
+                                                },
+
                                             }}
                                         >
                                             <CardContent
@@ -1694,6 +1707,7 @@ function Dashboard({ tipo }) {
                             sx: {
                                 bgcolor: "background.card",
                                 color: "text.primary",
+                                zoom: '0.9'
                             }
                         }
                     }}>

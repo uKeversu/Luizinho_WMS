@@ -669,7 +669,12 @@ function ConsultaGeral() {
                                     null
                                 )
                             }
-
+                            autoComplete="off"
+                            inputProps={{
+                                spellCheck: false,
+                                autoCorrect: "off",
+                                autoCapitalize: "off",
+                            }}
                             InputProps={{
                                 startAdornment: (
                                     <SearchIcon

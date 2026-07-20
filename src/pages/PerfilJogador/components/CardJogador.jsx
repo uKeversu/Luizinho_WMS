@@ -973,7 +973,7 @@ export default function CardJogador({
                         }}
                     >
 
-                        {equipados.avatar?.icone || ""}
+                        {equipados.avatar?.icone || "👤"}
 
                     </Avatar>
 
@@ -994,7 +994,7 @@ export default function CardJogador({
                     >
                         {equipados.titulo
                             ? `${equipados.titulo.icone} ${equipados.titulo.nome}`
-                            : "Sem título"}
+                            : "Iniciante"}
                     </Typography>
 
                     <Chip

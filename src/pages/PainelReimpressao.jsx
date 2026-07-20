@@ -377,6 +377,12 @@ function PainelReimpressao() {
                     value={busca}
                     onChange={(e) => setBusca(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && buscarNotas()}
+                    autoComplete="off"
+                    inputProps={{
+                        spellCheck: false,
+                        autoCorrect: "off",
+                        autoCapitalize: "off",
+                    }}
                 />
 
                 <Button variant="contained" onClick={buscarNotas}>
