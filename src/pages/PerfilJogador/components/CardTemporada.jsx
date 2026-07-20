@@ -86,7 +86,11 @@ export default function CardTemporada({
                         color="#90caf9"
                         mt={0.5}
                     >
-                        {temporada.data_inicio} • {temporada.data_fim}
+                        {new Date(temporada.data_inicio).toLocaleDateString("pt-BR", {
+                            timeZone: "UTC",
+                        })} • {new Date(temporada.data_fim).toLocaleDateString("pt-BR", {
+                            timeZone: "UTC",
+                        })}
                     </Typography>
 
                     <Chip

@@ -23,6 +23,9 @@ import {
     ArrowBack
 } from "@mui/icons-material";
 
+import CloseIcon from "@mui/icons-material/Close";
+import IconButton from "@mui/material/IconButton";
+
 import { motion } from "framer-motion";
 
 import { ThemeContext } from "../context/ThemeContext";
@@ -71,11 +74,8 @@ export default function Temporadas() {
             );
 
         } catch (err) {
-
             console.error(err);
-
         }
-
     }
 
     async function abrirTemporada(id) {
@@ -107,6 +107,71 @@ export default function Temporadas() {
         }
 
     }
+
+    const obterNivel = (xp, itens) => {
+
+        if (xp >= 1000000 && itens >= 25000)
+            return {
+                nome: "TRANSCENDENTAL",
+                cor: "#3256f5",
+                imagem: "/ranks/icone-transcendental.png",
+            };
+
+        else if (xp >= 750000 && itens >= 15000)
+            return {
+                nome: "LENDÁRIO",
+                cor: "#a724ff",
+                imagem: "/ranks/icone-lendario.png",
+            };
+
+        else if (xp >= 500000 && itens >= 10000)
+            return {
+                nome: "MESTRE",
+                cor: "#ff2929",
+                imagem: "/ranks/icone-mestre.png",
+            };
+
+        else if (xp >= 300000 && itens >= 7000)
+            return {
+                nome: "ESMERALDA",
+                cor: "#06c730",
+                imagem: "/ranks/icone-esmeralda.png",
+            };
+
+        else if (xp >= 150000 && itens >= 5000)
+            return {
+                nome: "DIAMANTE",
+                cor: "#00d5ff",
+                imagem: "/ranks/icone-diamante.png",
+            };
+
+        else if (xp >= 100000 && itens >= 3000)
+            return {
+                nome: "PLATINA",
+                cor: "#b0e0e6",
+                imagem: "/ranks/icone-platina.png",
+            };
+
+        else if (xp >= 70000 && itens >= 2000)
+            return {
+                nome: "OURO",
+                cor: "#FFD700",
+                imagem: "/ranks/icone-ouro.png",
+            };
+
+        else if (xp >= 30000 && itens >= 1000)
+            return {
+                nome: "PRATA",
+                cor: "#9c9c9c",
+                imagem: "/ranks/icone-prata.png",
+            };
+
+        return {
+            nome: "BRONZE",
+            cor: "#d17920",
+            imagem: "/ranks/icone-bronze.png",
+        };
+    };
 
     const glassStyle = {
 
@@ -202,16 +267,14 @@ export default function Temporadas() {
                                         {temp.nome}
                                     </Typography>
 
-                                    <Typography
-                                        sx={{ mt: 1 }}
-                                    >
-                                        {new Date(
-                                            temp.data_inicio
-                                        ).toLocaleDateString("pt-BR")}
+                                    <Typography sx={{ mt: 1 }}>
+                                        {new Date(temp.data_inicio).toLocaleDateString("pt-BR", {
+                                            timeZone: "UTC",
+                                        })}
                                         {" até "}
-                                        {new Date(
-                                            temp.data_fim
-                                        ).toLocaleDateString("pt-BR")}
+                                        {new Date(temp.data_fim).toLocaleDateString("pt-BR", {
+                                            timeZone: "UTC",
+                                        })}
                                     </Typography>
 
                                     <Divider
@@ -229,6 +292,7 @@ export default function Temporadas() {
                                                 ? "ATIVA"
                                                 : "ENCERRADA"
                                         }
+                                        sx={{ color: 'white' }}
                                     />
 
                                     <Button
@@ -258,267 +322,704 @@ export default function Temporadas() {
 
             <Dialog
                 open={open}
-                onClose={() =>
-                    setOpen(false)
-                }
-                maxWidth="lg"
+                onClose={() => setOpen(false)}
+                maxWidth="xl"
                 fullWidth
                 PaperProps={{
                     sx: {
-                        bgcolor:
-                            dark
-                                ? "#111"
-                                : "#fff",
-
-                        color:
-                            dark
-                                ? "#fff"
-                                : "#000",
-
-                        borderRadius: 4,
+                        overflow: "hidden",
+                        borderRadius: 5,
+                        bgcolor: dark ? "#0f1115" : "#fafafa",
+                        color: dark ? "#fff" : "#111",
+                        border: dark
+                            ? "1px solid rgba(255,255,255,.08)"
+                            : "1px solid rgba(0,0,0,.08)",
+                        backgroundImage: dark
+                            ? "linear-gradient(180deg,#181b22 0%,#0f1115 100%)"
+                            : "linear-gradient(180deg,#ffffff 0%,#f4f6fa 100%)",
                     },
                 }}
+                sx={{ zoom: '0.8' }}
             >
-
                 {loading ? (
 
                     <Box
                         sx={{
-                            p: 6,
-                            textAlign: "center"
+                            p: 8,
+                            display: "flex",
+                            justifyContent: "center",
                         }}
                     >
-                        <CircularProgress />
+                        <CircularProgress size={60} />
                     </Box>
 
                 ) : detalhes && (
-
                     <>
-                        <DialogTitle>
+                        <Box
+                            sx={{
+                                position: "relative",
+                                overflow: "hidden",
+                                p: 4,
+                                background: `
+            radial-gradient(circle at top right, rgba(255,215,0,.18), transparent 35%),
+            radial-gradient(circle at bottom left, rgba(0,255,153,.08), transparent 35%),
+            linear-gradient(135deg,#1b2434,#0d1117)
+        `,
+                                borderBottom: "1px solid rgba(255,255,255,.08)",
+                            }}
+                        >
+                            <Box
+                                sx={{
+                                    position: "absolute",
+                                    top: -40,
+                                    right: -20,
+                                    fontSize: 160,
+                                    opacity: .06,
+                                    userSelect: "none",
+                                }}
+                            >
+                                🏆
+                            </Box>
 
-                            🏆 {
-                                detalhes.temporada.nome
+                            <Typography
+                                variant="overline"
+                                sx={{
+                                    color: "#FFD700",
+                                    letterSpacing: 3,
+                                    fontWeight: 700,
+                                }}
+                            >
+                                TEMPORADA
+                            </Typography>
+
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                <Typography
+                                    variant="h3"
+                                    fontWeight="bold"
+                                >
+                                    {detalhes.temporada.nome}
+                                </Typography>
+
+                                <Typography sx={{ color: "secondary", ml: 2 }}>
+                                    {new Date(detalhes.temporada.data_inicio).toLocaleDateString("pt-BR", {
+                                        timeZone: "UTC",
+                                    })}
+                                    {"  •  "}
+                                    {new Date(detalhes.temporada.data_fim).toLocaleDateString("pt-BR", {
+                                        timeZone: "UTC",
+                                    })}
+                                </Typography>
+                                <Chip sx={{ ml: 2, color: 'white' }}
+                                    color={
+                                        detalhes.temporada.ativa
+                                            ? "success"
+                                            : "default"
+                                    }
+                                    label={
+                                        detalhes.temporada.ativa
+                                            ? "TEMPORADA ATIVA"
+                                            : "TEMPORADA ENCERRADA"
+                                    }
+                                />
+                            </Box>
+
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    gap: 1.5,
+                                    mt: 3,
+                                    flexWrap: "wrap",
+                                }}
+                            >
+
+                            </Box>
+                            <IconButton
+                                onClick={() => setOpen(false)}
+                                sx={{
+                                    position: "absolute",
+                                    top: 16,
+                                    right: 16,
+                                    color: "#fff",
+                                    bgcolor: "rgba(255,255,255,.08)",
+
+                                    "&:hover": {
+                                        bgcolor: "rgba(255,255,255,.15)"
+                                    }
+                                }}
+                            >
+                                <CloseIcon />
+                            </IconButton>
+                        </Box>
+
+                        <DialogContent sx={{
+                            p: 4, "&::-webkit-scrollbar": {
+                                width: 8
+                            },
+
+                            "&::-webkit-scrollbar-thumb": {
+                                background: "#444",
+                                borderRadius: 20
                             }
+                        }}>
+                            <Grid container spacing={3} sx={{ mb: 2 }}>
 
-                        </DialogTitle>
+                                <Grid item xs={12} md={3}>
+                                    <Paper
+                                        sx={{
+                                            p: 2,
+                                            height: "100%",
+                                            borderRadius: 4,
+                                            textAlign: "center",
+                                            background:
+                                                "linear-gradient(145deg,#3d2b00,#221600)",
+                                            border: "1px solid rgba(255,215,0,.25)",
+                                        }}
+                                    >
+                                        <Typography fontSize={40}>
+                                            👑
+                                        </Typography>
 
-                        <DialogContent>
+                                        <Typography
+                                            variant="subtitle2"
+                                            color="rgba(255,255,255,.7)"
+                                        >
+                                            CAMPEÃO
+                                        </Typography>
 
-                            <Grid
-                                container
-                                spacing={3}
-                            >
-
-                                <Grid item xs={12} md={4}>
-
-                                    <Card sx={{bgcolor: 'background.default'}}>
-
-                                        <CardContent>
-
-                                            <Typography
-                                                variant="h6"
-                                            >
-                                                👑 Campeão
-                                            </Typography>
-
-                                            <Typography
-                                                fontWeight="bold"
-                                            >
-                                                {
-                                                    detalhes.campeao?.nome
-                                                }
-                                            </Typography>
-
-                                            <Typography>
-                                                {
-                                                    detalhes.campeao?.xp
-                                                } XP
-                                            </Typography>
-
-                                        </CardContent>
-
-                                    </Card>
-
+                                        <Typography
+                                            variant="h6"
+                                            fontWeight="bold"
+                                            mt={1}
+                                        >
+                                            {detalhes.campeao?.nome ?? "-"}
+                                        </Typography>
+                                    </Paper>
                                 </Grid>
 
-                                <Grid item xs={12} md={4}>
+                                <Grid item xs={12} md={3}>
+                                    <Paper
+                                        sx={{
+                                            p: 3,
+                                            height: "100%",
+                                            borderRadius: 4,
+                                            textAlign: "center",
+                                            bgcolor: "background.default",
+                                        }}
+                                    >
+                                        <Typography fontSize={30}>
+                                            👥
+                                        </Typography>
 
-                                    <Card sx={{bgcolor: 'background.default'}}>
+                                        <Typography
+                                            variant="subtitle2"
+                                            color="text.secondary"
+                                        >
+                                            PARTICIPANTES
+                                        </Typography>
 
-                                        <CardContent>
-
-                                            <Typography>
-                                                ⚡ XP Total
-                                            </Typography>
-
-                                            <Typography
-                                                fontWeight="bold"
-                                            >
-                                                {
-                                                    detalhes.estatisticas?.xp_total
-                                                }
-                                            </Typography>
-
-                                        </CardContent>
-
-                                    </Card>
-
+                                        <Typography
+                                            variant="h4"
+                                            fontWeight="bold"
+                                            mt={1}
+                                        >
+                                            {detalhes.estatisticas?.participantes ?? 0}
+                                        </Typography>
+                                    </Paper>
                                 </Grid>
 
-                                <Grid item xs={12} md={4}>
+                                <Grid item xs={12} md={3}>
+                                    <Paper
+                                        sx={{
+                                            p: 3,
+                                            height: "100%",
+                                            borderRadius: 4,
+                                            textAlign: "center",
+                                            bgcolor: "background.default",
+                                        }}
+                                    >
+                                        <Typography fontSize={30}>
+                                            🧾
+                                        </Typography>
 
-                                    <Card sx={{bgcolor: 'background.default'}}>
+                                        <Typography
+                                            variant="subtitle2"
+                                            color="text.secondary"
+                                        >
+                                            NOTAS CONFERIDAS
+                                        </Typography>
 
-                                        <CardContent>
-
-                                            <Typography>
-                                                👥 Participantes
-                                            </Typography>
-
-                                            <Typography
-                                                fontWeight="bold"
-                                            >
-                                                {
-                                                    detalhes.estatisticas?.participantes
-                                                }
-                                            </Typography>
-
-                                        </CardContent>
-
-                                    </Card>
-
+                                        <Typography
+                                            variant="h4"
+                                            fontWeight="bold"
+                                            mt={1}
+                                            color="#00e676"
+                                        >
+                                            {Number(
+                                                detalhes.estatisticas?.notas_total ?? 0
+                                            ).toLocaleString()}
+                                        </Typography>
+                                    </Paper>
                                 </Grid>
 
+                                <Grid item xs={12} md={3}>
+                                    <Paper
+                                        sx={{
+                                            p: 3,
+                                            height: "100%",
+                                            borderRadius: 4,
+                                            textAlign: "center",
+                                            bgcolor: "background.default",
+                                        }}
+                                    >
+                                        <Typography fontSize={30}>
+                                            📦
+                                        </Typography>
+
+                                        <Typography
+                                            variant="subtitle2"
+                                            color="text.secondary"
+                                        >
+                                            ITENS CONFERIDOS
+                                        </Typography>
+
+                                        <Typography
+                                            variant="h4"
+                                            fontWeight="bold"
+                                            mt={1}
+                                            color="#fc2828"
+                                        >
+                                            {Number(
+                                                detalhes.estatisticas?.itens_total ?? 0
+                                            ).toLocaleString()}
+                                        </Typography>
+                                    </Paper>
+                                </Grid>
+
+                                <Grid item xs={12} md={3}>
+                                    <Paper
+                                        sx={{
+                                            p: 3,
+                                            height: "100%",
+                                            borderRadius: 4,
+                                            textAlign: "center",
+                                            bgcolor: "background.default",
+                                        }}
+                                    >
+                                        <Typography fontSize={30}>
+                                            🎯
+                                        </Typography>
+
+                                        <Typography
+                                            variant="subtitle2"
+                                            color="text.secondary"
+                                        >
+                                            PRECISÃO
+                                        </Typography>
+
+                                        <Typography
+                                            variant="h4"
+                                            fontWeight="bold"
+                                            mt={1}
+                                            color="#28f1ff"
+                                        >
+                                            {Number(
+                                                detalhes.estatisticas?.produtividade_media ?? 0
+                                            ).toLocaleString()}%
+                                        </Typography>
+                                    </Paper>
+                                </Grid>
+
+                                <Grid item xs={12} md={3}>
+                                    <Paper
+                                        sx={{
+                                            p: 3,
+                                            height: "100%",
+                                            borderRadius: 4,
+                                            textAlign: "center",
+                                            bgcolor: "background.default",
+                                        }}
+                                    >
+                                        <Typography fontSize={30}>
+                                            ⚡
+                                        </Typography>
+
+                                        <Typography
+                                            variant="subtitle2"
+                                            color="text.secondary"
+                                        >
+                                            XP TOTAL
+                                        </Typography>
+
+                                        <Typography
+                                            variant="h4"
+                                            fontWeight="bold"
+                                            mt={1}
+                                            color="#ffca28"
+                                        >
+                                            {Number(
+                                                detalhes.estatisticas?.xp_total ?? 0
+                                            ).toLocaleString()}
+                                        </Typography>
+                                    </Paper>
+                                </Grid>
                             </Grid>
 
-                            <Divider
-                                sx={{ my: 4 }}
-                            />
-
-                            <Grid
-                                container
-                                spacing={2}
+                            <Typography
+                                variant="h4"
+                                fontWeight="bold"
+                                sx={{ my: 3 }}
                             >
+                                🏆 Ranking da Temporada
+                            </Typography>
+                            {/* ==================== TOP 3 ==================== */}
 
-                                <Grid item xs={6} md={3}>
-                                    <Chip sx={{bgcolor: 'background.default'}}
-                                        label={`📦 ${detalhes.estatisticas?.itens_total} itens`}
-                                    />
-                                </Grid>
+                            <Grid container spacing={3} sx={{ mb: 5 }}>
 
-                                <Grid item xs={6} md={3}>
-                                    <Chip sx={{bgcolor: 'background.default'}}
-                                        label={`🧾 ${detalhes.estatisticas?.notas_total} notas`}
-                                    />
-                                </Grid>
+                                {detalhes.ranking.slice(0, 3).map((jogador, index) => {
 
-                                <Grid item xs={6} md={3}>
-                                    <Chip sx={{bgcolor: 'background.default'}}
-                                        label={`⚡ ${detalhes.estatisticas?.xp_total} XP`}
-                                    />
-                                </Grid>
+                                    const nivel = obterNivel(
+                                        Number(jogador.xp),
+                                        jogador.itens
+                                    );
 
-                                <Grid item xs={6} md={3}>
-                                    <Chip sx={{bgcolor: 'background.default'}}
-                                        label={`🎯 ${detalhes.estatisticas?.produtividade_media}%`}
-                                    />
-                                </Grid>
+                                    const medalhas = ["🥇", "🥈", "🥉"];
 
+                                    const cores = [
+                                        "#FFD700",
+                                        "#C0C0C0",
+                                        "#CD7F32"
+                                    ];
+
+                                    return (
+
+                                        <Grid
+                                            item
+                                            xs={12}
+                                            md={4}
+                                            key={jogador.codigo}
+                                        >
+                                            <Paper
+                                                sx={{
+                                                    p: 3,
+                                                    borderRadius: 5,
+                                                    height: "100%",
+                                                    position: "relative",
+                                                    overflow: "hidden",
+                                                    display: "flex",
+                                                    flexDirection: "column",
+                                                    alignItems: "center",
+                                                    background: `
+            radial-gradient(circle at top,
+            ${cores[index]}22,
+            transparent 60%),
+            ${dark ? "#16181d" : "#fff"}
+        `,
+
+                                                    border: `2px solid ${cores[index]}55`,
+
+                                                    transition: ".25s",
+
+                                                    "&:hover": {
+                                                        transform: "translateY(-6px)",
+                                                        boxShadow: 8,
+                                                    },
+                                                }}
+                                            >
+
+                                                {/* Rank */}
+                                                <Box
+                                                    component="img"
+                                                    src={nivel.imagem}
+                                                    alt={nivel.nome}
+                                                    sx={{
+                                                        width: 120,
+                                                        height: 120,
+                                                        my: 1,
+                                                    }}
+                                                />
+                                                {/* Nome */}
+                                                <Typography
+                                                    variant="h5"
+                                                    fontWeight="bold"
+                                                >
+                                                    {jogador.nome}
+                                                </Typography>
+                                                <Typography
+                                                    sx={{
+                                                        color: nivel.cor,
+                                                        fontWeight: "bold",
+                                                        fontSize: 18,
+                                                        mb: 2,
+                                                    }}
+                                                >
+                                                    {nivel.nome}
+                                                </Typography>
+
+                                                {/* Estatísticas */}
+                                                <Box
+                                                    sx={{
+                                                        width: "100%",
+                                                        display: "flex",
+                                                        justifyContent: "space-between",
+                                                        gap: 1,
+                                                        mb: 3,
+                                                    }}
+                                                >
+                                                    <Paper
+                                                        elevation={0}
+                                                        sx={{
+                                                            flex: 1,
+                                                            p: 1,
+                                                            textAlign: "center",
+                                                            bgcolor: "rgba(255,255,255,.05)",
+                                                        }}
+                                                    >
+                                                        <Typography variant="caption">
+                                                            📦
+                                                        </Typography>
+
+                                                        <Typography fontWeight="bold">
+                                                            {jogador.itens.toLocaleString()}
+                                                        </Typography>
+                                                    </Paper>
+
+                                                    <Paper
+                                                        elevation={0}
+                                                        sx={{
+                                                            flex: 1,
+                                                            p: 1,
+                                                            textAlign: "center",
+                                                            bgcolor: "rgba(255,255,255,.05)",
+                                                        }}
+                                                    >
+                                                        <Typography variant="caption">
+                                                            🧾
+                                                        </Typography>
+
+                                                        <Typography fontWeight="bold">
+                                                            {jogador.notas.toLocaleString()}
+                                                        </Typography>
+                                                    </Paper>
+
+                                                    <Paper
+                                                        elevation={0}
+                                                        sx={{
+                                                            flex: 1,
+                                                            p: 1,
+                                                            textAlign: "center",
+                                                            bgcolor: "rgba(255,255,255,.05)",
+                                                        }}
+                                                    >
+                                                        <Typography variant="caption">
+                                                            🎯
+                                                        </Typography>
+
+                                                        <Typography fontWeight="bold">
+                                                            {jogador.produtividade}%
+                                                        </Typography>
+                                                    </Paper>
+                                                </Box>
+
+                                                {/* XP */}
+                                                <Typography
+                                                    variant="h5"
+                                                    fontWeight="bold"
+                                                    sx={{
+                                                        color: cores[index],
+                                                    }}
+                                                >
+                                                    {jogador.xp.toLocaleString()}
+                                                </Typography>
+
+                                                <Typography
+                                                    variant="overline"
+                                                    color="text.secondary"
+                                                >
+                                                    XP
+                                                </Typography>
+
+                                            </Paper>
+                                        </Grid>
+                                    );
+                                })}
                             </Grid>
-
-                            <Divider
-                                sx={{ my: 4 }}
-                            />
 
                             <Typography
                                 variant="h5"
                                 fontWeight="bold"
-                                gutterBottom
+                                sx={{ mb: 2 }}
                             >
-                                🥇 Ranking
+                                📜 Classificação Completa
                             </Typography>
 
                             <Paper
                                 sx={{
-                                    p: 3,
-                                    borderRadius: 4,
-                                    bgcolor: 'background.default'
+                                    p: 2,
+                                    borderRadius: 5,
+                                    bgcolor: "background.default",
+                                    border: "1px solid rgba(255,255,255,.08)"
                                 }}
                             >
+                                {detalhes.ranking.slice(3).map((jogador) => {
 
-                                {detalhes.ranking.map(
-                                    (jogador) => (
+                                    const nivel = obterNivel(
+                                        Number(jogador.xp),
+                                        jogador.itens
+                                    );
 
-                                        <Box
-                                            key={
-                                                jogador.codigo
-                                            }
+                                    return (
+
+                                        <Paper
+                                            key={jogador.codigo}
+                                            elevation={0}
                                             sx={{
+                                                mb: 2,
+                                                p: 2,
+                                                borderRadius: 4,
                                                 display: "flex",
-                                                justifyContent:
-                                                    "space-between",
-                                                py: 1.5,
-                                                borderBottom:
-                                                    "1px solid rgba(255,255,255,0.08)"
+                                                alignItems: "center",
+                                                justifyContent: "space-between",
+                                                transition: ".2s",
+                                                bgcolor: "background.card",
+                                                border: "1px solid rgba(255,255,255,.06)",
+
+                                                "&:hover": {
+                                                    transform: "translateY(-2px)",
+                                                    borderColor: nivel.cor,
+                                                    boxShadow: 6,
+                                                },
                                             }}
                                         >
 
-                                            <Box>
+                                            {/* Lado esquerdo */}
+                                            <Box
+                                                sx={{
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    gap: 2,
+                                                    flex: 1,
+                                                }}
+                                            >
 
-                                                <Typography
-                                                    fontWeight="bold"
+                                                <Box
+                                                    sx={{
+                                                        width: 46,
+                                                        height: 46,
+                                                        borderRadius: "50%",
+                                                        bgcolor: "rgba(255,255,255,.05)",
+                                                        display: "flex",
+                                                        justifyContent: "center",
+                                                        alignItems: "center",
+                                                        fontWeight: "bold",
+                                                        fontSize: 18,
+                                                    }}
                                                 >
+                                                    #{jogador.posicao}
+                                                </Box>
 
-                                                    {jogador.posicao === 1 &&
-                                                        "🥇 "}
+                                                <Box
+                                                    component="img"
+                                                    src={nivel.imagem}
+                                                    alt={nivel.nome}
+                                                    sx={{
+                                                        width: 64,
+                                                        height: 64,
+                                                        objectFit: "contain",
+                                                    }}
+                                                />
 
-                                                    {jogador.posicao === 2 &&
-                                                        "🥈 "}
+                                                <Box>
 
-                                                    {jogador.posicao === 3 &&
-                                                        "🥉 "}
+                                                    <Typography
+                                                        fontWeight="bold"
+                                                        fontSize={18}
+                                                    >
+                                                        {jogador.nome}
+                                                    </Typography>
 
-                                                    {
-                                                        jogador.nome
-                                                    }
+                                                    <Typography
+                                                        sx={{
+                                                            color: nivel.cor,
+                                                            fontWeight: "bold",
+                                                            mb: .5,
+                                                        }}
+                                                    >
+                                                        {nivel.nome}
+                                                    </Typography>
 
-                                                </Typography>
+                                                    <Box
+                                                        sx={{
+                                                            display: "flex",
+                                                            gap: 2,
+                                                            flexWrap: "wrap",
+                                                        }}
+                                                    >
+                                                        <Typography
+                                                            variant="body2"
+                                                            color="text.secondary"
+                                                        >
+                                                            🧾 {jogador.notas.toLocaleString()}
+                                                        </Typography>
+                                                        <Typography
+                                                            variant="body2"
+                                                            color="text.secondary"
+                                                        >
+                                                            📦 {jogador.itens.toLocaleString()}
+                                                        </Typography>
+                                                        <Typography
+                                                            variant="body2"
+                                                            color="text.secondary"
+                                                        >
+                                                            🎯 {jogador.produtividade.toLocaleString()}%
+                                                        </Typography>
+                                                    </Box>
 
-                                                <Typography
-                                                    variant="body2"
-                                                >
-                                                    {
-                                                        jogador.itens
-                                                    }
-                                                    {" itens • "}
-                                                    {
-                                                        jogador.notas
-                                                    }
-                                                    {" notas"}
-                                                </Typography>
+                                                </Box>
 
                                             </Box>
 
-                                            <Typography
-                                                fontWeight="bold"
+                                            {/* XP */}
+
+                                            <Box
+                                                sx={{
+                                                    textAlign: "center",
+                                                    minWidth: 150,
+                                                }}
                                             >
-                                                {
-                                                    jogador.xp
-                                                } XP
-                                            </Typography>
 
-                                        </Box>
+                                                <Paper
+                                                    elevation={0}
+                                                    sx={{
+                                                        px: 3,
+                                                        py: 1.5,
+                                                        borderRadius: 3,
+                                                        bgcolor: "#ffc10718",
+                                                        border: "1px solid #ffc10755",
+                                                    }}
+                                                >
 
-                                    )
-                                )}
+                                                    <Typography
+                                                        variant="h5"
+                                                        fontWeight="bold"
+                                                        color="warning.main"
+                                                    >
+                                                        {jogador.xp.toLocaleString()}
+                                                    </Typography>
 
-                            </Paper>
-
+                                                    <Typography
+                                                        variant="caption"
+                                                        color="text.secondary"
+                                                    >
+                                                        XP
+                                                    </Typography>
+                                                </Paper>
+                                            </Box>
+                                        </Paper>
+                                    );
+                                })}</Paper>
                         </DialogContent>
-
                     </>
                 )}
-
             </Dialog>
 
         </Container>
