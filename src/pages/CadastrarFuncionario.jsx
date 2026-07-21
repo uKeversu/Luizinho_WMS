@@ -155,7 +155,8 @@ function CadastroFuncionario() {
                     p: 2,
                     bgcolor: 'var(--azul)',
                     mb: 4,
-                    borderRadius: '2vh'
+                    borderRadius: '2vh',
+                    zoom: 0.9
                 }}
             >
                 <Typography variant="h4" sx={{ color: "background.paper" }}>

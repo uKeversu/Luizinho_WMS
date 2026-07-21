@@ -555,13 +555,23 @@ function AtualizarCean() {
                                 {<SyncIcon />}
                             </Button>
                         </Tooltip>
-                        <Button
-                            onClick={() => navigate("/Dashboard")}
-                            sx={{ color: "background.paper", display: 'flex', gap: 1 }}
-                        >
-                            Voltar
-                            {< ArrowBackIcon />}
-                        </Button>
+                        <Tooltip title="Voltar ao Dashboard">
+                            <Button
+                                onClick={() => navigate("/Dashboard")}
+                                sx={{
+                                    color: "background.paper",
+                                    display: 'flex',
+                                    gap: 0.5,
+                                    fontSize: '0.75rem',
+                                    minWidth: 'auto',
+                                    padding: '4px 8px',
+                                    whiteSpace: 'nowrap'
+                                }}
+                            >
+                                Voltar
+                                {< ArrowBackIcon />}
+                            </Button>
+                        </Tooltip>
                         <pre id="resultado"></pre>
                     </Box>
                 </Box>
@@ -586,6 +596,7 @@ function AtualizarCean() {
                 display="flex"
                 gap={1}
                 alignItems="stretch"
+                sx={{ zoom: 0.9 }}
             >
                 <TextField
                     label="Número NF"
@@ -649,6 +660,7 @@ function AtualizarCean() {
                         maxHeight: 250,
                         overflow: "auto",
                         bgcolor: 'background.alerta',
+                        zoom: 0.9
                     }}
                 >
                     <Typography variant="h6">
@@ -676,7 +688,7 @@ function AtualizarCean() {
                                 justifyContent: 'space-around',
                                 "&:hover": {
                                     bgcolor: "action.hover"
-                                }
+                                },
                             }}
                         >
                             <Typography fontWeight={600}>
@@ -699,7 +711,7 @@ function AtualizarCean() {
 
             {notaSelecionada && (
 
-                <Paper sx={{ p: 2, mb: 2, bgcolor: 'background.alerta', }}>
+                <Paper sx={{ p: 2, mb: 2, bgcolor: 'background.alerta', zoom: 0.8 }}>
 
                     <Typography variant="h6">
                         NOTA SELECIONADA
@@ -726,7 +738,8 @@ function AtualizarCean() {
                         boxShadow: '0vh 0.1vh 0.5vh var(--sombra)',
                         bgcolor: 'background.tabela',
                         color: 'text.primary',
-                        mb: 5
+                        mb: 5,
+                        zoom: 0.9
                     }}
                 >
                     <Table stickyHeader size="small">

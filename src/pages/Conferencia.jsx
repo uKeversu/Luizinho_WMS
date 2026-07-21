@@ -2403,7 +2403,8 @@ function Conferencia() {
                     p: 2,
                     bgcolor: 'var(--azul)',
                     mb: 4,
-                    borderRadius: '2vh'
+                    borderRadius: '2vh',
+                    zoom: 0.9
                 }}
             >
                 <Typography variant="h4" sx={{ color: "background.paper" }}>
@@ -2443,7 +2444,16 @@ function Conferencia() {
                             </Button>
                         </Tooltip>
                         <Tooltip title="Voltar ao Dashboard de notas">
-                            <Button onClick={() => navigate("/Dashboard")} sx={{ color: "background.paper", display: 'flex', gap: 1 }}>Voltar {< ArrowBackIcon />}</Button>
+                            <Button onClick={() => navigate("/Dashboard")} sx={{
+                                color: "background.paper",
+                                display: 'flex',
+                                gap: 0.5,
+                                fontSize: '0.75rem',
+                                minWidth: 'auto',
+                                padding: '4px 8px',
+                                whiteSpace: 'nowrap'
+                            }}>Voltar {< ArrowBackIcon />}
+                            </Button>
                         </Tooltip>
                     </Box>
                 </Box>

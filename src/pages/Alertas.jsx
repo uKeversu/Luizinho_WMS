@@ -182,7 +182,8 @@ function Alertas() {
                     p: 2,
                     bgcolor: 'var(--azul)',
                     mb: 4,
-                    borderRadius: '2vh'
+                    borderRadius: '2vh',
+                    zoom: 0.9
                 }}
             >
                 <Box>
@@ -203,7 +204,15 @@ function Alertas() {
                             <Button
                                 size="small"
                                 onClick={logout}
-                                sx={{ color: "background.paper", display: 'flex', gap: 1 }}
+                                sx={{
+                                    color: "background.paper",
+                                    display: 'flex',
+                                    gap: 0.5,
+                                    fontSize: '0.75rem',
+                                    minWidth: 'auto',
+                                    padding: '4px 8px',
+                                    whiteSpace: 'nowrap'
+                                }}
                             >{<LogoutIcon />}
                             </Button>
                         )}
@@ -211,7 +220,15 @@ function Alertas() {
                     <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
                         <Button
                             onClick={() => navigate("/")}
-                            sx={{ color: "background.paper", display: 'flex', gap: 1 }}
+                            sx={{
+                                color: "background.paper",
+                                display: 'flex',
+                                gap: 0.5,
+                                fontSize: '0.75rem',
+                                minWidth: 'auto',
+                                padding: '4px 8px',
+                                whiteSpace: 'nowrap'
+                            }}
                         >
                             Voltar
                             {< ArrowBackIcon />}

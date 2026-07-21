@@ -550,7 +550,8 @@ function ConsultaGeral() {
                     p: 2,
                     bgcolor: 'var(--azul)',
                     mb: 4,
-                    borderRadius: '2vh'
+                    borderRadius: '2vh',
+                    zoom: 0.9
                 }}
             >
                 <Typography
