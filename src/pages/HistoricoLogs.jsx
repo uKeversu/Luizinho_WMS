@@ -235,7 +235,8 @@ function HistoricoLogs() {
                     p: 2,
                     bgcolor: "var(--azul)",
                     mb: 4,
-                    borderRadius: "2vh"
+                    borderRadius: "2vh",
+                    zoom: '0.9'
                 }}
             >
 
@@ -317,7 +318,7 @@ function HistoricoLogs() {
 
             {/* FILTROS */}
 
-            <Paper sx={{ p: 2, mb: 3, bgcolor: 'background.alerta' }}>
+            <Paper sx={{ p: 2, mb: 3, bgcolor: 'background.alerta', zoom: '0.9' }}>
 
                 <Box
                     display="flex"
@@ -404,7 +405,7 @@ function HistoricoLogs() {
                     display="flex"
                     gap={4}
                     flexWrap="wrap"
-                    sx={{ justifyContent: 'space-around' }}
+                    sx={{ justifyContent: 'space-around', zoom: '0.9' }}
                 >
                     <Box>
                         <Typography variant="caption">
@@ -465,6 +466,7 @@ function HistoricoLogs() {
                 gap={2}
                 mb={3}
                 flexWrap="wrap"
+                sx={{zoom: '0.9'}}
             >
                 <Chip
                     color="primary"
@@ -492,7 +494,7 @@ function HistoricoLogs() {
 
             {/* TABELA */}
 
-            <Paper sx={{ bgcolor: 'background.alerta' }}>
+            <Paper sx={{ bgcolor: 'background.alerta', zoom: '0.9' }}>
 
                 {loading ? (
 

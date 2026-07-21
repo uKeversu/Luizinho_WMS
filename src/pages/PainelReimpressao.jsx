@@ -298,8 +298,6 @@ function PainelReimpressao() {
 
     };
 
-    // ---------------- UI ----------------
-
     return (
         <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "background.default" }}>
             {/* Header */}
@@ -319,7 +317,8 @@ function PainelReimpressao() {
                     p: 2,
                     bgcolor: 'var(--azul)',
                     mb: 4,
-                    borderRadius: '2vh'
+                    borderRadius: '2vh',
+                    zoom: '0.9'
                 }}
             >
                 <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "background.paper" }}>
@@ -370,7 +369,7 @@ function PainelReimpressao() {
             </Box>
 
             {/* BUSCA */}
-            <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+            <Box sx={{ display: 'flex', gap: 2, mb: 3, zoom: '0.9' }}>
                 <TextField
                     fullWidth
                     placeholder="Buscar por código do item"

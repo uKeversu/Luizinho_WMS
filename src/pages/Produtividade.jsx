@@ -360,178 +360,1312 @@ export default function Produtividade() {
     };
 
     const exportarRelatorio = async () => {
+
         const response = await fetch(
             `${API}/api/produtividade?data_inicio=${dataInicio}&data_fim=${dataFim}`
         );
 
         const { items } = await response.json();
-
         const workbook = new ExcelJS.Workbook();
 
-        workbook.creator = "WMS";
+        workbook.creator = "SIGEL WMS";
+        workbook.company = "Luizinho Auto Peças";
+        workbook.subject = "Relatório de Produtividade";
+        workbook.title = "Relatório de Produtividade";
+        workbook.description =
+            "Relatório gerado automaticamente pelo SIGEL WMS";
         workbook.created = new Date();
+        workbook.modified = new Date();
 
-        // RESUMO
-        const resumo = workbook.addWorksheet("Resumo");
+        const TEMA = {
 
-        resumo.columns = [
-            { header: "Conferente", key: "nome", width: 30 },
-            { header: "Notas", key: "notas", width: 10 },
-            { header: "Itens", key: "itens", width: 10 },
-            { header: "Pontos", key: "pontos", width: 12 },
-            { header: "XP", key: "xp", width: 12 },
-            { header: "Produtividade", key: "produtividade", width: 18 },
-            { header: "Erros", key: "errosCaixa", width: 10 }
-        ];
+            primaria: "FF1565C0",
+            secundaria: "FF1E88E5",
 
-        items.forEach(item => {
-            resumo.addRow({
-                nome: item.nome,
-                notas: item.notas,
-                itens: item.itens,
-                pontos: item.pontosFinais,
-                xp: item.xp,
-                produtividade: `${item.produtividade}%`,
-                errosCaixa: item.errosCaixa
-            });
-        });
+            sucesso: "FF2E7D32",
+            alerta: "FFF9A825",
+            erro: "FFC62828",
 
-        // DETALHES
-        const detalhes = workbook.addWorksheet("Detalhes");
+            fundo: "FFF5F7FA",
+            branco: "FFFFFFFF",
 
-        detalhes.columns = [
-            { header: "Conferente", key: "conferente", width: 25 },
-            { header: "Código", key: "codigo", width: 18 },
-            { header: "Produto", key: "produto", width: 60 },
-            { header: "Localização", key: "localizacao", width: 15 },
-            { header: "Qtd", key: "qtd", width: 10 },
-            { header: "Pontos", key: "pontos", width: 10 },
-            { header: "Erro", key: "erro", width: 10 }
-        ];
+            texto: "FF212121",
+            textoClaro: "FF666666",
 
-        items.forEach(conferente => {
-            conferente.detalhes.forEach(item => {
-                detalhes.addRow({
-                    conferente: conferente.nome,
-                    codigo: item.codigo.trim(),
-                    produto: item.tipo,
-                    localizacao: item.localizacao.trim(),
-                    qtd: item.quantidade,
-                    pontos: item.pontosTotal,
-                    erro: item.erro ? "Sim" : "Não"
-                });
-            });
-        });
+            zebra: "FFF8FAFC",
 
-        // RANKING
-        const ranking = workbook.addWorksheet("Ranking");
+            borda: "FFD6DCE5",
 
-        ranking.columns = [
-            { header: "Posição", key: "posicao", width: 10 },
-            { header: "Conferente", key: "nome", width: 30 },
-            { header: "XP", key: "xp", width: 15 },
-            { header: "Pontos", key: "pontos", width: 15 },
-            { header: "Produtividade", key: "produtividade", width: 18 }
-        ];
+            ouro: "FFFFD700",
+            prata: "FFC0C0C0",
+            bronze: "FFCD7F32"
+        };
 
-        [...items]
-            .sort((a, b) => b.xp - a.xp)
-            .forEach((item, index) => {
-                ranking.addRow({
-                    posicao: index + 1,
-                    nome: item.nome,
-                    xp: item.xp,
-                    pontos: item.pontosFinais,
-                    produtividade: `${item.produtividade}%`
-                });
-            });
+        const aplicarBorda = (cell) => {
 
-        // ESTILOS
-        [resumo, detalhes, ranking].forEach(sheet => {
+            cell.border = {
+                top: {
+                    style: "thin",
+                    color: {
+                        argb: TEMA.borda
+                    }
+                },
+                bottom: {
+                    style: "thin",
+                    color: {
+                        argb: TEMA.borda
+                    }
+                },
+                left: {
+                    style: "thin",
+                    color: {
+                        argb: TEMA.borda
+                    }
+                },
+                right: {
+                    style: "thin",
+                    color: {
+                        argb: TEMA.borda
+                    }
+                }
+            };
+        };
 
-            // Cabeçalho
-            sheet.getRow(1).eachCell(cell => {
+        const preencherCelula = (
+            cell,
+            cor
+        ) => {
+            cell.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: {
+                    argb: cor
+                }
+            };
+        };
+        const centralizar = (cell) => {
+            cell.alignment = {
+                horizontal: "center",
+                vertical: "middle"
+            };
+        };
+        const estilizarTitulo = (cell) => {
+            cell.font = {
+                bold: true,
+                size: 22,
+                color: {
+                    argb: TEMA.branco
+                }
+            };
+            preencherCelula(
+                cell,
+                TEMA.primaria
+            );
+            centralizar(cell);
+        };
+        const estilizarSubtitulo = (cell) => {
+            cell.font = {
+                italic: true,
+                size: 11,
+                color: {
+                    argb: TEMA.textoClaro
+                }
+            };
+            centralizar(cell);
+        };
+        const formatarNumero = (cell) => {
+            cell.numFmt = "#,##0";
+        };
+        const formatarPercentual = (cell) => {
+            cell.numFmt = "0.00%";
+        };
 
+        const configurarSheet = (
+            sheet,
+            congelarLinha = 1
+        ) => {
+            sheet.properties.defaultRowHeight = 22;
+            sheet.views = [
+                {
+                    state: "frozen",
+                    ySplit: congelarLinha,
+                    showGridLines: false,
+                    zoomScale: 90
+                }
+            ];
+            sheet.pageSetup = {
+                paperSize: 9,
+                orientation: "landscape",
+                fitToPage: true,
+                fitToWidth: 1,
+                fitToHeight: 0,
+                margins: {
+                    left: 0.35,
+                    right: 0.35,
+                    top: 0.45,
+                    bottom: 0.45,
+                    header: 0.25,
+                    footer: 0.25
+                }
+            };
+            sheet.headerFooter = {
+                oddHeader:
+                    "&L&BSIGEL WMS&RRelatório de Produtividade",
+                oddFooter:
+                    `&L${dataInicio} até ${dataFim}&RPágina &P de &N`
+            };
+        };
+
+        const aplicarStatusProdutividade = (
+            cell,
+            valor
+        ) => {
+            if (valor >= 98) {
+                preencherCelula(
+                    cell,
+                    "FFC8E6C9"
+                );
                 cell.font = {
                     bold: true,
-                    color: { argb: "FFFFFFFF" }
+                    color: {
+                        argb: "FF1B5E20"
+                    }
                 };
-
-                cell.fill = {
-                    type: "pattern",
-                    pattern: "solid",
-                    fgColor: { argb: "FF1976D2" }
+            }
+            else if (valor >= 85) {
+                preencherCelula(
+                    cell,
+                    "FFFFF9C4"
+                );
+                cell.font = {
+                    bold: true,
+                    color: {
+                        argb: "FFF57F17"
+                    }
                 };
-
-                cell.alignment = {
-                    horizontal: "center",
-                    vertical: "middle"
+            }
+            else {
+                preencherCelula(
+                    cell,
+                    "FFFFCDD2"
+                );
+                cell.font = {
+                    bold: true,
+                    color: {
+                        argb: "FFB71C1C"
+                    }
                 };
+            }
+        };
 
-                cell.border = {
-                    top: { style: "thin" },
-                    left: { style: "thin" },
-                    right: { style: "thin" },
-                    bottom: { style: "thin" }
-                };
+        const criarCabecalho = (
+            sheet,
+            titulo,
+            ultimaColuna
+        ) => {
 
+            sheet.mergeCells(
+                `A1:${ultimaColuna}1`
+            );
+
+            const cellTitulo =
+                sheet.getCell("A1");
+
+            cellTitulo.value = titulo;
+
+            estilizarTitulo(
+                cellTitulo
+            );
+
+            sheet.getRow(1).height = 38;
+
+            sheet.mergeCells(
+                `A2:${ultimaColuna}2`
+            );
+
+            const empresa =
+                sheet.getCell("A2");
+
+            empresa.value =
+                "SIGEL WMS • Luizinho Auto Peças";
+
+            empresa.font = {
+                bold: true,
+                size: 12,
+                color: {
+                    argb: TEMA.texto
+                }
+            };
+
+            centralizar(
+                empresa
+            );
+
+            sheet.mergeCells(
+                `A3:${ultimaColuna}3`
+            );
+
+            const periodo =
+                sheet.getCell("A3");
+
+            periodo.value =
+                `Período: ${dataInicio} até ${dataFim}`;
+
+            estilizarSubtitulo(
+                periodo
+            );
+
+            sheet.mergeCells(
+                `A4:${ultimaColuna}4`
+            );
+
+            const gerado =
+                sheet.getCell("A4");
+
+            gerado.value =
+                `Gerado em: ${new Date().toLocaleString("pt-BR")}`;
+
+            estilizarSubtitulo(
+                gerado
+            );
+        };
+
+        const criarCard = ({
+            sheet,
+            coluna,
+            linha,
+            titulo,
+            valor,
+            corTitulo,
+            corFundo
+        }) => {
+
+            sheet.mergeCells(
+                linha,
+                coluna,
+                linha,
+                coluna + 1
+            );
+
+            sheet.mergeCells(
+                linha + 1,
+                coluna,
+                linha + 1,
+                coluna + 1
+            );
+
+            const tituloCell =
+                sheet.getCell(
+                    linha,
+                    coluna
+                );
+
+            tituloCell.value =
+                titulo;
+
+            tituloCell.font = {
+                bold: true,
+                color: {
+                    argb: TEMA.branco
+                }
+            };
+
+            preencherCelula(
+                tituloCell,
+                corTitulo
+            );
+
+            centralizar(
+                tituloCell
+            );
+
+            aplicarBorda(
+                tituloCell
+            );
+
+            const valorCell =
+                sheet.getCell(
+                    linha + 1,
+                    coluna
+                );
+
+            valorCell.value =
+                valor;
+
+            valorCell.font = {
+                bold: true,
+                size: 18,
+                color: {
+                    argb: corTitulo
+                }
+            };
+
+            preencherCelula(
+                valorCell,
+                corFundo
+            );
+
+            centralizar(
+                valorCell
+            );
+
+            aplicarBorda(
+                valorCell
+            );
+
+            sheet.getRow(linha)
+                .height = 24;
+
+            sheet.getRow(linha + 1)
+                .height = 34;
+        };
+
+        const criarTabela = ({
+            sheet,
+            nome,
+            inicio,
+            fim
+        }) => {
+            sheet.addTable({
+                name: nome,
+                ref: inicio,
+                headerRow: true,
+                totalsRow: false,
+                style: {
+                    theme:
+                        "TableStyleMedium2",
+                    showRowStripes:
+                        true
+                },
+                columns:
+                    sheet.columns.map(coluna => ({
+                        name:
+                            coluna.header,
+                        filterButton:
+                            true
+                    })),
+                rows:
+                    sheet
+                        .getRows(
+                            2,
+                            sheet.rowCount
+                        )
+                        .map(row =>
+                            row.values.slice(1)
+                        )
             });
+        };
 
-            // Bordas
-            sheet.eachRow((row, rowNumber) => {
+        const criarLegenda = (
+            sheet,
+            linha
+        ) => {
+            sheet.mergeCells(
+                `A${linha}:G${linha}`
+            );
 
-                if (rowNumber === 1) return;
+            const cell =
+                sheet.getCell(
+                    `A${linha}`
+                );
 
-                row.eachCell(cell => {
+            cell.value =
+                "🟢 Excelente ≥95%     🟡 Atenção 85%-94%     🔴 Crítico <85%";
 
-                    cell.border = {
-                        top: { style: "thin" },
-                        left: { style: "thin" },
-                        right: { style: "thin" },
-                        bottom: { style: "thin" }
-                    };
+            cell.font = {
+                italic: true,
+                color: {
+                    argb: TEMA.textoClaro
+                }
+            };
 
-                });
+            centralizar(
+                cell
+            );
+        };
 
-            });
+        const adicionarLogo = (
+            sheet,
+            logoId
+        ) => {
+            if (!logoId)
+                return;
+            sheet.addImage(
 
-            // Congela o cabeçalho
-            sheet.views = [{
-                state: "frozen",
-                ySplit: 1
-            }];
+                logoId,
+                {
+                    tl: {
+                        col: 0.2,
+                        row: 0.1
+                    },
+                    ext: {
+                        width: 80,
+                        height: 80
+                    }
+                }
+            );
+        };
 
-        });
+        // ABA RESUMO
+        const resumo = workbook.addWorksheet(
+            "Resumo"
+        );
 
-        // Destacar linhas com erro na aba Resumo
-        resumo.eachRow((row, index) => {
 
-            if (index === 1) return;
+        resumo.columns = [
+            {
+                header: "Conferente",
+                key: "nome",
+                width: 30
+            },
+            {
+                header: "Notas",
+                key: "notas",
+                width: 12
+            },
+            {
+                header: "Itens",
+                key: "itens",
+                width: 12
+            },
+            {
+                header: "Pontos",
+                key: "pontos",
+                width: 14
+            },
+            {
+                header: "XP",
+                key: "xp",
+                width: 14
+            },
+            {
+                header: "Produtividade",
+                key: "produtividade",
+                width: 18
+            },
+            {
+                header: "Erros",
+                key: "errosCaixa",
+                width: 12
+            }
+        ];
 
-            if (Number(row.getCell(7).value) > 0) {
 
-                row.eachCell(cell => {
+        const totalConferentes =
+            items.length;
 
-                    cell.fill = {
-                        type: "pattern",
-                        pattern: "solid",
-                        fgColor: {
-                            argb: "FFFFF3CD"
-                        }
-                    };
+
+        const totalNotas =
+            items.reduce(
+                (total, item) =>
+                    total + item.notas,
+                0
+            );
+
+
+        const totalItens =
+            items.reduce(
+                (total, item) =>
+                    total + item.itens,
+                0
+            );
+
+
+        const totalXP =
+            items.reduce(
+                (total, item) =>
+                    total + item.xp,
+                0
+            );
+
+
+        const totalPontos =
+            items.reduce(
+                (total, item) =>
+                    total + item.pontosFinais,
+                0
+            );
+
+
+        const totalErros =
+            items.reduce(
+                (total, item) =>
+                    total + item.errosCaixa,
+                0
+            );
+
+
+        // ======================================================
+        // CABEÇALHO
+        // ======================================================
+
+        criarCabecalho(
+            resumo,
+            "RELATÓRIO DE PRODUTIVIDADE",
+            "G"
+        );
+
+
+        // ======================================================
+        // DASHBOARD
+        // ======================================================
+
+
+        const indicadores = [
+            {
+                titulo: "📝 Notas",
+                valor: totalNotas,
+                cor: TEMA.sucesso,
+                fundo: "FFE8F5E9"
+            },
+            {
+                titulo: "📦 Itens",
+                valor: totalItens,
+                cor: TEMA.alerta,
+                fundo: "FFFFF8E1"
+            },
+            {
+                titulo: "❌ Erros",
+                valor: totalErros,
+                cor: TEMA.erro,
+                fundo: "FFFFEBEE"
+            }
+        ];
+
+
+        const posicoesCards = [
+            [1, 7],
+            [3, 7],
+            [5, 7],
+        ];
+
+
+        indicadores.forEach(
+            (item, index) => {
+
+                criarCard({
+
+                    sheet: resumo,
+
+                    coluna:
+                        posicoesCards[index][0],
+
+                    linha:
+                        posicoesCards[index][1],
+
+                    titulo:
+                        item.titulo,
+
+                    valor:
+                        item.valor
+                            .toLocaleString("pt-BR"),
+
+                    corTitulo:
+                        item.cor,
+
+                    corFundo:
+                        item.fundo
 
                 });
 
             }
+        );
+
+        // LOGO
+        if (typeof logoId !== "undefined") {
+            adicionarLogo(
+                resumo,
+                logoId
+            );
+        }
+
+        resumo.mergeCells(
+            "A9:G9"
+        );
+
+        preencherCelula(
+            resumo.getCell("A9"),
+            TEMA.primaria
+        );
+
+        resumo.getRow(9).height = 6;
+
+        const headerRow =
+            resumo.getRow(10);
+
+        headerRow.values = [
+            "Conferente",
+            "Notas",
+            "Itens",
+            "Pontos",
+            "XP",
+            "Produtividade",
+            "Erros"
+        ];
+
+
+        headerRow.eachCell(
+            cell => {
+
+                cell.font = {
+                    bold: true,
+                    color: {
+                        argb: TEMA.branco
+                    }
+                };
+
+
+                preencherCelula(
+                    cell,
+                    TEMA.secundaria
+                );
+
+
+                centralizar(cell);
+
+                aplicarBorda(cell);
+
+            }
+        );
+
+        headerRow.height = 24;
+
+        // ======================================================
+        // DADOS DA TABELA
+        // ======================================================
+
+        items.forEach(item => {
+
+            const row =
+                resumo.addRow({
+
+                    nome:
+                        item.nome,
+
+                    notas:
+                        item.notas,
+
+                    itens:
+                        item.itens,
+
+                    pontos:
+                        item.pontosFinais,
+
+                    xp:
+                        item.xp,
+
+                    produtividade:
+                        item.produtividade / 100,
+
+                    errosCaixa:
+                        item.errosCaixa
+
+                });
+
+
+            row.height = 22;
+
+
+            row.getCell("notas")
+                .numFmt = "#,##0";
+
+
+            row.getCell("itens")
+                .numFmt = "#,##0";
+
+
+            row.getCell("pontos")
+                .numFmt = "#,##0";
+
+
+            row.getCell("xp")
+                .numFmt = "#,##0";
+
+
+            row.getCell("produtividade")
+                .numFmt = "0.00%";
+
+
+            row.getCell("errosCaixa")
+                .numFmt = "#,##0";
+
+
+
+            row.eachCell(
+                cell => {
+
+                    aplicarBorda(cell);
+
+                    cell.alignment = {
+
+                        vertical:
+                            "middle",
+
+                        horizontal:
+                            typeof cell.value === "number"
+                                ? "center"
+                                : "left"
+
+                    };
+
+                }
+            );
+
+
+
+            // Zebra
+
+            if (row.number % 2 === 0) {
+
+                row.eachCell(
+                    cell => {
+
+                        preencherCelula(
+                            cell,
+                            TEMA.zebra
+                        );
+
+                    }
+                );
+
+            }
+
+
+
+            // ==================================================
+            // STATUS PRODUTIVIDADE
+            // ==================================================
+
+            const produtividade =
+                Number(
+                    item.produtividade
+                );
+
+
+            aplicarStatusProdutividade(
+
+                row.getCell(
+                    "produtividade"
+                ),
+
+                produtividade
+
+            );
+
+
+
+            // ==================================================
+            // STATUS ERROS
+            // ==================================================
+
+            const erro =
+                row.getCell(
+                    "errosCaixa"
+                );
+
+
+            if (item.errosCaixa > 0) {
+
+                preencherCelula(
+                    erro,
+                    "FFFFEBEE"
+                );
+
+
+                erro.font = {
+
+                    bold: true,
+
+                    color: {
+                        argb: TEMA.erro
+                    }
+
+                };
+
+            }
+            else {
+
+                preencherCelula(
+                    erro,
+                    "FFE8F5E9"
+                );
+
+
+                erro.font = {
+
+                    bold: true,
+
+                    color: {
+                        argb: TEMA.sucesso
+                    }
+
+                };
+
+            }
+
 
         });
 
-        // DOWNLOAD
-        const buffer = await workbook.xlsx.writeBuffer();
+
+
+        // ======================================================
+        // LEGENDA
+        // ======================================================
+
+
+        criarLegenda(
+            resumo,
+            resumo.rowCount + 2
+        );
+
+        // CONFIGURAÇÕES RESUMO
+        resumo.autoFilter = {
+            from: {
+                row: 10,
+                column: 1
+            },
+            to: {
+                row: 10,
+                column: 7
+            }
+        };
+
+        resumo.views = [{
+            state: "frozen",
+            ySplit: 10,
+            showGridLines: false,
+            zoomScale: 90
+        }];
+
+        resumo.pageSetup = {
+            paperSize: 9,
+            orientation: "landscape",
+            fitToPage: true,
+            fitToWidth: 1,
+            fitToHeight: 0,
+            horizontalCentered: true,
+            margins: {
+                left: 0.35,
+                right: 0.35,
+                top: 0.45,
+                bottom: 0.45,
+                header: 0.25,
+                footer: 0.25
+            }
+        };
+
+        resumo.headerFooter = {
+            oddHeader:
+                "&L&BSIGEL WMS&RRelatório de Produtividade",
+            oddFooter:
+                `&L${dataInicio} até ${dataFim}&RPágina &P de &N`
+        };
+
+        resumo.pageSetup.printArea =
+            `A1:G${resumo.rowCount}`;
+
+        resumo.properties.tabColor = {
+            argb:
+                TEMA.primaria
+        };
+
+        // ABA DETALHES
+        const detalhes =
+            workbook.addWorksheet(
+                "Detalhes"
+            );
+
+
+        detalhes.columns = [
+
+            {
+                header: "Conferente",
+                key: "conferente",
+                width: 28
+            },
+
+            {
+                header: "Código",
+                key: "codigo",
+                width: 18
+            },
+
+            {
+                header: "Produto",
+                key: "produto",
+                width: 55
+            },
+
+            {
+                header: "Localização",
+                key: "localizacao",
+                width: 18
+            },
+
+            {
+                header: "Quantidade",
+                key: "quantidade",
+                width: 14
+            },
+
+            {
+                header: "Pontos",
+                key: "pontos",
+                width: 14
+            },
+
+            {
+                header: "Erro",
+                key: "erro",
+                width: 12
+            }
+
+        ];
+
+
+
+        criarCabecalho(
+            detalhes,
+            "DETALHAMENTO DAS CONFERÊNCIAS",
+            "G"
+        );
+
+
+
+        // Cabeçalho da tabela
+
+        const detalhesHeader =
+            detalhes.getRow(5);
+
+
+        detalhesHeader.values = [
+
+            "Conferente",
+            "Código",
+            "Produto",
+            "Localização",
+            "Quantidade",
+            "Pontos",
+            "Erro"
+
+        ];
+
+
+
+        detalhesHeader.eachCell(
+            cell => {
+
+                cell.font = {
+
+                    bold: true,
+
+                    color: {
+                        argb: TEMA.branco
+                    }
+
+                };
+
+
+                preencherCelula(
+                    cell,
+                    TEMA.secundaria
+                );
+
+
+                centralizar(cell);
+
+                aplicarBorda(cell);
+
+            }
+        );
+
+
+
+        // ======================================================
+        // INSERE DADOS
+        // ======================================================
+
+
+        items.forEach(
+            conferente => {
+
+
+                conferente.detalhes.forEach(
+                    item => {
+
+
+                        const row =
+                            detalhes.addRow({
+
+                                conferente:
+                                    conferente.nome,
+
+                                codigo:
+                                    item.codigo,
+
+                                produto:
+                                    item.tipo,
+
+                                localizacao:
+                                    item.localizacao,
+
+                                quantidade:
+                                    item.quantidade,
+
+                                pontos:
+                                    item.pontosTotal,
+
+                                erro:
+                                    item.erro
+                                        ? "SIM"
+                                        : "NÃO"
+
+                            });
+
+
+
+                        row.height = 22;
+
+
+
+                        row.getCell(
+                            "quantidade"
+                        )
+                            .numFmt = "#,##0";
+
+
+
+                        row.getCell(
+                            "pontos"
+                        )
+                            .numFmt = "#,##0";
+
+
+
+                        row.eachCell(
+                            cell => {
+
+                                aplicarBorda(cell);
+
+
+                                cell.alignment = {
+
+                                    vertical:
+                                        "middle",
+
+                                    horizontal:
+                                        typeof cell.value === "number"
+                                            ? "center"
+                                            : "left"
+
+                                };
+
+                            }
+                        );
+
+
+
+                        // Zebra
+
+                        if (row.number % 2 === 0) {
+
+                            row.eachCell(
+                                cell => {
+
+                                    preencherCelula(
+                                        cell,
+                                        TEMA.zebra
+                                    );
+
+                                }
+                            );
+
+                        }
+
+
+
+                        // ==================================================
+                        // STATUS ERRO
+                        // ==================================================
+
+
+                        const erroCell =
+                            row.getCell(
+                                "erro"
+                            );
+
+
+
+                        if (item.erro) {
+
+
+                            preencherCelula(
+                                erroCell,
+                                "FFFFCDD2"
+                            );
+
+
+                            erroCell.font = {
+
+                                bold: true,
+
+                                color: {
+                                    argb: TEMA.erro
+                                }
+
+                            };
+
+
+                        }
+                        else {
+
+
+                            preencherCelula(
+                                erroCell,
+                                "FFC8E6C9"
+                            );
+
+
+                            erroCell.font = {
+
+                                bold: true,
+
+                                color: {
+                                    argb: TEMA.sucesso
+                                }
+
+                            };
+
+
+                        }
+
+
+                        centralizar(
+                            erroCell
+                        );
+
+
+                    }
+                );
+
+            }
+        );
+
+
+
+        // ======================================================
+        // CONFIGURAÇÕES DETALHES
+        // ======================================================
+
+
+        detalhes.autoFilter = {
+
+            from: {
+                row: 5,
+                column: 1
+            },
+
+            to: {
+                row: 5,
+                column: 7
+            }
+
+        };
+
+
+
+        detalhes.views = [{
+
+            state: "frozen",
+
+            ySplit: 5,
+
+            showGridLines: false,
+
+            zoomScale: 90
+
+        }];
+
+
+
+        detalhes.pageSetup = {
+
+            paperSize: 9,
+
+            orientation: "landscape",
+
+            fitToPage: true,
+
+            fitToWidth: 1,
+
+            fitToHeight: 0,
+
+            margins: {
+
+                left: 0.35,
+
+                right: 0.35,
+
+                top: 0.45,
+
+                bottom: 0.45,
+
+                header: 0.25,
+
+                footer: 0.25
+
+            }
+
+        };
+
+        detalhes.headerFooter = {
+            oddHeader:
+                "&L&BSIGEL WMS&RDetalhamento das Conferências",
+            oddFooter:
+                `&L${dataInicio} até ${dataFim}&RPágina &P de &N`
+        };
+
+        detalhes.pageSetup.printArea =
+            `A1:G${detalhes.rowCount}`;
+
+        detalhes.properties.tabColor = {
+            argb:
+                TEMA.secundaria
+        };
+
+        // CONFIGURAÇÕES GERAIS
+        [resumo, detalhes]
+            .forEach(sheet => {
+                sheet.properties.defaultRowHeight = 22;
+                sheet.pageSetup.printArea =
+                    `A1:${sheet.lastColumn.letter}${sheet.rowCount}`;
+            });
+        workbook.views = [
+            {
+                activeTab: 0
+            }
+        ];
+
+        // EXPORTAÇÃO
+        const buffer =
+            await workbook.xlsx.writeBuffer();
+
+        const hoje =
+            new Date()
+                .toLocaleDateString("pt-BR")
+                .replace(/\//g, "-");
 
         saveAs(
-            new Blob([buffer]),
-            `Produtividade(${dataInicio}-${dataFim}).xlsx`
+            new Blob(
+                [
+                    buffer
+                ],
+                {
+                    type:
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                }
+            ),
+            `Produtividade_${hoje}.xlsx`
         );
     };
 
@@ -2235,7 +3369,7 @@ export default function Produtividade() {
                         borderRadius: 4,
                     },
                 }}
-                sx={{zoom: '0.9'}}
+                sx={{ zoom: '0.9' }}
             >
 
                 <DialogTitle>
@@ -2553,7 +3687,7 @@ export default function Produtividade() {
                         overflow: "hidden",
                     },
                 }}
-                sx={{zoom: '0.9'}}
+                sx={{ zoom: '0.9' }}
             >
 
                 <DialogTitle
