@@ -72,6 +72,35 @@ function AtualizarCean() {
         severity: "success"
     });
 
+    const SENHAS = [
+        "4Kq7Zp2M4vN1yX",
+        "Y3AhD8mQ1sJ6cV",
+        "F7KkR9uT3wB5yN",
+        "M2vH7pK9DdS4jW",
+        "L5vN1pK7DtS8v3W",
+        "W8nA4pQ6BfJ3r5K",
+        "K9xT4"
+    ];
+
+    const [senha, setSenha] = useState("");
+    const [autorizado, setAutorizado] = useState(false);
+
+    const validarSenha = () => {
+
+        if (SENHAS.includes(senha.trim())) {
+            setAutorizado(true);
+            return;
+        }
+
+        setSnackbar({
+            open: true,
+            message: "Senha inválida",
+            severity: "error"
+        });
+
+        setSenha("");
+    };
+
     // BUSCAR NOTAS
     const buscarNotas = async () => {
 
@@ -495,6 +524,83 @@ function AtualizarCean() {
         }
     };
 
+    if (!autorizado) {
+        return (
+            <Container
+                maxWidth="sm"
+                sx={{
+                    height: "100vh",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
+                }}
+            >
+                <Paper sx={{ p: 4, width: "100%", maxWidth: 420, bgcolor: 'background.card' }}>
+                    <Typography
+                        variant="h5"
+                        fontWeight="bold"
+                        mb={2}
+                    >
+                        Acesso Restrito
+                    </Typography>
+
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        mb={3}
+                    >
+                        Informe uma senha para acessar a correção de notas.
+                    </Typography>
+
+                    <TextField
+                        fullWidth
+                        label="Senha"
+                        type="password"
+                        value={senha}
+                        onChange={(e) => setSenha(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                validarSenha();
+                            }
+                        }}
+                        autoComplete="off"
+                        inputProps={{
+                            spellCheck: false,
+                            autoCorrect: "off",
+                            autoCapitalize: "off",
+                        }}
+                    />
+
+                    <Button
+                        fullWidth
+                        variant="contained"
+                        sx={{ mt: 2 }}
+                        onClick={validarSenha}
+                    >
+                        Entrar
+                    </Button>
+                </Paper>
+
+                <Snackbar
+                    open={snackbar.open}
+                    autoHideDuration={3000}
+                    onClose={() =>
+                        setSnackbar({
+                            ...snackbar,
+                            open: false
+                        })
+                    }
+                >
+                    <Alert
+                        severity={snackbar.severity}
+                        variant="filled"
+                    >
+                        {snackbar.message}
+                    </Alert>
+                </Snackbar>
+            </Container>
+        );
+    }
     return (
         <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "background.default" }}>
             {/* Header */}

@@ -51,6 +51,10 @@ function ReimpressaoCredenciais() {
         {
             senha: "L5vN1pK7DtS8v3W",
             nome: "Vinicius Pires"
+        },
+        {
+            senha: "W8nA4pQ6BfJ3r5K",
+            nome: "Matheus Lessa"
         }
     ];
 
