@@ -709,23 +709,19 @@ export default function Temporadas() {
                                                     flexDirection: "column",
                                                     alignItems: "center",
                                                     background: `
-            radial-gradient(circle at top,
-            ${cores[index]}22,
-            transparent 60%),
-            ${dark ? "#16181d" : "#fff"}
-        `,
-
+                                                    radial-gradient(circle at top,
+                                                    ${cores[index]}22,
+                                                    transparent 60%),
+                                                    ${dark ? "#16181d" : "#fff"}`,
                                                     border: `2px solid ${cores[index]}55`,
-
                                                     transition: ".25s",
-
                                                     "&:hover": {
                                                         transform: "translateY(-6px)",
                                                         boxShadow: 8,
                                                     },
+                                                    minWidth: '40vh'
                                                 }}
                                             >
-
                                                 {/* Rank */}
                                                 <Box
                                                     component="img"
