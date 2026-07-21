@@ -6,13 +6,14 @@ import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions,
     CircularProgress, Backdrop, IconButton, Tooltip, FormControl, InputLabel,
-    Select, MenuItem
+    Select, MenuItem, Stack
 } from "@mui/material";
 
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SyncIcon from '@mui/icons-material/Sync';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 //Icones caixa
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -932,6 +933,32 @@ function Conferencia() {
         }
     };
 
+    const itensNulos = itens.filter((item) => {
+        const erros = [];
+
+        const localizacao = String(item.localizacao ?? "").trim().toUpperCase();
+        const basico = String(item.basico ?? "").trim().toUpperCase();
+        const cean = String(item.codigo_barras ?? "").trim().toUpperCase();
+
+        if (localizacao === "" || localizacao === "SEM LOCALIZAÇÃO") {
+            erros.push("localização");
+        }
+
+        if (basico === "" || basico === "-") {
+            erros.push("basico");
+        }
+
+        if (cean === "" || cean === "SEM GTIN") {
+            erros.push("cean");
+        }
+
+        if (erros.length) {
+            console.log(item.id, erros);
+        }
+
+        return erros.length > 0;
+    });
+
     const registrarLog = async ({
         item = null,
         acao,
@@ -1104,7 +1131,6 @@ function Conferencia() {
 
                 const hoje = new Date().toISOString().slice(0, 19).replace("T", " ")
                 console.log("ENVIANDO PARA API A CAIXA: ", caixa.numero)
-                console.log("LOCALIZAÇÃO EM CONFERENCIA: ", item.localizacao)
                 console.log("LOCALIZAÇÃO EM CONFERENCIA: ", item.localizacao)
 
                 const response = await fetch(
@@ -2480,7 +2506,8 @@ function Conferencia() {
                     justifyContent: 'center',
                     fontSize: '0.7rem',
                     mt: 1,
-                    color: 'primary.main'
+                    color: 'primary.main',
+                    zoom: 0.9
                 }}
             >
                 {[
@@ -2524,15 +2551,15 @@ function Conferencia() {
             {/* Informações da nota e scanner */}
             <Box sx={{ mt: 1 }}>
                 {modo === "MULTIPLO" ? (
-                    <Box>
+                    <Box sx={{ zoom: 0.9 }}>
                         {notaInfo?.map((n, i) => (
-                            <Typography key={i} variant="h6">
+                            <Typography key={i} variant="h5">
                                 NF: {n.numero} | Fornecedor: {n.fornecedor}
                             </Typography>
                         ))}
                     </Box>
                 ) : (
-                    <Box>
+                    <Box sx={{ zoom: 0.9 }}>
                         <Typography variant="h6">
                             Nota: {notaInfo?.[0]?.numero}
                         </Typography>
@@ -2565,7 +2592,7 @@ function Conferencia() {
                         autoFocus
                         fullWidth
                         sx={{
-                            mb: 2, width: '100%', bgcolor: 'background.card',
+                            mb: 2, width: '100%', bgcolor: 'background.card', zoom: 0.9,
                             '& .MuiOutlinedInput-root': {
                                 '&:hover fieldset': {
                                     borderColor: 'var(--azul)',
@@ -2589,13 +2616,13 @@ function Conferencia() {
                             value={quantidadeInput}
                             onChange={(e) => setQuantidadeInput(e.target.value)}
                             inputRef={qtdRef}
-                            sx={{ ml: 2, mb: 2 }}
+                            sx={{ ml: 2, mb: 2, zoom: 0.9 }}
                         />
                     )}
                 </Box>
 
                 {/* Tabela de conferência + caixas*/}
-                <Box sx={{ display: 'flex', gap: 2 }}>
+                <Box sx={{ display: 'flex', gap: 2, zoom: 0.9 }}>
                     {/* Tabela de itens */}
                     <Box sx={{ flex: 2 }}>
                         {loading ?
@@ -2610,7 +2637,7 @@ function Conferencia() {
                                                 <TableCell sx={{ color: 'background.paper' }}>Localização</TableCell>
                                                 <TableCell sx={{ color: 'background.paper' }}>Código</TableCell>
                                                 <TableCell sx={{ color: 'background.paper' }}>Descrição</TableCell>
-                                                <TableCell sx={{ color: 'background.paper' }}>Código de Barras</TableCell>
+                                                <TableCell sx={{ color: 'background.paper', minWidth: '20vh' }}>Código de Barras</TableCell>
                                                 <TableCell sx={{ color: 'background.paper' }} align="right">Qtd (Conf./Nota)</TableCell>
                                             </TableRow>
                                         </TableHead>
@@ -2634,6 +2661,87 @@ function Conferencia() {
 
                     {/* Card de caixas */}
                     <Box sx={{ flex: 1 }}>
+                        {itensNulos.length > 0 && (
+                            <Card
+                                sx={{
+                                    position: "sticky",
+                                    top: 10,
+                                    zIndex: 999,
+                                    mb: 2,
+                                    p: 3,
+                                    borderRadius: 3,
+                                    bgcolor: "background.alerta",
+                                    border: "2px solid",
+                                    borderColor: "warning.main",
+                                    boxShadow: "0 8px 24px rgba(255,152,0,.25)"
+                                }}
+                            >
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 2
+                                    }}
+                                >
+                                    <Stack>
+                                        <WarningAmberIcon
+                                            sx={{
+                                                fontSize: 60,
+                                                color: "warning.main",
+                                                margin: 'auto'
+                                            }}
+                                        />
+
+                                        <Box flex={1}>
+                                            <Typography
+                                                variant="h6"
+                                                fontWeight="bold"
+                                            >
+                                                {itensNulos.length} {itensNulos.length === 1 ? "item possui" : "itens possuem"} informações pendentes
+                                            </Typography>
+
+                                            <Typography
+                                                variant="body1"
+                                                sx={{
+                                                    mt: 1,
+                                                    lineHeight: 1.2
+                                                }}
+                                            >
+                                                Antes de iniciar a conferência, verifique se todos os itens possuem
+                                                <strong> localização, código básico e código de barras</strong> cadastrados.
+                                                <br /><br />
+
+                                                O sistema utiliza exclusivamente as informações disponíveis no momento da
+                                                leitura do código de barras. Caso um item seja conferido sem localização,
+                                                ele será direcionado para uma caixa incorreta.
+                                                <br /><br />
+                                                
+                                                <strong>
+                                                    Atualizar a localização posteriormente não move automaticamente o item
+                                                    para a caixa correta.
+                                                </strong>
+                                            </Typography>
+
+                                            <Typography
+                                                variant="body2"
+                                                sx={{
+                                                    mt: 2,
+                                                    p: 1.5,
+                                                    borderRadius: 2,
+                                                    bgcolor: "warning.main",
+                                                    color: "warning.contrastText",
+                                                    fontWeight: "bold"
+                                                }}
+                                            >
+                                                Evite retrabalho. Alguns segundos verificando os cadastros antes da
+                                                primeira leitura economizam vários minutos de correções após o início da
+                                                conferência.
+                                            </Typography>
+                                        </Box>
+                                    </Stack>
+                                </Box>
+                            </Card>
+                        )}
                         <Card sx={{ p: 2, boxShadow: '0vh 0.1vh 0.5vh var(--sombra)', bgcolor: 'background.alerta' }}>
                             <Typography variant="h6">Caixas</Typography>
 
