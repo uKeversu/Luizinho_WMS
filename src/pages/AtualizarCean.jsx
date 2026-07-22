@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
     Container,
@@ -27,6 +27,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SyncIcon from '@mui/icons-material/Sync';
+import UploadFileIcon from "@mui/icons-material/UploadFile";
 
 function AtualizarCean() {
 
@@ -84,6 +85,9 @@ function AtualizarCean() {
 
     const [senha, setSenha] = useState("");
     const [autorizado, setAutorizado] = useState(false);
+
+    const inputArquivoRef = useRef(null);
+    const [loadingCorrespondencias, setLoadingCorrespondencias] = useState(false);
 
     const validarSenha = () => {
 
@@ -524,6 +528,89 @@ function AtualizarCean() {
         }
     };
 
+    const importarCorrespondencias = async (arquivo) => {
+
+        if (!notaSelecionada) {
+            setSnackbar({
+                open: true,
+                severity: "warning",
+                message: "Selecione uma nota primeiro."
+            });
+            return;
+        }
+
+        setLoadingCorrespondencias(true);
+
+        try {
+            // IMPORTA O TXT
+            const form = new FormData();
+
+            form.append("arquivo", arquivo);
+            form.append(
+                "cnpj_emitente",
+                notaSelecionada.cnpj_emitente
+            );
+
+            const responseImport = await fetch(
+                `${API}/api/correspondencias/importar`,
+                {
+                    method: "POST",
+                    body: form
+                }
+            );
+
+            const dataImport = await responseImport.json();
+
+            if (!responseImport.ok)
+                throw new Error(dataImport.erro);
+
+            // APLICA NA NOTA
+            const responseAplicar = await fetch(
+                `${API}/api/correspondencias/aplicar`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        nota_id: notaSelecionada.id
+                    })
+                }
+            );
+
+            const dataAplicar = await responseAplicar.json();
+
+            if (!responseAplicar.ok)
+                throw new Error(dataAplicar.erro);
+
+            // SINCRONIZA COM SSPLUS
+            await syncSSPlus();
+
+            // RECARREGA A TABELA
+            await buscarItens(notaSelecionada.id);
+
+            setSnackbar({
+                open: true,
+                severity: "success",
+                message:
+                    `${dataImport.importados} correspondências importadas • ${dataAplicar.atualizados} itens atualizados`
+            });
+
+            registrarLog({
+                acao: "Importou base de dados"
+            });
+
+        } catch (err) {
+            setSnackbar({
+                open: true,
+                severity: "error",
+                message: err.message
+            });
+        } finally {
+            setLoadingCorrespondencias(false);
+        }
+    };
+
     if (!autorizado) {
         return (
             <Container
@@ -601,8 +688,26 @@ function AtualizarCean() {
             </Container>
         );
     }
+    
     return (
         <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "background.default" }}>
+            <input
+                ref={inputArquivoRef}
+                type="file"
+                accept=".txt,.csv"
+                hidden
+                onChange={(e) => {
+
+                    if (!e.target.files?.length)
+                        return;
+
+                    importarCorrespondencias(e.target.files[0]);
+
+                    e.target.value = "";
+
+                }}
+            />
+
             {/* Header */}
             <Box
                 sx={{
@@ -643,6 +748,39 @@ function AtualizarCean() {
                         )}
                     </Box>
                     <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
+                        <Tooltip title="Importar base do fornecedor e aplicar automaticamente">
+                            <span>
+                                <Button
+                                    size="small"
+                                    disabled={!notaSelecionada || loadingCorrespondencias}
+                                    onClick={() => inputArquivoRef.current?.click()}
+                                    sx={{
+                                        color: "background.paper",
+                                        display: "flex",
+                                        gap: 0.5,
+                                        fontSize: "0.75rem",
+                                        minWidth: "auto",
+                                        padding: "4px 8px",
+                                        whiteSpace: "nowrap"
+                                    }}
+                                >
+                                    {loadingCorrespondencias ? (
+                                        <>
+                                            <CircularProgress
+                                                size={14}
+                                                sx={{ color: "background.paper" }}
+                                            />
+                                            Importando...
+                                        </>
+                                    ) : (
+                                        <>
+                                            Importar Base
+                                            <UploadFileIcon />
+                                        </>
+                                    )}
+                                </Button>
+                            </span>
+                        </Tooltip>
                         <Tooltip title="Buscar códigos e localizações do SS Plus">
                             <Button
                                 id="btnAtualizar" onClick={syncSSPlus}
