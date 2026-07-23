@@ -26,7 +26,7 @@ import {
     Dialog,
     DialogTitle,
     DialogContent,
-    DialogActions, 
+    DialogActions,
     Tooltip
 } from "@mui/material";
 
@@ -612,7 +612,7 @@ export default function DistribuicaoConferencia() {
         <Container
             maxWidth="100%"
             sx={{
-                mt: 4,
+                mt: 2,
                 bgcolor: "background.default"
             }}
         >
@@ -632,7 +632,8 @@ export default function DistribuicaoConferencia() {
                     p: 2,
                     bgcolor: "var(--azul)",
                     mb: 4,
-                    borderRadius: "2vh"
+                    borderRadius: "2vh",
+                    zoom: '0.9'
                 }}
             >
                 <Typography
@@ -649,42 +650,42 @@ export default function DistribuicaoConferencia() {
 
                 <Box>
                     <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'right'
+                        }}
+                    >
+
+                        <PersonIcon
                             sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'right'
+                                color: "background.paper",
+                                pr: 1
+                            }}
+                        />
+
+                        <Typography
+                            sx={{
+                                color: "background.paper",
+                                fontSize: '0.9rem'
                             }}
                         >
+                            {userInfo?.nome}
+                        </Typography>
 
-                            <PersonIcon
-                                sx={{
-                                    color: "background.paper",
-                                    pr: 1
-                                }}
-                            />
+                        {token && (
 
-                            <Typography
+                            <Button
+                                size="small"
+                                onClick={logout}
                                 sx={{
-                                    color: "background.paper",
-                                    fontSize: '0.9rem'
+                                    color: "background.paper"
                                 }}
                             >
-                                {userInfo?.nome}
-                            </Typography>
-
-                            {token && (
-
-                                <Button
-                                    size="small"
-                                    onClick={logout}
-                                    sx={{
-                                        color: "background.paper"
-                                    }}
-                                >
-                                    <LogoutIcon />
-                                </Button>
-                            )}
-                        </Box>
+                                <LogoutIcon />
+                            </Button>
+                        )}
+                    </Box>
 
                     <Box
                         sx={{
@@ -716,15 +717,15 @@ export default function DistribuicaoConferencia() {
                                 onClick={() =>
                                     navigate("/Dashboard")
                                 }
-                                 sx={{
-                                        color: "background.paper",
-                                        display: 'flex',
-                                        gap: 0.5,
-                                        fontSize: '0.75rem',
-                                        minWidth: 'auto',
-                                        padding: '4px 8px',
-                                        whiteSpace: 'nowrap'
-                                    }}
+                                sx={{
+                                    color: "background.paper",
+                                    display: 'flex',
+                                    gap: 0.5,
+                                    fontSize: '0.75rem',
+                                    minWidth: 'auto',
+                                    padding: '4px 8px',
+                                    whiteSpace: 'nowrap'
+                                }}
                             >
                                 VOLTAR
                                 <ArrowBackIcon />
@@ -738,20 +739,21 @@ export default function DistribuicaoConferencia() {
             <Grid
                 container
                 spacing={2}
-                mb={3}
+                mb={2}
             >
 
                 <Grid item xs={12} md={3}>
-                    <Card sx={{ bgcolor: 'background.card' }}>
-                        <CardContent>
+                    <Card sx={{ bgcolor: 'background.card', width: { xs: 'calc(50% - 8px)', md: '140px' }, height: '100%' }}>
+                            <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center' }}>
                             <Typography
                                 variant="h4"
                                 color="primary"
+                                fontWeight="bold"
                             >
                                 {todasNotas.length}
                             </Typography>
 
-                            <Typography>
+                            <Typography variant="caption" color="text.secondary" display="block" noWrap>
                                 Notas Pendentes
                             </Typography>
                         </CardContent>
@@ -759,16 +761,17 @@ export default function DistribuicaoConferencia() {
                 </Grid>
 
                 <Grid item xs={12} md={3}>
-                    <Card sx={{ bgcolor: 'background.card' }}>
-                        <CardContent>
+                    <Card sx={{ bgcolor: 'background.card', width: { xs: 'calc(50% - 8px)', md: '140px' }, height: '100%' }}>
+                            <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center' }}>
                             <Typography
                                 variant="h4"
                                 color="success.main"
+                                fontWeight="bold"
                             >
                                 {notasAtribuidas}
                             </Typography>
 
-                            <Typography>
+                            <Typography variant="caption" color="text.secondary" display="block" noWrap>
                                 Atribuídas
                             </Typography>
                         </CardContent>
@@ -776,16 +779,17 @@ export default function DistribuicaoConferencia() {
                 </Grid>
 
                 <Grid item xs={12} md={3}>
-                    <Card sx={{ bgcolor: 'background.card' }}>
-                        <CardContent>
+                    <Card sx={{ bgcolor: 'background.card', width: { xs: 'calc(50% - 8px)', md: '140px' }, height: '100%' }}>
+                            <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center' }}>
                             <Typography
                                 variant="h4"
                                 color="warning.main"
+                                fontWeight="bold"
                             >
                                 {notasSemAtribuicao}
                             </Typography>
 
-                            <Typography>
+                            <Typography variant="caption" color="text.secondary" display="block" noWrap>
                                 Sem Atribuição
                             </Typography>
                         </CardContent>
@@ -793,16 +797,17 @@ export default function DistribuicaoConferencia() {
                 </Grid>
 
                 <Grid item xs={12} md={3}>
-                    <Card sx={{ bgcolor: 'background.card' }}>
-                        <CardContent>
+                    <Card sx={{ bgcolor: 'background.card', width: { xs: 'calc(50% - 8px)', md: '140px' }, height: '100%' }}>
+                            <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center' }}>
                             <Typography
                                 variant="h4"
                                 color="secondary"
+                                fontWeight="bold"
                             >
                                 {conferentesComNotas}
                             </Typography>
 
-                            <Typography>
+                            <Typography variant="caption" color="text.secondary" display="block" noWrap>
                                 Conferentes Ativos
                             </Typography>
                         </CardContent>
@@ -810,7 +815,7 @@ export default function DistribuicaoConferencia() {
                 </Grid>
             </Grid>
 
-            <Card sx={{ mb: 3, bgcolor: "background.card" }}>
+            <Card sx={{ mb: 3, bgcolor: "background.card", zoom: '0.8' }}>
                 <CardContent>
                     <Grid container spacing={2} alignItems="center">
 
@@ -823,6 +828,12 @@ export default function DistribuicaoConferencia() {
                                 onChange={(e) => {
                                     setBusca(e.target.value);
                                     setPagina(1);
+                                }}
+                                autoComplete="off"
+                                inputProps={{
+                                    spellCheck: false,
+                                    autoCorrect: "off",
+                                    autoCapitalize: "off",
                                 }}
                             />
                         </Grid>
@@ -932,13 +943,13 @@ export default function DistribuicaoConferencia() {
                     <Box
                         display="flex"
                         justifyContent="center"
-                        mt={3} mb={3}
+                        mt={0} mb={3}
                     >
                         <Pagination
                             page={pagina}
                             count={totalPaginas}
                             color="primary"
-                            size="large"
+                            size="small"
                             onChange={(_, value) =>
                                 setPagina(value)
                             }
@@ -952,7 +963,8 @@ export default function DistribuicaoConferencia() {
                     <Card
                         sx={{
                             bgcolor: "background.card",
-                            mb: 3
+                            mb: 3,
+                            zoom: '0.9'
                         }}
                     >
                         <CardContent>
@@ -1191,7 +1203,7 @@ export default function DistribuicaoConferencia() {
                             page={pagina}
                             count={totalPaginas}
                             color="primary"
-                            size="large"
+                            size="small"
                             onChange={(_, value) =>
                                 setPagina(value)
                             }
@@ -1205,7 +1217,7 @@ export default function DistribuicaoConferencia() {
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 4 }}>
-                    <Card sx={{ bgcolor: 'background.card' }}>
+                    <Card sx={{ bgcolor: 'background.card', zoom: '0.8' }}>
                         <CardContent>
 
                             <Typography
@@ -1231,7 +1243,13 @@ export default function DistribuicaoConferencia() {
                                         e.target.value
                                     )
                                 }
-                                sx={{ mb: 2 }} />
+                                sx={{ mb: 2 }}
+                                autoComplete="off"
+                                inputProps={{
+                                    spellCheck: false,
+                                    autoCorrect: "off",
+                                    autoCapitalize: "off",
+                                }} />
 
                             <FormGroup
                                 sx={{
@@ -1317,7 +1335,7 @@ export default function DistribuicaoConferencia() {
 
                         </CardContent>
                     </Card>
-                    <Card sx={{ mt: 3, bgcolor: 'background.card' }}>
+                    <Card sx={{ mt: 3, bgcolor: 'background.card', zoom: '0.9' }}>
                         <CardContent>
 
                             <Typography
@@ -1435,6 +1453,7 @@ export default function DistribuicaoConferencia() {
                         }
                     }
                 }}
+                sx={{ zoom: '0.9' }}
             >
 
                 <DialogTitle>
@@ -1502,6 +1521,7 @@ export default function DistribuicaoConferencia() {
                                                 color={prioridadeColor(
                                                     nota.prioridade
                                                 )}
+                                                sx={{ color: 'white' }}
                                             />
 
                                             <Button
@@ -1550,7 +1570,8 @@ export default function DistribuicaoConferencia() {
                             color: "text.primary",
                         }
                     }
-                }}>
+                }}
+                sx={{ zoom: '0.9' }}>
                 <DialogTitle>
                     Itens da NF {notaSelecionada?.numero}
                 </DialogTitle>
@@ -1568,6 +1589,12 @@ export default function DistribuicaoConferencia() {
                                 borderColor: 'primary.main',
                             }
                         }
+                    }}
+                    autoComplete="off"
+                    inputProps={{
+                        spellCheck: false,
+                        autoCorrect: "off",
+                        autoCapitalize: "off",
                     }}
                     value={buscaItem}
                     onChange={(e) => setBuscaItem(e.target.value)}
@@ -1713,6 +1740,17 @@ export default function DistribuicaoConferencia() {
                 <Alert
                     severity={snackbar.severity}
                     variant="filled"
+                    sx={{
+                        color: 'primary.branco',
+
+                        "& .MuiAlert-icon": {
+                            color: 'primary.branco'
+                        },
+
+                        "& .MuiAlert-action": {
+                            color: 'primary.branco'
+                        }
+                    }}
                 >
                     {snackbar.message}
                 </Alert>

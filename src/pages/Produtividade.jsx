@@ -2009,16 +2009,11 @@ export default function Produtividade() {
                                                     top: -80,
                                                     left: "50%",
                                                     transform: "translateX(-50%)",
-
                                                     width: 180,
                                                     height: 180,
-
                                                     borderRadius: "50%",
-
                                                     background: `${nivel.cor}55`,
-
                                                     filter: "blur(70px)",
-
                                                     zIndex: 1,
                                                 }}
                                             />
@@ -2027,19 +2022,12 @@ export default function Produtividade() {
                                             <Box
                                                 sx={{
                                                     position: "absolute",
-
                                                     top: -70,
-
                                                     left: "50%",
-
                                                     transform: "translateX(-50%)",
-
                                                     zIndex: 20,
-
                                                     display: "flex",
-
                                                     flexDirection: "column",
-
                                                     alignItems: "center",
                                                 }}
                                             >
@@ -2057,12 +2045,9 @@ export default function Produtividade() {
                                                     }}
 
                                                     style={{
-
                                                         width: 140,
                                                         height: 140,
-
                                                         objectFit: "contain",
-
                                                         filter: `
                                                     drop-shadow(0 0 12px ${nivel.cor}
                                                     drop-shadow(0 0 30px ${nivel.cor})
@@ -2073,19 +2058,14 @@ export default function Produtividade() {
                                                 <Typography
                                                     sx={{
                                                         mt: -1,
-
                                                         fontWeight: 900,
-
                                                         letterSpacing: 2,
-
                                                         fontSize: 18,
-
                                                         color: nivel.cor,
-
                                                         textShadow: `
-                                                    0 0 10px ${nivel.cor},
-                                                    0 0 20px ${nivel.cor}
-                                                `,
+                                                            0 0 10px ${nivel.cor},
+                                                            0 0 20px ${nivel.cor}
+                                                        `,
                                                     }}
                                                 >
                                                     {nivel.nome}

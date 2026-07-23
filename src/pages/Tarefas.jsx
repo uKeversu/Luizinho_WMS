@@ -734,7 +734,8 @@ export default function Tarefas() {
                         p: 2,
                         bgcolor: 'var(--azul)',
                         mb: 2,
-                        borderRadius: '2vh'
+                        borderRadius: '2vh',
+                        zoom: '0.9'
                     }}
                 >
                     <Typography
