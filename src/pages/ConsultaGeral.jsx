@@ -168,6 +168,22 @@ function ConsultaGeral() {
         return new Date(data).toLocaleString("pt-BR");
     };
 
+    const formatarDataLog = (data) => {
+        if (!data) return "";
+
+        const date = new Date(data);
+        date.setHours(date.getHours() - 3);
+
+        return date.toLocaleString("pt-BR", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+        });
+    };
+
     // STATUS
     const getDescricaoStatus = (status) => {
 
@@ -687,7 +703,7 @@ function ConsultaGeral() {
                                     />
                                 )
                             }}
-                            sx={{minWidth: "80vh"}}
+                            sx={{ minWidth: "80vh" }}
                         />
 
                     </Grid>
@@ -1137,7 +1153,7 @@ function ConsultaGeral() {
                                                                                                                 </TableCell>
 
                                                                                                                 <TableCell>
-                                                                                                                    {log ? formatarData(log.data_hora) : "-"}
+                                                                                                                    {log ? formatarDataLog(log.data_hora) : "-"}
                                                                                                                 </TableCell>
 
                                                                                                                 <TableCell>
