@@ -406,7 +406,8 @@ function ConsultaGuarda() {
                     p: 2,
                     bgcolor: 'var(--azul)',
                     mb: 4,
-                    borderRadius: '2vh'
+                    borderRadius: '2vh',
+                    zoom: '0.9'
                 }}
             >
 
@@ -509,7 +510,8 @@ function ConsultaGuarda() {
                     bgcolor: 'background.alerta',
                     border: dark
                         ? '1px solid rgba(255,255,255,0.08)'
-                        : '1px solid rgba(0,0,0,0.08)'
+                        : '1px solid rgba(0,0,0,0.08)',
+                        zoom: '0.9'
                 }}
             >
 
@@ -667,7 +669,8 @@ function ConsultaGuarda() {
                         <Card
                             sx={{
                                 borderRadius: '2vh',
-                                bgcolor: 'background.alerta'
+                                bgcolor: 'background.alerta',
+                                zoom: '0.9'
                             }}
                         >
 
@@ -715,7 +718,8 @@ function ConsultaGuarda() {
                         <Card
                             sx={{
                                 borderRadius: '2vh',
-                                bgcolor: 'background.alerta'
+                                bgcolor: 'background.alerta',
+                                zoom: '0.9'
                             }}
                         >
 
@@ -768,7 +772,8 @@ function ConsultaGuarda() {
                         <Card
                             sx={{
                                 borderRadius: '2vh',
-                                bgcolor: 'background.alerta'
+                                bgcolor: 'background.alerta',
+                                zoom: '0.9'
                             }}
                         >
 
@@ -823,7 +828,8 @@ function ConsultaGuarda() {
                         <Card
                             sx={{
                                 borderRadius: '2vh',
-                                bgcolor: 'background.alerta'
+                                bgcolor: 'background.alerta',
+                                zoom: '0.9'
                             }}
                         >
 
@@ -878,7 +884,8 @@ function ConsultaGuarda() {
                         <Card
                             sx={{
                                 borderRadius: '2vh',
-                                bgcolor: 'background.alerta'
+                                bgcolor: 'background.alerta',
+                                zoom: '0.9'
                             }}
                         >
 
@@ -891,13 +898,10 @@ function ConsultaGuarda() {
                                         gap: 2
                                     }}
                                 >
-
                                     <BadgeIcon
                                         color="error"
                                     />
-
                                     <Box>
-
                                         <Typography
                                             variant="h5"
                                             fontWeight="bold"
@@ -910,21 +914,13 @@ function ConsultaGuarda() {
                                         >
                                             Erros encontrados
                                         </Typography>
-
                                     </Box>
-
                                 </Box>
-
                             </CardContent>
-
                         </Card>
-
                     </Grid>
-
                 </Grid>
-
             )}
-
 
             {/* TABELA */}
             {!loading && (
@@ -937,9 +933,7 @@ function ConsultaGuarda() {
                         zoom: '0.9'
                     }}
                 >
-
                     <CardContent sx={{ p: 0 }}>
-
                         <Box
                             sx={{
                                 p: 2,
@@ -949,14 +943,12 @@ function ConsultaGuarda() {
                                         : '1px solid rgba(0,0,0,0.08)'
                             }}
                         >
-
                             <Typography
                                 variant="h6"
                                 fontWeight="bold"
                             >
                                 Histórico de Guardas
                             </Typography>
-
                         </Box>
 
                         <Table
@@ -1217,18 +1209,16 @@ function ConsultaGuarda() {
                 erros.length > 0
                 &&
                 (
-
                     <Card
                         sx={{
                             mt: 4,
                             borderRadius: '2vh',
                             overflow: 'hidden',
-                            bgcolor: 'background.alerta'
+                            bgcolor: 'background.alerta',
+                            zoom: '0.9'
                         }}
                     >
-
                         <CardContent sx={{ p: 0 }}>
-
                             <Box
                                 sx={{
                                     p: 2,
@@ -1238,7 +1228,6 @@ function ConsultaGuarda() {
                                             : '1px solid rgba(0,0,0,0.08)'
                                 }}
                             >
-
                                 <Typography
                                     variant="h6"
                                     fontWeight="bold"
@@ -1255,11 +1244,8 @@ function ConsultaGuarda() {
                                     width: '100%'
                                 }}
                             >
-
                                 <TableHead>
-
                                     <TableRow>
-
                                         <TableCell sx={{ width: '18%' }}>
                                             Produto
                                         </TableCell>
@@ -1371,25 +1357,17 @@ function ConsultaGuarda() {
                                                                 )
                                                             }
                                                         </Typography>
-
                                                     </Box>
-
                                                 </TableCell>
-
                                             </TableRow>
                                         ))
                                     }
-
                                 </TableBody>
-
                             </Table>
-
                         </CardContent>
-
                     </Card>
                 )
             }
-
         </Container>
     );
 }

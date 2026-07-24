@@ -618,7 +618,7 @@ function ConsultaGeral() {
                             }
                             sx={{
                                 color: "background.paper",
-                                gap: 1
+                                gap: 1, mr: 2
                             }}
                         >
                             Voltar
@@ -638,7 +638,8 @@ function ConsultaGeral() {
                     bgcolor: 'background.alerta',
                     border: dark
                         ? '1px solid rgba(255,255,255,0.08)'
-                        : '1px solid rgba(0,0,0,0.08)'
+                        : '1px solid rgba(0,0,0,0.08)',
+                    zoom: '0.9'
                 }}
             >
 
@@ -686,6 +687,7 @@ function ConsultaGeral() {
                                     />
                                 )
                             }}
+                            sx={{minWidth: "80vh"}}
                         />
 
                     </Grid>

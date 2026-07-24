@@ -1595,12 +1595,13 @@ function Conferencia() {
             );
 
             // Código longo digitado lentamente
-            if (codigo.length >= 8 && duracao > 1000) {
+            if (codigo.length >= 8 && duracao > 1500) {
 
                 setCodigoPendente(codigo);
 
                 registrarLog({
-                    acao: "Tentativa de digitação de código de barras"
+                    acao: "Tentativa de digitação de código de barras",
+                    observacao: `Código digitado: ${codigo}`
                 });
 
                 setSnackbar({
@@ -1610,11 +1611,8 @@ function Conferencia() {
                 });
 
                 setModalAutorizacao(true);
-
                 setInicioLeitura(null);
-
                 e.preventDefault();
-
                 return;
             }
 
@@ -2715,7 +2713,7 @@ function Conferencia() {
                                                 leitura do código de barras. Caso um item seja conferido sem localização,
                                                 ele será direcionado para uma caixa incorreta.
                                                 <br /><br />
-                                                
+
                                                 <strong>
                                                     Atualizar a localização posteriormente não move automaticamente o item
                                                     para a caixa correta.
