@@ -86,6 +86,19 @@ export const EFEITOS = {
 
     },
 
+    "Caravela Cruzmaltina": {
+        background: "linear-gradient(135deg,#050505,#111827,#050505)",
+        cardGlow:
+            "0 0 25px #ffffff, 0 0 50px rgba(255,255,255,.25)",
+        nomeGlow:
+            "0 0 18px #ffffff, 0 0 30px rgba(255,255,255,.35)",
+        accent: "#ffffff",
+        overlay:
+            "linear-gradient(135deg, transparent 35%, rgba(255,255,255,.12) 45%, transparent 55%), radial-gradient(circle at 50% 70%, rgba(255,255,255,.15), transparent 65%)",
+        animation: "caravela-animation"
+
+    },
+
     "Despertar do Leviatã": {
         background: "linear-gradient(135deg,#00110b,#02281d)",
         cardGlow: "0 0 30px #00ff99",

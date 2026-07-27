@@ -143,10 +143,9 @@ export default function PainelGames() {
 
                 texto:
                     `Temporada ${response.data.temporada_finalizada}
-encerrada com sucesso.
-Nova temporada criada:
-${response.data.nova_temporada}`
-
+                    encerrada com sucesso.
+                    Nova temporada criada:
+                    ${response.data.nova_temporada}`
             });
 
             setSnackOpen(true);
@@ -246,908 +245,893 @@ ${response.data.nova_temporada}`
     }
 
     return (
-
         <Container
-            maxWidth="xl"
+            maxWidth={false}
             sx={{
-                py: 2
+                py: 3,
+                display: "flex",
+                justifyContent: "center",
             }}
         >
 
-            {/* ================= BANNER ================= */}
-
-            <Paper
-                elevation={0}
+            <Stack
+                spacing={2.5}
                 sx={{
-                    mb: 2,
-                    borderRadius: 4,
-                    overflow: "hidden",
-                    border: "1px solid rgba(255,255,255,.08)",
-                    height: 220
+                    width: "100%",
+                    maxWidth: 920,
                 }}
             >
-                <Box
-                    component="img"
-                    src="/banner_seasons/banner_temporada_genesis.png"
+
+                {/* ==================== BANNER ==================== */}
+
+                <Paper
+                    elevation={0}
                     sx={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
+                        overflow: "hidden",
+                        borderRadius: 4,
+                        border: "1px solid rgba(255,255,255,.08)",
+                        transition: ".25s",
+
+                        "&:hover": {
+                            transform: "translateY(-2px)",
+                            boxShadow: 6,
+                        }
                     }}
-                />
-            </Paper>
-
-            <Grid
-                container
-                spacing={2}
-                alignItems="stretch"
-            >
-                {/* ================= INFORMAÇÕES DA TEMPORADA ================= */}
-
-                <Grid
-                    item
-                    xs={12}
-                    md={4}
-                    display="flex"
                 >
 
-                    {temporadaAtual ? (
+                    <Box
+                        component="img"
+                        src="/banner_seasons/banner_temporada_genesis.png"
+                        sx={{
+                            width: "100%",
+                            height: 240,
+                            objectFit: "cover",
+                            display: "block",
+                        }}
+                    />
+
+                </Paper>
+
+                {/* ==================== TEMPORADA ==================== */}
+
+                <Paper
+                    elevation={0}
+                    sx={{
+                        p: 1,
+                        borderRadius: 4,
+                        border: "1px solid rgba(255,255,255,.08)",
+                        bgcolor: "background.card",
+                        transition: ".25s",
+
+                        "&:hover": {
+                            transform: "translateY(-2px)",
+                            boxShadow: 6,
+                        }
+                    }}
+                >
+
+                    <Box
+                        display="flex"
+                        justifyContent="space-between"
+                        alignItems="center"
+                        flexWrap="wrap"
+                        gap={2}
+                        sx={{px:5}}
+                    >
+
+                        {/* Lado esquerdo */}
+
+                        <Box>
+
+                            <Typography
+                                variant="caption"
+                                color="success.main"
+                                fontWeight={700}
+                                letterSpacing={1}
+                            >
+                                TEMPORADA ATIVA
+                            </Typography>
+
+                            <Typography
+                                variant="h4"
+                                fontWeight={900}
+                            >
+                                {temporadaAtual?.nome || "--"}
+                            </Typography>
+
+                        </Box>
+
+                        {/* Dias restantes */}
+
+                        <Chip
+                            color="success"
+                            icon={<Timer />}
+                            label={`${temporadaAtual?.dias_restantes ?? 0} dias restantes`}
+                            sx={{
+                                fontWeight: 700,
+                                color: "#FFF",
+                                px: 1
+                            }}
+                        />
+
+                    </Box>
+
+                    <Box
+                        sx={{
+                            mt: 3,
+                            display: "grid",
+                            gridTemplateColumns: {
+                                xs: "1fr",
+                                sm: "1fr 1fr"
+                            },
+                            gap: 2
+                        }}
+                    >
+
+                        {/* Data início */}
 
                         <Paper
                             elevation={0}
                             sx={{
                                 p: 2,
-                                height: "100%",
-                                width: "100%",
-                                borderRadius: 5,
-                                bgcolor: "background.card",
-                                border: "1px solid rgba(255,255,255,.08)"
+                                borderRadius: 3,
+                                bgcolor: "background.default",
                             }}
                         >
 
                             <Box
                                 display="flex"
-                                justifyContent="space-between"
                                 alignItems="center"
-                                mb={4}
+                                gap={1.5}
                             >
+
+                                <CalendarMonth color="success" />
 
                                 <Box>
 
                                     <Typography
-                                        color="warning.main"
-                                        fontWeight="bold"
-                                        sx={{
-                                            letterSpacing: 2
-                                        }}
+                                        variant="caption"
+                                        color="text.secondary"
                                     >
-                                        TEMPORADA ATIVA
+                                        Início
                                     </Typography>
 
-                                    <Typography
-                                        variant="h4"
-                                        fontWeight={900}
-                                    >
-                                        {temporadaAtual.nome}
+                                    <Typography fontWeight={700}>
+                                        {temporadaAtual
+                                            ? new Date(
+                                                temporadaAtual.data_inicio
+                                            ).toLocaleDateString("pt-BR")
+                                            : "--"}
                                     </Typography>
 
                                 </Box>
 
-                                <Chip
-                                    icon={<Timer />}
-                                    label={`${temporadaAtual.dias_restantes} dias restantes`}
-                                    color="success"
-                                    sx={{
-                                        color: "#FFF",
-                                        px: 1,
-                                        ml: 2,
-                                        fontWeight: "bold"
-                                    }}
-                                />
-
                             </Box>
-
-                            <Grid
-                                container
-                                spacing={3}
-                            >
-
-                                <Grid
-                                    item
-                                    xs={12}
-                                    md={4}
-                                >
-
-                                    <Paper
-                                        elevation={0}
-                                        sx={{
-                                            p: 3,
-                                            borderRadius: 4,
-                                            bgcolor: "background.default",
-                                            textAlign: "center"
-                                        }}
-                                    >
-
-                                        <CalendarMonth
-                                            color="success"
-                                            sx={{
-                                                fontSize: 42,
-                                                mb: 1
-                                            }}
-                                        />
-
-                                        <Typography
-                                            color="text.secondary"
-                                        >
-                                            Início
-                                        </Typography>
-
-                                        <Typography
-                                            variant="subtitle1"
-                                            fontWeight="bold"
-                                        >
-                                            {new Date(
-                                                temporadaAtual.data_inicio
-                                            ).toLocaleDateString("pt-BR")}
-                                        </Typography>
-
-                                    </Paper>
-
-                                </Grid>
-
-                                <Grid
-                                    item
-                                    xs={12}
-                                    md={4}
-                                >
-
-                                    <Paper
-                                        elevation={0}
-                                        sx={{
-                                            p: 3,
-                                            borderRadius: 4,
-                                            bgcolor: "background.default",
-                                            textAlign: "center"
-                                        }}
-                                    >
-
-                                        <Flag
-                                            color="error"
-                                            sx={{
-                                                fontSize: 42,
-                                                mb: 1
-                                            }}
-                                        />
-
-                                        <Typography
-                                            color="text.secondary"
-                                        >
-                                            Encerramento
-                                        </Typography>
-
-                                        <Typography
-                                            variant="subtitle1"
-                                            fontWeight="bold"
-                                        >
-                                            {new Date(
-                                                temporadaAtual.data_fim
-                                            ).toLocaleDateString("pt-BR")}
-                                        </Typography>
-
-                                    </Paper>
-
-                                </Grid>
-
-                            </Grid>
 
                         </Paper>
 
-                    ) : (
+                        {/* Data fim */}
 
-                        <Alert severity="warning">
+                        <Paper
+                            elevation={0}
+                            sx={{
+                                p: 2,
+                                borderRadius: 3,
+                                bgcolor: "background.default",
+                            }}
+                        >
 
-                            Nenhuma temporada ativa.
+                            <Box
+                                display="flex"
+                                alignItems="center"
+                                gap={1.5}
+                            >
 
-                        </Alert>
+                                <Flag color="error" />
 
-                    )}
+                                <Box>
 
+                                    <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                    >
+                                        Encerramento
+                                    </Typography>
 
+                                    <Typography fontWeight={700}>
+                                        {temporadaAtual
+                                            ? new Date(
+                                                temporadaAtual.data_fim
+                                            ).toLocaleDateString("pt-BR")
+                                            : "--"}
+                                    </Typography>
 
-                </Grid>
-                {/* SALVAR RANKING */}
+                                </Box>
 
-                <Grid
-                    item
-                    xs={12}
-                    md={4}
-                    display="flex"
+                            </Box>
+
+                        </Paper>
+
+                    </Box>
+
+                </Paper>
+                {/* ==================== AÇÕES ==================== */}
+
+                <Box
+                    sx={{
+                        display: "grid",
+                        gridTemplateColumns: {
+                            xs: "1fr",
+                            md: "repeat(3, 1fr)"
+                        },
+                        gap: 2
+                    }}
                 >
+
+                    {/* ================= SALVAR ================= */}
 
                     <Paper
                         elevation={0}
                         sx={{
-                            p: 2,
-                            height: "100%",
-                            width: "100%",
-                            borderRadius: 5,
+                            p: 2.5,
+                            borderRadius: 4,
+                            border: "1px solid rgba(255,255,255,.08)",
                             bgcolor: "background.card",
-                            border: "1px solid rgba(255,255,255,.08)"
+                            display: "flex",
+                            flexDirection: "column",
+                            transition: ".25s",
+
+                            "&:hover": {
+                                transform: "translateY(-3px)",
+                                boxShadow: 6,
+                            }
                         }}
                     >
 
                         <Save
                             sx={{
-                                fontSize: 28,
                                 color: "#ff9800",
-                                mb: 3
+                                fontSize: 32,
+                                mb: 2
                             }}
                         />
 
                         <Typography
-                            variant="subtitle1"
+                            variant="h6"
                             fontWeight={800}
                         >
-
                             Salvar Ranking
-
                         </Typography>
 
                         <Typography
                             variant="body2"
                             color="text.secondary"
-                            mt={1}
-                            mb={4}
+                            sx={{
+                                mt: 1,
+                                mb: 3,
+                                flexGrow: 1
+                            }}
                         >
-
-                            Salva a classificação atual sem finalizar a temporada.
-
+                            Salva um snapshot da classificação atual.
                         </Typography>
 
                         <Button
                             fullWidth
-                            variant="outlined"
                             color="warning"
+                            variant="outlined"
                             startIcon={<Save />}
-                            disabled={loading}
                             onClick={salvarRanking}
+                            disabled={loading}
+                            sx={{
+                                borderRadius: 2,
+                                fontWeight: 700,
+                                textTransform: "none"
+                            }}
                         >
-
-                            Salvar
-
+                            Salvar Ranking
                         </Button>
 
                     </Paper>
 
-                </Grid>
-
-                {/* DISTRIBUIR */}
-
-                <Grid
-                    item
-                    xs={12}
-                    md={4}
-                    display="flex"
-                >
+                    {/* ================= DISTRIBUIR ================= */}
 
                     <Paper
                         elevation={0}
                         sx={{
-                            p: 2,
-                            height: "100%",
-                            width: "100%",
-                            borderRadius: 5,
+                            p: 2.5,
+                            borderRadius: 4,
+                            border: "1px solid rgba(255,255,255,.08)",
                             bgcolor: "background.card",
-                            border: "1px solid rgba(255,255,255,.08)"
+                            display: "flex",
+                            flexDirection: "column",
+                            transition: ".25s",
+
+                            "&:hover": {
+                                transform: "translateY(-3px)",
+                                boxShadow: 6,
+                            }
                         }}
                     >
 
                         <CardGiftcard
                             sx={{
-                                fontSize: 28,
-                                color: "#43a047",
-                                mb: 3
+                                color: "#4CAF50",
+                                fontSize: 32,
+                                mb: 2
                             }}
                         />
 
                         <Typography
-                            variant="subtitle1"
+                            variant="h6"
                             fontWeight={800}
                         >
-
-                            Distribuir Premiação
-
+                            Premiar jogadores
                         </Typography>
 
                         <Typography
                             variant="body2"
                             color="text.secondary"
-                            mt={1}
-                            mb={4}
+                            sx={{
+                                mt: 1,
+                                mb: 3,
+                                flexGrow: 1
+                            }}
                         >
-
-                            Entrega imediatamente as SigelCoins aos jogadores.
-
+                            Envia automaticamente as SigelCoins para os jogadores.
                         </Typography>
 
                         <Button
                             fullWidth
-                            variant="outlined"
                             color="success"
+                            variant="outlined"
                             startIcon={<CardGiftcard />}
-                            disabled={loading}
                             onClick={distribuirPremiacao}
+                            disabled={loading}
+                            sx={{
+                                borderRadius: 2,
+                                fontWeight: 700,
+                                textTransform: "none"
+                            }}
                         >
-
                             Distribuir
-
                         </Button>
 
                     </Paper>
 
-                </Grid>
-                {/* ================= AÇÃO PRINCIPAL ================= */}
+                    {/* ================= FINALIZAR ================= */}
 
-                <Paper
-                    elevation={0}
-                    fullWidth
+                    <Paper
+                        elevation={0}
+                        sx={{
+                            p: 2.5,
+                            borderRadius: 4,
+                            border: "1px solid rgba(255,255,255,.08)",
+                            bgcolor: "background.card",
+                            display: "flex",
+                            flexDirection: "column",
+                            transition: ".25s",
+
+                            "&:hover": {
+                                transform: "translateY(-3px)",
+                                boxShadow: 6,
+                            }
+                        }}
+                    >
+
+                        <Celebration
+                            sx={{
+                                color: "#f44336",
+                                fontSize: 32,
+                                mb: 2
+                            }}
+                        />
+
+                        <Typography
+                            variant="h6"
+                            fontWeight={800}
+                        >
+                            Finalizar Temporada
+                        </Typography>
+
+                        <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{
+                                mt: 1,
+                                mb: 3,
+                                flexGrow: 1
+                            }}
+                        >
+                            Salva o ranking final, distribui as recompensas e inicia automaticamente a próxima temporada.
+                        </Typography>
+
+                        <Button
+                            fullWidth
+                            color="error"
+                            variant="outlined"
+                            startIcon={<Celebration />}
+                            onClick={() => setDialogFinalizar(true)}
+                            disabled={loading}
+                            sx={{
+                                borderRadius: 2,
+                                fontWeight: 700,
+                                textTransform: "none"
+                            }}
+                        >
+                            Finalizar
+                        </Button>
+
+                    </Paper>
+
+                </Box>
+
+                {/* ==================== ACESSOS RÁPIDOS ==================== */}
+
+                <Box
                     sx={{
-                        p: 2,
-                        borderRadius: 5,
-                        height: "100%",
-                        width: "100%",
-                        display: "flex",
-                        flexDirection: "column",
-                        bgcolor: "background.card",
-                        border: "1px solid rgba(255,255,255,.08)"
+                        display: "grid",
+                        gridTemplateColumns: {
+                            xs: "1fr",
+                            md: "repeat(3, 1fr)"
+                        },
+                        gap: 2
                     }}
                 >
 
-                    <Typography
-                        variant="h6"
-                        fontWeight={900}
-                    >
-                        Finalizar Temporada
-                    </Typography>
+                    {/* HISTÓRICO */}
 
-                    <Typography
-                        color="text.secondary"
-                        mt={2}
-                    >
-
-                        Salva automaticamente o ranking definitivo,
-                        distribui as SigelCoins, encerra a temporada
-                        atual e cria a próxima temporada.
-
-                    </Typography>
-
-                    <Box flexGrow={1} />
-
-                    <Button
-                        fullWidth
-                        size="large"
-                        variant="outlined"
-                        startIcon={<Celebration />}
-                        onClick={() =>
-                            setDialogFinalizar(true)
-                        }
-                        disabled={loading}
+                    <Paper
+                        elevation={0}
+                        onClick={() => navigate("/Temporadas")}
                         sx={{
-                            mt: 4,
-                            py: 1.7,
-                            fontWeight: "bold"
-                        }}
-                    >
-
-                        FINALIZAR TEMPORADA
-
-                    </Button>
-
-                </Paper>
-                {/* ================= PAINEL DE AÇÕES ================= */}
-
-                <Grid
-                    item
-                    xs={12}
-                >
-
-                    <Grid
-                        container
-                        spacing={2}
-                    >
-
-                        {/* HISTÓRICO */}
-
-                        <Grid item xs={12} md={4}>
-
-                            <Paper
-                                onClick={() =>
-                                    navigate("/Temporadas")
-                                }
-                                elevation={0}
-                                sx={{
-                                    p: 2,
-                                    height: "100%",
-                                    cursor: "pointer",
-                                    borderRadius: 5,
-                                    bgcolor: "background.card",
-                                    border: "1px solid rgba(255,255,255,.08)",
-                                    transition: ".25s",
-                                    "&:hover": {
-                                        transform: "translateY(-8px)",
-                                        borderColor: "primary.main"
-                                    }
-                                }}
-                            >
-
-                                <History
-                                    sx={{
-                                        fontSize: 28,
-                                        color: "primary.main",
-                                        mb: 3
-                                    }}
-                                />
-
-                                <Typography
-                                    variant="subtitle1"
-                                    fontWeight={800}
-                                >
-
-                                    Histórico
-
-                                </Typography>
-
-                                <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                    mt={1}
-                                >
-
-                                    Consulte todas as temporadas encerradas e seus vencedores.
-
-                                </Typography>
-
-                            </Paper>
-
-                        </Grid>
-
-                        {/* LOJA */}
-
-                        <Grid item xs={12} md={4}>
-
-                            <Paper
-                                onClick={() =>
-                                    navigate("/Loja")
-                                }
-                                elevation={0}
-                                sx={{
-                                    p: 2,
-                                    height: "100%",
-                                    cursor: "pointer",
-                                    borderRadius: 5,
-                                    bgcolor: "background.card",
-                                    border: "1px solid rgba(255,255,255,.08)",
-                                    transition: ".25s",
-                                    "&:hover": {
-                                        transform: "translateY(-8px)",
-                                        borderColor: "#43a047"
-                                    }
-                                }}
-                            >
-
-                                <Store
-                                    sx={{
-                                        fontSize: 28,
-                                        color: "#43a047",
-                                        mb: 3
-                                    }}
-                                />
-
-                                <Typography
-                                    variant="subtitle1"
-                                    fontWeight={800}
-                                >
-
-                                    Loja
-
-                                </Typography>
-
-                                <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                    mt={1}
-                                >
-
-                                    Gerencie itens, cosméticos e recompensas da gamificação.
-
-                                </Typography>
-
-                            </Paper>
-
-                        </Grid>
-
-                        {/* RANKING */}
-
-                        <Grid item xs={12} md={4}>
-
-                            <Paper
-                                onClick={() =>
-                                    navigate("/Produtividade")
-                                }
-                                elevation={0}
-                                sx={{
-                                    p: 2,
-                                    height: "100%",
-                                    cursor: "pointer",
-                                    borderRadius: 5,
-                                    bgcolor: "background.card",
-                                    border: "1px solid rgba(255,255,255,.08)",
-                                    transition: ".25s",
-                                    "&:hover": {
-                                        transform: "translateY(-8px)",
-                                        borderColor: "#ffb300"
-                                    }
-                                }}
-                            >
-
-                                <EmojiEvents
-                                    sx={{
-                                        fontSize: 28,
-                                        color: "#ffb300",
-                                        mb: 3
-                                    }}
-                                />
-
-                                <Typography
-                                    variant="subtitle1"
-                                    fontWeight={800}
-                                >
-
-                                    Ranking
-
-                                </Typography>
-
-                                <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                    mt={1}
-                                >
-
-                                    Visualize a classificação atual dos conferentes.
-
-                                </Typography>
-
-                            </Paper>
-
-                        </Grid>
-
-                    </Grid>
-
-                </Grid>
-
-                {/* ================= DIALOG FINALIZAR ================= */}
-
-                <Dialog
-                    open={dialogFinalizar}
-                    onClose={() => setDialogFinalizar(false)}
-                    maxWidth="sm"
-                    fullWidth
-                >
-
-                    <DialogTitle>
-
-                        <Box
-                            display="flex"
-                            alignItems="center"
-                            gap={2}
-                        >
-
-                            <WarningAmber
-                                sx={{
-                                    color: "warning.main",
-                                    fontSize: 40
-                                }}
-                            />
-
-                            <Box>
-
-                                <Typography
-                                    variant="h5"
-                                    fontWeight={900}
-                                >
-                                    Finalizar Temporada
-                                </Typography>
-
-                                <Typography
-                                    color="text.secondary"
-                                >
-                                    Esta operação não poderá ser desfeita.
-                                </Typography>
-
-                            </Box>
-
-                        </Box>
-
-                    </DialogTitle>
-
-                    <DialogContent>
-
-                        <Alert
-                            severity="warning"
-                            sx={{
-                                mb: 3
-                            }}
-                        >
-                            Confirme que deseja finalizar a temporada.
-                        </Alert>
-
-                        <Stack spacing={2}>
-
-                            <Paper
-                                elevation={0}
-                                sx={{
-                                    p: 2,
-                                    borderRadius: 3,
-                                    bgcolor: "background.default"
-                                }}
-                            >
-                                ✅ Salvar ranking definitivo.
-                            </Paper>
-
-                            <Paper
-                                elevation={0}
-                                sx={{
-                                    p: 2,
-                                    borderRadius: 3,
-                                    bgcolor: "background.default"
-                                }}
-                            >
-                                🪙 Distribuir SigelCoins para todos os jogadores.
-                            </Paper>
-
-                            <Paper
-                                elevation={0}
-                                sx={{
-                                    p: 2,
-                                    borderRadius: 3,
-                                    bgcolor: "background.default"
-                                }}
-                            >
-                                🏁 Encerrar a temporada atual.
-                            </Paper>
-
-                            <Paper
-                                elevation={0}
-                                sx={{
-                                    p: 2,
-                                    borderRadius: 3,
-                                    bgcolor: "background.default"
-                                }}
-                            >
-                                🚀 Criar automaticamente a próxima temporada.
-                            </Paper>
-
-                        </Stack>
-
-                    </DialogContent>
-
-                    <DialogActions
-                        sx={{
-                            p: 3
-                        }}
-                    >
-
-                        <Button
-                            onClick={() =>
-                                setDialogFinalizar(false)
+                            p: 2.5,
+                            borderRadius: 4,
+                            border: "1px solid rgba(255,255,255,.08)",
+                            bgcolor: "background.card",
+                            cursor: "pointer",
+                            transition: ".25s",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 2,
+
+                            "&:hover": {
+                                transform: "translateY(-3px)",
+                                borderColor: "primary.main",
+                                boxShadow: 6,
                             }
-                        >
-                            Cancelar
-                        </Button>
+                        }}
+                    >
 
-                        <Button
-                            variant="contained"
-                            color="error"
-                            startIcon={<Celebration />}
-                            onClick={finalizarTemporada}
-                            disabled={loading}
-                        >
-                            Confirmar
-                        </Button>
+                        <History
+                            sx={{
+                                fontSize: 42,
+                                color: "primary.main"
+                            }}
+                        />
 
-                    </DialogActions>
-
-                </Dialog>
-
-                {/* ================= DIALOG PREMIAÇÃO ================= */}
-
-                <Dialog
-                    open={dialogPremiacao}
-                    onClose={() =>
-                        setDialogPremiacao(false)
-                    }
-                    maxWidth="md"
-                    fullWidth
-                >
-
-                    <DialogTitle>
-
-                        <Box
-                            display="flex"
-                            alignItems="center"
-                            gap={2}
-                        >
-
-                            <EmojiEvents
-                                sx={{
-                                    color: "#FFD54F",
-                                    fontSize: 42
-                                }}
-                            />
+                        <Box>
 
                             <Typography
-                                variant="h5"
-                                fontWeight={900}
+                                fontWeight={800}
+                                fontSize={18}
                             >
-                                Premiação Distribuída
+                                Histórico
+                            </Typography>
+
+                            <Typography
+                                variant="body2"
+                                color="text.secondary"
+                            >
+                                Consulte temporadas encerradas e resultados anteriores.
                             </Typography>
 
                         </Box>
 
-                    </DialogTitle>
+                    </Paper>
 
-                    <DialogContent>
+                    {/* LOJA */}
 
-                        {premiados.length === 0 ? (
-
-                            <Alert severity="info">
-
-                                Nenhum jogador premiado.
-
-                            </Alert>
-
-                        ) : (
-
-                            <Stack spacing={2}>
-
-                                {premiados.map((jogador, index) => (
-
-                                    <Paper
-                                        key={jogador.codigo}
-                                        elevation={0}
-                                        sx={{
-                                            p: 3,
-                                            borderRadius: 4,
-                                            display: "flex",
-                                            justifyContent: "space-between",
-                                            alignItems: "center",
-                                            bgcolor:
-                                                index === 0
-                                                    ? "warning.light"
-                                                    : "background.default",
-                                            border:
-                                                index === 0
-                                                    ? "2px solid #FFD54F"
-                                                    : "1px solid rgba(255,255,255,.08)"
-                                        }}
-                                    >
-
-                                        <Box
-                                            display="flex"
-                                            alignItems="center"
-                                            gap={2}
-                                        >
-
-                                            <Avatar
-                                                sx={{
-                                                    bgcolor:
-                                                        index === 0
-                                                            ? "#FFD54F"
-                                                            : index === 1
-                                                                ? "#B0BEC5"
-                                                                : index === 2
-                                                                    ? "#A1887F"
-                                                                    : "primary.main",
-                                                    width: 54,
-                                                    height: 54,
-                                                    fontWeight: "bold"
-                                                }}
-                                            >
-
-                                                {index + 1}
-
-                                            </Avatar>
-
-                                            <Box>
-
-                                                <Typography
-                                                    fontWeight="bold"
-                                                >
-                                                    {jogador.nome}
-                                                </Typography>
-
-                                                <Typography
-                                                    variant="body2"
-                                                    color="text.secondary"
-                                                >
-                                                    Código {jogador.codigo}
-                                                </Typography>
-
-                                            </Box>
-
-                                        </Box>
-
-                                        <Chip
-                                            color="warning"
-                                            icon={<EmojiEvents />}
-                                            label={`${jogador.premio.toLocaleString()} SigelCoins`}
-                                            sx={{
-                                                color: "#FFF",
-                                                fontWeight: "bold"
-                                            }}
-                                        />
-
-                                    </Paper>
-
-                                ))}
-
-                            </Stack>
-
-                        )}
-
-                    </DialogContent>
-
-                    <DialogActions
+                    <Paper
+                        elevation={0}
+                        onClick={() => navigate("/Loja")}
                         sx={{
-                            p: 3
+                            p: 2.5,
+                            borderRadius: 4,
+                            border: "1px solid rgba(255,255,255,.08)",
+                            bgcolor: "background.card",
+                            cursor: "pointer",
+                            transition: ".25s",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 2,
+
+                            "&:hover": {
+                                transform: "translateY(-3px)",
+                                borderColor: "#43A047",
+                                boxShadow: 6,
+                            }
                         }}
                     >
 
-                        <Button
-                            variant="contained"
-                            onClick={() =>
-                                setDialogPremiacao(false)
+                        <Store
+                            sx={{
+                                fontSize: 42,
+                                color: "#43A047"
+                            }}
+                        />
+
+                        <Box>
+
+                            <Typography
+                                fontWeight={800}
+                                fontSize={18}
+                            >
+                                Loja
+                            </Typography>
+
+                            <Typography
+                                variant="body2"
+                                color="text.secondary"
+                            >
+                                Gerencie itens, cosméticos e recompensas disponíveis.
+                            </Typography>
+
+                        </Box>
+
+                    </Paper>
+
+                    {/* RANKING */}
+
+                    <Paper
+                        elevation={0}
+                        onClick={() => navigate("/Produtividade")}
+                        sx={{
+                            p: 2.5,
+                            borderRadius: 4,
+                            border: "1px solid rgba(255,255,255,.08)",
+                            bgcolor: "background.card",
+                            cursor: "pointer",
+                            transition: ".25s",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 2,
+
+                            "&:hover": {
+                                transform: "translateY(-3px)",
+                                borderColor: "#FFB300",
+                                boxShadow: 6,
                             }
+                        }}
+                    >
+
+                        <EmojiEvents
+                            sx={{
+                                fontSize: 42,
+                                color: "#FFB300"
+                            }}
+                        />
+
+                        <Box>
+
+                            <Typography
+                                fontWeight={800}
+                                fontSize={18}
+                            >
+                                Ranking
+                            </Typography>
+
+                            <Typography
+                                variant="body2"
+                                color="text.secondary"
+                            >
+                                Visualize a classificação e a produtividade dos jogadores.
+                            </Typography>
+
+                        </Box>
+                    </Paper>
+                </Box>
+            </Stack>
+
+            {/* ========================= DIALOG FINALIZAR ========================= */}
+
+            <Dialog
+                open={dialogFinalizar}
+                onClose={() => setDialogFinalizar(false)}
+                maxWidth="sm"
+                fullWidth
+            >
+
+                <DialogTitle>
+
+                    <Box
+                        display="flex"
+                        alignItems="center"
+                        gap={2}
+                    >
+
+                        <Celebration
+                            color="error"
+                            sx={{ fontSize: 34 }}
+                        />
+
+                        <Box>
+
+                            <Typography
+                                variant="h6"
+                                fontWeight={800}
+                            >
+                                Finalizar Temporada
+                            </Typography>
+
+                            <Typography
+                                variant="body2"
+                                color="text.secondary"
+                            >
+                                Esta ação não poderá ser desfeita.
+                            </Typography>
+
+                        </Box>
+
+                    </Box>
+
+                </DialogTitle>
+
+                <DialogContent>
+
+                    <Alert
+                        severity="warning"
+                        sx={{ mb: 3 }}
+                    >
+                        Antes de continuar confira as informações abaixo.
+                    </Alert>
+
+                    <Stack spacing={1.5}>
+
+                        <Paper
+                            elevation={0}
+                            sx={{
+                                p: 2,
+                                bgcolor: "background.default",
+                                borderRadius: 3
+                            }}
                         >
-                            Fechar
-                        </Button>
+                            💾 Salvar ranking definitivo
+                        </Paper>
 
-                    </DialogActions>
+                        <Paper
+                            elevation={0}
+                            sx={{
+                                p: 2,
+                                bgcolor: "background.default",
+                                borderRadius: 3
+                            }}
+                        >
+                            🪙 Distribuir SigelCoins automaticamente
+                        </Paper>
 
-                </Dialog>
+                        <Paper
+                            elevation={0}
+                            sx={{
+                                p: 2,
+                                bgcolor: "background.default",
+                                borderRadius: 3
+                            }}
+                        >
+                            🏁 Encerrar a temporada atual
+                        </Paper>
 
-            </Grid>
+                        <Paper
+                            elevation={0}
+                            sx={{
+                                p: 2,
+                                bgcolor: "background.default",
+                                borderRadius: 3
+                            }}
+                        >
+                            🚀 Criar automaticamente a próxima temporada
+                        </Paper>
 
-            {/* ================= SNACKBAR ================= */}
+                    </Stack>
+
+                </DialogContent>
+
+                <DialogActions sx={{ p: 2.5 }}>
+
+                    <Button
+                        onClick={() => setDialogFinalizar(false)}
+                    >
+                        Cancelar
+                    </Button>
+
+                    <Button
+                        variant="contained"
+                        color="error"
+                        startIcon={<Celebration />}
+                        onClick={finalizarTemporada}
+                        disabled={loading}
+                        sx={{
+                            borderRadius: 2,
+                            fontWeight: 700,
+                            textTransform: "none"
+                        }}
+                    >
+                        Finalizar
+                    </Button>
+
+                </DialogActions>
+
+            </Dialog>
+
+            {/* ========================= DIALOG PREMIAÇÃO ========================= */}
+
+            <Dialog
+                open={dialogPremiacao}
+                onClose={() => setDialogPremiacao(false)}
+                maxWidth="md"
+                fullWidth
+            >
+
+                <DialogTitle>
+
+                    <Box
+                        display="flex"
+                        alignItems="center"
+                        gap={2}
+                    >
+
+                        <EmojiEvents
+                            sx={{
+                                color: "#FFD54F",
+                                fontSize: 34
+                            }}
+                        />
+
+                        <Box>
+
+                            <Typography
+                                variant="h6"
+                                fontWeight={800}
+                            >
+                                Premiação Distribuída
+                            </Typography>
+
+                            <Typography
+                                variant="body2"
+                                color="text.secondary"
+                            >
+                                Resultado da distribuição automática.
+                            </Typography>
+
+                        </Box>
+
+                    </Box>
+
+                </DialogTitle>
+
+                <DialogContent>
+
+                    {premiados.length === 0 ? (
+
+                        <Alert severity="info">
+                            Nenhum jogador recebeu premiação.
+                        </Alert>
+
+                    ) : (
+
+                        <Stack spacing={1.5}>
+
+                            {premiados.map((jogador, index) => (
+
+                                <Paper
+                                    key={jogador.codigo}
+                                    elevation={0}
+                                    sx={{
+                                        p: 2,
+                                        borderRadius: 3,
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                        border:
+                                            index === 0
+                                                ? "2px solid #FFD54F"
+                                                : "1px solid rgba(255,255,255,.08)",
+
+                                        bgcolor:
+                                            index === 0
+                                                ? "warning.light"
+                                                : "background.default"
+                                    }}
+                                >
+
+                                    <Box>
+
+                                        <Typography
+                                            fontWeight={700}
+                                        >
+                                            #{index + 1} • {jogador.nome}
+                                        </Typography>
+
+                                        <Typography
+                                            variant="caption"
+                                            color="text.secondary"
+                                        >
+                                            Código {jogador.codigo}
+                                        </Typography>
+
+                                    </Box>
+
+                                    <Chip
+                                        color="warning"
+                                        icon={<EmojiEvents />}
+                                        label={`${jogador.premio.toLocaleString()} SigelCoins`}
+                                        sx={{
+                                            fontWeight: 700,
+                                            color: "#FFF"
+                                        }}
+                                    />
+
+                                </Paper>
+
+                            ))}
+
+                        </Stack>
+
+                    )}
+
+                </DialogContent>
+
+                <DialogActions sx={{ p: 2.5 }}>
+
+                    <Button
+                        variant="contained"
+                        onClick={() => setDialogPremiacao(false)}
+                        sx={{
+                            borderRadius: 2,
+                            textTransform: "none",
+                            fontWeight: 700
+                        }}
+                    >
+                        Fechar
+                    </Button>
+
+                </DialogActions>
+
+            </Dialog>
+
+            {/* ==================== SNACKBAR ==================== */}
 
             <Snackbar
                 open={snackOpen}
-                autoHideDuration={5000}
-                onClose={() =>
-                    setSnackOpen(false)
-                }
+                autoHideDuration={4500}
+                onClose={() => setSnackOpen(false)}
                 anchorOrigin={{
                     vertical: "bottom",
-                    horizontal: "right"
+                    horizontal: "right",
                 }}
             >
+
                 {mensagem && (
+
                     <Alert
                         severity={mensagem.tipo}
                         variant="filled"
-                        icon={<CheckCircle />}
-                        onClose={() =>
-                            setSnackOpen(false)
-                        }
+                        onClose={() => setSnackOpen(false)}
                         sx={{
-                            width: "100%",
-                            borderRadius: 3
+                            minWidth: 320,
+                            borderRadius: 3,
+                            fontWeight: 600,
+                            boxShadow: 8
                         }}
                     >
+
                         {mensagem.texto}
+
                     </Alert>
+
                 )}
+
             </Snackbar>
+
         </Container>
     );
 }

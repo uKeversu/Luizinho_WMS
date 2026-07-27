@@ -5511,7 +5511,7 @@
         center bottom;
 
     animation:
-        tentacleTipMove 18s ease-in-out infinite;
+        tentacleTipMove 12s ease-in-out infinite;
 
     animation-delay:
         -1.6s;
@@ -6094,6 +6094,7 @@
         stroke-dashoffset:
             600;
     }
+
     to {
         stroke-dashoffset:
             -600;
@@ -6162,11 +6163,13 @@
     animation:
         waterDroplets 12s linear infinite;
 }
+
 @keyframes waterDroplets {
     0% {
         background-position:
             0 0;
     }
+
     100% {
         background-position:
             0 120px;
@@ -6220,7 +6223,7 @@
 
     50% {
         opacity: .8;
-       transform:
+        transform:
             scale(1.08);
     }
 }
@@ -6248,4 +6251,863 @@
 .leviathan-front {
     z-index:
         10;
+}
+
+
+/* =====================================================
+   CALDEIRÃO CRUZMALTINO
+===================================================== */
+
+.caravela-animation {
+    overflow: hidden;
+
+    animation:
+        tempestadeAtmosfera 5s infinite ease-in-out;
+}
+
+
+@keyframes tempestadeAtmosfera {
+
+    0%,
+    100% {
+        filter:
+            brightness(.65) contrast(1.2);
+    }
+
+    50% {
+        filter:
+            brightness(.9) contrast(1.4);
+    }
+}
+
+
+
+/* =====================================================
+   FAIXA DIAGONAL CRUZMALTINA
+===================================================== */
+
+
+.vasco-faixa {
+
+    position: absolute;
+
+    width: 180%;
+    height: 90px;
+
+    top: 42%;
+    left: -45%;
+
+
+    background:
+        linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, .95),
+            rgba(255, 255, 255, .45),
+            transparent);
+
+
+    transform:
+        rotate(-40deg);
+
+
+    opacity: .35;
+
+    filter:
+        blur(2px);
+
+
+    animation:
+        faixaTempestade 7s infinite linear;
+}
+
+
+.vasco-faixa::after {
+
+    content: "";
+
+    position: absolute;
+
+    inset: -30px;
+
+
+    background:
+        linear-gradient(90deg,
+            transparent,
+            white,
+            transparent);
+
+
+    opacity: .5;
+
+
+    animation:
+        brilhoFaixa 2s infinite;
+
+}
+
+
+
+@keyframes faixaTempestade {
+
+    from {
+        transform:
+            translateX(-30%) rotate(-40deg);
+    }
+
+    to {
+        transform:
+            translateX(30%) rotate(-40deg);
+    }
+}
+
+
+@keyframes brilhoFaixa {
+
+    50% {
+        opacity: 1;
+    }
+}
+
+
+
+/* =====================================================
+   CARAVELA DISTANTE
+===================================================== */
+
+
+.caravela {
+
+    position: absolute;
+
+    right: 18%;
+    bottom: 32%;
+
+
+    width: 240px;
+    height: 190px;
+
+
+    opacity: .75;
+
+
+    filter:
+        blur(.5px) drop-shadow(0 0 25px rgba(255, 255, 255, .25));
+
+
+    animation:
+        navioTempestade 9s infinite ease-in-out;
+
+}
+
+
+
+.caravela-casco {
+
+    position: absolute;
+
+    bottom: 15px;
+    left: 20px;
+
+
+    width: 190px;
+    height: 45px;
+
+
+    background:
+        linear-gradient(180deg,
+            #70401b,
+            #291508,
+            #080402);
+
+
+    clip-path:
+        polygon(0 0,
+            100% 0,
+            80% 100%,
+            20% 100%);
+
+}
+
+
+.caravela-mastro {
+
+    position: absolute;
+
+    left: 115px;
+    bottom: 50px;
+
+
+    width: 7px;
+    height: 140px;
+
+
+    background:
+        linear-gradient(90deg,
+            #43250d,
+            #d8b26a,
+            #43250d);
+
+}
+
+
+.caravela-vela {
+
+    position: absolute;
+
+
+    background:
+        linear-gradient(90deg,
+            #eeeeee,
+            #999999);
+
+
+    opacity: .8;
+
+}
+
+
+.vela1 {
+
+    left: 35px;
+    bottom: 95px;
+
+
+    width: 90px;
+    height: 100px;
+
+
+    clip-path:
+        polygon(100% 0,
+            0 50%,
+            100% 100%);
+
+
+    animation:
+        velaTempestade 3s infinite;
+
+}
+
+
+
+.vela2 {
+
+    left: 125px;
+    bottom: 80px;
+
+
+    width: 65px;
+    height: 120px;
+
+
+    clip-path:
+        polygon(0 0,
+            100% 50%,
+            0 100%);
+
+
+    animation:
+        velaTempestade 3s infinite reverse;
+
+}
+
+
+@keyframes velaTempestade {
+
+    50% {
+        transform:
+            skewX(12deg);
+    }
+}
+
+
+.caravela-bandeira {
+
+    position: absolute;
+
+    left: 120px;
+    top: 0;
+
+
+    width: 60px;
+    height: 30px;
+
+
+    background:
+        linear-gradient(90deg,
+            white 50%,
+            black 50%);
+
+
+    clip-path:
+        polygon(0 0,
+            100% 30%,
+            100% 70%,
+            0 100%);
+
+
+    animation:
+        ventoForte 1.5s infinite;
+
+}
+
+
+@keyframes ventoForte {
+
+    50% {
+        transform:
+            skewX(30deg);
+    }
+}
+
+
+
+/* =====================================================
+   NÉVOA PESADA
+===================================================== */
+
+
+.oceano-nevoa {
+
+    position: absolute;
+
+    inset: 0;
+
+
+    background:
+
+        radial-gradient(ellipse at bottom,
+            rgba(255, 255, 255, .3),
+            transparent 60%),
+
+        linear-gradient(rgba(255, 255, 255, .08),
+            transparent);
+
+
+    filter:
+        blur(35px);
+
+
+    animation:
+        nevoeiro 10s infinite alternate;
+
+}
+
+
+@keyframes nevoeiro {
+
+    from {
+        transform:
+            translateX(-50px);
+
+        opacity: .35;
+    }
+
+    to {
+        transform:
+            translateX(50px);
+
+        opacity: .75;
+    }
+}
+
+
+
+/* =====================================================
+   MAR REVOLTO
+===================================================== */
+
+
+.mar-onda {
+
+    position: absolute;
+
+
+    bottom: -40px;
+    left: -20%;
+
+
+    width: 150%;
+    height: 180px;
+
+
+    background:
+
+        radial-gradient(ellipse,
+            rgba(255, 255, 255, .35),
+            transparent 65%);
+
+
+    animation:
+        ondasViolentas 4s infinite linear;
+
+}
+
+
+
+.onda2 {
+
+    bottom: -70px;
+
+    opacity: .5;
+
+    animation-duration:
+        7s;
+
+}
+
+
+
+@keyframes ondasViolentas {
+
+    from {
+        transform:
+            translateX(-60px) rotate(-2deg);
+    }
+
+
+    to {
+        transform:
+            translateX(60px) rotate(2deg);
+    }
+}
+
+
+
+/* =====================================================
+   CHUVA INTENSA
+===================================================== */
+
+
+.chuva {
+
+    position: absolute;
+
+    inset: 0;
+
+    overflow: hidden;
+
+}
+
+
+
+.gota {
+
+    position: absolute;
+
+
+    top: -20%;
+
+
+    left:
+        calc(var(--i) * 1.25%);
+
+
+    width: 2px;
+
+    height:
+        calc(40px + (var(--i) * .7px));
+
+
+    background:
+        linear-gradient(transparent,
+            rgba(255, 255, 255, .65));
+
+
+    transform:
+        rotate(20deg);
+
+
+    animation:
+        chuvaQueda calc(1s + (var(--i) * .02s)) infinite linear;
+
+
+    opacity: .35;
+
+}
+
+
+
+@keyframes chuvaQueda {
+
+    from {
+
+        transform:
+            translateY(-100px) rotate(20deg);
+
+    }
+
+
+    to {
+
+        transform:
+            translateY(900px) rotate(20deg);
+
+    }
+
+}
+
+
+
+/* =====================================================
+   NAVEGAÇÃO
+===================================================== */
+
+
+@keyframes navioTempestade {
+
+    0%,
+    100% {
+
+        transform:
+            translate(0, 0) rotate(0deg);
+
+    }
+
+
+    50% {
+
+        transform:
+            translate(-35px, -15px) rotate(-3deg);
+
+    }
+
+}
+
+/* =====================================================
+   CÉU DE TEMPESTADE
+===================================================== */
+
+
+.ceu-tempestade {
+
+    position: absolute;
+
+    inset: 0;
+
+
+    background:
+
+        linear-gradient(180deg,
+            rgba(0, 0, 0, .8),
+            rgba(15, 25, 35, .5),
+            transparent);
+
+
+    z-index: 1;
+
+}
+
+/* =====================================================
+   RELÂMPAGO
+===================================================== */
+
+
+.relampago {
+
+    position: absolute;
+
+    inset: 0;
+
+
+    background:
+        white;
+
+
+    opacity: 0;
+
+
+    animation:
+        raio 12s infinite;
+
+
+    z-index: 4;
+
+}
+
+
+
+@keyframes raio {
+
+
+    0%,
+    88%,
+    100% {
+
+        opacity: 0;
+
+    }
+
+
+    89% {
+
+        opacity: .35;
+
+    }
+
+
+    90% {
+
+        opacity: 0;
+
+    }
+
+
+    91% {
+
+        opacity: .8;
+
+    }
+
+
+    92% {
+
+        opacity: 0;
+
+    }
+
+}
+
+/* =====================================================
+   NÉVOA FRONTAL
+===================================================== */
+
+
+.nevoa-frontal {
+
+    position: absolute;
+
+    bottom: 0;
+
+    left: -30%;
+
+
+    width: 160%;
+
+    height: 45%;
+
+
+    background:
+
+        radial-gradient(ellipse,
+            rgba(255, 255, 255, .35),
+            transparent 70%);
+
+
+    filter:
+        blur(45px);
+
+
+    animation:
+
+        nevoaFrontal 8s infinite alternate;
+
+
+    z-index: 8;
+
+}
+
+
+
+@keyframes nevoaFrontal {
+
+
+    from {
+
+        transform:
+            translateX(-80px);
+
+    }
+
+
+    to {
+
+        transform:
+            translateX(80px);
+
+    }
+
+}
+
+/* =====================================================
+   ESPUMA DAS ONDAS
+===================================================== */
+
+
+.espuma-mar {
+
+    position: absolute;
+
+
+    bottom: 0;
+
+
+    left: -20%;
+
+
+    width: 150%;
+
+
+    height: 120px;
+
+
+    background:
+
+        repeating-linear-gradient(60deg,
+            transparent 0px,
+            rgba(0, 0, 0, 0.404) 40px,
+            transparent 90px);
+
+
+    filter:
+
+        blur(3px);
+
+
+    animation:
+
+        espumaViolenta 3s infinite linear;
+
+
+    z-index: 7;
+
+}
+
+
+
+@keyframes espumaViolenta {
+
+
+    from {
+
+        transform:
+            translateX(0);
+
+    }
+
+
+    to {
+
+        transform:
+            translateX(-150px);
+
+    }
+
+}
+
+/* =====================================================
+   CHUVA FRONTAL
+===================================================== */
+
+
+.chuva-frontal {
+
+    position: absolute;
+
+    inset: 0;
+
+
+    z-index: 10;
+
+    overflow: hidden;
+
+}
+
+
+.gota-frontal {
+
+    position: absolute;
+
+    top: -20%;
+
+    left: var(--pos);
+
+
+    width: 2px;
+
+
+    height:
+        calc(70px + (var(--i) * 0.5px));
+
+
+    background:
+        linear-gradient(transparent,
+            rgba(255, 255, 255, .8));
+
+
+    transform:
+        rotate(25deg);
+
+
+    animation:
+        chuvaPesada calc(.7s + (var(--i) * .015s)) infinite linear;
+
+
+    opacity:
+        .2;
+
+}
+
+
+
+@keyframes chuvaPesada {
+
+
+    from {
+
+        transform:
+
+            translateY(-200px) translateX(0) rotate(25deg);
+
+    }
+
+
+    to {
+
+        transform:
+
+            translateY(1000px) translateX(-80px) rotate(25deg);
+
+    }
+
+}
+
+.caravela {
+
+    right: 25%;
+
+    bottom: 38%;
+
+
+    transform:
+        scale(1.35);
+
+
+    opacity: .65;
+
+
+    filter:
+
+        blur(1px) drop-shadow(0 0 40px rgba(255, 255, 255, .25));
+
+}
+
+.caravela-casco {
+
+    animation:
+        cascoImpacto 2s infinite ease-in-out;
+
+}
+
+
+
+@keyframes cascoImpacto {
+
+    50% {
+
+        transform:
+
+            translateY(12px) rotate(-3deg);
+
+    }
+
 }

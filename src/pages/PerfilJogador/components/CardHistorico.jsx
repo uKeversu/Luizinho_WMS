@@ -263,7 +263,7 @@ export default function CardHistorico({
                                         sx={{
 
                                             bgcolor: "#1d2638",
-
+                                            
                                             mb: 1,
 
                                             width: 50,
@@ -363,7 +363,7 @@ export default function CardHistorico({
             {
                 colecoesIniciadas.length === 0 ?
                     <Typography color="gray">
-                       Nenhuma coleção encontrada.
+                        Nenhuma coleção encontrada.
                     </Typography>
                     :
                     colecoesIniciadas.map((c) => (

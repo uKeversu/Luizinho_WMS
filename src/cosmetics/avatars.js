@@ -8,6 +8,10 @@ export const AVATARES = {
         fontSize: 42,
     },
 
+    "Cruz de Malta": {
+        fontSize: 42,
+    },
+
     default: {
         fontSize: 34,
     },

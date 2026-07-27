@@ -1973,7 +1973,6 @@ export default function Produtividade() {
                             const titulo =
                                 TITULOS[cosmetico.titulo] ||
                                 TITULOS.default;
-
                             return (
                                 <Grid
                                     item
@@ -2113,8 +2112,9 @@ export default function Produtividade() {
                                                             width: 70,
                                                             height: 70,
                                                             bgcolor: "background.default",
-                                                            color:
-                                                                "primary.branco",
+                                                            color: cosmeticos[row.conferente]?.avatar === "✠"
+                                                                ? "primary.cancelar"
+                                                                : "primary.branco",
                                                             fontWeight:
                                                                 "bold",
                                                             fontSize:

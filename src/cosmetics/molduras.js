@@ -34,6 +34,12 @@ export const MOLDURAS = {
         glow: "0 0 12px #00aeff, 0 0 15px #001dc2",
     },
 
+    "São Januário": {
+        borderColor: "#ffdddd",
+        glow:
+            "0 0 12px #000000, 0 0 25px #ff3333, 0 0 45px rgba(120,0,0,.9)",
+    },
+
     "Moldura Elétrica": {
         borderColor: "#ffee00",
         glow: "0 0 12px #e5ff00, 0 0 15px #0059ff",

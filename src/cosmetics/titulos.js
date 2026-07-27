@@ -32,6 +32,10 @@ export const TITULOS = {
         color: "#ffffff",
     },
 
+    "Gigante da Colina": {
+        color: "#ff1d1d",
+    },
+
     "Soberano Ancestral": {
         color: "#00ff62",
         textShadow:

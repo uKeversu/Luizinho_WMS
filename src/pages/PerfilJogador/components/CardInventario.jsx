@@ -136,7 +136,9 @@ export default function CardInventario({
                                     mx: "auto",
 
                                     bgcolor: "#1d2638",
-
+                                    color: slot.item?.nome === "Cruz de Malta"
+                                        ? "primary.cancelar"
+                                        : "primary.branco",
                                     fontSize: 28
 
                                 }}
@@ -305,7 +307,12 @@ export default function CardInventario({
                                     />
                                 )}
 
-                                <Typography fontSize={28}>
+                                <Typography fontSize={28}
+                                    sx={{
+                                        color: item?.nome === "Cruz de Malta"
+                                            ? "primary.cancelar"
+                                            : "primary.branco",
+                                    }}>
                                     {item.icone}
                                 </Typography>
 

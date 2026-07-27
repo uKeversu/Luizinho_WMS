@@ -398,7 +398,11 @@ export default function Loja() {
 
                                     <CardContent sx={{ textAlign: "center" }}>
 
-                                        <Typography sx={{ fontSize: 70 }}>
+                                        <Typography sx={{
+                                            fontSize: 70, color: item?.nome === "Cruz de Malta"
+                                                ? "primary.cancelar"
+                                                : "primary.branco",
+                                        }}>
                                             {item.icone}
                                         </Typography>
 
