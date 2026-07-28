@@ -50,6 +50,7 @@ import {
 } from "@mui/icons-material";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import ArticleIcon from '@mui/icons-material/Article';
 import {
     ResponsiveContainer,
     PieChart,
@@ -1731,6 +1732,13 @@ export default function Produtividade() {
                 - a.pontosPesados
         )[0];
 
+    const maisRecebimentos =
+        [...dados].sort(
+            (a, b) =>
+                b.notasRecebidas
+                - a.notasRecebidas
+        )[0];
+
     // Tela
     return (
 
@@ -2209,26 +2217,13 @@ export default function Produtividade() {
                                                     color="error"
                                                 />
 
-                                            </Stack>
-
-                                            <Box
-                                                sx={{
-                                                    mt: 3,
-                                                }}
-                                            >
-
-                                                <LinearProgress
-                                                    variant="determinate"
-                                                    value={Number(
-                                                        row.produtividade
-                                                    )}
-                                                    sx={{
-                                                        height: 14,
-                                                        borderRadius: 20,
-                                                    }}
+                                                <Chip
+                                                    icon={<ArticleIcon />}
+                                                    label={`${row.notasRecebidas} notas recebidas`}
+                                                    color="info"
+                                                    sx={{ color: 'primary.branco' }}
                                                 />
-
-                                            </Box>
+                                            </Stack>
 
                                             <Button
                                                 fullWidth
@@ -2433,7 +2428,7 @@ export default function Produtividade() {
                                             <TableRow>
                                                 <TableCell sx={{ color: "#fff" }}>Operador</TableCell>
                                                 <TableCell sx={{ color: "#fff" }}>Itens</TableCell>
-                                                <TableCell sx={{ color: "#fff" }}>Pontos</TableCell>
+                                                <TableCell sx={{ color: "#fff" }}>Recebimentos</TableCell>
                                                 <TableCell sx={{ color: "#fff" }}>Erros</TableCell>
                                                 <TableCell sx={{ color: "#fff" }}>Eficiência</TableCell>
                                                 <TableCell sx={{ color: "#fff" }}>XP</TableCell>
@@ -2505,8 +2500,8 @@ export default function Produtividade() {
 
                                                         {/* PONTOS */}
                                                         <TableCell>
-                                                            <Typography color="#00ff99" fontWeight="bold">
-                                                                {row.pontosFinais}
+                                                            <Typography color="#00ff99" fontWeight="bold" sx={{ display: 'flex', justifyContent: 'center' }}>
+                                                                {row.notasRecebidas}
                                                             </Typography>
                                                         </TableCell>
 
@@ -2618,6 +2613,26 @@ export default function Produtividade() {
                                         </Typography>
                                         <Typography color={subTextColor}>
                                             {mvp?.pontosFinais} pts
+                                        </Typography>
+                                    </Paper>
+
+                                    {/* MAIS RECEBIMENTOS */}
+                                    <Paper
+                                        sx={{
+                                            p: 2.5,
+                                            borderRadius: 4,
+                                            bgcolor: "rgba(82, 85, 255, 0.08)",
+                                            border: "1px solid rgba(37, 22, 243, 0.45)",
+                                        }}
+                                    >
+                                        <Typography color="#5d68fd" fontWeight="bold">
+                                            🧾 MAIS RECEBIMENTOS
+                                        </Typography>
+                                        <Typography variant="h5" fontWeight="bold" color={textColor} sx={{ mt: 1 }}>
+                                            {maisRecebimentos?.nome}
+                                        </Typography>
+                                        <Typography color={subTextColor}>
+                                            {maisRecebimentos?.notasRecebidas} notas recebidas
                                         </Typography>
                                     </Paper>
 
