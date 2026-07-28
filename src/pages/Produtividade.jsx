@@ -1709,6 +1709,13 @@ export default function Produtividade() {
             0
         );
 
+    const totalRecebimentos =
+        dados.reduce(
+            (a, b) =>
+                a + b.notasRecebidas,
+            0
+        );
+
     // MVP - Melhor conferente
     const mvp = dados[0];
 
@@ -2276,7 +2283,21 @@ export default function Produtividade() {
                             },
                         }}
                     >
-
+                        {/* RECEBIMENTOS */}
+                        <Card sx={glassStyle}>
+                            <CardContent>
+                                <Typography color={subTextColor}>
+                                    Recebimentos
+                                </Typography>
+                                <Typography variant="h4" fontWeight="bold" color="#00bfff">
+                                    {totalRecebimentos}
+                                </Typography>
+                                <Typography variant="caption" color={subTextColor}>
+                                    notas recebidas
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                        
                         {/* TOTAL ITENS */}
                         <Card sx={glassStyle}>
                             <CardContent>
@@ -2288,21 +2309,6 @@ export default function Produtividade() {
                                 </Typography>
                                 <Typography variant="caption" color={subTextColor}>
                                     peças conferidas
-                                </Typography>
-                            </CardContent>
-                        </Card>
-
-                        {/* PONTOS */}
-                        <Card sx={glassStyle}>
-                            <CardContent>
-                                <Typography color={subTextColor}>
-                                    Pontuação
-                                </Typography>
-                                <Typography variant="h4" fontWeight="bold" color="#00bfff">
-                                    {totalPontos}
-                                </Typography>
-                                <Typography variant="caption" color={subTextColor}>
-                                    produtividade geral
                                 </Typography>
                             </CardContent>
                         </Card>

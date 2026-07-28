@@ -538,6 +538,40 @@ export default function Temporadas() {
                                         }}
                                     >
                                         <Typography fontSize={30}>
+                                            🚚
+                                        </Typography>
+
+                                        <Typography
+                                            variant="subtitle2"
+                                            color="text.secondary"
+                                        >
+                                            RECEBIMENTOS
+                                        </Typography>
+
+                                        <Typography
+                                            variant="h4"
+                                            fontWeight="bold"
+                                            mt={1}
+                                            color="#ff8a1c"
+                                        >
+                                            {Number(
+                                                detalhes.estatisticas?.recebimentos_total ?? 0
+                                            ).toLocaleString()}
+                                        </Typography>
+                                    </Paper>
+                                </Grid>
+
+                                <Grid item xs={12} md={3}>
+                                    <Paper
+                                        sx={{
+                                            p: 3,
+                                            height: "100%",
+                                            borderRadius: 4,
+                                            textAlign: "center",
+                                            bgcolor: "background.default",
+                                        }}
+                                    >
+                                        <Typography fontSize={30}>
                                             🧾
                                         </Typography>
 
@@ -771,11 +805,11 @@ export default function Temporadas() {
                                                         }}
                                                     >
                                                         <Typography variant="caption">
-                                                            📦
+                                                            🚚
                                                         </Typography>
 
                                                         <Typography fontWeight="bold">
-                                                            {jogador.itens.toLocaleString()}
+                                                            {jogador.recebimentos.toLocaleString()}
                                                         </Typography>
                                                     </Paper>
 
@@ -794,6 +828,24 @@ export default function Temporadas() {
 
                                                         <Typography fontWeight="bold">
                                                             {jogador.notas.toLocaleString()}
+                                                        </Typography>
+                                                    </Paper>
+
+                                                    <Paper
+                                                        elevation={0}
+                                                        sx={{
+                                                            flex: 1,
+                                                            p: 1,
+                                                            textAlign: "center",
+                                                            bgcolor: "rgba(255,255,255,.05)",
+                                                        }}
+                                                    >
+                                                        <Typography variant="caption">
+                                                            📦
+                                                        </Typography>
+
+                                                        <Typography fontWeight="bold">
+                                                            {jogador.itens.toLocaleString()}
                                                         </Typography>
                                                     </Paper>
 
@@ -950,6 +1002,12 @@ export default function Temporadas() {
                                                             flexWrap: "wrap",
                                                         }}
                                                     >
+                                                        <Typography
+                                                            variant="body2"
+                                                            color="text.secondary"
+                                                        >
+                                                            🚚 {jogador.recebimentos.toLocaleString()}
+                                                        </Typography>
                                                         <Typography
                                                             variant="body2"
                                                             color="text.secondary"
