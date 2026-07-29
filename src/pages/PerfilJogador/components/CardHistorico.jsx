@@ -562,7 +562,8 @@ export default function CardHistorico({
                     sx: {
                         bgcolor: "black",
                         borderRadius: 4,
-                        border: "1px solid rgba(255,255,255,.08)"
+                        border: "1px solid rgba(255,255,255,.08)",
+                        zoom: '0.9'
                     }
                 }}
             >
