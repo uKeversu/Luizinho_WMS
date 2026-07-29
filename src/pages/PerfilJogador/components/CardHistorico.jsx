@@ -345,104 +345,106 @@ export default function CardHistorico({
 
                         >
                             {
-                                    conquistasDesbloqueadasOrdenadas.map((c) => (
+                                conquistasDesbloqueadasOrdenadas
+                                    .slice(0, 3)
+                                    .map((c) => (
 
                                         <Card
-                                        key={c.id}
-                                        sx={{
-                                            bgcolor: "#111827",
-                                            border: `2px solid ${coresRaridade[c.raridade] || "#444"}`,
-                                            position: "relative",
-                                            overflow: "hidden",
-                                            transition: ".25s",
-                                            display: "flex",
-                                            "&:hover": {
-                                                transform: "translateY(-4px)",
-                                                boxShadow: `0 0 18px ${coresRaridade[c.raridade] || "#666"}55`
-                                            }
-                                        }}
-                                    >
-                                        <Box
-                                            display="flex"
-                                            flexDirection="column"
-                                            alignItems="center"
-                                            p={3}
+                                            key={c.id}
                                             sx={{
-                                                flex: 1
+                                                bgcolor: "#111827",
+                                                border: `2px solid ${coresRaridade[c.raridade] || "#444"}`,
+                                                position: "relative",
+                                                overflow: "hidden",
+                                                transition: ".25s",
+                                                display: "flex",
+                                                "&:hover": {
+                                                    transform: "translateY(-4px)",
+                                                    boxShadow: `0 0 18px ${coresRaridade[c.raridade] || "#666"}55`
+                                                }
                                             }}
                                         >
-                                            <Avatar
+                                            <Box
+                                                display="flex"
+                                                flexDirection="column"
+                                                alignItems="center"
+                                                p={3}
                                                 sx={{
-                                                    width: 82,
-                                                    height: 82,
-                                                    fontSize: 46,
-                                                    bgcolor: `${coresRaridade[c.raridade] || "#666"}22`,
-                                                    border: `2px solid ${coresRaridade[c.raridade] || "#666"}`,
-                                                    mb: 2
+                                                    flex: 1
                                                 }}
                                             >
-                                                {c.icone}
-                                            </Avatar>
-
-                                            <Typography
-                                                color="white"
-                                                fontWeight={700}
-                                                textAlign="center"
-                                            >
-                                                {c.nome}
-                                            </Typography>
-
-                                            <Typography
-                                                color="gray"
-                                                fontSize={13}
-                                                textAlign="center"
-                                                mt={1}
-                                            >
-                                                {c.descricao}
-                                            </Typography>
-
-
-
-                                            <Box
-                                                mt="auto"
-                                                pt={2}
-                                                width="100%"
-                                                textAlign="center"
-                                            >
-                                                <Chip
+                                                <Avatar
                                                     sx={{
+                                                        width: 82,
+                                                        height: 82,
+                                                        fontSize: 46,
                                                         bgcolor: `${coresRaridade[c.raridade] || "#666"}22`,
-                                                        color: coresRaridade[c.raridade] || "#fff",
-                                                        fontWeight: 700
+                                                        border: `2px solid ${coresRaridade[c.raridade] || "#666"}`,
+                                                        mb: 2
                                                     }}
-                                                    label={c.raridade}
-                                                />
-                                                <Divider sx={{ my: 1 }} />
-
-                                                <Typography
-                                                    color="gray"
-                                                    fontSize={12}
                                                 >
-                                                    Desbloqueada em
-                                                </Typography>
+                                                    {c.icone}
+                                                </Avatar>
 
                                                 <Typography
                                                     color="white"
-                                                    fontSize={13}
-                                                    fontWeight={600}
+                                                    fontWeight={700}
+                                                    textAlign="center"
                                                 >
-                                                    {new Date(
-                                                        c.data_desbloqueio
-                                                    ).toLocaleDateString("pt-BR")}
+                                                    {c.nome}
                                                 </Typography>
+
+                                                <Typography
+                                                    color="gray"
+                                                    fontSize={13}
+                                                    textAlign="center"
+                                                    mt={1}
+                                                >
+                                                    {c.descricao}
+                                                </Typography>
+
+
+
+                                                <Box
+                                                    mt="auto"
+                                                    pt={2}
+                                                    width="100%"
+                                                    textAlign="center"
+                                                >
+                                                    <Chip
+                                                        sx={{
+                                                            bgcolor: `${coresRaridade[c.raridade] || "#666"}22`,
+                                                            color: coresRaridade[c.raridade] || "#fff",
+                                                            fontWeight: 700
+                                                        }}
+                                                        label={c.raridade}
+                                                    />
+                                                    <Divider sx={{ my: 1 }} />
+
+                                                    <Typography
+                                                        color="gray"
+                                                        fontSize={12}
+                                                    >
+                                                        Desbloqueada em
+                                                    </Typography>
+
+                                                    <Typography
+                                                        color="white"
+                                                        fontSize={13}
+                                                        fontWeight={600}
+                                                    >
+                                                        {new Date(
+                                                            c.data_desbloqueio
+                                                        ).toLocaleDateString("pt-BR")}
+                                                    </Typography>
+
+                                                </Box>
 
                                             </Box>
 
-                                        </Box>
+                                        </Card>
 
-                                    </Card>
-
-                                ))
+                                    ))
 
                             }
 
@@ -646,7 +648,7 @@ export default function CardHistorico({
 
                     >
                         {
-                                conquistasOrdenadas.map((c) => {
+                            conquistasOrdenadas.map((c) => {
 
                                 const desbloqueada =
                                     c.desbloqueada;
