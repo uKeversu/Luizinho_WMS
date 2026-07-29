@@ -9,7 +9,8 @@ import {
     Divider,
     Grid,
     Typography,
-    Button
+    Button,
+    Stack
 } from "@mui/material";
 
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -1099,47 +1100,50 @@ export default function CardJogador({
 
                 {/* ESTATÍSTICAS */}
 
-                <Grid container spacing={3}>
-                    <Grid item xs={6}>
-                        <Estatistica
-                            titulo="XP TOTAL"
-                            valor={jogador.xpTotal?.toLocaleString() || 0}
-                            cor="#FFD54F"
-                        />
-                    </Grid>
+                <Box
+                    sx={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(3, 1fr)",
+                        gap: 2,
+                        mt: 2,
+                    }}
+                >
+                    <Estatistica
+                        titulo="XP TOTAL"
+                        valor={jogador.xpTotal?.toLocaleString() || 0}
+                        cor="#FFD54F"
+                    />
 
-                    <Grid item xs={6}>
-                        <Estatistica
-                            titulo="RANK"
-                            valor={`#${jogador.rankGeral ?? "-"}`}
-                            cor="#4FC3F7"
-                        />
-                    </Grid>
+                    <Estatistica
+                        titulo="RANK"
+                        valor={`#${jogador.rankGeral ?? "-"}`}
+                        cor="#42A5F5"
+                    />
 
-                    <Grid item xs={6}>
-                        <Estatistica
-                            titulo="ITENS"
-                            valor={jogador.itensConferidos || 0}
-                            cor="#81C784"
-                        />
-                    </Grid>
+                    <Estatistica
+                        titulo="RECEBIMENTOS"
+                        valor={jogador.recebimentos || 0}
+                        cor="#BA68C8"
+                    />
 
-                    <Grid item xs={6}>
-                        <Estatistica
-                            titulo="NOTAS"
-                            valor={jogador.notasConferidas || 0}
-                            cor="#FFB74D"
-                        />
-                    </Grid>
+                    <Estatistica
+                        titulo="PRECISÃO"
+                        valor={`${jogador.produtividade || 0}%`}
+                        cor="#66BB6A"
+                    />
 
-                    <Grid item xs={6}>
-                        <Estatistica
-                            titulo="EFICIÊNCIA"
-                            valor={`${jogador.produtividade || 0}%`}
-                            cor="#4DD0E1"
-                        />
-                    </Grid>
-                </Grid>
+                    <Estatistica
+                        titulo="ITENS"
+                        valor={jogador.itensConferidos || 0}
+                        cor="#FFA726"
+                    />
+
+                    <Estatistica
+                        titulo="NOTAS"
+                        valor={jogador.notasConferidas || 0}
+                        cor="#EF5350"
+                    />
+                </Box>
 
                 <BarraXP xp={jogador.xpTotal || 0} />
 
