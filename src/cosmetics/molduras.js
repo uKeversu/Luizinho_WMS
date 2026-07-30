@@ -45,7 +45,7 @@ export const MOLDURAS = {
         glow: "0 0 12px #e5ff00, 0 0 15px #0059ff",
     },
 
-    "Coroa do Genesis": {
+    "Pioneiro": {
         borderColor: "#FFE082",
         glow: `
         0 0 8px #FFF8DC,
