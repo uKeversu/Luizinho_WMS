@@ -6254,8 +6254,9 @@
 }
 
 
+
 /* =====================================================
-   CALDEIRÃO CRUZMALTINO
+   CARAVELA CRUZMALTINA
 ===================================================== */
 
 .caravela-animation {
@@ -7107,6 +7108,1601 @@
         transform:
 
             translateY(12px) rotate(-3deg);
+
+    }
+
+}
+
+
+
+/* =====================================================
+   AURA GENESIS
+   PARTE 1
+   Atmosfera • Halo • Nebulosa • Raios
+===================================================== */
+
+.aura-genesis-animation {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    animation:
+        genesisAtmosphere 6s ease-in-out infinite;
+}
+
+/* ATMOSFERA */
+@keyframes genesisAtmosphere {
+
+    0%,
+    100% {
+        filter:
+            brightness(.95) saturate(1) contrast(1);
+    }
+
+    50% {
+        filter:
+            brightness(1.08) saturate(1.15) contrast(1.08);
+    }
+}
+
+/* CONTAINER */
+.genesis-aura {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 1;
+}
+
+/* HALO PRINCIPAL */
+.genesis-halo {
+    position: absolute;
+    inset: -25%;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle,
+            rgba(255, 245, 180, .55) 0%,
+            rgba(255, 215, 0, .28) 18%,
+            rgba(255, 193, 7, .16) 35%,
+            rgba(255, 193, 7, .05) 55%,
+            transparent 72%);
+    filter:
+        blur(45px);
+    animation:
+        haloGenesis 7s infinite ease-in-out;
+    mix-blend-mode: screen;
+}
+
+/* HALO SECUNDÁRIO */
+.genesis-halo::before {
+    content: "";
+    position: absolute;
+    inset: 15%;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle,
+            rgba(255, 255, 255, .35),
+            rgba(255, 215, 0, .18),
+            transparent 70%);
+    filter:
+        blur(30px);
+    animation:
+        haloGenesisInner 5s infinite ease-in-out;
+}
+
+/* NEBULOSA */
+.genesis-nebula {
+    position: absolute;
+    inset: -20%;
+    background:
+        radial-gradient(circle at 20% 40%,
+            rgba(255, 220, 80, .18),
+            transparent 45%),
+        radial-gradient(circle at 80% 30%,
+            rgba(255, 235, 140, .12),
+            transparent 42%),
+        radial-gradient(circle at 50% 80%,
+            rgba(255, 193, 7, .14),
+            transparent 48%),
+        radial-gradient(circle,
+            rgba(255, 255, 255, .08),
+            transparent 75%);
+    filter:
+        blur(70px);
+    opacity: .75;
+    animation:
+        nebulaGenesis 18s infinite alternate ease-in-out;
+}
+
+/* RAIOS */
+.genesis-rays {
+    position: absolute;
+    inset: -35%;
+    animation:
+        raysRotate 45s linear infinite;
+}
+
+.genesis-ray {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 3px;
+    height: 230%;
+    transform-origin:
+        center calc(100% - 10px);
+    transform:
+        translate(-50%, -100%) rotate(calc(var(--i) * 36deg));
+    background:
+        linear-gradient(to bottom,
+            transparent,
+            rgba(255, 255, 255, .85),
+            rgba(255, 220, 80, .65),
+            rgba(255, 193, 7, .20),
+            transparent);
+    filter:
+        blur(2px);
+    opacity: .22;
+}
+
+.genesis-ray::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(to bottom,
+            transparent,
+            rgba(255, 255, 255, .55),
+            transparent);
+    filter:
+        blur(8px);
+}
+
+/* BRILHO CENTRAL */
+.genesis-center {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 180px;
+    height: 180px;
+    transform:
+        translate(-50%, -50%);
+    border-radius: 50%;
+    background:
+        radial-gradient(circle,
+            rgba(255, 255, 255, .75),
+            rgba(255, 235, 140, .35),
+            transparent 72%);
+    filter:
+        blur(35px);
+    animation:
+        centerPulse 5s infinite ease-in-out;
+}
+
+/* VIGNETTE DOURADA */
+.genesis-vignette {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle,
+            transparent 40%,
+            rgba(0, 0, 0, .10) 75%,
+            rgba(0, 0, 0, .25) 100%);
+    mix-blend-mode: multiply;
+}
+
+/* REFLEXO AMBIENTE */
+.genesis-ambient {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(135deg,
+            transparent 0%,
+            rgba(255, 255, 255, .06) 35%,
+            rgba(255, 220, 80, .12) 50%,
+            rgba(255, 255, 255, .05) 65%,
+            transparent 100%);
+    opacity: .7;
+}
+
+/* KEYFRAMES */
+@keyframes haloGenesis {
+
+    0%,
+    100% {
+        transform:
+            scale(.92);
+        opacity:
+            .65;
+    }
+
+    50% {
+        transform:
+            scale(1.08);
+        opacity:
+            1;
+    }
+}
+
+@keyframes haloGenesisInner {
+
+    0%,
+    100% {
+        transform:
+            scale(.95);
+        opacity:
+            .55;
+    }
+
+    50% {
+        transform:
+            scale(1.12);
+        opacity:
+            .9;
+    }
+}
+
+@keyframes nebulaGenesis {
+    from {
+        transform:
+            rotate(0deg) translate(-20px, -10px);
+    }
+
+    to {
+        transform:
+            rotate(8deg) translate(25px, 15px);
+    }
+}
+
+@keyframes raysRotate {
+    from {
+        transform:
+            rotate(0deg);
+    }
+
+    to {
+        transform:
+            rotate(360deg);
+    }
+}
+
+@keyframes centerPulse {
+
+    0%,
+    100% {
+        transform:
+            translate(-50%, -50%) scale(.95);
+        opacity:
+            .7;
+    }
+
+    50% {
+        transform:
+            translate(-50%, -50%) scale(1.15);
+        opacity:
+            1;
+    }
+}
+
+/* ÓRBITA DOS ORBES */
+
+.genesis-orbit {
+    position: absolute;
+    inset: 0;
+    animation: genesisOrbit 16s linear infinite;
+}
+
+.genesis-orb {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 12px;
+    height: 12px;
+
+    margin-left: -6px;
+    margin-top: -6px;
+
+    border-radius: 50%;
+
+    background: radial-gradient(circle,
+            #fffef2,
+            #ffe36b 45%,
+            #ffb300 100%);
+
+    box-shadow:
+        0 0 10px #ffe36b,
+        0 0 20px #ffca28,
+        0 0 35px rgba(255, 215, 0, .8);
+
+    transform:
+        rotate(calc(var(--i) * 45deg)) translateY(-180px);
+
+    animation:
+        genesisOrbPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes genesisOrbit {
+
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+
+}
+
+@keyframes genesisOrbPulse {
+
+    0%,
+    100% {
+        transform:
+            rotate(calc(var(--i) * 45deg)) translateY(-180px) scale(.85);
+    }
+
+    50% {
+        transform:
+            rotate(calc(var(--i) * 45deg)) translateY(-180px) scale(1.35);
+    }
+
+}
+
+/* FEIXES DE LUZ */
+
+.genesis-rays {
+
+    position: absolute;
+    inset: 0;
+
+}
+
+.genesis-ray {
+
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 4px;
+    height: 260px;
+
+    transform-origin: bottom center;
+
+    transform:
+        rotate(calc(var(--i) * 36deg)) translateY(-120px);
+
+    background:
+        linear-gradient(to top,
+            transparent,
+            rgba(255, 230, 120, .95),
+            rgba(255, 193, 7, .4),
+            transparent);
+
+    filter: blur(1px);
+
+    opacity: .18;
+
+    animation:
+        genesisRayPulse 4s ease-in-out infinite;
+}
+
+@keyframes genesisRayPulse {
+
+    0%,
+    100% {
+        opacity: .08;
+        transform:
+            rotate(calc(var(--i) * 36deg)) translateY(-120px) scaleY(.8);
+    }
+
+    50% {
+        opacity: .45;
+        transform:
+            rotate(calc(var(--i) * 36deg)) translateY(-120px) scaleY(1.2);
+    }
+
+}
+
+/* CRISTAIS */
+.genesis-crystals {
+    position: absolute;
+    inset: 0;
+}
+
+.genesis-crystal {
+    position: absolute;
+    left: calc((var(--i) * 8%) + 5%);
+    bottom: -20px;
+    width: 18px;
+    height: 42px;
+    background:
+        linear-gradient(180deg,
+            #fff7c2,
+            #ffd54f,
+            #ffb300);
+    clip-path:
+        polygon(50% 0,
+            100% 45%,
+            75% 100%,
+            25% 100%,
+            0 45%);
+    filter:
+        drop-shadow(0 0 12px #ffd54f);
+    opacity: .45;
+    animation:
+        crystalRise calc(9s + (var(--i) * .3s)) infinite ease-in-out;
+}
+
+@keyframes crystalRise {
+    from {
+        transform:
+            translateY(80px) rotate(0deg);
+        opacity: 0;
+    }
+
+    20% {
+        opacity: .5;
+    }
+
+    80% {
+        opacity: .5;
+    }
+
+    to {
+        transform:
+            translateY(-500px) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* FRAGMENTOS DE OURO */
+
+.genesis-fragments {
+    position: absolute;
+    inset: 0;
+}
+
+.genesis-fragment {
+    position: absolute;
+    left: calc((var(--i) * 6%) + 3%);
+    top: -30px;
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    background:
+        linear-gradient(135deg,
+            #fff7b2,
+            #ffc107,
+            #ff9800);
+    box-shadow:
+        0 0 12px #ffd54f;
+    animation:
+        fragmentFall calc(6s + (var(--i) * .2s)) infinite linear;
+}
+
+@keyframes fragmentFall {
+
+    from {
+        transform:
+            translateY(-100px) rotate(0deg);
+        opacity: 0;
+    }
+
+    10% {
+        opacity: .7;
+    }
+
+    90% {
+        opacity: .7;
+    }
+
+    to {
+        transform:
+            translateY(900px) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+/* SOL DO GENESIS*/
+
+.genesis-glow {
+    position: absolute;
+    left: 50%;
+    top: 48%;
+    width: 320px;
+    height: 320px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background:
+        radial-gradient(circle,
+            rgba(255, 255, 255, .95) 0%,
+            rgba(255, 245, 180, .85) 15%,
+            rgba(255, 220, 90, .45) 35%,
+            rgba(255, 180, 0, .18) 60%,
+            transparent 80%);
+    filter:
+        blur(30px);
+    opacity: .85;
+    animation:
+        genesisSun 5s ease-in-out infinite;
+    z-index: 1;
+}
+
+@keyframes genesisSun {
+
+    0%,
+    100% {
+        transform:
+            translate(-50%, -50%) scale(.95);
+        opacity: .7;
+    }
+
+    50% {
+        transform:
+            translate(-50%, -50%) scale(1.15);
+        opacity: 1;
+    }
+}
+
+/* HALO DIVINO */
+.genesis-halo {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 380px;
+    height: 380px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 2px solid rgba(255, 220, 100, .18);
+    box-shadow:
+        0 0 40px rgba(255, 220, 80, .25),
+        inset 0 0 30px rgba(255, 240, 180, .18);
+    animation:
+        haloPulse 6s infinite ease-in-out;
+}
+
+@keyframes haloPulse {
+
+    0%,
+    100% {
+        transform:
+            translate(-50%, -50%) scale(.92);
+        opacity: .45;
+    }
+
+    50% {
+        transform:
+            translate(-50%, -50%) scale(1.08);
+        opacity: .9;
+    }
+}
+
+/* NEBULOSA DOURADA */
+.genesis-nebula {
+    position: absolute;
+    inset: -20%;
+    background:
+        radial-gradient(circle at 25% 35%,
+            rgba(255, 210, 70, .18),
+            transparent 45%),
+        radial-gradient(circle at 70% 70%,
+            rgba(255, 235, 140, .16),
+            transparent 55%),
+        radial-gradient(circle at 80% 20%,
+            rgba(255, 180, 0, .10),
+            transparent 40%);
+    filter:
+        blur(45px);
+    animation:
+        nebulaMove 20s linear infinite alternate;
+    opacity: .75;
+}
+
+@keyframes nebulaMove {
+    from {
+        transform:
+            translate(-30px, -20px) scale(1);
+    }
+
+    to {
+        transform:
+            translate(30px, 20px) scale(1.18);
+    }
+}
+
+/* ESTRELAS */
+.genesis-stars {
+    position: absolute;
+    inset: 0;
+}
+
+.genesis-star {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow:
+        0 0 6px #fff,
+        0 0 15px #ffe082,
+        0 0 25px #ffc107;
+    animation:
+        starBlink 2.5s infinite;
+    animation-delay: var(--delay);
+}
+
+@keyframes starBlink {
+
+    0%,
+    100% {
+        opacity: .2;
+        transform: scale(.6);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.7);
+    }
+}
+
+/* BRILHO CINEMATOGRÁFICO */
+.genesis-light-sweep {
+    position: absolute;
+    inset: -40%;
+    background:
+        linear-gradient(115deg,
+            transparent 35%,
+            rgba(255, 255, 255, .05),
+            rgba(255, 255, 255, .45),
+            rgba(255, 240, 180, .18),
+            transparent 65%);
+    transform:
+        rotate(-15deg) translateX(-120%);
+    animation:
+        sweepGenesis 7s linear infinite;
+    z-index: 9;
+}
+
+@keyframes sweepGenesis {
+
+    from {
+        transform:
+            rotate(-15deg) translateX(-120%);
+    }
+
+    to {
+        transform:
+            rotate(-15deg) translateX(140%);
+    }
+}
+
+/* FLARE */
+.genesis-flare {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 600px;
+    height: 3px;
+    transform:
+        translate(-50%, -50%) rotate(35deg);
+    background:
+        linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, .9),
+            rgba(255, 215, 0, .7),
+            transparent);
+    filter:
+        blur(2px);
+    animation:
+        flarePulse 4s ease-in-out infinite;
+}
+
+@keyframes flarePulse {
+
+    0%,
+    100% {
+        opacity: .15;
+    }
+
+    50% {
+        opacity: .8;
+    }
+}
+
+/* PARTÍCULAS DOURADAS */
+.genesis-particles {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+.genesis-particle {
+    position: absolute;
+    left: var(--x);
+    bottom: -30px;
+    width: var(--size);
+    height: var(--size);
+    border-radius: 50%;
+    background:
+        radial-gradient(circle,
+            #ffffff,
+            #ffe082 40%,
+            #ffc107 70%,
+            #ff9800);
+    box-shadow:
+        0 0 8px #ffe082,
+        0 0 18px #ffc107,
+        0 0 35px rgba(255, 193, 7, .7);
+    opacity: 0;
+    animation:
+        genesisParticle calc(5s + (var(--i) * .12s)) linear infinite;
+    animation-delay: var(--delay);
+}
+
+@keyframes genesisParticle {
+
+    0% {
+
+        transform:
+
+            translateY(0) translateX(0) scale(.2);
+
+        opacity: 0;
+
+    }
+
+    15% {
+
+        opacity: .9;
+
+    }
+
+    50% {
+
+        transform:
+
+            translateY(-280px) translateX(-20px) scale(1);
+
+    }
+
+    100% {
+
+        transform:
+
+            translateY(-700px) translateX(25px) scale(.2);
+
+        opacity: 0;
+
+    }
+
+}
+
+/* =====================================================
+   ENERGIA RADIANTE
+===================================================== */
+
+.genesis-aura::before {
+
+    content: "";
+
+    position: absolute;
+    inset: -30%;
+
+    border-radius: 50%;
+
+    background:
+
+        radial-gradient(circle,
+
+            rgba(255, 255, 255, .08),
+
+            rgba(255, 215, 0, .15),
+
+            rgba(255, 193, 7, .08),
+
+            transparent 70%);
+
+    filter: blur(45px);
+
+    animation:
+
+        auraExpand 6s ease-in-out infinite;
+
+}
+
+@keyframes auraExpand {
+
+    0%,
+    100% {
+
+        transform: scale(.85);
+
+        opacity: .35;
+
+    }
+
+    50% {
+
+        transform: scale(1.25);
+
+        opacity: .9;
+
+    }
+
+}
+
+/* =====================================================
+   DISTORÇÃO ATMOSFÉRICA
+===================================================== */
+
+.genesis-aura::after {
+
+    content: "";
+
+    position: absolute;
+    inset: -10%;
+
+    background:
+
+        radial-gradient(circle,
+
+            transparent 45%,
+
+            rgba(255, 230, 120, .12),
+
+            transparent 70%);
+
+    mix-blend-mode: screen;
+
+    animation:
+
+        atmosphereWave 8s linear infinite;
+
+}
+
+@keyframes atmosphereWave {
+
+    from {
+
+        transform:
+
+            rotate(0deg) scale(1);
+
+    }
+
+    to {
+
+        transform:
+
+            rotate(360deg) scale(1.12);
+
+    }
+
+}
+
+/* =====================================================
+   SHIMMER
+===================================================== */
+
+.genesis-shimmer {
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+
+        linear-gradient(120deg,
+
+            transparent 20%,
+
+            rgba(255, 255, 255, .05),
+
+            rgba(255, 248, 210, .45),
+
+            rgba(255, 255, 255, .08),
+
+            transparent 80%);
+
+    transform:
+
+        translateX(-130%);
+
+    animation:
+
+        shimmerGenesis 5s linear infinite;
+
+    pointer-events: none;
+
+}
+
+@keyframes shimmerGenesis {
+
+    from {
+
+        transform:
+
+            translateX(-130%);
+
+    }
+
+    to {
+
+        transform:
+
+            translateX(130%);
+
+    }
+
+}
+
+/* =====================================================
+   VINHETA CINEMATOGRÁFICA
+===================================================== */
+
+.genesis-vignette {
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+
+        radial-gradient(circle,
+
+            transparent 45%,
+
+            rgba(0, 0, 0, .18) 100%);
+
+    pointer-events: none;
+
+    animation:
+
+        vignettePulse 7s ease-in-out infinite;
+
+}
+
+@keyframes vignettePulse {
+
+    0%,
+    100% {
+
+        opacity: .45;
+
+    }
+
+    50% {
+
+        opacity: .8;
+
+    }
+
+}
+
+/* =====================================================
+   RESPIRAÇÃO DO EFEITO
+===================================================== */
+
+.aura-genesis-animation {
+
+    animation:
+
+        genesisBreath 5s ease-in-out infinite;
+
+}
+
+@keyframes genesisBreath {
+
+    0%,
+    100% {
+        transform: scale(1);
+        filter:
+            brightness(1) saturate(1);
+    }
+
+    50% {
+        transform: scale(1.015);
+        filter:
+            brightness(1.15) saturate(1.35);
+    }
+}
+
+/* =====================================================
+   ONDA DE ENERGIA
+===================================================== */
+
+.genesis-wave {
+
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 180px;
+    height: 180px;
+
+    border-radius: 50%;
+
+    border: 2px solid rgba(255,215,0,.45);
+
+    transform: translate(-50%, -50%);
+
+    animation: genesisWave 5s ease-out infinite;
+
+    pointer-events: none;
+
+}
+
+@keyframes genesisWave {
+
+    0% {
+
+        transform:
+            translate(-50%, -50%)
+            scale(.2);
+
+        opacity: .9;
+
+    }
+
+    100% {
+
+        transform:
+            translate(-50%, -50%)
+            scale(4);
+
+        opacity: 0;
+
+    }
+
+}
+
+/* =====================================================
+   POEIRA DOURADA
+===================================================== */
+
+.genesis-dust {
+
+    position: absolute;
+    inset: 0;
+
+    overflow: hidden;
+
+}
+
+.genesis-dust span {
+
+    position: absolute;
+
+    left: var(--x);
+    top: var(--y);
+
+    width: 2px;
+    height: 2px;
+
+    border-radius: 50%;
+
+    background: #fff8d6;
+
+    box-shadow:
+
+        0 0 6px #ffe082,
+        0 0 14px #ffc107;
+
+    opacity: 0;
+
+    animation:
+
+        dustFloat
+        var(--duration)
+        infinite
+        ease-in-out;
+
+    animation-delay: var(--delay);
+
+}
+
+@keyframes dustFloat {
+
+    0% {
+
+        transform:
+            translateY(20px)
+            scale(.2);
+
+        opacity: 0;
+
+    }
+
+    20% {
+
+        opacity: .8;
+
+    }
+
+    100% {
+
+        transform:
+            translateY(-120px)
+            translateX(25px)
+            scale(1);
+
+        opacity: 0;
+
+    }
+
+}
+
+/* =====================================================
+   CLARÃO MÍTICO
+===================================================== */
+
+.genesis-divine-flash {
+
+    position: absolute;
+    inset: 0;
+
+    background:
+
+        radial-gradient(circle,
+
+            rgba(255,255,255,.95),
+
+            rgba(255,225,90,.55),
+
+            transparent 70%);
+
+    mix-blend-mode: screen;
+
+    opacity: 0;
+
+    animation:
+
+        divineFlash 18s infinite;
+
+}
+
+@keyframes divineFlash {
+
+    0%,
+    94%,
+    100% {
+
+        opacity: 0;
+
+    }
+
+    95% {
+
+        opacity: .2;
+
+    }
+
+    96% {
+
+        opacity: .9;
+
+    }
+
+    97% {
+
+        opacity: .3;
+
+    }
+
+    98% {
+
+        opacity: 1;
+
+    }
+
+    99% {
+
+        opacity: 0;
+
+    }
+
+}
+
+/* =====================================================
+   BORDA MÍTICA
+===================================================== */
+
+.genesis-border {
+
+    position: absolute;
+
+    inset: 0;
+
+    border-radius: inherit;
+
+    border: 2px solid rgba(255,215,0,.18);
+
+    box-shadow:
+
+        inset 0 0 20px rgba(255,215,0,.25),
+
+        0 0 25px rgba(255,193,7,.35),
+
+        0 0 60px rgba(255,193,7,.18);
+
+    animation:
+
+        borderPulse 4s ease-in-out infinite;
+
+}
+
+@keyframes borderPulse {
+
+    0%,
+    100% {
+
+        opacity: .45;
+
+    }
+
+    50% {
+
+        opacity: 1;
+
+    }
+
+}
+
+/* =====================================================
+   RESPIRAÇÃO FINAL
+===================================================== */
+
+.aura-genesis-animation {
+
+    animation:
+
+        genesisBreath 6s ease-in-out infinite;
+
+}
+
+@keyframes genesisBreath {
+
+    0%,
+    100% {
+
+        filter:
+
+            brightness(1)
+
+            saturate(1);
+
+    }
+
+    50% {
+
+        filter:
+
+            brightness(1.18)
+
+            saturate(1.45);
+
+    }
+
+}
+
+/* =====================================================
+   CHUVA DE OURO
+===================================================== */
+
+.genesis-rain {
+
+    position: absolute;
+
+    inset: 0;
+
+    overflow: hidden;
+
+    pointer-events: none;
+
+}
+
+.genesis-drop {
+
+    position: absolute;
+
+    left: var(--x);
+
+    top: -40px;
+
+    width: 2px;
+
+    height: var(--size);
+
+    border-radius: 20px;
+
+    background:
+        linear-gradient(to bottom,
+            rgba(255,255,255,0),
+            #fff6c5,
+            #ffd54f,
+            #ffb300);
+
+    box-shadow:
+
+        0 0 8px #ffd54f,
+
+        0 0 18px rgba(255,193,7,.8);
+
+    opacity: .45;
+
+    animation:
+
+        genesisRain
+        var(--duration)
+        linear
+        infinite;
+
+    animation-delay: var(--delay);
+
+}
+
+@keyframes genesisRain {
+
+    from {
+
+        transform:
+
+            translateY(-120px)
+            rotate(15deg);
+
+    }
+
+    to {
+
+        transform:
+
+            translateY(900px)
+            translateX(-80px)
+            rotate(15deg);
+
+    }
+
+}
+
+/* =====================================================
+   FAÍSCAS
+===================================================== */
+
+.genesis-sparks {
+
+    position: absolute;
+
+    inset: 0;
+
+}
+
+.genesis-spark {
+
+    position: absolute;
+
+    left: var(--x);
+
+    top: var(--y);
+
+    width: 4px;
+
+    height: 4px;
+
+    border-radius: 50%;
+
+    background: white;
+
+    box-shadow:
+
+        0 0 8px white,
+
+        0 0 18px #ffd54f,
+
+        0 0 35px #ffc107;
+
+    opacity: 0;
+
+    animation:
+
+        sparkAnimation
+        var(--duration)
+        infinite;
+
+    animation-delay: var(--delay);
+
+}
+
+@keyframes sparkAnimation {
+
+    0% {
+
+        opacity: 0;
+
+        transform:
+            scale(.3);
+
+    }
+
+    15% {
+
+        opacity: 1;
+
+        transform:
+            scale(2);
+
+    }
+
+    30% {
+
+        opacity: 0;
+
+        transform:
+            scale(.6);
+
+    }
+
+    100% {
+
+        opacity: 0;
+
+    }
+
+}
+
+/* =====================================================
+   AURORA DOURADA
+===================================================== */
+
+.genesis-aurora {
+
+    position: absolute;
+
+    inset: -20%;
+
+    background:
+
+        linear-gradient(120deg,
+
+            transparent 10%,
+
+            rgba(255,225,80,.08),
+
+            rgba(255,255,255,.18),
+
+            rgba(255,193,7,.08),
+
+            transparent 90%);
+
+    filter:
+
+        blur(40px);
+
+    animation:
+
+        auroraMove 18s linear infinite;
+
+    mix-blend-mode: screen;
+
+}
+
+@keyframes auroraMove {
+
+    from {
+
+        transform:
+
+            rotate(0deg)
+            translateX(-80px);
+
+    }
+
+    to {
+
+        transform:
+
+            rotate(360deg)
+            translateX(80px);
+
+    }
+
+}
+
+/* =====================================================
+   BRILHO DAS BORDAS
+===================================================== */
+
+.genesis-border::before {
+
+    content: "";
+
+    position: absolute;
+
+    inset: -2px;
+
+    border-radius: inherit;
+
+    background:
+
+        linear-gradient(90deg,
+
+            transparent,
+
+            rgba(255,255,255,.7),
+
+            rgba(255,215,0,.9),
+
+            rgba(255,255,255,.7),
+
+            transparent);
+
+    opacity: .35;
+
+    animation:
+
+        borderSweep 4s linear infinite;
+
+}
+
+@keyframes borderSweep {
+
+    from {
+
+        transform:
+            translateX(-120%);
+
+    }
+
+    to {
+
+        transform:
+            translateX(120%);
+
+    }
+
+}
+
+/* =====================================================
+   PULSO FINAL
+===================================================== */
+
+.genesis-aura {
+
+    animation:
+
+        genesisUltimate 8s ease-in-out infinite;
+
+}
+
+@keyframes genesisUltimate {
+
+    0%,
+    100% {
+
+        transform:
+
+            scale(1);
+
+        filter:
+
+            brightness(1)
+            saturate(1);
+
+    }
+
+    50% {
+
+        transform:
+
+            scale(1.025);
+
+        filter:
+
+            brightness(1.3)
+            saturate(1.6);
 
     }
 

@@ -444,6 +444,15 @@ export default function Loja() {
                                                 >
                                                     Equipar
                                                 </Button>
+                                            ) : item.evento === 1 ? (
+                                                <Button
+                                                    fullWidth
+                                                    variant="contained"
+                                                    color="warning"
+                                                    disabled
+                                                >
+                                                    Evento
+                                                </Button>
                                             ) : (
                                                 <Button
                                                     fullWidth

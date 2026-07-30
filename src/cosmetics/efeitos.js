@@ -99,6 +99,15 @@ export const EFEITOS = {
 
     },
 
+    "Aura Genesis": {
+        background: "linear-gradient(135deg,#0f0900,#241700,#120b00)",
+        cardGlow: "0 0 18px #FFD700, 0 0 40px #FFC107, 0 0 70px rgba(255,215,0,.35)",
+        nomeGlow: "0 0 12px #FFF3B0, 0 0 24px #FFD700, 0 0 40px rgba(255,215,0,.55)",
+        accent: "#FFD700",
+        overlay: "linear-gradient(135deg, transparent 28%, rgba(255,223,90,.18) 45%, rgba(255,245,180,.22) 50%, rgba(255,223,90,.18) 55%, transparent 72%), radial-gradient(circle at 50% 45%, rgba(255,235,150,.18), transparent 70%)",
+        animation: "aura-genesis-animation"
+    },
+
     "Despertar do Leviatã": {
         background: "linear-gradient(135deg,#00110b,#02281d)",
         cardGlow: "0 0 30px #00ff99",

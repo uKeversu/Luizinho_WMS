@@ -36,6 +36,18 @@ export const TITULOS = {
         color: "#ff1d1d",
     },
 
+    "O Fundador": {
+        color: "#FFE082",
+
+        textShadow: `
+        0 0 6px #FFFFFF,
+        0 0 14px #FFF3B0,
+        0 0 26px #FFD700,
+        0 0 42px #FFC107,
+        0 0 70px rgba(255,215,0,.85)
+    `
+    },
+
     "Soberano Ancestral": {
         color: "#00ff62",
         textShadow:

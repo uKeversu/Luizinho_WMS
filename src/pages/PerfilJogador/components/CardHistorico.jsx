@@ -328,25 +328,19 @@ export default function CardHistorico({
                             </Typography>
 
                         </Card>
-
                         :
-
                         <Box
-
                             display="grid"
-
                             gridTemplateColumns={{
                                 xs: "1fr",
                                 md: "repeat(2,1fr)",
                                 lg: "repeat(3,1fr)"
                             }}
-
                             gap={2}
-
                         >
                             {
                                 conquistasDesbloqueadasOrdenadas
-                                    .slice(0, 3)
+                                    .slice(0, 6)
                                     .map((c) => (
 
                                         <Card
@@ -403,8 +397,6 @@ export default function CardHistorico({
                                                     {c.descricao}
                                                 </Typography>
 
-
-
                                                 <Box
                                                     mt="auto"
                                                     pt={2}
@@ -437,21 +429,13 @@ export default function CardHistorico({
                                                             c.data_desbloqueio
                                                         ).toLocaleDateString("pt-BR")}
                                                     </Typography>
-
                                                 </Box>
-
                                             </Box>
-
                                         </Card>
-
                                     ))
-
                             }
-
                         </Box>
-
                 }
-
             </Box>
 
             <Divider sx={{ my: 2 }} />
