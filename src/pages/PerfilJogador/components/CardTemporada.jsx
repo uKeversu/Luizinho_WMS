@@ -95,8 +95,14 @@ export default function CardTemporada({
 
                     <Chip
                         icon={<TimerIcon />}
-                        label={`${temporada.dias_restantes ?? 0} dias restantes`}
-                        color="warning"
+                        label={
+                            Number(temporada.dias_restantes ?? 0) === 0
+                                ? "A temporada acaba hoje!"
+                                : `${temporada.dias_restantes} dias restantes`
+                        }
+                        color={(temporada.dias_restantes ?? 0) === 0
+                            ? "error"
+                            : "warning"}
                         sx={{ color: "white" }}
                     />
                 </Stack>

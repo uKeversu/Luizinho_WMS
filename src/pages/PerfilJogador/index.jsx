@@ -147,11 +147,7 @@ export default function PerfilJogador() {
                     />
 
                 </Box>
-
             </Box>
-
         </Box>
-
     );
-
 }
