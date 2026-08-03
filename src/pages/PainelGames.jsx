@@ -281,7 +281,7 @@ export default function PainelGames() {
 
                     <Box
                         component="img"
-                        src="/banner_seasons/banner_temporada_genesis.png"
+                        src="/banner_seasons/banner_temporada_optimus.png"
                         sx={{
                             width: "100%",
                             height: 240,
@@ -316,7 +316,7 @@ export default function PainelGames() {
                         alignItems="center"
                         flexWrap="wrap"
                         gap={2}
-                        sx={{px:5}}
+                        sx={{ px: 5 }}
                     >
 
                         {/* Lado esquerdo */}
@@ -832,6 +832,7 @@ export default function PainelGames() {
                 </Box>
             </Stack>
 
+                            
             {/* ========================= DIALOG FINALIZAR ========================= */}
 
             <Dialog
@@ -839,6 +840,14 @@ export default function PainelGames() {
                 onClose={() => setDialogFinalizar(false)}
                 maxWidth="sm"
                 fullWidth
+                PaperProps={{
+                    sx: {
+                        bgcolor: "black",
+                        borderRadius: 4,
+                        border: "1px solid rgba(255,255,255,.08)",
+                        zoom: '0.9'
+                    }
+                }}
             >
 
                 <DialogTitle>
@@ -969,6 +978,14 @@ export default function PainelGames() {
                 onClose={() => setDialogPremiacao(false)}
                 maxWidth="md"
                 fullWidth
+                PaperProps={{
+                    sx: {
+                        bgcolor: "black",
+                        borderRadius: 4,
+                        border: "1px solid rgba(255,255,255,.08)",
+                        zoom: '0.9'
+                    }
+                }}
             >
 
                 <DialogTitle>
