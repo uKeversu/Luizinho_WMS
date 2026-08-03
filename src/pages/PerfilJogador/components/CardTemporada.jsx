@@ -98,11 +98,19 @@ export default function CardTemporada({
                         label={
                             Number(temporada.dias_restantes ?? 0) === 0
                                 ? "A temporada acaba hoje!"
-                                : `${temporada.dias_restantes} dias restantes`
+                                : Number(temporada.dias_restantes ?? 0) < 0
+                                    ? "A temporada acabou."
+                                    : Number(temporada.dias_restantes ?? 0) <= 5
+                                        ? `A temporada está acabando, faltam ${temporada.dias_restantes} dias.`
+                                        : `${temporada.dias_restantes} dias restantes`
                         }
-                        color={(temporada.dias_restantes ?? 0) === 0
-                            ? "error"
-                            : "warning"}
+                        color={
+                            Number(temporada.dias_restantes ?? 0) < 0
+                                ? "default"
+                                : Number(temporada.dias_restantes ?? 0) <= 5
+                                    ? "error"
+                                    : "warning"
+                        }
                         sx={{ color: "white" }}
                     />
                 </Stack>
