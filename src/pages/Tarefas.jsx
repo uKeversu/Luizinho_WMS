@@ -368,7 +368,7 @@ export default function Tarefas() {
         return detalhesFuncionario.competencias.length;
 
     }, [detalhesFuncionario]);
- 
+  
     const saldoPontos = useMemo(() => {
 
         if (!detalhesFuncionario)

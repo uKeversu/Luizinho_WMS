@@ -8126,7 +8126,7 @@
 
     border-radius: 50%;
 
-    border: 2px solid rgba(255,215,0,.45);
+    border: 2px solid rgba(255, 215, 0, .45);
 
     transform: translate(-50%, -50%);
 
@@ -8141,8 +8141,7 @@
     0% {
 
         transform:
-            translate(-50%, -50%)
-            scale(.2);
+            translate(-50%, -50%) scale(.2);
 
         opacity: .9;
 
@@ -8151,8 +8150,7 @@
     100% {
 
         transform:
-            translate(-50%, -50%)
-            scale(4);
+            translate(-50%, -50%) scale(4);
 
         opacity: 0;
 
@@ -8196,10 +8194,7 @@
 
     animation:
 
-        dustFloat
-        var(--duration)
-        infinite
-        ease-in-out;
+        dustFloat var(--duration) infinite ease-in-out;
 
     animation-delay: var(--delay);
 
@@ -8210,8 +8205,7 @@
     0% {
 
         transform:
-            translateY(20px)
-            scale(.2);
+            translateY(20px) scale(.2);
 
         opacity: 0;
 
@@ -8226,9 +8220,7 @@
     100% {
 
         transform:
-            translateY(-120px)
-            translateX(25px)
-            scale(1);
+            translateY(-120px) translateX(25px) scale(1);
 
         opacity: 0;
 
@@ -8249,9 +8241,9 @@
 
         radial-gradient(circle,
 
-            rgba(255,255,255,.95),
+            rgba(255, 255, 255, .95),
 
-            rgba(255,225,90,.55),
+            rgba(255, 225, 90, .55),
 
             transparent 70%);
 
@@ -8319,15 +8311,15 @@
 
     border-radius: inherit;
 
-    border: 2px solid rgba(255,215,0,.18);
+    border: 2px solid rgba(255, 215, 0, .18);
 
     box-shadow:
 
-        inset 0 0 20px rgba(255,215,0,.25),
+        inset 0 0 20px rgba(255, 215, 0, .25),
 
-        0 0 25px rgba(255,193,7,.35),
+        0 0 25px rgba(255, 193, 7, .35),
 
-        0 0 60px rgba(255,193,7,.18);
+        0 0 60px rgba(255, 193, 7, .18);
 
     animation:
 
@@ -8371,9 +8363,7 @@
 
         filter:
 
-            brightness(1)
-
-            saturate(1);
+            brightness(1) saturate(1);
 
     }
 
@@ -8381,9 +8371,7 @@
 
         filter:
 
-            brightness(1.18)
-
-            saturate(1.45);
+            brightness(1.18) saturate(1.45);
 
     }
 
@@ -8421,7 +8409,7 @@
 
     background:
         linear-gradient(to bottom,
-            rgba(255,255,255,0),
+            rgba(255, 255, 255, 0),
             #fff6c5,
             #ffd54f,
             #ffb300);
@@ -8430,16 +8418,13 @@
 
         0 0 8px #ffd54f,
 
-        0 0 18px rgba(255,193,7,.8);
+        0 0 18px rgba(255, 193, 7, .8);
 
     opacity: .45;
 
     animation:
 
-        genesisRain
-        var(--duration)
-        linear
-        infinite;
+        genesisRain var(--duration) linear infinite;
 
     animation-delay: var(--delay);
 
@@ -8451,8 +8436,7 @@
 
         transform:
 
-            translateY(-120px)
-            rotate(15deg);
+            translateY(-120px) rotate(15deg);
 
     }
 
@@ -8460,9 +8444,7 @@
 
         transform:
 
-            translateY(900px)
-            translateX(-80px)
-            rotate(15deg);
+            translateY(900px) translateX(-80px) rotate(15deg);
 
     }
 
@@ -8508,9 +8490,7 @@
 
     animation:
 
-        sparkAnimation
-        var(--duration)
-        infinite;
+        sparkAnimation var(--duration) infinite;
 
     animation-delay: var(--delay);
 
@@ -8569,11 +8549,11 @@
 
             transparent 10%,
 
-            rgba(255,225,80,.08),
+            rgba(255, 225, 80, .08),
 
-            rgba(255,255,255,.18),
+            rgba(255, 255, 255, .18),
 
-            rgba(255,193,7,.08),
+            rgba(255, 193, 7, .08),
 
             transparent 90%);
 
@@ -8595,8 +8575,7 @@
 
         transform:
 
-            rotate(0deg)
-            translateX(-80px);
+            rotate(0deg) translateX(-80px);
 
     }
 
@@ -8604,8 +8583,7 @@
 
         transform:
 
-            rotate(360deg)
-            translateX(80px);
+            rotate(360deg) translateX(80px);
 
     }
 
@@ -8631,11 +8609,11 @@
 
             transparent,
 
-            rgba(255,255,255,.7),
+            rgba(255, 255, 255, .7),
 
-            rgba(255,215,0,.9),
+            rgba(255, 215, 0, .9),
 
-            rgba(255,255,255,.7),
+            rgba(255, 255, 255, .7),
 
             transparent);
 
@@ -8688,8 +8666,7 @@
 
         filter:
 
-            brightness(1)
-            saturate(1);
+            brightness(1) saturate(1);
 
     }
 
@@ -8701,9 +8678,667 @@
 
         filter:
 
-            brightness(1.3)
-            saturate(1.6);
+            brightness(1.3) saturate(1.6);
 
     }
 
 }
+
+/* =====================================================
+   OPERAÇÃO SENTINELA
+   Exército Brasileiro
+   Atmosfera • Comando • Radar • Camuflagem
+===================================================== */
+
+.sentinela-atmosphere {
+    position: absolute;
+    inset: 0;
+
+    background:
+        radial-gradient(circle at 50% 45%,
+            rgba(143, 174, 50, .20),
+            transparent 42%),
+        radial-gradient(circle at 20% 80%,
+            rgba(75, 83, 32, .22),
+            transparent 45%),
+        radial-gradient(circle at 85% 20%,
+            rgba(212, 175, 55, .08),
+            transparent 40%);
+
+    animation:
+        sentinelaAtmosphere 7s ease-in-out infinite;
+
+    pointer-events: none;
+}
+
+.sentinela-camo {
+    position: absolute;
+
+    inset: -30%;
+
+    background:
+
+        radial-gradient(ellipse at 20% 30%,
+            rgba(78, 93, 31, .38),
+            transparent 35%),
+
+        radial-gradient(ellipse at 80% 20%,
+            rgba(35, 55, 20, .45),
+            transparent 38%),
+
+        radial-gradient(ellipse at 60% 75%,
+            rgba(108, 124, 40, .28),
+            transparent 40%),
+
+        radial-gradient(ellipse at 25% 80%,
+            rgba(20, 35, 15, .50),
+            transparent 42%);
+
+    filter: blur(18px);
+
+    opacity: .75;
+
+    animation:
+        sentinelaCamo 18s ease-in-out infinite alternate;
+
+    mix-blend-mode: screen;
+}
+
+@keyframes sentinelaCamo {
+
+    from {
+        transform:
+            translate(-30px, -20px) rotate(-2deg) scale(1);
+    }
+
+    to {
+        transform:
+            translate(30px, 20px) rotate(3deg) scale(1.12);
+    }
+}
+
+.sentinela-grid {
+    position: absolute;
+    inset: 0;
+
+    background-image:
+        linear-gradient(rgba(143, 174, 50, .06) 1px,
+            transparent 1px),
+        linear-gradient(90deg,
+            rgba(143, 174, 50, .06) 1px,
+            transparent 1px);
+
+    background-size:
+        32px 32px;
+
+    mask-image:
+        radial-gradient(circle at center,
+            black 20%,
+            transparent 85%);
+
+    animation:
+        sentinelaGrid 10s linear infinite;
+
+    opacity: .7;
+}
+
+@keyframes sentinelaGrid {
+
+    from {
+        background-position:
+            0 0,
+            0 0;
+    }
+
+    to {
+        background-position:
+            32px 32px,
+            32px 32px;
+    }
+}
+
+.sentinela-radar {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 240px;
+    height: 240px;
+
+    transform:
+        translate(-50%, -50%);
+
+    border-radius: 50%;
+
+    opacity: .55;
+}
+
+.radar-circle {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    transform:
+        translate(-50%, -50%);
+
+    border-radius: 50%;
+
+    border:
+        1px solid rgba(143, 174, 50, .22);
+
+    box-shadow:
+        0 0 15px rgba(143, 174, 50, .08);
+}
+
+.radar-1 {
+    width: 80px;
+    height: 80px;
+}
+
+.radar-2 {
+    width: 150px;
+    height: 150px;
+}
+
+.radar-3 {
+    width: 220px;
+    height: 220px;
+}
+
+.radar-line {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 110px;
+    height: 2px;
+
+    transform-origin: left center;
+
+    background:
+        linear-gradient(90deg,
+            rgba(143, 174, 50, .8),
+            transparent);
+
+    box-shadow:
+        0 0 8px #8fae32,
+        0 0 18px rgba(143, 174, 50, .5);
+
+    animation:
+        radarSweep 4s linear infinite;
+}
+
+@keyframes radarSweep {
+
+    from {
+        transform:
+            rotate(0deg);
+    }
+
+    to {
+        transform:
+            rotate(360deg);
+    }
+}
+
+.radar-point {
+    position: absolute;
+
+    width: 5px;
+    height: 5px;
+
+    border-radius: 50%;
+
+    background:
+        #d4af37;
+
+    box-shadow:
+        0 0 8px #d4af37,
+        0 0 18px rgba(212, 175, 55, .7);
+
+    animation:
+        radarPoint 2.5s ease-in-out infinite;
+}
+
+.point-1 {
+    left: 62%;
+    top: 28%;
+}
+
+.point-2 {
+    left: 28%;
+    top: 63%;
+    animation-delay: .8s;
+}
+
+.point-3 {
+    left: 72%;
+    top: 70%;
+    animation-delay: 1.6s;
+}
+
+@keyframes radarPoint {
+
+    0%,
+    100% {
+        opacity: .15;
+        transform: scale(.5);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.8);
+    }
+}
+
+.sentinela-core {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 90px;
+    height: 90px;
+
+    transform:
+        translate(-50%, -50%);
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(215,235,130,.32),
+            rgba(143,174,50,.16) 35%,
+            transparent 72%
+        );
+
+    filter:
+        blur(8px);
+
+    animation:
+        sentinelaCore 4s ease-in-out infinite;
+}
+
+@keyframes sentinelaCore {
+
+    0%,
+    100% {
+        transform:
+            translate(-50%, -50%)
+            scale(.85);
+
+        opacity: .55;
+    }
+
+    50% {
+        transform:
+            translate(-50%, -50%)
+            scale(1.2);
+
+        opacity: 1;
+    }
+}
+
+.sentinela-command-ring {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 125px;
+    height: 125px;
+
+    transform:
+        translate(-50%, -50%);
+
+    border-radius: 50%;
+
+    border:
+        1px solid rgba(212,175,55,.28);
+
+    box-shadow:
+        0 0 18px rgba(143,174,50,.18),
+        inset 0 0 18px rgba(143,174,50,.12);
+
+    animation:
+        commandRing 9s linear infinite;
+}
+
+@keyframes commandRing {
+
+    from {
+        transform:
+            translate(-50%, -50%)
+            rotate(0deg);
+    }
+
+    to {
+        transform:
+            translate(-50%, -50%)
+            rotate(360deg);
+    }
+}
+
+.sentinela-scan {
+    position: absolute;
+
+    left: -20%;
+    top: 0;
+
+    width: 140%;
+    height: 2px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(143,174,50,.05),
+            rgba(143,174,50,.75),
+            rgba(212,175,55,.5),
+            transparent
+        );
+
+    box-shadow:
+        0 0 12px rgba(143,174,50,.55),
+        0 0 25px rgba(143,174,50,.25);
+
+    animation:
+        sentinelaScan 5s ease-in-out infinite;
+}
+
+@keyframes sentinelaScan {
+
+    0% {
+        transform:
+            translateY(-20px);
+
+        opacity: 0;
+    }
+
+    15% {
+        opacity: .8;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    85% {
+        opacity: .5;
+    }
+
+    100% {
+        transform:
+            translateY(600px);
+
+        opacity: 0;
+    }
+}
+
+.sentinela-line {
+    position: absolute;
+
+    height: 1px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(143,174,50,.45),
+            transparent
+        );
+
+    opacity: .3;
+
+    animation:
+        sentinelaLine 4s ease-in-out infinite;
+}
+
+.line-1 {
+    width: 45%;
+    left: 0;
+    top: 28%;
+}
+
+.line-2 {
+    width: 35%;
+    right: 0;
+    top: 65%;
+    animation-delay: 1.2s;
+}
+
+.line-3 {
+    width: 55%;
+    left: 10%;
+    bottom: 18%;
+    animation-delay: 2.2s;
+}
+
+@keyframes sentinelaLine {
+
+    0%,
+    100% {
+        opacity: .08;
+        transform: scaleX(.7);
+    }
+
+    50% {
+        opacity: .5;
+        transform: scaleX(1);
+    }
+}
+
+.sentinela-particles {
+    position: absolute;
+    inset: 0;
+
+    overflow: hidden;
+
+    pointer-events: none;
+}
+
+.sentinela-particle {
+    position: absolute;
+
+    left: var(--x);
+    bottom: -10px;
+
+    width: 3px;
+    height: 3px;
+
+    border-radius: 50%;
+
+    background:
+        #a7c957;
+
+    box-shadow:
+        0 0 6px #8fae32,
+        0 0 14px rgba(143,174,50,.65);
+
+    opacity: 0;
+
+    animation:
+        sentinelaParticle
+        var(--duration)
+        linear
+        infinite;
+
+    animation-delay:
+        var(--delay);
+}
+
+@keyframes sentinelaParticle {
+
+    0% {
+        transform:
+            translateY(20px)
+            translateX(0)
+            scale(.3);
+
+        opacity: 0;
+    }
+
+    15% {
+        opacity: .7;
+    }
+
+    60% {
+        transform:
+            translateY(-300px)
+            translateX(-15px)
+            scale(1);
+    }
+
+    100% {
+        transform:
+            translateY(-650px)
+            translateX(25px)
+            scale(.2);
+
+        opacity: 0;
+    }
+}
+
+.sentinela-dust {
+    position: absolute;
+    inset: 0;
+
+    overflow: hidden;
+}
+
+.sentinela-dust span {
+    position: absolute;
+
+    left: var(--x);
+    top: var(--y);
+
+    width: 2px;
+    height: 2px;
+
+    border-radius: 50%;
+
+    background:
+        #d4af37;
+
+    box-shadow:
+        0 0 6px #d4af37;
+
+    opacity: 0;
+
+    animation:
+        sentinelaDust 6s ease-in-out infinite;
+
+    animation-delay:
+        var(--delay);
+}
+
+@keyframes sentinelaDust {
+
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    30% {
+        opacity: .7;
+    }
+
+    100% {
+        opacity: 0;
+        transform:
+            translateY(-100px)
+            translateX(25px);
+    }
+}
+
+.sentinela-flash {
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        radial-gradient(
+            circle at 50% 50%,
+            rgba(255,255,255,.7),
+            rgba(212,175,55,.2),
+            transparent 70%
+        );
+
+    mix-blend-mode:
+        screen;
+
+    opacity: 0;
+
+    animation:
+        sentinelaFlash 15s infinite;
+}
+
+@keyframes sentinelaFlash {
+
+    0%,
+    90%,
+    100% {
+        opacity: 0;
+    }
+
+    92% {
+        opacity: .15;
+    }
+
+    93% {
+        opacity: .65;
+    }
+
+    94% {
+        opacity: .08;
+    }
+
+    95% {
+        opacity: .35;
+    }
+
+    96% {
+        opacity: 0;
+    }
+}
+
+.sentinela-border {
+    position: absolute;
+
+    inset: 0;
+
+    border:
+        1px solid rgba(143,174,50,.45);
+
+    box-shadow:
+        inset 0 0 18px rgba(75,83,32,.45),
+        0 0 18px rgba(143,174,50,.25),
+        0 0 40px rgba(212,175,55,.12);
+
+    pointer-events: none;
+
+    animation:
+        sentinelaBorder 4s ease-in-out infinite;
+}
+
+@keyframes sentinelaBorder {
+
+    0%,
+    100% {
+        opacity: .45;
+    }
+
+    50% {
+        opacity: 1;
+
+        box-shadow:
+            inset 0 0 25px rgba(75,83,32,.55),
+            0 0 25px rgba(143,174,50,.4),
+            0 0 55px rgba(212,175,55,.2);
+    }
+}
+

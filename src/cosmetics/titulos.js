@@ -48,6 +48,18 @@ export const TITULOS = {
     `
     },
 
+    "Sargento": {
+        color: "#d4af37",
+
+        textShadow:
+            `
+        0 0 5px #526d19,
+        0 0 10px #8fae32,
+        0 0 20px #d4af37,
+        0 0 35px rgba(212,175,55,.55)
+        `
+    },
+
     "Soberano Ancestral": {
         color: "#00ff62",
         textShadow:

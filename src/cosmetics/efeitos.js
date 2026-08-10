@@ -108,6 +108,15 @@ export const EFEITOS = {
         animation: "aura-genesis-animation"
     },
 
+    "Operação Boina Verde": {
+        background: "linear-gradient(135deg,#050a06,#101b0a,#071008)",
+        cardGlow: "0 0 25px #526d19, 0 0 50px rgba(127,150,43,.35)",
+        nomeGlow: "0 0 18px #a7c957",
+        accent: "#8fae32",
+        overlay: "radial-gradient(circle at 50% 40%, rgba(143,174,50,.18), transparent 70%)",
+        animation: "sentinela"
+    },
+
     "Despertar do Leviatã": {
         background: "linear-gradient(135deg,#00110b,#02281d)",
         cardGlow: "0 0 30px #00ff99",
@@ -116,7 +125,6 @@ export const EFEITOS = {
         overlay:
             "radial-gradient(circle at 50% 35%, rgba(0,255,153,.22), transparent 70%)",
         animation: "leviathan"
-
     },
 
     default: {
