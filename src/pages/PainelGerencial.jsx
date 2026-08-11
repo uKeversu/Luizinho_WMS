@@ -383,22 +383,24 @@ export default function DistribuicaoConferencia() {
             setLoading(true);
 
             await Promise.all(
+                notasSelecionadas.map(async (notaId) => {
 
-                notasSelecionadas.map(
-                    notaId =>
+                    await axios.post(
+                        `${API_URL}/api/notas/atribuir`,
+                        {
+                            nota_id: notaId,
+                            usuarios: usuariosSelecionados,
+                            prioridade,
+                            atribuido_por: userInfo?.codigo
+                        }
+                    );
 
-                        axios.post(
-                            `${API_URL}/api/notas/atribuir`,
-                            {
-                                nota_id: notaId,
-                                usuarios:
-                                    usuariosSelecionados,
-                                prioridade,
-                                atribuido_por:
-                                    userInfo?.codigo
-                            }
-                        )
-                )
+                    await registrarLog({
+                        notaId,
+                        acao: `Atribuiu a nota sendo ${prioridade}`,
+                        observacao: `Atribuídos: ${usuariosSelecionados}`
+                    });
+                })
             );
 
             setSnackbar({
@@ -471,24 +473,24 @@ export default function DistribuicaoConferencia() {
     }
 
     const registrarLog = async ({
-        nota,
+        notaId,
         acao,
         observacao = null,
     }) => {
-
         try {
-
             const payload = {
-                nota_id: nota.id ?? null,
+                nota_id: notaId ?? null,
                 usuario: userInfo?.codigo,
                 acao,
-                observacoes: observacao
+                observacoes: Array.isArray(observacao)
+                    ? observacao.join(", ")
+                    : observacao
             };
 
             console.log("LOG ATRIBUICAO:", payload);
 
             const response = await fetch(
-                `${API}/api/nfe/item/movimentacao/log`,
+                `${API_URL}/api/nfe/item/movimentacao/log`,
                 {
                     method: "POST",
                     headers: {
@@ -744,7 +746,7 @@ export default function DistribuicaoConferencia() {
 
                 <Grid item xs={12} md={3}>
                     <Card sx={{ bgcolor: 'background.card', width: { xs: 'calc(50% - 8px)', md: '140px' }, height: '100%' }}>
-                            <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center' }}>
+                        <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center' }}>
                             <Typography
                                 variant="h4"
                                 color="primary"
@@ -762,7 +764,7 @@ export default function DistribuicaoConferencia() {
 
                 <Grid item xs={12} md={3}>
                     <Card sx={{ bgcolor: 'background.card', width: { xs: 'calc(50% - 8px)', md: '140px' }, height: '100%' }}>
-                            <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center' }}>
+                        <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center' }}>
                             <Typography
                                 variant="h4"
                                 color="success.main"
@@ -780,7 +782,7 @@ export default function DistribuicaoConferencia() {
 
                 <Grid item xs={12} md={3}>
                     <Card sx={{ bgcolor: 'background.card', width: { xs: 'calc(50% - 8px)', md: '140px' }, height: '100%' }}>
-                            <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center' }}>
+                        <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center' }}>
                             <Typography
                                 variant="h4"
                                 color="warning.main"
@@ -798,7 +800,7 @@ export default function DistribuicaoConferencia() {
 
                 <Grid item xs={12} md={3}>
                     <Card sx={{ bgcolor: 'background.card', width: { xs: 'calc(50% - 8px)', md: '140px' }, height: '100%' }}>
-                            <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center' }}>
+                        <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center' }}>
                             <Typography
                                 variant="h4"
                                 color="secondary"
