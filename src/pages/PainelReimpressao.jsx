@@ -341,7 +341,7 @@ function PainelReimpressao() {
                     </Box>
                     <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
                         <Button
-                            onClick={() => navigate("/Dashboard")}
+                            onClick={() => navigate("/")}
                             sx={{ color: "background.paper", display: 'flex', gap: 1 }}
                         >
                             Voltar

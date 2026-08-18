@@ -631,7 +631,7 @@ function ConsultaGeral() {
 
                         <Button
                             onClick={() =>
-                                navigate("/Dashboard")
+                                navigate("/")
                             }
                             sx={{
                                 color: "background.paper",

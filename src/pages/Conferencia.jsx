@@ -2308,7 +2308,7 @@ function Conferencia() {
             localStorage.removeItem(`itens_conferencia_${notasKey}`);
             localStorage.removeItem(`caixas_conferencia_${notasKey}`);
 
-            navigate("/Dashboard");
+            navigate("/");
 
             registrarLog({
                 acao: "Finalizou conferência"
@@ -2468,7 +2468,7 @@ function Conferencia() {
                             </Button>
                         </Tooltip>
                         <Tooltip title="Voltar ao Dashboard de notas">
-                            <Button onClick={() => navigate("/Dashboard")} sx={{
+                            <Button onClick={() => navigate("/")} sx={{
                                 color: "background.paper",
                                 display: 'flex',
                                 gap: 0.5,

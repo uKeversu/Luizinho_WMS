@@ -526,7 +526,7 @@ function Dashboard({ tipo }) {
 
             // Delay pra não pular a snackbar
             setTimeout(() => {
-                navigate("/Dashboard", {
+                navigate("/", {
                     state: {
                         modo: "PENDENTE",
                         nota: {

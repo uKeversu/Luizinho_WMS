@@ -300,7 +300,7 @@ function HistoricoLogs() {
                     >
 
                         <Button
-                            onClick={() => navigate("/Dashboard")}
+                            onClick={() => navigate("/")}
                             sx={{
                                 color: "background.paper",
                                 gap: 1

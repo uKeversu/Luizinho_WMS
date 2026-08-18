@@ -483,7 +483,7 @@ function ConsultaGuarda() {
 
                         <Button
                             onClick={() =>
-                                navigate("/Dashboard")
+                                navigate("/")
                             }
                             sx={{
                                 color: "background.paper",

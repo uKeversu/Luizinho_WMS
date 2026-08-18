@@ -848,7 +848,7 @@ export default function Tarefas() {
                             </Tooltip>
                             <Tooltip title="Dashboard de notas recebidas">
                                 <Button
-                                    onClick={() => navigate("/Dashboard")}
+                                    onClick={() => navigate("/")}
                                     sx={{
                                         color: "background.paper",
                                         display: 'flex',

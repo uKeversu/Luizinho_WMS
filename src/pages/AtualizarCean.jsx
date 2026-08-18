@@ -801,7 +801,7 @@ function AtualizarCean() {
                         </Tooltip>
                         <Tooltip title="Voltar ao Dashboard">
                             <Button
-                                onClick={() => navigate("/Dashboard")}
+                                onClick={() => navigate("/")}
                                 sx={{
                                     color: "background.paper",
                                     display: 'flex',

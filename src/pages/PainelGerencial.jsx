@@ -717,7 +717,7 @@ export default function DistribuicaoConferencia() {
                         <Tooltip title="Retornar ao dashboard">
                             <Button
                                 onClick={() =>
-                                    navigate("/Dashboard")
+                                    navigate("/")
                                 }
                                 sx={{
                                     color: "background.paper",
