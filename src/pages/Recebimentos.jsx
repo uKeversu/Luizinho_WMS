@@ -93,7 +93,7 @@ function Recebimentos() {
                 cnpj: nota.cnpj_emitente || "Não informado",
                 totalPecas: nota.total_itens || "Não informado",
                 volumes: nota.volumes || "Não informado",
-                cfop: nota.cfop || "Não informado" 
+                cfop: nota.cfop || "Não informado"
             });
         }
     }, [location.state]);
@@ -723,7 +723,7 @@ function Recebimentos() {
                             </Tooltip>
                             <Tooltip title="Dashboard de notas recebidas">
                                 <Button
-                                    onClick={() => navigate("/Dashboard")}
+                                    onClick={() => navigate("/")}
                                     sx={{
                                         color: "background.paper",
                                         display: 'flex',

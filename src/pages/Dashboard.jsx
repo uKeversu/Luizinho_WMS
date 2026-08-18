@@ -874,7 +874,7 @@ function Dashboard({ tipo }) {
 
                             <Tooltip title="Tela de recebimento">
                                 <Button
-                                    onClick={() => navigate("/")}
+                                    onClick={() => navigate("/Recebimento")}
                                     sx={{
                                         color: "background.paper",
                                         display: 'flex',

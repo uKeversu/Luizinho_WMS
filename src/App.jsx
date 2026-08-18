@@ -29,8 +29,8 @@ function App() {
     <ThemeProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<Recebimentos />} />
-          <Route path="/Dashboard" element={<Dashboard />} />
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/Recebimento" element={<Recebimentos />} />
           <Route path="/Conferencia" element={<Conferencia />} />
           <Route path="/CadastrarFuncionario" element={<CadastrarFuncionario />} />
           <Route path="/Alertas" element={<Alertas />} />
@@ -51,7 +51,7 @@ function App() {
           <Route path="/Temporadas" element={<Temporadas />} />
           <Route path="/Loja" element={<Loja />} />
           <Route path="/PainelGames" element={<PainelGames />} />
-          <Route path="/games/perfil/:codigo" element={<PerfilJogador />}/>
+          <Route path="/games/perfil/:codigo" element={<PerfilJogador />} />
           <Route path="/Tarefas" element={<Tarefas />} />
         </Routes>
       </Router>

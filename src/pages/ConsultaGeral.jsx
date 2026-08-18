@@ -390,6 +390,7 @@ function ConsultaGeral() {
 
         const logs = logsNotas[notaId] || [];
 
+        
         return logs
             .filter(log =>
                 log.acao === "Escaneou item" &&
