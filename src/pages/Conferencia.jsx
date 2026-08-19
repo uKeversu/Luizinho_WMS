@@ -76,11 +76,14 @@ function Conferencia() {
     // Bloqueio operação manual
     const [inicioLeitura, setInicioLeitura] = useState(null);
     const [bloqueioManual, setBloqueioManual] = useState(false);
-    const [modalAutorizacao, setModalAutorizacao] = useState(false);
-    const [usuarioSupervisor, setUsuarioSupervisor] = useState("");
-    const [senhaSupervisor, setSenhaSupervisor] = useState("");
-    const [codigoPendente, setCodigoPendente] = useState("");
-    const senhaRef = useRef(null);
+    const [solicitacaoManualId, setSolicitacaoManualId] = useState(null);
+    const [statusAutorizacao, setStatusAutorizacao] = useState(null);
+    const [superiorAtendimento, setSuperiorAtendimento] = useState(null);
+    const [codigoManualPendente, setCodigoManualPendente] = useState(null);
+    const [codigoCracha, setCodigoCracha] = useState("");
+    const [pinSuperior, setPinSuperior] = useState("");
+    const [autorizandoManual, setAutorizandoManual] = useState(false);
+    const [erroAutorizacao, setErroAutorizacao] = useState("");
 
     const notaAtual = useMemo(() => {
         return notas.find(n => n?.id);
@@ -279,67 +282,289 @@ function Conferencia() {
         localStorage.setItem(chaveItens, JSON.stringify(itens));
     }, [itens, notasIds]);
 
-    const usuariosAutorizados = [
-        {
-            senha: "4Kq7Zp2M4vN1yX",
-            nome: "Kelwin Gameiro"
-        },
-        {
-            senha: "Y3AhD8mQ1sJ6cV",
-            nome: "Fabio da Silva"
-        },
-        {
-            senha: "F7KkR9uT3wB5yN",
-            nome: "Daniel Novais"
-        },
-        {
-            senha: "M2vH7pK9DdS4jW",
-            nome: "Mateus Nascimento"
-        },
-        {
-            senha: "L5vN1pK7DtS8v3W",
-            nome: "Vinicius Pires"
-        }
-    ];
+    // Teclas de atalho
+    useEffect(() => {
+        const handleKeyDown = (e) => {
 
-    const autorizarLeituraManual = async () => {
+            const isInput = document.activeElement.tagName === "INPUT";
 
-        const usuarioValido = usuariosAutorizados.find(
-            (usuario) =>
-                usuario.nome === usuarioSupervisor.trim() &&
-                usuario.senha === senhaSupervisor
-        );
+            if ((e.ctrlKey || e.metaKey) && e.code === "Space") {
+                e.preventDefault();
 
-        if (usuarioValido) {
+                setCodigo("");
+                setQuantidadeInput("");
+                return;
+            }
 
-            registrarLog({
-                acao: "Conferência manual autorizada",
-                observacao: `Código ${codigoPendente} autorizado por ${usuarioValido.nome}`
-            });
+            // Permitir alguns atalhos mesmo no input
+            if (isInput && !["F2", "F3", "F4", "F7", "F8", "F9", "Escape"].includes(e.key)) {
+                return;
+            }
 
-            setCodigo(codigoPendente);
-            setModalAutorizacao(false);
-            setUsuarioSupervisor("");
-            setSenhaSupervisor("");
-            setCodigoPendente("");
-            scanner();
+            switch (e.key) {
 
+                case "F2":
+                    e.preventDefault();
+                    abrirCaixa();
+                    break;
+
+                case "F3":
+                    e.preventDefault();
+                    if (caixaAberta) {
+                        setOpenFecharDialog(true);
+                    }
+                    break;
+
+                case "F4":
+                    e.preventDefault();
+                    finalizarConferencia();
+                    break;
+
+                case "F6":
+                    e.preventDefault();
+
+                    if (caixaAberta) {
+                        setSnackbar({
+                            open: true,
+                            message: "Feche a caixa atual antes de reabrir outra",
+                            severity: "warning"
+                        });
+                        return;
+                    }
+
+                    if (caixas.length > 0) {
+                        reabrirCaixa(caixas[caixas.length - 1]);
+                    }
+                    break;
+
+                case "F7":
+                    e.preventDefault();
+
+                    const novoModo = !modoQuantidade;
+
+                    setModoQuantidade(novoModo);
+
+                    setSnackbar({
+                        open: true,
+                        message: novoModo
+                            ? "Modo quantidade ATIVADO"
+                            : "Modo quantidade DESATIVADO",
+                        severity: "info"
+                    });
+
+                    registrarLog({
+                        acao: novoModo
+                            ? "Modo quantidade ATIVADO"
+                            : "Modo quantidade DESATIVADO"
+                    });
+
+                    if (novoModo) {
+                        setTimeout(() => qtdRef.current?.focus(), 100);
+                    }
+
+                    break;
+
+                case "F8":
+                    e.preventDefault();
+                    if (ultimoItemScaneado) {
+                        imprimirEtiqueta(ultimoItemScaneado);
+                    }
+                    break;
+
+                case "F9":
+                    e.preventDefault();
+                    inputRef.current?.focus();
+                    break;
+
+                case "Escape":
+                    setCodigo("");
+                    break;
+
+                default:
+                    break;
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [caixaAberta, ultimoItemScaneado, modoQuantidade]);
+
+    // Pooling da solicitação para sincronização
+    useEffect(() => {
+
+        if (
+            !bloqueioManual ||
+            !solicitacaoManualId
+        ) {
             return;
         }
 
-        setSnackbar({
-            open: true,
-            message: "Usuário ou senha inválidos",
-            severity: "error"
-        });
-    };
+        let intervalId = null;
+        let ativo = true;
 
-    const fecharModalAutorizacao = () => {
-        setModalAutorizacao(false);
-        setUsuarioSupervisor("");
-        setSenhaSupervisor("");
-        setCodigo("");
-    };
+        const consultarStatus = async () => {
+
+            try {
+
+                const token =
+                    localStorage.getItem("nfe_token");
+
+                if (!token) {
+                    return;
+                }
+
+                const response = await fetch(
+                    `${API}/api/autorizacoes/manual/${solicitacaoManualId}`,
+                    {
+                        headers: {
+                            "X-Auth-Token": token
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(
+                        "Erro ao consultar autorização"
+                    );
+                }
+
+                const data = await response.json();
+
+                console.log(
+                    "Status autorização:",
+                    data
+                );
+
+                if (!ativo) {
+                    return;
+                }
+
+                // O Flask retorna os dados dentro de "solicitacao"
+                const solicitacao = data.solicitacao;
+
+                if (!solicitacao) {
+                    console.error(
+                        "Resposta da autorização não possui solicitacao:",
+                        data
+                    );
+                    return;
+                }
+
+                const status =
+                    solicitacao.status;
+
+                const superiorNome =
+                    solicitacao.superior_nome;
+
+                setStatusAutorizacao(status);
+
+                if (superiorNome) {
+
+                    setSuperiorAtendimento(
+                        superiorNome
+                    );
+                }
+
+                // AUTORIZADA
+                if (status === "autorizada") {
+
+                    if (intervalId) {
+                        clearInterval(intervalId);
+                        intervalId = null;
+                    }
+
+                    await utilizarAutorizacaoManual(
+                        solicitacaoManualId
+                    );
+
+                    return;
+                }
+
+                // EXPIRADA
+                if (status === "expirada") {
+
+                    if (intervalId) {
+                        clearInterval(intervalId);
+                        intervalId = null;
+                    }
+
+                    setBloqueioManual(false);
+                    setSolicitacaoManualId(null);
+                    setStatusAutorizacao(null);
+                    setSuperiorAtendimento(null);
+                    setCodigoManualPendente(null);
+                    setCodigo("");
+
+                    setSnackbar({
+                        open: true,
+                        message:
+                            "A solicitação de autorização expirou.",
+                        severity: "warning"
+                    });
+
+                    return;
+                }
+
+                // CANCELADA
+                if (status === "cancelada") {
+
+                    if (intervalId) {
+                        clearInterval(intervalId);
+                        intervalId = null;
+                    }
+
+                    setBloqueioManual(false);
+                    setSolicitacaoManualId(null);
+                    setStatusAutorizacao(null);
+                    setSuperiorAtendimento(null);
+                    setCodigoManualPendente(null);
+                    setCodigo("");
+
+                    setSnackbar({
+                        open: true,
+                        message:
+                            "A solicitação de autorização foi cancelada.",
+                        severity: "warning"
+                    });
+
+                    return;
+                }
+
+            } catch (error) {
+
+                console.error(
+                    "Erro no polling da autorização:",
+                    error
+                );
+            }
+        };
+
+        // Consulta imediatamente
+        consultarStatus();
+
+        // Depois consulta a cada 2 segundos
+        intervalId = setInterval(
+            consultarStatus,
+            2000
+        );
+
+        return () => {
+
+            ativo = false;
+
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+
+        };
+
+    }, [
+        bloqueioManual,
+        solicitacaoManualId
+    ]);
 
     const carregarLogsRetiradaVenda = async () => {
         try {
@@ -496,116 +721,6 @@ function Conferencia() {
             }
         }
     };
-
-    // Teclas de atalho
-    useEffect(() => {
-        const handleKeyDown = (e) => {
-
-            const isInput = document.activeElement.tagName === "INPUT";
-
-            if ((e.ctrlKey || e.metaKey) && e.code === "Space") {
-                e.preventDefault();
-
-                setCodigo("");
-                setQuantidadeInput("");
-                return;
-            }
-
-            // Permitir alguns atalhos mesmo no input
-            if (isInput && !["F2", "F3", "F4", "F7", "F8", "F9", "Escape"].includes(e.key)) {
-                return;
-            }
-
-            switch (e.key) {
-
-                case "F2":
-                    e.preventDefault();
-                    abrirCaixa();
-                    break;
-
-                case "F3":
-                    e.preventDefault();
-                    if (caixaAberta) {
-                        setOpenFecharDialog(true);
-                    }
-                    break;
-
-                case "F4":
-                    e.preventDefault();
-                    finalizarConferencia();
-                    break;
-
-                case "F6":
-                    e.preventDefault();
-
-                    if (caixaAberta) {
-                        setSnackbar({
-                            open: true,
-                            message: "Feche a caixa atual antes de reabrir outra",
-                            severity: "warning"
-                        });
-                        return;
-                    }
-
-                    if (caixas.length > 0) {
-                        reabrirCaixa(caixas[caixas.length - 1]);
-                    }
-                    break;
-
-                case "F7":
-                    e.preventDefault();
-
-                    const novoModo = !modoQuantidade;
-
-                    setModoQuantidade(novoModo);
-
-                    setSnackbar({
-                        open: true,
-                        message: novoModo
-                            ? "Modo quantidade ATIVADO"
-                            : "Modo quantidade DESATIVADO",
-                        severity: "info"
-                    });
-
-                    registrarLog({
-                        acao: novoModo
-                            ? "Modo quantidade ATIVADO"
-                            : "Modo quantidade DESATIVADO"
-                    });
-
-                    if (novoModo) {
-                        setTimeout(() => qtdRef.current?.focus(), 100);
-                    }
-
-                    break;
-
-                case "F8":
-                    e.preventDefault();
-                    if (ultimoItemScaneado) {
-                        imprimirEtiqueta(ultimoItemScaneado);
-                    }
-                    break;
-
-                case "F9":
-                    e.preventDefault();
-                    inputRef.current?.focus();
-                    break;
-
-                case "Escape":
-                    setCodigo("");
-                    break;
-
-                default:
-                    break;
-            }
-        };
-
-        window.addEventListener("keydown", handleKeyDown);
-
-        return () => {
-            window.removeEventListener("keydown", handleKeyDown);
-        };
-    }, [caixaAberta, ultimoItemScaneado, modoQuantidade]);
 
     const carregarTudo = async () => {
         try {
@@ -1578,52 +1693,73 @@ function Conferencia() {
         });
     };
 
-    const handleCodigoKeyDown = (e) => {
+    const handleCodigoKeyDown = async (e) => {
+
+        if (bloqueioManual) {
+            e.preventDefault();
+            return;
+        }
 
         if (!inicioLeitura && e.key.length === 1) {
             setInicioLeitura(Date.now());
         }
 
-        if (e.key === "Enter") {
+        if (e.key !== "Enter") {
+            return;
+        }
 
-            const duracao = inicioLeitura
-                ? Date.now() - inicioLeitura
-                : 0;
+        e.preventDefault();
 
-            console.log(
-                `Código: ${codigo} | Duração: ${duracao}ms`
-            );
+        const duracao = inicioLeitura
+            ? Date.now() - inicioLeitura
+            : 0;
 
-            // Código longo digitado lentamente
-            if (codigo.length >= 8 && duracao > 1500) {
+        const codigoRecebido = codigo.trim();
 
-                setCodigoPendente(codigo);
+        console.log(
+            `Código: ${codigoRecebido} | Duração: ${duracao}ms`
+        );
 
-                registrarLog({
-                    acao: "Tentativa de digitação de código de barras",
-                    observacao: `Código digitado: ${codigo}`
-                });
+        setInicioLeitura(null);
 
-                setSnackbar({
-                    open: true,
-                    message: "Digitação manual detectada. Solicite autorização.",
-                    severity: "warning"
-                });
+        if (!codigoRecebido) {
+            setCodigo("");
+            return;
+        }
 
-                setModalAutorizacao(true);
-                setInicioLeitura(null);
-                e.preventDefault();
-                return;
+        /* DIGITAÇÃO MANUAL */
+        if (
+            codigoRecebido.length >= 8 &&
+            duracao > 1500
+        ) {
+
+            registrarLog({
+                acao: "Tentativa de digitação de código de barras",
+                observacao: `Código digitado: ${codigoRecebido}`
+            });
+
+            setCodigoManualPendente(codigoRecebido);
+
+            setCodigo("");
+
+            const sucesso =
+                await solicitarAutorizacaoManual(
+                    codigoRecebido
+                );
+
+            if (!sucesso) {
+                setCodigoManualPendente(null);
             }
 
-            setInicioLeitura(null);
-
-            scanner();
+            return;
         }
+
+        /* SCANNER FÍSICO */
+        await scanner(codigoRecebido);
     };
 
     // Scanner
-    const scanner = async () => {
+    const scanner = async (codigoForcado = null) => {
 
         if (processandoScanner) return;
 
@@ -1631,7 +1767,9 @@ function Conferencia() {
 
         try {
 
-            const codigoLimpo = codigo.trim();
+            const codigoLimpo = (
+                codigoForcado ?? codigo
+            ).trim();
 
             if (!codigoLimpo) return;
 
@@ -2396,15 +2534,343 @@ function Conferencia() {
         });
     };
 
+    const solicitarAutorizacaoManual = async (codigoManual) => {
+
+        const token = localStorage.getItem("nfe_token");
+
+        if (!token) {
+
+            setSnackbar({
+                open: true,
+                message: "Sessão expirada. Faça login novamente.",
+                severity: "error"
+            });
+
+            return false;
+        }
+
+        try {
+
+            const response = await fetch(
+                `${API}/api/autorizacoes/manual/solicitar`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Auth-Token": token
+                    },
+                    body: JSON.stringify({
+                        codigo: codigoManual,
+                        item_id: null
+                    })
+                }
+            );
+
+            const data = await response.json();
+
+            console.log(
+                "Solicitação de autorização:",
+                response.status,
+                data
+            );
+
+            if (response.status === 201) {
+
+                setSolicitacaoManualId(
+                    data.solicitacao_id
+                );
+
+                setStatusAutorizacao(
+                    data.status || "aguardando"
+                );
+
+                setSuperiorAtendimento(null);
+
+                setBloqueioManual(true);
+
+                return true;
+            }
+
+            if (response.status === 409) {
+
+                setSnackbar({
+                    open: true,
+                    message:
+                        data.erro ||
+                        "Já existe uma solicitação em andamento.",
+                    severity: "warning"
+                });
+
+                return false;
+            }
+
+            if (response.status === 401) {
+
+                setSnackbar({
+                    open: true,
+                    message:
+                        "Sua sessão expirou. Faça login novamente.",
+                    severity: "error"
+                });
+
+                return false;
+            }
+
+            setSnackbar({
+                open: true,
+                message:
+                    data.erro ||
+                    "Erro ao solicitar autorização.",
+                severity: "error"
+            });
+
+            return false;
+
+        } catch (error) {
+
+            console.error(
+                "Erro ao solicitar autorização manual:",
+                error
+            );
+
+            setSnackbar({
+                open: true,
+                message:
+                    "Não foi possível solicitar autorização.",
+                severity: "error"
+            });
+
+            return false;
+        }
+    };
+
+    const utilizarAutorizacaoManual = async (
+        solicitacaoId
+    ) => {
+
+        const token =
+            localStorage.getItem("nfe_token");
+
+        if (!token) {
+            setSnackbar({
+                open: true,
+                message: "Sessão expirada. Faça login novamente.",
+                severity: "error"
+            });
+
+            return false;
+        }
+
+        try {
+
+            const response = await fetch(
+                `${API}/api/autorizacoes/manual/${solicitacaoId}/utilizar`,
+                {
+                    method: "POST",
+                    headers: {
+                        "X-Auth-Token": token
+                    }
+                }
+            );
+
+            const data = await response.json();
+
+            console.log(
+                "Utilização da autorização:",
+                response.status,
+                data
+            );
+
+            if (!response.ok) {
+
+                setSnackbar({
+                    open: true,
+                    message:
+                        data.erro ||
+                        "Não foi possível utilizar a autorização.",
+                    severity: "error"
+                });
+
+                return false;
+            }
+
+            const codigoAutorizado =
+                data.codigo?.trim();
+
+            if (!codigoAutorizado) {
+
+                setSnackbar({
+                    open: true,
+                    message:
+                        "Autorização inválida: código não informado.",
+                    severity: "error"
+                });
+
+                return false;
+            }
+
+            /* GARANTE QUE A AUTORIZAÇÃO É PARA O MESMO CÓDIGO SOLICITADO */
+            if (
+                codigoManualPendente &&
+                codigoAutorizado !== codigoManualPendente
+            ) {
+
+                console.error(
+                    "Código autorizado diferente do código pendente",
+                    {
+                        pendente: codigoManualPendente,
+                        autorizado: codigoAutorizado
+                    }
+                );
+
+                setSnackbar({
+                    open: true,
+                    message:
+                        "O código autorizado não corresponde à solicitação.",
+                    severity: "error"
+                });
+
+                return false;
+            }
+
+            /* LIMPA ESTADO DA AUTORIZAÇÃO */
+            setBloqueioManual(false);
+            setSolicitacaoManualId(null);
+            setStatusAutorizacao(null);
+            setSuperiorAtendimento(null);
+            setCodigoManualPendente(null);
+
+            setCodigo("");
+
+            registrarLog({
+                acao: "Autorização manual utilizada",
+                observacao:
+                    `Código autorizado: ${codigoAutorizado}`
+            });
+
+            /* Entra no fluxo normal de conferência */
+
+            await scanner(codigoAutorizado);
+
+            return true;
+
+        } catch (error) {
+
+            console.error(
+                "Erro ao utilizar autorização:",
+                error
+            );
+
+            setSnackbar({
+                open: true,
+                message:
+                    "Erro ao utilizar autorização.",
+                severity: "error"
+            });
+
+            return false;
+        }
+    };
+
+    const autorizarConferenciaManual = async () => {
+        if (!codigoCracha.trim()) {
+            setErroAutorizacao("Informe o código do crachá.");
+            return;
+        }
+
+        if (!pinSuperior.trim()) {
+            setErroAutorizacao("Informe o PIN do superior.");
+            return;
+        }
+
+        if (!solicitacaoManualId) {
+            setErroAutorizacao("Solicitação de autorização não encontrada.");
+            return;
+        }
+
+        setAutorizandoManual(true);
+        setErroAutorizacao("");
+
+        try {
+            const token = localStorage.getItem("nfe_token");
+
+            const response = await fetch(
+                `${API}/api/autorizacoes/manual/${solicitacaoManualId}/autorizar`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Auth-Token": token
+                    },
+                    body: JSON.stringify({
+                        codigo_cracha: codigoCracha.trim(),
+                        pin: pinSuperior.trim()
+                    })
+                }
+            );
+
+            const data = await response.json();
+
+            console.log("🔐 AUTORIZAÇÃO PRESENCIAL:", response.status, data);
+
+            if (!response.ok) {
+                setErroAutorizacao(
+                    data.erro || "Não foi possível autorizar a conferência."
+                );
+
+                return;
+            }
+
+            console.log("✅ CONFERÊNCIA AUTORIZADA");
+
+            setStatusAutorizacao("autorizada");
+
+            setCodigoCracha("");
+            setPinSuperior("");
+
+        } catch (error) {
+            console.error(
+                "❌ Erro ao autorizar conferência:",
+                error
+            );
+
+            setErroAutorizacao(
+                "Erro de comunicação com o servidor."
+            );
+
+        } finally {
+            setAutorizandoManual(false);
+        }
+    };
+
     if (!token) {
         return (
-            <LoginFuncionario onLogin={(data) => {
-                localStorage.setItem("nfe_token", data.token);
-                const user = { nome: data.nome, codigo: data.codigo };
-                localStorage.setItem("user_info", JSON.stringify(user));
-                setUserInfo(user);
-                setToken(data.token);
-            }} />
+            <LoginFuncionario
+                onLogin={(data) => {
+
+                    localStorage.setItem(
+                        "nfe_token",
+                        data.token
+                    );
+
+                    const user = {
+                        id: data.id,
+                        nome: data.nome,
+                        codigo: data.codigo,
+                        tipo: data.tipo,
+                        pode_autorizar_conferencia:
+                            data.pode_autorizar_conferencia
+                    };
+
+                    localStorage.setItem(
+                        "user_info",
+                        JSON.stringify(user)
+                    );
+
+                    setUserInfo(user);
+                    setToken(data.token);
+                }}
+            />
         );
     }
 
@@ -2588,6 +3054,7 @@ function Conferencia() {
                         }}
                         inputRef={inputRef}
                         autoFocus
+                        disabled={bloqueioManual}
                         fullWidth
                         sx={{
                             mb: 2, width: '100%', bgcolor: 'background.card', zoom: 0.9,
@@ -3480,78 +3947,256 @@ function Conferencia() {
                 </DialogActions>
             </Dialog>
 
+            {/* Modal de solicitação de conferência manual */}
             <Dialog
-                open={modalAutorizacao}
-                onClose={fecharModalAutorizacao}
+                open={bloqueioManual}
+                fullWidth
+                maxWidth="sm"
+                disableEscapeKeyDown
+                onClose={() => { }}
                 slotProps={{
                     paper: {
                         sx: {
                             bgcolor: "background.card",
                             color: "text.primary",
-                            borderRadius: 3
+                            borderRadius: 3,
+                            p: 2
                         }
                     }
                 }}
             >
-                <DialogTitle>
-                    Autorização de Supervisor/Gerência
-                </DialogTitle>
+                <DialogContent
+                    sx={{
+                        textAlign: "center",
+                        py: 5
+                    }}
+                >
 
-                <DialogContent>
+                    {statusAutorizacao === "aguardando" && (
+                        <>
+                            <Typography
+                                sx={{
+                                    fontSize: "4rem",
+                                    mb: 2
+                                }}
+                            >
+                                ⚠️
+                            </Typography>
 
-                    <Typography mb={2}>
-                        Digitação manual detectada.
-                    </Typography>
+                            <Typography
+                                variant="h4"
+                                sx={{
+                                    fontWeight: 800,
+                                    mb: 3
+                                }}
+                            >
+                                AUTORIZAÇÃO NECESSÁRIA
+                            </Typography>
 
-                    <TextField
-                        fullWidth
-                        margin="dense"
-                        label="Usuário"
-                        value={usuarioSupervisor}
-                        onChange={(e) =>
-                            setUsuarioSupervisor(e.target.value)
-                        }
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                                senhaRef.current?.focus();
-                            }
-                        }}
-                    />
+                            <Typography
+                                variant="h6"
+                                sx={{
+                                    mb: 3
+                                }}
+                            >
+                                Aguarde
+                            </Typography>
 
-                    <TextField
-                        fullWidth
-                        margin="dense"
-                        label="Senha"
-                        type="password"
-                        inputRef={senhaRef}
-                        value={senhaSupervisor}
-                        onChange={(e) =>
-                            setSenhaSupervisor(e.target.value)
-                        }
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                                autorizarLeituraManual();
-                            }
-                        }}
-                    />
+                            <Typography
+                                variant="body1"
+                                sx={{
+                                    mb: 4,
+                                    opacity: 0.8
+                                }}
+                            >
+                                Solicitação enviada para supervisão
+                                e gerência.
+                                <br /><br />
+                                Um superior precisa assumir sua
+                                solicitação.
+                            </Typography>
+
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    gap: 2
+                                }}
+                            >
+                                <CircularProgress size={28} />
+
+                                <Typography
+                                    variant="h6"
+                                    sx={{
+                                        fontWeight: 700
+                                    }}
+                                >
+                                    Aguardando superior...
+                                </Typography>
+                            </Box>
+                        </>
+                    )}
+
+                    {statusAutorizacao === "em_atendimento" && (
+                        <>
+                            <Typography
+                                sx={{
+                                    fontSize: "4rem",
+                                    mb: 1
+                                }}
+                            >
+                                🚶
+                            </Typography>
+
+                            <Typography
+                                variant="h4"
+                                sx={{
+                                    fontWeight: 800,
+                                    mb: 2
+                                }}
+                            >
+                                SUPERIOR A CAMINHO
+                            </Typography>
+
+                            <Typography
+                                variant="h6"
+                                sx={{
+                                    mb: 2
+                                }}
+                            >
+                                {superiorAtendimento || "Um superior"} está a caminho.
+                            </Typography>
+
+                            <Typography
+                                variant="body1"
+                                sx={{
+                                    mb: 4,
+                                    opacity: 0.8
+                                }}
+                            >
+                                Aguarde a chegada do superior para
+                                autorizar a conferência.
+                            </Typography>
+
+                            {/* IDENTIFICAÇÃO PRESENCIAL */}
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: 2,
+                                    maxWidth: 400,
+                                    mx: "auto",
+                                    textAlign: "left"
+                                }}
+                            >
+
+                                <Typography
+                                    variant="subtitle1"
+                                    sx={{
+                                        fontWeight: 700
+                                    }}
+                                >
+                                    Identificação do superior
+                                </Typography>
+
+                                <TextField
+                                    fullWidth
+                                    label="Código do crachá"
+                                    placeholder="Digite ou bipe o crachá"
+                                    value={codigoCracha}
+                                    onChange={(e) => {
+                                        setCodigoCracha(e.target.value);
+                                        setErroAutorizacao("");
+                                    }}
+                                    autoFocus
+                                    inputProps={{
+                                        maxLength: 7
+                                    }}
+                                />
+
+                                <TextField
+                                    fullWidth
+                                    label="PIN"
+                                    placeholder="Digite o PIN"
+                                    type="password"
+                                    value={pinSuperior}
+                                    onChange={(e) => {
+                                        setPinSuperior(e.target.value);
+                                        setErroAutorizacao("");
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter") {
+                                            autorizarConferenciaManual();
+                                        }
+                                    }}
+                                />
+
+                                {erroAutorizacao && (
+                                    <Alert
+                                        severity="error"
+                                        sx={{
+                                            borderRadius: 2
+                                        }}
+                                    >
+                                        {erroAutorizacao}
+                                    </Alert>
+                                )}
+
+                                <Button
+                                    fullWidth
+                                    variant="contained"
+                                    size="large"
+                                    onClick={autorizarConferenciaManual}
+                                    disabled={
+                                        autorizandoManual ||
+                                        !codigoCracha.trim() ||
+                                        !pinSuperior.trim()
+                                    }
+                                    sx={{
+                                        py: 1.5,
+                                        fontWeight: 800,
+                                        fontSize: "1rem"
+                                    }}
+                                >
+                                    {autorizandoManual
+                                        ? "VALIDANDO..."
+                                        : "AUTORIZAR CONFERÊNCIA"}
+                                </Button>
+
+                            </Box>
+                        </>
+                    )}
+
+                    {statusAutorizacao === "autorizada" && (
+                        <>
+                            <Typography
+                                sx={{
+                                    fontSize: "4rem",
+                                    mb: 2
+                                }}
+                            >
+                                ✅
+                            </Typography>
+
+                            <Typography
+                                variant="h4"
+                                sx={{
+                                    fontWeight: 800
+                                }}
+                            >
+                                AUTORIZADO
+                            </Typography>
+
+                            <Typography
+                                sx={{ mt: 2 }}
+                            >
+                                Processando código autorizado...
+                            </Typography>
+                        </>
+                    )}
 
                 </DialogContent>
-
-                <DialogActions>
-                    <Button
-                        onClick={fecharModalAutorizacao}
-                    >
-                        Cancelar
-                    </Button>
-
-                    <Button
-                        variant="contained"
-                        onClick={autorizarLeituraManual}
-                    >
-                        Autorizar
-                    </Button>
-
-                </DialogActions>
             </Dialog>
 
             {/* Snackbar */}

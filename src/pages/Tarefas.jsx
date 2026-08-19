@@ -368,7 +368,7 @@ export default function Tarefas() {
         return detalhesFuncionario.competencias.length;
 
     }, [detalhesFuncionario]);
-  
+
     const saldoPontos = useMemo(() => {
 
         if (!detalhesFuncionario)
@@ -694,14 +694,25 @@ export default function Tarefas() {
         !token ? (
             <LoginFuncionario
                 onLogin={(data) => {
-                    localStorage.setItem("nfe_token", data.token);
+
+                    localStorage.setItem(
+                        "nfe_token",
+                        data.token
+                    );
 
                     const user = {
+                        id: data.id,
                         nome: data.nome,
-                        codigo: data.codigo
+                        codigo: data.codigo,
+                        tipo: data.tipo,
+                        pode_autorizar_conferencia:
+                            data.pode_autorizar_conferencia
                     };
 
-                    localStorage.setItem("user_info", JSON.stringify(user));
+                    localStorage.setItem(
+                        "user_info",
+                        JSON.stringify(user)
+                    );
 
                     setUserInfo(user);
                     setToken(data.token);
