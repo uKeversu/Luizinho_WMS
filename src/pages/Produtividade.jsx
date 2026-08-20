@@ -2164,7 +2164,10 @@ export default function Produtividade() {
                                                                 color: titulo.color,
                                                             }}
                                                         >
-                                                            {cosmeticos[row.conferente]?.titulo}
+                                                            {cosmeticos[row.conferente]?.titulo === "Sargento"
+                                                                ? `Sargento ${row.nome?.trim().split(" ").pop() || ""}`
+                                                                : cosmeticos[row.conferente]?.titulo
+                                                            }
                                                         </Typography>
                                                     </Box>
 
@@ -2297,7 +2300,7 @@ export default function Produtividade() {
                                 </Typography>
                             </CardContent>
                         </Card>
-                        
+
                         {/* TOTAL ITENS */}
                         <Card sx={glassStyle}>
                             <CardContent>
