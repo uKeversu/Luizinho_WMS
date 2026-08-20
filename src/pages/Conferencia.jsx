@@ -84,6 +84,7 @@ function Conferencia() {
     const [pinSuperior, setPinSuperior] = useState("");
     const [autorizandoManual, setAutorizandoManual] = useState(false);
     const [erroAutorizacao, setErroAutorizacao] = useState("");
+    const [cancelandoManual, setCancelandoManual] = useState(false);
 
     const notaAtual = useMemo(() => {
         return notas.find(n => n?.id);
@@ -2843,6 +2844,81 @@ function Conferencia() {
         }
     };
 
+    const cancelarConferenciaManual = async () => {
+        if (!solicitacaoManualId) {
+            setErroAutorizacao("Solicitação de autorização não encontrada.");
+            return;
+        }
+
+        setCancelandoManual(true);
+        setErroAutorizacao("");
+
+        try {
+            const token = localStorage.getItem("nfe_token");
+
+            const response = await fetch(
+                `${API}/api/autorizacoes/manual/${solicitacaoManualId}/cancelar`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Auth-Token": token
+                    }
+                }
+            );
+
+            const data = await response.json();
+
+            console.log(
+                "❌ CANCELAMENTO DA SOLICITAÇÃO:",
+                response.status,
+                data
+            );
+
+            if (!response.ok) {
+                setErroAutorizacao(
+                    data.erro || "Não foi possível cancelar a solicitação."
+                );
+
+                return;
+            }
+
+            console.log("✅ SOLICITAÇÃO CANCELADA");
+
+            setStatusAutorizacao("cancelada");
+
+            setCodigoCracha("");
+            setPinSuperior("");
+
+            // Se você tiver o estado da solicitação completa:
+
+        } catch (error) {
+            console.error(
+                "❌ Erro ao cancelar solicitação:",
+                error
+            );
+
+            setErroAutorizacao(
+                "Erro de comunicação com o servidor."
+            );
+
+        } finally {
+            setCancelandoManual(false);
+        }
+    };
+
+    const confirmarCancelamento = () => {
+        const confirmar = window.confirm(
+            "Deseja realmente cancelar a solicitação de conferência manual?"
+        );
+
+        if (!confirmar) {
+            return;
+        }
+
+        cancelarConferenciaManual();
+    };
+
     if (!token) {
         return (
             <LoginFuncionario
@@ -4016,12 +4092,14 @@ function Conferencia() {
                                 solicitação.
                             </Typography>
 
+                            {/* STATUS DE AGUARDANDO */}
                             <Box
                                 sx={{
                                     display: "flex",
                                     justifyContent: "center",
                                     alignItems: "center",
-                                    gap: 2
+                                    gap: 2,
+                                    mb: 4
                                 }}
                             >
                                 <CircularProgress size={28} />
@@ -4034,6 +4112,73 @@ function Conferencia() {
                                 >
                                     Aguardando superior...
                                 </Typography>
+                            </Box>
+
+                            {/* SEPARADOR */}
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 2,
+                                    maxWidth: 400,
+                                    mx: "auto",
+                                    mb: 3
+                                }}
+                            >
+                                <Box
+                                    sx={{
+                                        flex: 1,
+                                        height: "1px",
+                                        bgcolor: "divider"
+                                    }}
+                                />
+
+                                <Typography
+                                    variant="caption"
+                                    sx={{
+                                        whiteSpace: 'nowrap',
+                                        opacity: 0.6
+                                    }}
+                                >
+                                    Não precisa mais da autorização?
+                                </Typography>
+
+                                <Box
+                                    sx={{
+                                        flex: 1,
+                                        height: "1px",
+                                        bgcolor: "divider"
+                                    }}
+                                />
+                            </Box>
+
+                            {/* CANCELAMENTO */}
+                            <Box
+                                sx={{
+                                    textAlign: "center",
+                                    pb: 1
+                                }}
+                            >
+
+                                <Button
+                                    type="button"
+                                    variant="outlined"
+                                    color="error"
+                                    onClick={confirmarCancelamento}
+                                    disabled={
+                                        cancelandoManual ||
+                                        autorizandoManual
+                                    }
+                                    sx={{
+                                        borderRadius: 2,
+                                        px: 3,
+                                        fontWeight: 700
+                                    }}
+                                >
+                                    {cancelandoManual
+                                        ? "CANCELANDO..."
+                                        : "CANCELAR CHAMADO"}
+                                </Button>
                             </Box>
                         </>
                     )}
@@ -4090,7 +4235,6 @@ function Conferencia() {
                                     textAlign: "left"
                                 }}
                             >
-
                                 <Typography
                                     variant="subtitle1"
                                     sx={{
@@ -4143,6 +4287,7 @@ function Conferencia() {
                                     </Alert>
                                 )}
 
+                                {/* AÇÃO PRINCIPAL */}
                                 <Button
                                     fullWidth
                                     variant="contained"
@@ -4163,6 +4308,81 @@ function Conferencia() {
                                         ? "VALIDANDO..."
                                         : "AUTORIZAR CONFERÊNCIA"}
                                 </Button>
+
+                                {/* SEPARADOR */}
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 2,
+                                        my: 1
+                                    }}
+                                >
+                                    <Box
+                                        sx={{
+                                            flex: 1,
+                                            height: "1px",
+                                            bgcolor: "divider"
+                                        }}
+                                    />
+
+                                    <Typography
+                                        variant="caption"
+                                        sx={{
+                                            opacity: 0.6,
+                                            whiteSpace: "nowrap"
+                                        }}
+                                    >
+                                        ou
+                                    </Typography>
+
+                                    <Box
+                                        sx={{
+                                            flex: 1,
+                                            height: "1px",
+                                            bgcolor: "divider"
+                                        }}
+                                    />
+                                </Box>
+
+                                {/* CANCELAMENTO */}
+                                <Box
+                                    sx={{
+                                        textAlign: "center",
+                                        pb: 1
+                                    }}
+                                >
+                                    <Typography
+                                        variant="caption"
+                                        sx={{
+                                            display: "block",
+                                            mb: 1,
+                                            opacity: 0.6
+                                        }}
+                                    >
+                                        Não precisa mais da autorização?
+                                    </Typography>
+
+                                    <Button
+                                        type="button"
+                                        variant="outlined"
+                                        color="error"
+                                        onClick={confirmarCancelamento}
+                                        disabled={
+                                            cancelandoManual ||
+                                            autorizandoManual
+                                        }
+                                        sx={{
+                                            borderRadius: 2,
+                                            px: 3,
+                                            fontWeight: 700
+                                        }}
+                                    >
+                                        {cancelandoManual
+                                            ? "CANCELANDO..."
+                                            : "CANCELAR CHAMADO"}
+                                    </Button>
+                                </Box>
 
                             </Box>
                         </>
