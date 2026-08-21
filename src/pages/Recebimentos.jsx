@@ -191,198 +191,543 @@ function Recebimentos() {
 
     // Enviar XML para API
     async function enviarXML() {
+        if (loading) return;
+
         setLoading(true);
+
         try {
-            console.log("TOKEN:", token);
-            const formData = new FormData();
-            formData.append("file", file);
-
-            let itensCorrigidos = [];
-
-            if (itensSemGTIN.length > 0) {
-                itensCorrigidos = itensSemGTIN.map(i => ({
-                    index: i.index,
-                    codigo_barras: i.codigo
-                }));
+            // Validações básicas
+            if (!file) {
+                throw new Error("Nenhum arquivo XML selecionado.");
             }
 
-            const res = await fetch(`${API}/api/nfe/upload`, {
-                method: "POST",
-                headers: {
-                    "X-Auth-Token": token
-                },
-                body: formData
-            });
-
-            const fim = new Date();
-            let tempoSegundos = null;
-
-            if (inicioRecebimento) {
-                tempoSegundos = Math.floor((fim - inicioRecebimento) / 1000);
+            if (!xmlData?.nota || !xmlData?.serie) {
+                throw new Error("Dados da NF-e não encontrados.");
             }
 
-            console.log("UPLOAD NFE STATUS:", res.status);
-            console.log("Conferente:", funcionario);
-            console.log("Localização:", paletes
-                .filter(p => p.palete.trim() !== "" || p.volume.trim() !== "")
-                .map(p => `Palete:${p.palete}-${p.volume}`).join(" | "));
-            console.log("Observação antes de atualizar:", observacao_palet);
-            console.log("Status da nota antes:", fornecedorDireto);
-            console.log("Tempo de importação em segundos:", tempoSegundos);
-            console.log("Tempo de importação em minutos:", tempoSegundos / 60);
+            if (!funcionario?.trim()) {
+                throw new Error("Informe o funcionário.");
+            }
 
+            const paletesValidos = paletes.filter(
+                (p) =>
+                    p?.palete?.trim() !== "" ||
+                    p?.volume?.trim() !== ""
+            );
+
+            if (paletesValidos.length === 0) {
+                throw new Error("Informe pelo menos um palete.");
+            }
+
+            // Itens corrigidos sem GTIN
+            const itensCorrigidos = itensSemGTIN.map((item) => ({
+                index: item.index,
+                codigo_barras: item.codigo
+            }));
+
+            // Localização
+            const localizacao = paletesValidos
+                .map(
+                    (p) =>
+                        `Palete ${p.palete} - Volume ${p.volume}`
+                )
+                .join(" | ");
+
+            // Status final
             let statusFinal = "EM_TRANSITO";
+
             if (emTransito) {
                 statusFinal = "PENDENTE";
             } else if (fornecedorDireto) {
                 statusFinal = "FORNECEDOR_DIRETO";
             }
 
-            const response = await fetch(
-                `${API}/api/nfe/atualizar_por_nfe/${xmlData?.serie}/${xmlData?.nota}`,
+            // Tempo de recebimento
+            const fim = new Date();
+
+            let tempoSegundos = null;
+
+            if (inicioRecebimento) {
+                tempoSegundos = Math.floor(
+                    (fim - inicioRecebimento) / 1000
+                );
+            }
+
+            // Logs
+            console.log("INICIANDO RECEBIMENTO");
+            console.log("NF:", xmlData.nota);
+            console.log("Série:", xmlData.serie);
+            console.log("Fornecedor:", xmlData.fornecedor);
+            console.log("Conferente:", funcionario);
+            console.log("Localização:", localizacao);
+            console.log("Observação:", observacao_palet);
+            console.log("Fornecedor direto:", fornecedorDireto);
+            console.log("Em trânsito:", emTransito);
+            console.log("Status final:", statusFinal);
+            console.log("Tempo:", tempoSegundos, "segundos");
+            console.log("Itens corrigidos:", itensCorrigidos);
+
+            // 1. IMPORTAR XML
+            console.log("1. IMPORTANDO XML");
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const uploadResponse = await fetch(
+                `${API}/api/nfe/upload`,
+                {
+                    method: "POST",
+                    headers: {
+                        "X-Auth-Token": token
+                    },
+                    body: formData
+                }
+            );
+
+            console.log("UPLOAD NFE STATUS:", uploadResponse.status);
+
+            // Tenta obter resposta JSON
+            let uploadData = null;
+
+            try {
+                uploadData = await uploadResponse.json();
+            } catch {
+                // Backend pode não retornar JSON.
+            }
+
+            if (!uploadResponse.ok) {
+                console.error(
+                    "IMPORTAÇÃO DA NF REJEITADA:",
+                    uploadData
+                );
+
+                throw new Error(
+                    uploadData?.message ||
+                    uploadData?.detail ||
+                    (uploadResponse.status === 409
+                        ? "Não foi possível importar a NF-e. Status: NF-e duplicada"
+                        : `Não foi possível importar a NF-e. Status: ${uploadResponse.status}`
+                    )
+                );
+            }
+
+            console.log(
+                "NF-e importada com sucesso:",
+                uploadData
+            );
+
+            // 2. ATUALIZAR STATUS DA NF
+            console.log("2. ATUALIZANDO STATUS");
+
+            const updateResponse = await fetch(
+                `${API}/api/nfe/atualizar_por_nfe/${xmlData.serie}/${xmlData.nota}`,
                 {
                     method: "PUT",
                     headers: {
-                        "Content-Type": "application/json",
+                        "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
                         status: statusFinal,
                         conferente: funcionario,
-                        localizacao: paletes
-                            .filter(p => p.palete.trim() !== "" || p.volume.trim() !== "")
-                            .map(p => `Palete ${p.palete} - Volume ${p.volume}`).join(" | "),
+                        localizacao,
                         observacao: observacao_palet,
                         origem: "Manual",
                         etiqueta: "Sem etiqueta",
-                        itens_corrigidos: itensCorrigidos,
-
+                        itens_corrigidos: itensCorrigidos
                     })
                 }
             );
 
-            console.log("Status da nota depois:", fornecedorDireto);
-            console.log("STATUS ATUALIZAR:", response.status);
-            console.log("Observação depois de atualizar:", observacao_palet);
+            console.log(
+                "STATUS ATUALIZAR:",
+                updateResponse.status
+            );
+
+            // Tenta obter resposta JSON
+            let updateData = null;
+
+            try {
+                updateData = await updateResponse.json();
+            } catch {
+                // Backend pode não retornar JSON.
+            }
+
+            // Verifica atualização
+            if (!updateResponse.ok) {
+                console.error(
+                    "ATUALIZAÇÃO DA NF REJEITADA:",
+                    updateData
+                );
+
+                throw new Error(
+                    updateData?.message ||
+                    updateData?.detail ||
+                    `Não foi possível atualizar a NF-e. Status: ${updateResponse.status}`
+                );
+            }
+
+            console.log(
+                "NF-e atualizada com sucesso:",
+                updateData
+            );
+
+            // 3. SUCESSO
+            console.log("RECEBIMENTO CONCLUÍDO COM SUCESSO");
+
             setSnackbar({
                 open: true,
                 message: "Recebimento enviado com sucesso!",
                 severity: "success"
             });
+
             setOpenConfirmar(false);
 
-            // Limpa campos
+            // Limpa formulário
             setXmlData(null);
-            setPaletes([{ palete: "", volume: "" }]);
+            setPaletes([
+                {
+                    palete: "",
+                    volume: ""
+                }
+            ]);
+
             setFile(null);
+            setItensSemGTIN([]);
+            setObservacaoPalet("");
 
             setInicioRecebimento(null);
             setTempoDecorrido(0);
 
+            setFornecedorDireto(false);
+            setEmTransito(false);
+
         } catch (err) {
-            console.error("ERRO REAL:", err);
+            console.error("==========================================");
+            console.error("ERRO AO PROCESSAR RECEBIMENTO");
+            console.error("==========================================");
+            console.error(err);
 
             setSnackbar({
                 open: true,
-                message: err.message || "Erro no envio",
+                message:
+                    err?.message ||
+                    "Erro ao enviar o recebimento.",
                 severity: "error"
             });
+
         } finally {
             setLoading(false);
         }
     }
 
-    // Upload de XML
+    // Upload e leitura do XML
     async function handleFileUpload(e) {
-        const f = e.target.files[0];
-        if (!f) return;
+        const selectedFile = e.target.files?.[0];
 
-        if (!f.name.endsWith(".xml")) {
-            setSnackbar({
-                open: true,
-                message: "Arquivo deve ser XML",
-                severity: "error"
-            });
+        if (!selectedFile) {
             return;
         }
 
-        // Salva XML
-        setFile(f);
+        // Validação da extensão
+        if (
+            !selectedFile.name
+                .toLowerCase()
+                .endsWith(".xml")
+        ) {
+            setSnackbar({
+                open: true,
+                message: "Arquivo deve ser XML.",
+                severity: "error"
+            });
+
+            e.target.value = "";
+            return;
+        }
+
+        // Salva arquivo
+        setFile(selectedFile);
 
         const reader = new FileReader();
 
         reader.onload = (event) => {
-            const xmlString = event.target.result;
-            const parser = new DOMParser();
-            const xml = parser.parseFromString(xmlString, "text/xml");
+            try {
+                const xmlString = event.target?.result;
 
-            const dets = xml.getElementsByTagName("det");
-
-            let totalPecas = 0;
-            let volumes = "Não informado";
-
-            for (let i = 0; i < dets.length; i++) {
-                const qCom = dets[i].getElementsByTagName("qCom")[0]?.textContent;
-                totalPecas += parseFloat(qCom || 0);
-            }
-
-            let temSemGTIN = false;
-
-            for (let i = 0; i < dets.length; i++) {
-                const prod = dets[i].getElementsByTagName("prod")[0];
-                const cEAN = prod?.getElementsByTagName("cEAN")[0]?.textContent;
-
-                if (!cEAN || cEAN === "SEM GTIN") {
-                    temSemGTIN = true;
-                    break;
+                if (!xmlString) {
+                    throw new Error(
+                        "Não foi possível ler o arquivo XML."
+                    );
                 }
-            }
 
-            // Para acessar cfop
-            const ns = "http://www.portalfiscal.inf.br/nfe";
+                // Faz parsing do XML
+                const parser = new DOMParser();
 
-            const nota = xml.getElementsByTagName("nNF")[0]?.textContent;
-            const serie = xml.getElementsByTagName("serie")[0]?.textContent;
-            const fornecedor = xml.getElementsByTagName("xNome")[0]?.textContent;
-            const cnpj = xml.getElementsByTagName("CNPJ")[0]?.textContent;
-            const detNode = xml.getElementsByTagNameNS(ns, "det")[0];
-            const prodNode = detNode?.getElementsByTagNameNS(ns, "prod")[0];
-            const cfop = prodNode?.getElementsByTagNameNS(ns, "CFOP")[0]?.textContent;
-            const volNode = xml.getElementsByTagName("vol")[0];
-            if (volNode) { volumes = volNode.getElementsByTagName("qVol")[0]?.textContent || "0"; }
-            const destNode = xml.getElementsByTagName("dest")[0];
-            const cnpjDest = destNode?.getElementsByTagName("CNPJ")[0]?.textContent ||
-                destNode?.getElementsByTagName("CPF")[0]?.textContent;
-            const nomeDest = destNode?.getElementsByTagName("xNome")[0]?.textContent
+                const xml = parser.parseFromString(
+                    xmlString,
+                    "text/xml"
+                );
 
-            const CNPJ_EMPRESA = "03978085000175";
+                // Verifica XML inválido
+                const parserError =
+                    xml.querySelector("parsererror");
 
-            console.log("CFOP:", cfop);
+                if (parserError) {
+                    throw new Error(
+                        "O arquivo XML é inválido ou está corrompido."
+                    );
+                }
 
-            if (cnpjDest !== CNPJ_EMPRESA) {
-                setSnackbar({
-                    open: true,
-                    message: `Este XML pertence à ${nomeDest}`,
-                    severity: "error"
+                // Namespace da NF-e
+                const ns =
+                    "http://www.portalfiscal.inf.br/nfe";
+
+                // Produtos
+                const dets =
+                    xml.getElementsByTagName("det");
+
+                let totalPecas = 0;
+
+                let temSemGTIN = false;
+
+                for (let i = 0; i < dets.length; i++) {
+
+                    // Quantidade
+                    const qCom =
+                        dets[i]
+                            .getElementsByTagName("qCom")[0]
+                            ?.textContent;
+
+                    totalPecas += Number.parseFloat(
+                        qCom || 0
+                    );
+
+                    // GTIN
+                    const prod =
+                        dets[i]
+                            .getElementsByTagName("prod")[0];
+
+                    const cEAN =
+                        prod
+                            ?.getElementsByTagName("cEAN")[0]
+                            ?.textContent
+                            ?.trim();
+
+                    if (
+                        !cEAN ||
+                        cEAN.toUpperCase() === "SEM GTIN"
+                    ) {
+                        temSemGTIN = true;
+                    }
+                }
+
+                // Dados principais da NF
+                const nota =
+                    xml
+                        .getElementsByTagName("nNF")[0]
+                        ?.textContent;
+
+                const serie =
+                    xml
+                        .getElementsByTagName("serie")[0]
+                        ?.textContent;
+
+                const fornecedor =
+                    xml
+                        .getElementsByTagName("xNome")[0]
+                        ?.textContent;
+
+                const cnpj =
+                    xml
+                        .getElementsByTagName("CNPJ")[0]
+                        ?.textContent;
+
+                // CFOP
+                const detNode =
+                    xml.getElementsByTagNameNS(
+                        ns,
+                        "det"
+                    )[0];
+
+                const prodNode =
+                    detNode?.getElementsByTagNameNS(
+                        ns,
+                        "prod"
+                    )[0];
+
+                const cfop =
+                    prodNode
+                        ?.getElementsByTagNameNS(
+                            ns,
+                            "CFOP"
+                        )[0]
+                        ?.textContent;
+
+                // Volumes
+                let volumes = "Não informado";
+
+                const volNode =
+                    xml.getElementsByTagName("vol")[0];
+
+                if (volNode) {
+                    volumes =
+                        volNode
+                            .getElementsByTagName("qVol")[0]
+                            ?.textContent ||
+                        "0";
+                }
+
+                // Destinatário
+                const destNode =
+                    xml.getElementsByTagName("dest")[0];
+
+                const cnpjDest =
+                    destNode
+                        ?.getElementsByTagName("CNPJ")[0]
+                        ?.textContent ||
+                    destNode
+                        ?.getElementsByTagName("CPF")[0]
+                        ?.textContent;
+
+                const nomeDest =
+                    destNode
+                        ?.getElementsByTagName("xNome")[0]
+                        ?.textContent;
+
+                // Validação da empresa destinatária
+                const CNPJ_EMPRESA =
+                    "03978085000175";
+
+                console.log(
+                    "CFOP:",
+                    cfop
+                );
+
+                console.log(
+                    "Destinatário:",
+                    nomeDest
+                );
+
+                console.log(
+                    "CNPJ destinatário:",
+                    cnpjDest
+                );
+
+                // Impede XML de outra empresa
+                if (
+                    cnpjDest !== CNPJ_EMPRESA
+                ) {
+                    setSnackbar({
+                        open: true,
+                        message:
+                            `Este XML pertence à ${nomeDest || "outra empresa"}.`,
+                        severity: "error"
+                    });
+
+                    setFile(null);
+                    setXmlData(null);
+
+                    return;
+                }
+
+                // Salva dados da NF
+                setXmlData({
+                    nota,
+                    serie,
+                    fornecedor,
+                    cnpj,
+                    totalPecas,
+                    volumes,
+                    cfop
                 });
+
+                // Registra início do recebimento
+                setInicioRecebimento(
+                    new Date()
+                );
+
+                // Limpa correções anteriores
+                setItensSemGTIN([]);
+
+                console.log(
+                    "XML carregado com sucesso."
+                );
+
+                console.log(
+                    "NF:",
+                    nota
+                );
+
+                console.log(
+                    "Série:",
+                    serie
+                );
+
+                console.log(
+                    "Fornecedor:",
+                    fornecedor
+                );
+
+                console.log(
+                    "Total de peças:",
+                    totalPecas
+                );
+
+                console.log(
+                    "Volumes:",
+                    volumes
+                );
+
+                console.log(
+                    "CFOP:",
+                    cfop
+                );
+
+                console.log(
+                    "Possui itens sem GTIN:",
+                    temSemGTIN
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "ERRO AO PROCESSAR XML:",
+                    error
+                );
 
                 setFile(null);
                 setXmlData(null);
-                return;
-            }
 
-            setXmlData({
-                nota,
-                serie,
-                fornecedor,
-                cnpj,
-                totalPecas,
-                volumes,
-                cfop
+                setSnackbar({
+                    open: true,
+                    message:
+                        error?.message ||
+                        "Erro ao processar o XML.",
+                    severity: "error"
+                });
+            }
+        };
+
+        // Erro de leitura do arquivo
+        reader.onerror = () => {
+            console.error(
+                "Erro ao ler arquivo XML."
+            );
+
+            setFile(null);
+            setXmlData(null);
+
+            setSnackbar({
+                open: true,
+                message:
+                    "Não foi possível ler o arquivo XML.",
+                severity: "error"
             });
         };
 
-        reader.readAsText(f);
+        // Lê arquivo
+        reader.readAsText(selectedFile);
     }
+
 
     const CFOP_GARANTIA = ["5949", "6949"];
     const detectaGarantia = xmlData && CFOP_GARANTIA.includes(xmlData.cfop);
