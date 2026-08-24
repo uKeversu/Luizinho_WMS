@@ -68,6 +68,19 @@ export const MOLDURAS = {
             "0 0 12px #00694a, 0 0 24px #1afff4, 0 0 42px rgba(43,207,255,.55)",
     },
 
+    "Matriz Optimus": {
+        borderColor: "#00FF66",
+        glow: `
+        0 0 8px #FFFFFF,
+        0 0 18px #00FF66,
+        0 0 35px #00E65C,
+        0 0 60px rgba(0,255,102,.45),
+        0 0 90px rgba(0,255,102,.22),
+        inset 0 0 15px rgba(255,255,255,.25),
+        inset 0 0 30px rgba(0,255,102,.18)
+    `,
+    },
+
     default: {
         borderColor: "#222",
         glow: "none",

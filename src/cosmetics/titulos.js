@@ -38,7 +38,6 @@ export const TITULOS = {
 
     "O Fundador": {
         color: "#FFE082",
-
         textShadow: `
         0 0 6px #FFFFFF,
         0 0 14px #FFF3B0,
@@ -50,7 +49,6 @@ export const TITULOS = {
 
     "Sargento": {
         color: "#d4af37",
-
         textShadow:
             `
         0 0 5px #526d19,
@@ -64,6 +62,18 @@ export const TITULOS = {
         color: "#00ff62",
         textShadow:
             "0 0 8px #2bcfff, 0 0 18px #0d5eff"
+    },
+
+    "Optimus Prime": {
+        color: "#00FF66",
+        textShadow: `
+        0 0 5px #FFFFFF,
+        0 0 12px #B8FFD5,
+        0 0 22px #00FF66,
+        0 0 38px #00E65C,
+        0 0 58px rgba(0,255,102,.75),
+        0 0 85px rgba(0,255,102,.35)
+    `
     },
 
     default: {

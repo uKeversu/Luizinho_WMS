@@ -8948,12 +8948,10 @@
     border-radius: 50%;
 
     background:
-        radial-gradient(
-            circle,
-            rgba(215,235,130,.32),
-            rgba(143,174,50,.16) 35%,
-            transparent 72%
-        );
+        radial-gradient(circle,
+            rgba(215, 235, 130, .32),
+            rgba(143, 174, 50, .16) 35%,
+            transparent 72%);
 
     filter:
         blur(8px);
@@ -8967,16 +8965,14 @@
     0%,
     100% {
         transform:
-            translate(-50%, -50%)
-            scale(.85);
+            translate(-50%, -50%) scale(.85);
 
         opacity: .55;
     }
 
     50% {
         transform:
-            translate(-50%, -50%)
-            scale(1.2);
+            translate(-50%, -50%) scale(1.2);
 
         opacity: 1;
     }
@@ -8997,11 +8993,11 @@
     border-radius: 50%;
 
     border:
-        1px solid rgba(212,175,55,.28);
+        1px solid rgba(212, 175, 55, .28);
 
     box-shadow:
-        0 0 18px rgba(143,174,50,.18),
-        inset 0 0 18px rgba(143,174,50,.12);
+        0 0 18px rgba(143, 174, 50, .18),
+        inset 0 0 18px rgba(143, 174, 50, .12);
 
     animation:
         commandRing 9s linear infinite;
@@ -9011,14 +9007,12 @@
 
     from {
         transform:
-            translate(-50%, -50%)
-            rotate(0deg);
+            translate(-50%, -50%) rotate(0deg);
     }
 
     to {
         transform:
-            translate(-50%, -50%)
-            rotate(360deg);
+            translate(-50%, -50%) rotate(360deg);
     }
 }
 
@@ -9032,18 +9026,16 @@
     height: 2px;
 
     background:
-        linear-gradient(
-            90deg,
+        linear-gradient(90deg,
             transparent,
-            rgba(143,174,50,.05),
-            rgba(143,174,50,.75),
-            rgba(212,175,55,.5),
-            transparent
-        );
+            rgba(143, 174, 50, .05),
+            rgba(143, 174, 50, .75),
+            rgba(212, 175, 55, .5),
+            transparent);
 
     box-shadow:
-        0 0 12px rgba(143,174,50,.55),
-        0 0 25px rgba(143,174,50,.25);
+        0 0 12px rgba(143, 174, 50, .55),
+        0 0 25px rgba(143, 174, 50, .25);
 
     animation:
         sentinelaScan 5s ease-in-out infinite;
@@ -9084,12 +9076,10 @@
     height: 1px;
 
     background:
-        linear-gradient(
-            90deg,
+        linear-gradient(90deg,
             transparent,
-            rgba(143,174,50,.45),
-            transparent
-        );
+            rgba(143, 174, 50, .45),
+            transparent);
 
     opacity: .3;
 
@@ -9156,15 +9146,12 @@
 
     box-shadow:
         0 0 6px #8fae32,
-        0 0 14px rgba(143,174,50,.65);
+        0 0 14px rgba(143, 174, 50, .65);
 
     opacity: 0;
 
     animation:
-        sentinelaParticle
-        var(--duration)
-        linear
-        infinite;
+        sentinelaParticle var(--duration) linear infinite;
 
     animation-delay:
         var(--delay);
@@ -9174,9 +9161,7 @@
 
     0% {
         transform:
-            translateY(20px)
-            translateX(0)
-            scale(.3);
+            translateY(20px) translateX(0) scale(.3);
 
         opacity: 0;
     }
@@ -9187,16 +9172,12 @@
 
     60% {
         transform:
-            translateY(-300px)
-            translateX(-15px)
-            scale(1);
+            translateY(-300px) translateX(-15px) scale(1);
     }
 
     100% {
         transform:
-            translateY(-650px)
-            translateX(25px)
-            scale(.2);
+            translateY(-650px) translateX(25px) scale(.2);
 
         opacity: 0;
     }
@@ -9249,8 +9230,7 @@
     100% {
         opacity: 0;
         transform:
-            translateY(-100px)
-            translateX(25px);
+            translateY(-100px) translateX(25px);
     }
 }
 
@@ -9260,12 +9240,10 @@
     inset: 0;
 
     background:
-        radial-gradient(
-            circle at 50% 50%,
-            rgba(255,255,255,.7),
-            rgba(212,175,55,.2),
-            transparent 70%
-        );
+        radial-gradient(circle at 50% 50%,
+            rgba(255, 255, 255, .7),
+            rgba(212, 175, 55, .2),
+            transparent 70%);
 
     mix-blend-mode:
         screen;
@@ -9311,12 +9289,12 @@
     inset: 0;
 
     border:
-        1px solid rgba(143,174,50,.45);
+        1px solid rgba(143, 174, 50, .45);
 
     box-shadow:
-        inset 0 0 18px rgba(75,83,32,.45),
-        0 0 18px rgba(143,174,50,.25),
-        0 0 40px rgba(212,175,55,.12);
+        inset 0 0 18px rgba(75, 83, 32, .45),
+        0 0 18px rgba(143, 174, 50, .25),
+        0 0 40px rgba(212, 175, 55, .12);
 
     pointer-events: none;
 
@@ -9335,9 +9313,1303 @@
         opacity: 1;
 
         box-shadow:
-            inset 0 0 25px rgba(75,83,32,.55),
-            0 0 25px rgba(143,174,50,.4),
-            0 0 55px rgba(212,175,55,.2);
+            inset 0 0 25px rgba(75, 83, 32, .55),
+            0 0 25px rgba(143, 174, 50, .4),
+            0 0 55px rgba(212, 175, 55, .2);
     }
 }
 
+/* =========================================================
+   OPTIMUS EFFECT
+   Sistema tecnológico / núcleo energético
+========================================================= */
+
+.optimus-effect {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+
+    --optimus-green: #00ff66;
+    --optimus-green-dark: #00a844;
+    --optimus-green-soft: #55ff99;
+    --optimus-white: #ffffff;
+    --optimus-dark: #00150b;
+
+    z-index: 1;
+
+    background:
+        radial-gradient(circle at 50% 45%,
+            rgba(0, 255, 102, 0.12),
+            transparent 42%),
+        radial-gradient(circle at 50% 50%,
+            rgba(255, 255, 255, 0.035),
+            transparent 60%);
+}
+
+
+/* =========================================================
+   NÚCLEO CENTRAL
+========================================================= */
+
+.optimus-core {
+    position: absolute;
+
+    width: 150px;
+    height: 150px;
+
+    left: 50%;
+    top: 50%;
+
+    transform: translate(-50%, -50%);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    z-index: 8;
+}
+
+
+/* Halo externo */
+
+.optimus-core-outer {
+    position: absolute;
+    inset: -35px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(circle,
+            rgba(0, 255, 102, 0.25),
+            rgba(0, 255, 102, 0.08) 35%,
+            transparent 70%);
+
+    filter: blur(10px);
+
+    animation: optimusCoreGlow 3s ease-in-out infinite;
+}
+
+
+/* Núcleo */
+
+.optimus-core-energy {
+    position: absolute;
+
+    width: 75px;
+    height: 75px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(circle,
+            #ffffff 0%,
+            #cffff0 12%,
+            var(--optimus-green-soft) 28%,
+            var(--optimus-green) 48%,
+            rgba(0, 255, 102, 0.35) 68%,
+            transparent 72%);
+
+    box-shadow:
+        0 0 15px #fff,
+        0 0 30px var(--optimus-green),
+        0 0 60px var(--optimus-green),
+        0 0 100px rgba(0, 255, 102, 0.65);
+
+    animation:
+        optimusCorePulse 1.8s ease-in-out infinite,
+        optimusCoreRotate 8s linear infinite;
+}
+
+
+/* Símbolo */
+
+.optimus-core-symbol {
+    position: absolute;
+
+    font-size: 38px;
+
+    color: #ffffff;
+
+    text-shadow:
+        0 0 5px #ffffff,
+        0 0 15px var(--optimus-green),
+        0 0 30px var(--optimus-green);
+
+    z-index: 4;
+
+    animation:
+        optimusGearRotate 7s linear infinite,
+        optimusSymbolPulse 2s ease-in-out infinite;
+}
+
+
+/* =========================================================
+   ANÉIS DO NÚCLEO
+========================================================= */
+
+.optimus-core-ring {
+    position: absolute;
+
+    border-radius: 50%;
+
+    border: 1px solid rgba(0, 255, 102, 0.65);
+
+    box-shadow:
+        0 0 8px rgba(0, 255, 102, 0.45),
+        inset 0 0 8px rgba(0, 255, 102, 0.25);
+}
+
+
+.optimus-core-ring.ring-1 {
+    width: 100px;
+    height: 100px;
+
+    border-top-color: #ffffff;
+    border-bottom-color: transparent;
+
+    animation: optimusRingRotate 5s linear infinite;
+}
+
+
+.optimus-core-ring.ring-2 {
+    width: 125px;
+    height: 125px;
+
+    border-left-color: #ffffff;
+    border-right-color: transparent;
+
+    animation: optimusRingRotateReverse 8s linear infinite;
+}
+
+
+.optimus-core-ring.ring-3 {
+    width: 150px;
+    height: 150px;
+
+    border-style: dashed;
+
+    opacity: 0.6;
+
+    animation: optimusRingRotate 12s linear infinite;
+}
+
+
+/* =========================================================
+   PULSOS
+========================================================= */
+
+.optimus-pulses {
+    position: absolute;
+    inset: 0;
+
+    z-index: 3;
+}
+
+
+.optimus-pulse {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 80px;
+    height: 80px;
+
+    border: 2px solid var(--optimus-green);
+
+    border-radius: 50%;
+
+    transform: translate(-50%, -50%) scale(0);
+
+    opacity: 0;
+
+    box-shadow:
+        0 0 15px var(--optimus-green),
+        inset 0 0 15px rgba(0, 255, 102, 0.4);
+
+    animation: optimusPulse 4s linear infinite;
+}
+
+
+.optimus-pulse.pulse-1 {
+    animation-delay: 0s;
+}
+
+.optimus-pulse.pulse-2 {
+    animation-delay: 1s;
+}
+
+.optimus-pulse.pulse-3 {
+    animation-delay: 2s;
+}
+
+.optimus-pulse.pulse-4 {
+    animation-delay: 3s;
+}
+
+
+/* =========================================================
+   ANÉIS TECNOLÓGICOS
+========================================================= */
+
+.optimus-tech-rings {
+    position: absolute;
+    inset: 0;
+
+    z-index: 2;
+}
+
+
+.optimus-ring {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    border-radius: 50%;
+
+    border: 1px solid rgba(0, 255, 102, 0.3);
+
+    transform: translate(-50%, -50%);
+
+    box-shadow:
+        0 0 10px rgba(0, 255, 102, 0.2);
+}
+
+
+.tech-ring-1 {
+    width: 250px;
+    height: 250px;
+
+    border-top: 2px solid var(--optimus-green);
+
+    animation: optimusRingRotate 14s linear infinite;
+}
+
+
+.tech-ring-2 {
+    width: 360px;
+    height: 360px;
+
+    border-right: 2px solid #ffffff;
+
+    opacity: 0.45;
+
+    animation: optimusRingRotateReverse 20s linear infinite;
+}
+
+
+.tech-ring-3 {
+    width: 500px;
+    height: 500px;
+
+    border-style: dashed;
+
+    opacity: 0.2;
+
+    animation: optimusRingRotate 35s linear infinite;
+}
+
+
+/* =========================================================
+   ENGRENAGENS
+========================================================= */
+
+.optimus-gears {
+    position: absolute;
+    inset: 0;
+
+    z-index: 6;
+}
+
+
+.optimus-gear {
+    position: absolute;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: rgba(255, 255, 255, 0.8);
+
+    text-shadow:
+        0 0 8px var(--optimus-green),
+        0 0 18px var(--optimus-green);
+
+    filter: drop-shadow(0 0 5px rgba(0, 255, 102, 0.8));
+}
+
+
+.gear-1 {
+    width: 45px;
+    height: 45px;
+
+    left: 18%;
+    top: 25%;
+
+    font-size: 40px;
+
+    animation: optimusGearRotate 7s linear infinite;
+}
+
+
+.gear-2 {
+    width: 32px;
+    height: 32px;
+
+    right: 18%;
+    top: 30%;
+
+    font-size: 30px;
+
+    animation: optimusGearRotateReverse 5s linear infinite;
+}
+
+
+.gear-3 {
+    width: 38px;
+    height: 38px;
+
+    left: 22%;
+    bottom: 25%;
+
+    font-size: 34px;
+
+    animation: optimusGearRotate 9s linear infinite;
+}
+
+
+.gear-4 {
+    width: 28px;
+    height: 28px;
+
+    right: 23%;
+    bottom: 20%;
+
+    font-size: 26px;
+
+    animation: optimusGearRotateReverse 6s linear infinite;
+}
+
+
+/* =========================================================
+   CIRCUITOS
+========================================================= */
+
+.optimus-circuits {
+    position: absolute;
+    inset: 0;
+
+    z-index: 5;
+}
+
+
+.optimus-circuit {
+    position: absolute;
+
+    width: 110px;
+    height: 2px;
+
+    background:
+        linear-gradient(90deg,
+            transparent,
+            var(--optimus-green),
+            #ffffff,
+            transparent);
+
+    box-shadow:
+        0 0 8px var(--optimus-green);
+
+    opacity: 0.65;
+}
+
+
+.optimus-circuit i {
+    position: absolute;
+
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: var(--optimus-green);
+
+    box-shadow:
+        0 0 8px var(--optimus-green),
+        0 0 15px var(--optimus-green);
+
+    animation: optimusCircuitNode 2s ease-in-out infinite;
+}
+
+
+.optimus-circuit i:nth-child(1) {
+    left: 20%;
+}
+
+.optimus-circuit i:nth-child(2) {
+    left: 55%;
+
+    animation-delay: 0.5s;
+}
+
+.optimus-circuit i:nth-child(3) {
+    left: 85%;
+
+    animation-delay: 1s;
+}
+
+
+.circuit-1 {
+    left: 3%;
+    top: 25%;
+
+    transform: rotate(12deg);
+}
+
+
+.circuit-2 {
+    right: 3%;
+    top: 32%;
+
+    transform: rotate(-15deg);
+}
+
+
+.circuit-3 {
+    left: 5%;
+    top: 62%;
+
+    transform: rotate(-8deg);
+}
+
+
+.circuit-4 {
+    right: 5%;
+    top: 70%;
+
+    transform: rotate(12deg);
+}
+
+
+.circuit-5 {
+    left: 25%;
+    top: 12%;
+
+    width: 80px;
+
+    transform: rotate(25deg);
+}
+
+
+.circuit-6 {
+    right: 25%;
+    bottom: 12%;
+
+    width: 80px;
+
+    transform: rotate(-25deg);
+}
+
+
+/* =========================================================
+   LINHAS DE ENERGIA
+========================================================= */
+
+.optimus-energy-lines {
+    position: absolute;
+    inset: 0;
+
+    z-index: 4;
+}
+
+
+.energy-line {
+    position: absolute;
+
+    background: linear-gradient(90deg,
+            transparent,
+            var(--optimus-green),
+            #ffffff,
+            var(--optimus-green),
+            transparent);
+
+    box-shadow:
+        0 0 8px var(--optimus-green);
+
+    opacity: 0.35;
+
+    animation: optimusEnergyTravel 3s linear infinite;
+}
+
+
+.line-1,
+.line-2,
+.line-3 {
+    width: 1px;
+    height: 70px;
+}
+
+
+.line-4,
+.line-5,
+.line-6 {
+    width: 70px;
+    height: 1px;
+}
+
+
+.line-1 {
+    left: 20%;
+    top: -80px;
+}
+
+.line-2 {
+    left: 50%;
+    top: -100px;
+
+    animation-delay: 1s;
+}
+
+.line-3 {
+    right: 20%;
+    top: -70px;
+
+    animation-delay: 2s;
+}
+
+.line-4 {
+    left: -80px;
+    top: 35%;
+
+    animation-delay: 0.7s;
+}
+
+.line-5 {
+    left: -100px;
+    top: 65%;
+
+    animation-delay: 1.5s;
+}
+
+.line-6 {
+    right: -80px;
+    top: 50%;
+
+    animation-delay: 2.2s;
+}
+
+
+/* =========================================================
+   SCANNER
+========================================================= */
+
+.optimus-scanner {
+    position: absolute;
+
+    left: -10%;
+    right: -10%;
+
+    top: -10px;
+
+    height: 2px;
+
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(0, 255, 102, 0.1),
+            #ffffff,
+            var(--optimus-green),
+            rgba(0, 255, 102, 0.1),
+            transparent);
+
+    box-shadow:
+        0 0 10px var(--optimus-green),
+        0 0 25px var(--optimus-green);
+
+    z-index: 15;
+
+    animation: optimusScanner 5s ease-in-out infinite;
+}
+
+
+/* =========================================================
+   HUD
+========================================================= */
+
+.optimus-hud {
+    position: absolute;
+    inset: 15px;
+
+    border: 1px solid rgba(0, 255, 102, 0.08);
+
+    z-index: 2;
+}
+
+
+.hud-corner {
+    position: absolute;
+
+    width: 35px;
+    height: 35px;
+
+    border-color: rgba(0, 255, 102, 0.6);
+
+    filter: drop-shadow(0 0 5px var(--optimus-green));
+}
+
+
+.corner-tl {
+    left: 0;
+    top: 0;
+
+    border-left: 2px solid;
+    border-top: 2px solid;
+}
+
+
+.corner-tr {
+    right: 0;
+    top: 0;
+
+    border-right: 2px solid;
+    border-top: 2px solid;
+}
+
+
+.corner-bl {
+    left: 0;
+    bottom: 0;
+
+    border-left: 2px solid;
+    border-bottom: 2px solid;
+}
+
+
+.corner-br {
+    right: 0;
+    bottom: 0;
+
+    border-right: 2px solid;
+    border-bottom: 2px solid;
+}
+
+
+.hud-line {
+    position: absolute;
+
+    background: rgba(0, 255, 102, 0.15);
+}
+
+
+.hud-line-horizontal-1 {
+    left: 10%;
+    right: 10%;
+    top: 35%;
+    height: 1px;
+}
+
+
+.hud-line-horizontal-2 {
+    left: 15%;
+    right: 15%;
+    bottom: 30%;
+    height: 1px;
+}
+
+
+.hud-line-vertical-1 {
+    top: 10%;
+    bottom: 10%;
+    left: 30%;
+    width: 1px;
+}
+
+
+.hud-line-vertical-2 {
+    top: 10%;
+    bottom: 10%;
+    right: 30%;
+    width: 1px;
+}
+
+
+/* =========================================================
+   PARTÍCULAS
+========================================================= */
+
+.optimus-particles {
+    position: absolute;
+    inset: 0;
+
+    z-index: 7;
+}
+
+
+.optimus-particle {
+    position: absolute;
+
+    left: var(--x);
+    top: var(--y);
+
+    width: var(--size);
+    height: var(--size);
+
+    border-radius: 50%;
+
+    background: var(--optimus-green);
+
+    box-shadow:
+        0 0 5px var(--optimus-green),
+        0 0 12px var(--optimus-green);
+
+    opacity: 0;
+
+    animation:
+        optimusParticleFloat var(--duration) ease-in-out var(--delay) infinite;
+}
+
+
+/* =========================================================
+   FAÍSCAS
+========================================================= */
+
+.optimus-sparks {
+    position: absolute;
+    inset: 0;
+
+    z-index: 10;
+}
+
+
+.optimus-spark {
+    position: absolute;
+
+    left: var(--x);
+    top: var(--y);
+
+    width: 2px;
+    height: 10px;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 0 5px #ffffff,
+        0 0 12px var(--optimus-green);
+
+    transform: rotate(45deg);
+
+    opacity: 0;
+
+    animation:
+        optimusSpark 3s ease-in-out var(--delay) infinite;
+}
+
+
+/* =========================================================
+   NÓS DE DADOS
+========================================================= */
+
+.optimus-data {
+    position: absolute;
+    inset: 0;
+
+    z-index: 6;
+}
+
+
+.optimus-data-node {
+    position: absolute;
+
+    left: var(--x);
+    top: var(--y);
+
+    width: 10px;
+    height: 10px;
+
+    opacity: 0;
+
+    animation:
+        optimusDataPulse 4s ease-in-out var(--delay) infinite;
+}
+
+
+.optimus-data-node b {
+    position: absolute;
+
+    width: 5px;
+    height: 5px;
+
+    border-radius: 50%;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 0 8px #ffffff,
+        0 0 18px var(--optimus-green);
+}
+
+
+.optimus-data-node i {
+    position: absolute;
+
+    width: 25px;
+    height: 1px;
+
+    top: 2px;
+    left: 4px;
+
+    background: linear-gradient(90deg,
+            var(--optimus-green),
+            transparent);
+}
+
+
+/* =========================================================
+   SOBRECARGA
+========================================================= */
+
+.optimus-overload {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 120px;
+    height: 120px;
+
+    border: 1px solid var(--optimus-green);
+
+    border-radius: 50%;
+
+    transform: translate(-50%, -50%) scale(0);
+
+    opacity: 0;
+
+    z-index: 4;
+
+    animation: optimusOverload 5s ease-out infinite;
+}
+
+
+.optimus-overload-2 {
+    animation-delay: 2.5s;
+}
+
+
+/* =========================================================
+   FLASH
+========================================================= */
+
+.optimus-energy-flash {
+    position: absolute;
+    inset: 0;
+
+    background:
+        radial-gradient(circle at 50% 50%,
+            rgba(255, 255, 255, 0.3),
+            rgba(0, 255, 102, 0.12) 25%,
+            transparent 55%);
+
+    opacity: 0;
+
+    z-index: 12;
+
+    animation: optimusFlash 6s ease-in-out infinite;
+}
+
+
+/* =========================================================
+   REFLEXO
+========================================================= */
+
+.optimus-light-sweep {
+    position: absolute;
+
+    top: -20%;
+    left: -60%;
+
+    width: 35%;
+    height: 140%;
+
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.25),
+            rgba(0, 255, 102, 0.2),
+            transparent);
+
+    transform: rotate(18deg);
+
+    filter: blur(5px);
+
+    z-index: 13;
+
+    animation: optimusLightSweep 8s ease-in-out infinite;
+}
+
+
+/* =========================================================
+   BORDA ENERGÉTICA
+========================================================= */
+
+.optimus-border {
+    position: absolute;
+    inset: 2px;
+
+    border: 1px solid rgba(0, 255, 102, 0.5);
+
+    box-shadow:
+        inset 0 0 15px rgba(0, 255, 102, 0.15),
+        0 0 10px rgba(0, 255, 102, 0.15);
+
+    z-index: 20;
+
+    animation: optimusBorderPulse 2.5s ease-in-out infinite;
+}
+
+
+/* =========================================================
+   ANIMAÇÕES
+========================================================= */
+
+@keyframes optimusCorePulse {
+
+    0%,
+    100% {
+        transform: scale(0.9);
+    }
+
+    50% {
+        transform: scale(1.15);
+    }
+}
+
+
+@keyframes optimusCoreGlow {
+
+    0%,
+    100% {
+        opacity: 0.45;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+
+@keyframes optimusCoreRotate {
+
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+@keyframes optimusSymbolPulse {
+
+    0%,
+    100% {
+        opacity: 0.75;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+
+@keyframes optimusGearRotate {
+
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+@keyframes optimusGearRotateReverse {
+
+    from {
+        transform: rotate(360deg);
+    }
+
+    to {
+        transform: rotate(0deg);
+    }
+}
+
+
+@keyframes optimusRingRotate {
+
+    from {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+
+@keyframes optimusRingRotateReverse {
+
+    from {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+
+    to {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+}
+
+
+@keyframes optimusPulse {
+
+    0% {
+        transform: translate(-50%, -50%) scale(0.2);
+        opacity: 0;
+    }
+
+    15% {
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: translate(-50%, -50%) scale(4);
+        opacity: 0;
+    }
+}
+
+
+@keyframes optimusCircuitNode {
+
+    0%,
+    100% {
+        opacity: 0.25;
+        transform: scale(0.7);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.4);
+    }
+}
+
+
+@keyframes optimusEnergyTravel {
+
+    0% {
+        opacity: 0;
+        transform: translateY(-100px);
+    }
+
+    20% {
+        opacity: 1;
+    }
+
+    80% {
+        opacity: 0.8;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(650px);
+    }
+}
+
+
+@keyframes optimusScanner {
+
+    0% {
+        top: -5%;
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        top: 105%;
+        opacity: 0;
+    }
+}
+
+
+@keyframes optimusParticleFloat {
+
+    0% {
+        transform: translateY(30px) scale(0);
+        opacity: 0;
+    }
+
+    20% {
+        opacity: 0.8;
+    }
+
+    50% {
+        transform: translateY(-15px) scale(1);
+        opacity: 1;
+    }
+
+    80% {
+        opacity: 0.5;
+    }
+
+    100% {
+        transform: translateY(-60px) scale(0);
+        opacity: 0;
+    }
+}
+
+
+@keyframes optimusSpark {
+
+    0% {
+        opacity: 0;
+        transform: scale(0) rotate(45deg);
+    }
+
+    20% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.5) rotate(45deg);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(-35px) scale(0) rotate(45deg);
+    }
+}
+
+
+@keyframes optimusDataPulse {
+
+    0%,
+    100% {
+        opacity: 0.15;
+        transform: scale(0.7);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+}
+
+
+@keyframes optimusOverload {
+
+    0% {
+        transform: translate(-50%, -50%) scale(0.2);
+        opacity: 0;
+    }
+
+    15% {
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: translate(-50%, -50%) scale(4);
+        opacity: 0;
+    }
+}
+
+
+@keyframes optimusFlash {
+
+    0%,
+    90%,
+    100% {
+        opacity: 0;
+    }
+
+    93% {
+        opacity: 0.7;
+    }
+
+    95% {
+        opacity: 0;
+    }
+}
+
+
+@keyframes optimusLightSweep {
+
+    0% {
+        left: -60%;
+        opacity: 0;
+    }
+
+    15% {
+        opacity: 0.7;
+    }
+
+    50% {
+        opacity: 0.35;
+    }
+
+    80% {
+        opacity: 0;
+    }
+
+    100% {
+        left: 130%;
+        opacity: 0;
+    }
+}
+
+
+@keyframes optimusBorderPulse {
+
+    0%,
+    100% {
+        border-color: rgba(0, 255, 102, 0.35);
+
+        box-shadow:
+            inset 0 0 10px rgba(0, 255, 102, 0.08),
+            0 0 5px rgba(0, 255, 102, 0.1);
+    }
+
+    50% {
+        border-color: rgba(255, 255, 255, 0.8);
+
+        box-shadow:
+            inset 0 0 25px rgba(0, 255, 102, 0.2),
+            0 0 20px rgba(0, 255, 102, 0.4);
+    }
+}
+
+
+/* =========================================================
+   REDUÇÃO DE MOVIMENTO
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .optimus-effect *,
+    .optimus-effect::before,
+    .optimus-effect::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+
+}

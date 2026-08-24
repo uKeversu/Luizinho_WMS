@@ -127,6 +127,16 @@ export const EFEITOS = {
         animation: "leviathan"
     },
 
+    "Circuito Optimus": {
+        background: "linear-gradient(135deg, #001a0b, #003d1c)",
+        cardGlow: "0 0 18px rgba(0,255,102,.65), 0 0 40px rgba(0,255,102,.35), inset 0 0 25px rgba(0,255,102,.08)",
+        nomeGlow: "0 0 12px #ffffff, 0 0 24px #00ff66",
+        accent: "#00ff66",
+        overlay: "radial-gradient(circle at 50% 45%, rgba(0,255,102,.22), transparent 55%), radial-gradient(circle at 50% 50%, rgba(255,255,255,.06), transparent 70%)",
+        animation: "optimus"
+
+    },
+
     default: {
         background: "#111827",
         cardGlow: "none",
