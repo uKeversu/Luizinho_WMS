@@ -70,6 +70,10 @@ function LoginFuncionario({ onLogin }) {
         message: "Login realizado"
       });
 
+      setTimeout(() => {
+        window.location.reload();
+      }, 25);
+
     } catch (err) {
 
       setSnackbar({
