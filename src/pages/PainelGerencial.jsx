@@ -37,20 +37,35 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 
+import LoginFuncionario from "../components/LoginFuncionario";
+
 const API_URL = "http://192.168.1.185:8077";
 
 export default function DistribuicaoConferencia() {
 
+    // API BASE
+    const API = "http://192.168.1.185:8077";
+
+    // Acessar outras pages
     const navigate = useNavigate();
 
+    // Login e Logout
     const [userInfo, setUserInfo] = useState(() => {
         const user = localStorage.getItem("user_info");
         return user ? JSON.parse(user) : null;
     });
+    
+    const [token, setToken] = useState(() => localStorage.getItem("nfe_token") || "");
 
-    const [token, setToken] = useState(
-        () => localStorage.getItem("nfe_token") || ""
-    );
+    const logout = () => {
+        localStorage.removeItem("nfe_token");
+        localStorage.removeItem("user_info");
+
+        setToken("");
+        setUserInfo(null);
+
+        navigate("/");
+    };
 
     const [notas, setNotas] = useState([]);
     const [funcionarios, setFuncionarios] = useState([]);
@@ -83,16 +98,6 @@ export default function DistribuicaoConferencia() {
         severity: "success",
         message: ""
     });
-
-    const logout = () => {
-        localStorage.removeItem("nfe_token");
-        localStorage.removeItem("user_info");
-
-        setToken("");
-        setUserInfo(null);
-
-        navigate("/");
-    };
 
     useEffect(() => {
         carregarDados();

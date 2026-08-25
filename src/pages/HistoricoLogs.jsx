@@ -25,26 +25,35 @@ import SearchIcon from '@mui/icons-material/Search';
 
 import { ThemeContext } from "../context/ThemeContext";
 
+import LoginFuncionario from "../components/LoginFuncionario";
+
 import "../style/App.css";
 
 function HistoricoLogs() {
 
     const { dark } = useContext(ThemeContext);
 
-    const navigate = useNavigate();
-
     const { notaId } = useParams();
 
+    // API BASE
     const API = "http://192.168.1.185:8077";
 
+    // Acessar outras pages
+    const navigate = useNavigate();
+
+    // Login e Logout
     const [userInfo, setUserInfo] = useState(() => {
         const user = localStorage.getItem("user_info");
         return user ? JSON.parse(user) : null;
     });
+    const [token, setToken] = useState(() => localStorage.getItem("nfe_token") || "");
 
-    const [token, setToken] = useState(
-        () => localStorage.getItem("nfe_token") || ""
-    );
+    const logout = () => {
+        setToken("");
+        setUserInfo(null);
+        localStorage.removeItem("nfe_token");
+        localStorage.removeItem("user_info");
+    };
 
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -55,14 +64,6 @@ function HistoricoLogs() {
     const [busca, setBusca] = useState("");
     const [usuarioFiltro, setUsuarioFiltro] = useState("");
     const [acaoFiltro, setAcaoFiltro] = useState("");
-
-    const logout = () => {
-        setToken("");
-        setUserInfo(null);
-
-        localStorage.removeItem("nfe_token");
-        localStorage.removeItem("user_info");
-    };
 
     const carregarLogs = async () => {
 
@@ -466,7 +467,7 @@ function HistoricoLogs() {
                 gap={2}
                 mb={3}
                 flexWrap="wrap"
-                sx={{zoom: '0.9'}}
+                sx={{ zoom: '0.9' }}
             >
                 <Chip
                     color="primary"

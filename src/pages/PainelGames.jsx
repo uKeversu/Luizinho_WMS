@@ -37,6 +37,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import { ThemeContext } from "../context/ThemeContext";
 
+import LoginFuncionario from "../components/LoginFuncionario";
+
 const API = "http://192.168.1.185:8077";
 
 export default function PainelGames() {

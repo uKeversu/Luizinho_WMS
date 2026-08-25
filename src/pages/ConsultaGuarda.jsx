@@ -36,6 +36,8 @@ import BadgeIcon from '@mui/icons-material/Badge';
 
 import { ThemeContext } from "../context/ThemeContext";
 
+import LoginFuncionario from "../components/LoginFuncionario";
+
 import "../style/App.css";
 
 function ConsultaGuarda() {
@@ -379,839 +381,581 @@ function ConsultaGuarda() {
     };
 
     return (
+        !token ? (
+            <LoginFuncionario
+                onLogin={(data) => {
 
-        <Container
-            maxWidth="100%"
-            sx={{
-                mt: 4,
-                pb: 4,
-                bgcolor: "background.default"
-            }}
-        >
+                    localStorage.setItem(
+                        "nfe_token",
+                        data.token
+                    );
 
-            {/* HEADER */}
-            <Box
+                    const user = {
+                        id: data.id,
+                        nome: data.nome,
+                        codigo: data.codigo,
+                        tipo: data.tipo,
+                        pode_autorizar_conferencia:
+                            data.pode_autorizar_conferencia
+                    };
+
+                    localStorage.setItem(
+                        "user_info",
+                        JSON.stringify(user)
+                    );
+
+                    setUserInfo(user);
+                    setToken(data.token);
+                }}
+            />
+        ) : (
+            <Container
+                maxWidth="100%"
                 sx={{
-                    display: 'flex',
-                    flexDirection: {
-                        xs: 'column',
-                        md: 'row'
-                    },
-                    justifyContent: 'space-between',
-                    alignItems: {
-                        xs: 'flex-start',
-                        md: 'center'
-                    },
-                    gap: 2,
-                    p: 2,
-                    bgcolor: 'var(--azul)',
-                    mb: 4,
-                    borderRadius: '2vh',
-                    zoom: '0.9'
+                    mt: 4,
+                    pb: 4,
+                    bgcolor: "background.default"
                 }}
             >
 
-                <Box>
-
-                    <Typography
-                        variant="h4"
-                        sx={{
-                            fontFamily: 'Consolas',
-                            color: "background.paper",
-                            fontWeight: "bold"
-                        }}
-                    >
-                        Consulta de Guardas
-                    </Typography>
-
-                    <Typography
-                        sx={{
-                            color: "rgba(255,255,255,0.7)"
-                        }}
-                    >
-                        Histórico completo de armazenagem
-                    </Typography>
-
-                </Box>
-
-                <Box>
-
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'right'
-                        }}
-                    >
-
-                        <PersonIcon
-                            sx={{
-                                color: "background.paper",
-                                pr: 1
-                            }}
-                        />
-
-                        <Typography
-                            sx={{
-                                color: "background.paper",
-                                fontSize: '0.9rem'
-                            }}
-                        >
-                            {userInfo?.nome}
-                        </Typography>
-
-                        {token && (
-
-                            <Button
-                                size="small"
-                                onClick={logout}
-                                sx={{
-                                    color: "background.paper"
-                                }}
-                            >
-                                <LogoutIcon />
-                            </Button>
-                        )}
-                    </Box>
-
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            justifyContent: 'right'
-                        }}
-                    >
-
-                        <Button
-                            onClick={() =>
-                                navigate("/")
-                            }
-                            sx={{
-                                color: "background.paper",
-                                gap: 1
-                            }}
-                        >
-                            Voltar
-                            <ArrowBackIcon />
-                        </Button>
-
-                    </Box>
-
-                </Box>
-
-            </Box>
-
-            {/* FILTROS */}
-            <Paper
-                elevation={0}
-                sx={{
-                    p: 3,
-                    mb: 4,
-                    borderRadius: '2vh',
-                    bgcolor: 'background.alerta',
-                    border: dark
-                        ? '1px solid rgba(255,255,255,0.08)'
-                        : '1px solid rgba(0,0,0,0.08)',
-                        zoom: '0.9'
-                }}
-            >
-
-                <Grid
-                    container
-                    spacing={2}
-                    alignItems="center"
-                >
-
-                    <Grid item xs={12} md={5}>
-
-                        <TextField
-                            fullWidth
-                            size="small"
-                            placeholder="Buscar por produto"
-
-                            inputRef={buscaRef}
-
-                            value={busca}
-
-                            onChange={(e) =>
-                                setBusca(e.target.value)
-                            }
-
-                            onKeyDown={(e) =>
-                                navegarCampos(
-                                    e,
-                                    dataInicioRef,
-                                    null
-                                )
-                            }
-                            autoComplete="off"
-                            inputProps={{
-                                spellCheck: false,
-                                autoCorrect: "off",
-                                autoCapitalize: "off",
-                            }}
-                            InputProps={{
-                                startAdornment: (
-                                    <SearchIcon
-                                        sx={{
-                                            mr: 1,
-                                            color: 'text.secondary'
-                                        }}
-                                    />
-                                )
-                            }}
-                        />
-
-                    </Grid>
-
-                    <Grid item xs={12} md={2}>
-
-                        <TextField
-                            fullWidth
-                            type="date"
-                            size="small"
-
-                            inputRef={dataInicioRef}
-
-                            value={dataInicio}
-
-                            onChange={(e) =>
-                                setDataInicio(
-                                    e.target.value
-                                )
-                            }
-
-                            onKeyDown={(e) =>
-                                navegarCampos(
-                                    e,
-                                    dataFimRef,
-                                    buscaRef
-                                )
-                            }
-                        />
-
-                    </Grid>
-
-                    <Grid item xs={12} md={2}>
-
-                        <TextField
-                            fullWidth
-                            type="date"
-                            size="small"
-
-                            inputRef={dataFimRef}
-
-                            value={dataFim}
-
-                            onChange={(e) =>
-                                setDataFim(
-                                    e.target.value
-                                )
-                            }
-
-                            onKeyDown={(e) =>
-                                navegarCampos(
-                                    e,
-                                    null,
-                                    dataInicioRef,
-                                    buscarGuardas
-                                )
-                            }
-                        />
-
-                    </Grid>
-
-                    <Grid item xs={12} md={3}>
-
-                        <Button
-                            fullWidth
-                            variant="contained"
-                            size="large"
-                            startIcon={<SearchIcon />}
-                            onClick={buscarGuardas}
-                            sx={{
-                                height: '40px'
-                            }}
-                        >
-                            Buscar Guardas
-                        </Button>
-
-                    </Grid>
-
-                </Grid>
-
-            </Paper>
-
-            {/* LOADING */}
-            {loading && (
-
+                {/* HEADER */}
                 <Box
                     sx={{
                         display: 'flex',
-                        justifyContent: 'center',
-                        mt: 10
-                    }}
-                >
-                    <CircularProgress />
-                </Box>
-            )}
-
-            {/* RESUMO */}
-            {!loading && logs.length > 0 && (
-
-                <Grid
-                    container
-                    spacing={2}
-                    sx={{ mb: 4 }}
-                >
-
-                    <Grid item xs={12} md={3}>
-
-                        <Card
-                            sx={{
-                                borderRadius: '2vh',
-                                bgcolor: 'background.alerta',
-                                zoom: '0.9'
-                            }}
-                        >
-
-                            <CardContent>
-
-                                <Box
-                                    sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 2
-                                    }}
-                                >
-
-                                    <Inventory2Icon
-                                        color="primary"
-                                    />
-
-                                    <Box>
-
-                                        <Typography
-                                            variant="h5"
-                                            fontWeight="bold"
-                                        >
-                                            {logs.length}
-                                        </Typography>
-
-                                        <Typography
-                                            variant="body2"
-                                        >
-                                            Guardas encontradas
-                                        </Typography>
-
-                                    </Box>
-
-                                </Box>
-
-                            </CardContent>
-
-                        </Card>
-
-                    </Grid>
-
-                    <Grid item xs={12} md={3}>
-
-                        <Card
-                            sx={{
-                                borderRadius: '2vh',
-                                bgcolor: 'background.alerta',
-                                zoom: '0.9'
-                            }}
-                        >
-
-                            <CardContent>
-
-                                <Box
-                                    sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 2
-                                    }}
-                                >
-
-                                    <WarehouseIcon
-                                        color="success"
-                                    />
-
-                                    <Box>
-
-                                        <Typography
-                                            variant="h5"
-                                            fontWeight="bold"
-                                        >
-                                            {
-                                                logs.filter(
-                                                    l =>
-                                                        l.tipo_guarda === "UNIDADE"
-                                                ).length
-                                            }
-                                        </Typography>
-
-                                        <Typography
-                                            variant="body2"
-                                        >
-                                            Guardas unidade
-                                        </Typography>
-
-                                    </Box>
-
-                                </Box>
-
-                            </CardContent>
-
-                        </Card>
-
-                    </Grid>
-
-                    <Grid item xs={12} md={3}>
-
-                        <Card
-                            sx={{
-                                borderRadius: '2vh',
-                                bgcolor: 'background.alerta',
-                                zoom: '0.9'
-                            }}
-                        >
-
-                            <CardContent>
-
-                                <Box
-                                    sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 2
-                                    }}
-                                >
-
-                                    <LocationOnIcon
-                                        color="warning"
-                                    />
-
-                                    <Box>
-
-                                        <Typography
-                                            variant="h5"
-                                            fontWeight="bold"
-                                        >
-                                            {
-                                                [...new Set(
-                                                    logs.map(
-                                                        l =>
-                                                            l.local_informado
-                                                    )
-                                                )].length
-                                            }
-                                        </Typography>
-
-                                        <Typography
-                                            variant="body2"
-                                        >
-                                            Locais utilizados
-                                        </Typography>
-
-                                    </Box>
-
-                                </Box>
-
-                            </CardContent>
-
-                        </Card>
-
-                    </Grid>
-
-                    <Grid item xs={12} md={3}>
-
-                        <Card
-                            sx={{
-                                borderRadius: '2vh',
-                                bgcolor: 'background.alerta',
-                                zoom: '0.9'
-                            }}
-                        >
-
-                            <CardContent>
-
-                                <Box
-                                    sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 2
-                                    }}
-                                >
-
-                                    <BadgeIcon
-                                        color="primary"
-                                    />
-
-                                    <Box>
-
-                                        <Typography
-                                            variant="h5"
-                                            fontWeight="bold"
-                                        >
-                                            {
-                                                [...new Set(
-                                                    logs.map(
-                                                        l =>
-                                                            l.funcionario
-                                                    )
-                                                )].length
-                                            }
-                                        </Typography>
-
-                                        <Typography
-                                            variant="body2"
-                                        >
-                                            Funcionários
-                                        </Typography>
-
-                                    </Box>
-
-                                </Box>
-
-                            </CardContent>
-
-                        </Card>
-
-                    </Grid>
-
-                    <Grid item xs={12} md={3}>
-
-                        <Card
-                            sx={{
-                                borderRadius: '2vh',
-                                bgcolor: 'background.alerta',
-                                zoom: '0.9'
-                            }}
-                        >
-
-                            <CardContent>
-
-                                <Box
-                                    sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 2
-                                    }}
-                                >
-                                    <BadgeIcon
-                                        color="error"
-                                    />
-                                    <Box>
-                                        <Typography
-                                            variant="h5"
-                                            fontWeight="bold"
-                                        >
-                                            {erros.length}
-                                        </Typography>
-
-                                        <Typography
-                                            variant="body2"
-                                        >
-                                            Erros encontrados
-                                        </Typography>
-                                    </Box>
-                                </Box>
-                            </CardContent>
-                        </Card>
-                    </Grid>
-                </Grid>
-            )}
-
-            {/* TABELA */}
-            {!loading && (
-
-                <Card
-                    sx={{
+                        flexDirection: {
+                            xs: 'column',
+                            md: 'row'
+                        },
+                        justifyContent: 'space-between',
+                        alignItems: {
+                            xs: 'flex-start',
+                            md: 'center'
+                        },
+                        gap: 2,
+                        p: 2,
+                        bgcolor: 'var(--azul)',
+                        mb: 4,
                         borderRadius: '2vh',
-                        overflow: 'hidden',
-                        bgcolor: 'background.alerta',
                         zoom: '0.9'
                     }}
                 >
-                    <CardContent sx={{ p: 0 }}>
+
+                    <Box>
+
+                        <Typography
+                            variant="h4"
+                            sx={{
+                                fontFamily: 'Consolas',
+                                color: "background.paper",
+                                fontWeight: "bold"
+                            }}
+                        >
+                            Consulta de Guardas
+                        </Typography>
+
+                        <Typography
+                            sx={{
+                                color: "rgba(255,255,255,0.7)"
+                            }}
+                        >
+                            Histórico completo de armazenagem
+                        </Typography>
+
+                    </Box>
+
+                    <Box>
+
                         <Box
                             sx={{
-                                p: 2,
-                                borderBottom:
-                                    dark
-                                        ? '1px solid rgba(255,255,255,0.08)'
-                                        : '1px solid rgba(0,0,0,0.08)'
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'right'
                             }}
                         >
+
+                            <PersonIcon
+                                sx={{
+                                    color: "background.paper",
+                                    pr: 1
+                                }}
+                            />
+
                             <Typography
-                                variant="h6"
-                                fontWeight="bold"
+                                sx={{
+                                    color: "background.paper",
+                                    fontSize: '0.9rem'
+                                }}
                             >
-                                Histórico de Guardas
+                                {userInfo?.nome}
                             </Typography>
+
+                            {token && (
+
+                                <Button
+                                    size="small"
+                                    onClick={logout}
+                                    sx={{
+                                        color: "background.paper"
+                                    }}
+                                >
+                                    <LogoutIcon />
+                                </Button>
+                            )}
                         </Box>
 
-                        <Table
+                        <Box
                             sx={{
-                                tableLayout: 'fixed',
-                                width: '100%'
+                                display: 'flex',
+                                justifyContent: 'right'
                             }}
                         >
 
-                            <TableHead>
+                            <Button
+                                onClick={() =>
+                                    navigate("/")
+                                }
+                                sx={{
+                                    color: "background.paper",
+                                    gap: 1
+                                }}
+                            >
+                                Voltar
+                                <ArrowBackIcon />
+                            </Button>
 
-                                <TableRow>
+                        </Box>
 
-                                    <TableCell sx={{ width: '28%' }}>
-                                        Produto
-                                    </TableCell>
+                    </Box>
 
-                                    <TableCell sx={{ width: '16%' }}>
-                                        Código de barras
-                                    </TableCell>
+                </Box>
 
-                                    <TableCell sx={{ width: '16%' }}>
-                                        Local da guarda
-                                    </TableCell>
+                {/* FILTROS */}
+                <Paper
+                    elevation={0}
+                    sx={{
+                        p: 3,
+                        mb: 4,
+                        borderRadius: '2vh',
+                        bgcolor: 'background.alerta',
+                        border: dark
+                            ? '1px solid rgba(255,255,255,0.08)'
+                            : '1px solid rgba(0,0,0,0.08)',
+                        zoom: '0.9'
+                    }}
+                >
 
-                                    <TableCell sx={{ width: '8%' }}>
-                                        Quantidade
-                                    </TableCell>
+                    <Grid
+                        container
+                        spacing={2}
+                        alignItems="center"
+                    >
 
-                                    <TableCell sx={{ width: '10%' }}>
-                                        Tipo
-                                    </TableCell>
+                        <Grid item xs={12} md={5}>
 
-                                    <TableCell sx={{ width: '16%' }}>
-                                        Funcionário
-                                    </TableCell>
+                            <TextField
+                                fullWidth
+                                size="small"
+                                placeholder="Buscar por produto"
 
-                                    <TableCell sx={{ width: '16%' }}>
-                                        Data/Hora
-                                    </TableCell>
+                                inputRef={buscaRef}
 
-                                </TableRow>
+                                value={busca}
 
-                            </TableHead>
+                                onChange={(e) =>
+                                    setBusca(e.target.value)
+                                }
 
-                            <TableBody>
-
-                                {logs.length === 0 ? (
-
-                                    <TableRow>
-
-                                        <TableCell
-                                            colSpan={7}
-                                            align="center"
-                                        >
-
-                                            <Box
-                                                sx={{
-                                                    py: 8
-                                                }}
-                                            >
-
-                                                <WarehouseIcon
-                                                    sx={{
-                                                        fontSize: 60,
-                                                        opacity: 0.3,
-                                                        mb: 2
-                                                    }}
-                                                />
-
-                                                <Typography
-                                                    variant="h6"
-                                                >
-                                                    Nenhum registro encontrado
-                                                </Typography>
-
-                                                <Typography
-                                                    variant="body2"
-                                                    color="text.secondary"
-                                                >
-                                                    Faça uma busca para visualizar os históricos
-                                                </Typography>
-
-                                            </Box>
-
-                                        </TableCell>
-
-                                    </TableRow>
-
-                                ) : (
-
-                                    logs.map((log) => (
-
-                                        <TableRow
-                                            key={log.id}
-
-                                            hover
-
+                                onKeyDown={(e) =>
+                                    navegarCampos(
+                                        e,
+                                        dataInicioRef,
+                                        null
+                                    )
+                                }
+                                autoComplete="off"
+                                inputProps={{
+                                    spellCheck: false,
+                                    autoCorrect: "off",
+                                    autoCapitalize: "off",
+                                }}
+                                InputProps={{
+                                    startAdornment: (
+                                        <SearchIcon
                                             sx={{
-                                                transition: '0.2s'
+                                                mr: 1,
+                                                color: 'text.secondary'
                                             }}
-                                        >
+                                        />
+                                    )
+                                }}
+                            />
 
-                                            <TableCell>
+                        </Grid>
 
-                                                <Box>
+                        <Grid item xs={12} md={2}>
 
-                                                    <Typography
-                                                        fontWeight="bold"
-                                                    >
-                                                        {log.basico}
-                                                    </Typography>
+                            <TextField
+                                fullWidth
+                                type="date"
+                                size="small"
 
-                                                    <Typography
-                                                        variant="body2"
-                                                        color="text.secondary"
-                                                    >
-                                                        {
-                                                            log.descricao_produto
-                                                        }
-                                                    </Typography>
+                                inputRef={dataInicioRef}
 
-                                                </Box>
+                                value={dataInicio}
 
-                                            </TableCell>
+                                onChange={(e) =>
+                                    setDataInicio(
+                                        e.target.value
+                                    )
+                                }
 
-                                            <TableCell>
-                                                <Box
-                                                    sx={{
-                                                        wordBreak: 'break-word'
-                                                    }}
-                                                >
-                                                    {log.codigo_barras}
-                                                </Box>
-                                            </TableCell>
+                                onKeyDown={(e) =>
+                                    navegarCampos(
+                                        e,
+                                        dataFimRef,
+                                        buscaRef
+                                    )
+                                }
+                            />
 
-                                            <TableCell>
+                        </Grid>
 
-                                                <Box
-                                                    sx={{
-                                                        wordBreak: 'break-word'
-                                                    }}
-                                                >
+                        <Grid item xs={12} md={2}>
 
-                                                    <Typography
-                                                        fontWeight="bold"
-                                                    >
-                                                        {log.local_informado}
-                                                    </Typography>
+                            <TextField
+                                fullWidth
+                                type="date"
+                                size="small"
 
-                                                    <Typography
-                                                        variant="body2"
-                                                        color="text.secondary"
-                                                    >
-                                                        LOC SSPlus: {log.local_sistema}
-                                                    </Typography>
+                                inputRef={dataFimRef}
 
-                                                </Box>
+                                value={dataFim}
 
-                                            </TableCell>
+                                onChange={(e) =>
+                                    setDataFim(
+                                        e.target.value
+                                    )
+                                }
 
-                                            <TableCell>
+                                onKeyDown={(e) =>
+                                    navegarCampos(
+                                        e,
+                                        null,
+                                        dataInicioRef,
+                                        buscarGuardas
+                                    )
+                                }
+                            />
 
-                                                <Chip
-                                                    label={
-                                                        log.quantidade
-                                                    }
-                                                    color="primary"
-                                                    size="small"
-                                                />
+                        </Grid>
 
-                                            </TableCell>
+                        <Grid item xs={12} md={3}>
 
-                                            <TableCell>
+                            <Button
+                                fullWidth
+                                variant="contained"
+                                size="large"
+                                startIcon={<SearchIcon />}
+                                onClick={buscarGuardas}
+                                sx={{
+                                    height: '40px'
+                                }}
+                            >
+                                Buscar Guardas
+                            </Button>
 
-                                                <Chip
-                                                    label={
-                                                        log.tipo_guarda
-                                                    }
-                                                    color={
-                                                        getTipoChip(
-                                                            log.tipo_guarda
+                        </Grid>
+
+                    </Grid>
+
+                </Paper>
+
+                {/* LOADING */}
+                {loading && (
+
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            mt: 10
+                        }}
+                    >
+                        <CircularProgress />
+                    </Box>
+                )}
+
+                {/* RESUMO */}
+                {!loading && logs.length > 0 && (
+
+                    <Grid
+                        container
+                        spacing={2}
+                        sx={{ mb: 4 }}
+                    >
+
+                        <Grid item xs={12} md={3}>
+
+                            <Card
+                                sx={{
+                                    borderRadius: '2vh',
+                                    bgcolor: 'background.alerta',
+                                    zoom: '0.9'
+                                }}
+                            >
+
+                                <CardContent>
+
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 2
+                                        }}
+                                    >
+
+                                        <Inventory2Icon
+                                            color="primary"
+                                        />
+
+                                        <Box>
+
+                                            <Typography
+                                                variant="h5"
+                                                fontWeight="bold"
+                                            >
+                                                {logs.length}
+                                            </Typography>
+
+                                            <Typography
+                                                variant="body2"
+                                            >
+                                                Guardas encontradas
+                                            </Typography>
+
+                                        </Box>
+
+                                    </Box>
+
+                                </CardContent>
+
+                            </Card>
+
+                        </Grid>
+
+                        <Grid item xs={12} md={3}>
+
+                            <Card
+                                sx={{
+                                    borderRadius: '2vh',
+                                    bgcolor: 'background.alerta',
+                                    zoom: '0.9'
+                                }}
+                            >
+
+                                <CardContent>
+
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 2
+                                        }}
+                                    >
+
+                                        <WarehouseIcon
+                                            color="success"
+                                        />
+
+                                        <Box>
+
+                                            <Typography
+                                                variant="h5"
+                                                fontWeight="bold"
+                                            >
+                                                {
+                                                    logs.filter(
+                                                        l =>
+                                                            l.tipo_guarda === "UNIDADE"
+                                                    ).length
+                                                }
+                                            </Typography>
+
+                                            <Typography
+                                                variant="body2"
+                                            >
+                                                Guardas unidade
+                                            </Typography>
+
+                                        </Box>
+
+                                    </Box>
+
+                                </CardContent>
+
+                            </Card>
+
+                        </Grid>
+
+                        <Grid item xs={12} md={3}>
+
+                            <Card
+                                sx={{
+                                    borderRadius: '2vh',
+                                    bgcolor: 'background.alerta',
+                                    zoom: '0.9'
+                                }}
+                            >
+
+                                <CardContent>
+
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 2
+                                        }}
+                                    >
+
+                                        <LocationOnIcon
+                                            color="warning"
+                                        />
+
+                                        <Box>
+
+                                            <Typography
+                                                variant="h5"
+                                                fontWeight="bold"
+                                            >
+                                                {
+                                                    [...new Set(
+                                                        logs.map(
+                                                            l =>
+                                                                l.local_informado
                                                         )
-                                                    }
-                                                    size="small"
-                                                />
+                                                    )].length
+                                                }
+                                            </Typography>
 
-                                            </TableCell>
+                                            <Typography
+                                                variant="body2"
+                                            >
+                                                Locais utilizados
+                                            </Typography>
 
-                                            <TableCell>
+                                        </Box>
 
-                                                <Box
-                                                    sx={{
-                                                        wordBreak: 'break-word'
-                                                    }}
-                                                >
+                                    </Box>
 
-                                                    <Typography
-                                                        fontWeight="bold"
-                                                    >
-                                                        {getNomeFuncionario(log.funcionario)}
-                                                    </Typography>
+                                </CardContent>
 
-                                                    <Typography
-                                                        variant="body2"
-                                                        color="text.secondary"
-                                                    >
-                                                        {log.funcionario}
-                                                    </Typography>
+                            </Card>
 
-                                                </Box>
+                        </Grid>
 
-                                            </TableCell>
+                        <Grid item xs={12} md={3}>
 
-                                            <TableCell>
+                            <Card
+                                sx={{
+                                    borderRadius: '2vh',
+                                    bgcolor: 'background.alerta',
+                                    zoom: '0.9'
+                                }}
+                            >
 
-                                                <Box
-                                                    sx={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: 1
-                                                    }}
-                                                >
+                                <CardContent>
 
-                                                    <CalendarMonthIcon
-                                                        fontSize="small"
-                                                        color="action"
-                                                    />
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 2
+                                        }}
+                                    >
 
-                                                    {
-                                                        formatarData(
-                                                            log.data_guarda
+                                        <BadgeIcon
+                                            color="primary"
+                                        />
+
+                                        <Box>
+
+                                            <Typography
+                                                variant="h5"
+                                                fontWeight="bold"
+                                            >
+                                                {
+                                                    [...new Set(
+                                                        logs.map(
+                                                            l =>
+                                                                l.funcionario
                                                         )
-                                                    }
+                                                    )].length
+                                                }
+                                            </Typography>
 
-                                                </Box>
+                                            <Typography
+                                                variant="body2"
+                                            >
+                                                Funcionários
+                                            </Typography>
 
-                                            </TableCell>
+                                        </Box>
 
-                                        </TableRow>
-                                    ))
-                                )}
+                                    </Box>
 
-                            </TableBody>
+                                </CardContent>
 
-                        </Table>
+                            </Card>
 
-                    </CardContent>
+                        </Grid>
 
-                </Card>
+                        <Grid item xs={12} md={3}>
 
-            )}
+                            <Card
+                                sx={{
+                                    borderRadius: '2vh',
+                                    bgcolor: 'background.alerta',
+                                    zoom: '0.9'
+                                }}
+                            >
 
-            {/* TABELA DE ERROS */}
-            {
-                !loading
-                &&
-                erros.length > 0
-                &&
-                (
+                                <CardContent>
+
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 2
+                                        }}
+                                    >
+                                        <BadgeIcon
+                                            color="error"
+                                        />
+                                        <Box>
+                                            <Typography
+                                                variant="h5"
+                                                fontWeight="bold"
+                                            >
+                                                {erros.length}
+                                            </Typography>
+
+                                            <Typography
+                                                variant="body2"
+                                            >
+                                                Erros encontrados
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                    </Grid>
+                )}
+
+                {/* TABELA */}
+                {!loading && (
+
                     <Card
                         sx={{
-                            mt: 4,
                             borderRadius: '2vh',
                             overflow: 'hidden',
                             bgcolor: 'background.alerta',
@@ -1231,11 +975,9 @@ function ConsultaGuarda() {
                                 <Typography
                                     variant="h6"
                                     fontWeight="bold"
-                                    color="error"
                                 >
-                                    Logs de Erros
+                                    Histórico de Guardas
                                 </Typography>
-
                             </Box>
 
                             <Table
@@ -1244,26 +986,37 @@ function ConsultaGuarda() {
                                     width: '100%'
                                 }}
                             >
+
                                 <TableHead>
+
                                     <TableRow>
-                                        <TableCell sx={{ width: '18%' }}>
+
+                                        <TableCell sx={{ width: '28%' }}>
                                             Produto
                                         </TableCell>
 
-                                        <TableCell sx={{ width: '14%' }}>
-                                            Código Barras
+                                        <TableCell sx={{ width: '16%' }}>
+                                            Código de barras
                                         </TableCell>
 
-                                        <TableCell sx={{ width: '18%' }}>
-                                            Funcionário
+                                        <TableCell sx={{ width: '16%' }}>
+                                            Local da guarda
                                         </TableCell>
 
-                                        <TableCell sx={{ width: '20%' }}>
+                                        <TableCell sx={{ width: '8%' }}>
+                                            Quantidade
+                                        </TableCell>
+
+                                        <TableCell sx={{ width: '10%' }}>
                                             Tipo
                                         </TableCell>
 
-                                        <TableCell sx={{ width: '30%' }}>
-                                            Mensagem
+                                        <TableCell sx={{ width: '16%' }}>
+                                            Funcionário
+                                        </TableCell>
+
+                                        <TableCell sx={{ width: '16%' }}>
+                                            Data/Hora
                                         </TableCell>
 
                                     </TableRow>
@@ -1272,12 +1025,60 @@ function ConsultaGuarda() {
 
                                 <TableBody>
 
-                                    {
-                                        erros.map((erro) => (
+                                    {logs.length === 0 ? (
+
+                                        <TableRow>
+
+                                            <TableCell
+                                                colSpan={7}
+                                                align="center"
+                                            >
+
+                                                <Box
+                                                    sx={{
+                                                        py: 8
+                                                    }}
+                                                >
+
+                                                    <WarehouseIcon
+                                                        sx={{
+                                                            fontSize: 60,
+                                                            opacity: 0.3,
+                                                            mb: 2
+                                                        }}
+                                                    />
+
+                                                    <Typography
+                                                        variant="h6"
+                                                    >
+                                                        Nenhum registro encontrado
+                                                    </Typography>
+
+                                                    <Typography
+                                                        variant="body2"
+                                                        color="text.secondary"
+                                                    >
+                                                        Faça uma busca para visualizar os históricos
+                                                    </Typography>
+
+                                                </Box>
+
+                                            </TableCell>
+
+                                        </TableRow>
+
+                                    ) : (
+
+                                        logs.map((log) => (
 
                                             <TableRow
-                                                key={erro.id}
+                                                key={log.id}
+
                                                 hover
+
+                                                sx={{
+                                                    transition: '0.2s'
+                                                }}
                                             >
 
                                                 <TableCell>
@@ -1287,7 +1088,16 @@ function ConsultaGuarda() {
                                                         <Typography
                                                             fontWeight="bold"
                                                         >
-                                                            {erro.basico}
+                                                            {log.basico}
+                                                        </Typography>
+
+                                                        <Typography
+                                                            variant="body2"
+                                                            color="text.secondary"
+                                                        >
+                                                            {
+                                                                log.descricao_produto
+                                                            }
                                                         </Typography>
 
                                                     </Box>
@@ -1295,32 +1105,34 @@ function ConsultaGuarda() {
                                                 </TableCell>
 
                                                 <TableCell>
-
-                                                    <Typography>
-                                                        {erro.codigo_barras}
-                                                    </Typography>
-
+                                                    <Box
+                                                        sx={{
+                                                            wordBreak: 'break-word'
+                                                        }}
+                                                    >
+                                                        {log.codigo_barras}
+                                                    </Box>
                                                 </TableCell>
 
                                                 <TableCell>
 
-                                                    <Box>
+                                                    <Box
+                                                        sx={{
+                                                            wordBreak: 'break-word'
+                                                        }}
+                                                    >
 
                                                         <Typography
                                                             fontWeight="bold"
                                                         >
-                                                            {
-                                                                getNomeFuncionario(
-                                                                    erro.funcionario
-                                                                )
-                                                            }
+                                                            {log.local_informado}
                                                         </Typography>
 
                                                         <Typography
                                                             variant="body2"
                                                             color="text.secondary"
                                                         >
-                                                            {erro.funcionario}
+                                                            LOC SSPlus: {log.local_sistema}
                                                         </Typography>
 
                                                     </Box>
@@ -1330,8 +1142,10 @@ function ConsultaGuarda() {
                                                 <TableCell>
 
                                                     <Chip
-                                                        label={erro.tipo}
-                                                        color="error"
+                                                        label={
+                                                            log.quantidade
+                                                        }
+                                                        color="primary"
                                                         size="small"
                                                     />
 
@@ -1339,36 +1153,252 @@ function ConsultaGuarda() {
 
                                                 <TableCell>
 
-                                                    <Box>
+                                                    <Chip
+                                                        label={
+                                                            log.tipo_guarda
+                                                        }
+                                                        color={
+                                                            getTipoChip(
+                                                                log.tipo_guarda
+                                                            )
+                                                        }
+                                                        size="small"
+                                                    />
+
+                                                </TableCell>
+
+                                                <TableCell>
+
+                                                    <Box
+                                                        sx={{
+                                                            wordBreak: 'break-word'
+                                                        }}
+                                                    >
+
+                                                        <Typography
+                                                            fontWeight="bold"
+                                                        >
+                                                            {getNomeFuncionario(log.funcionario)}
+                                                        </Typography>
 
                                                         <Typography
                                                             variant="body2"
-                                                        >
-                                                            {erro.mensagem}
-                                                        </Typography>
-
-                                                        <Typography
-                                                            variant="caption"
                                                             color="text.secondary"
                                                         >
-                                                            {
-                                                                formatarData(
-                                                                    erro.timestamp
-                                                                )
-                                                            }
+                                                            {log.funcionario}
                                                         </Typography>
+
                                                     </Box>
+
                                                 </TableCell>
+
+                                                <TableCell>
+
+                                                    <Box
+                                                        sx={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: 1
+                                                        }}
+                                                    >
+
+                                                        <CalendarMonthIcon
+                                                            fontSize="small"
+                                                            color="action"
+                                                        />
+
+                                                        {
+                                                            formatarData(
+                                                                log.data_guarda
+                                                            )
+                                                        }
+
+                                                    </Box>
+
+                                                </TableCell>
+
                                             </TableRow>
                                         ))
-                                    }
+                                    )}
+
                                 </TableBody>
+
                             </Table>
+
                         </CardContent>
+
                     </Card>
-                )
-            }
-        </Container>
+
+                )}
+
+                {/* TABELA DE ERROS */}
+                {
+                    !loading
+                    &&
+                    erros.length > 0
+                    &&
+                    (
+                        <Card
+                            sx={{
+                                mt: 4,
+                                borderRadius: '2vh',
+                                overflow: 'hidden',
+                                bgcolor: 'background.alerta',
+                                zoom: '0.9'
+                            }}
+                        >
+                            <CardContent sx={{ p: 0 }}>
+                                <Box
+                                    sx={{
+                                        p: 2,
+                                        borderBottom:
+                                            dark
+                                                ? '1px solid rgba(255,255,255,0.08)'
+                                                : '1px solid rgba(0,0,0,0.08)'
+                                    }}
+                                >
+                                    <Typography
+                                        variant="h6"
+                                        fontWeight="bold"
+                                        color="error"
+                                    >
+                                        Logs de Erros
+                                    </Typography>
+
+                                </Box>
+
+                                <Table
+                                    sx={{
+                                        tableLayout: 'fixed',
+                                        width: '100%'
+                                    }}
+                                >
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell sx={{ width: '18%' }}>
+                                                Produto
+                                            </TableCell>
+
+                                            <TableCell sx={{ width: '14%' }}>
+                                                Código Barras
+                                            </TableCell>
+
+                                            <TableCell sx={{ width: '18%' }}>
+                                                Funcionário
+                                            </TableCell>
+
+                                            <TableCell sx={{ width: '20%' }}>
+                                                Tipo
+                                            </TableCell>
+
+                                            <TableCell sx={{ width: '30%' }}>
+                                                Mensagem
+                                            </TableCell>
+
+                                        </TableRow>
+
+                                    </TableHead>
+
+                                    <TableBody>
+
+                                        {
+                                            erros.map((erro) => (
+
+                                                <TableRow
+                                                    key={erro.id}
+                                                    hover
+                                                >
+
+                                                    <TableCell>
+
+                                                        <Box>
+
+                                                            <Typography
+                                                                fontWeight="bold"
+                                                            >
+                                                                {erro.basico}
+                                                            </Typography>
+
+                                                        </Box>
+
+                                                    </TableCell>
+
+                                                    <TableCell>
+
+                                                        <Typography>
+                                                            {erro.codigo_barras}
+                                                        </Typography>
+
+                                                    </TableCell>
+
+                                                    <TableCell>
+
+                                                        <Box>
+
+                                                            <Typography
+                                                                fontWeight="bold"
+                                                            >
+                                                                {
+                                                                    getNomeFuncionario(
+                                                                        erro.funcionario
+                                                                    )
+                                                                }
+                                                            </Typography>
+
+                                                            <Typography
+                                                                variant="body2"
+                                                                color="text.secondary"
+                                                            >
+                                                                {erro.funcionario}
+                                                            </Typography>
+
+                                                        </Box>
+
+                                                    </TableCell>
+
+                                                    <TableCell>
+
+                                                        <Chip
+                                                            label={erro.tipo}
+                                                            color="error"
+                                                            size="small"
+                                                        />
+
+                                                    </TableCell>
+
+                                                    <TableCell>
+
+                                                        <Box>
+
+                                                            <Typography
+                                                                variant="body2"
+                                                            >
+                                                                {erro.mensagem}
+                                                            </Typography>
+
+                                                            <Typography
+                                                                variant="caption"
+                                                                color="text.secondary"
+                                                            >
+                                                                {
+                                                                    formatarData(
+                                                                        erro.timestamp
+                                                                    )
+                                                                }
+                                                            </Typography>
+                                                        </Box>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))
+                                        }
+                                    </TableBody>
+                                </Table>
+                            </CardContent>
+                        </Card>
+                    )
+                }
+            </Container>
+        )
     );
 }
 

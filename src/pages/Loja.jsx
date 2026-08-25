@@ -36,9 +36,30 @@ import CardJogador from "./PerfilJogador/components/CardJogador";
 
 import { ThemeContext } from "../context/ThemeContext";
 
+import LoginFuncionario from "../components/LoginFuncionario";
+
 export default function Loja() {
 
+    // API BASE
+    const API = "http://192.168.1.185:8077";
+
+    // Acessar outras pages
     const navigate = useNavigate();
+
+    // Login e Logout
+    const [userInfo, setUserInfo] = useState(() => {
+        const user = localStorage.getItem("user_info");
+        return user ? JSON.parse(user) : null;
+    });
+    const [token, setToken] = useState(() => localStorage.getItem("nfe_token") || "");
+
+    const logout = () => {
+        setToken("");
+        setUserInfo(null);
+        localStorage.removeItem("nfe_token");
+        localStorage.removeItem("user_info");
+    };
+
     const { dark } = useContext(ThemeContext);
 
     const [categoria, setCategoria] = useState(0);
@@ -54,8 +75,6 @@ export default function Loja() {
         message: "",
         severity: "success"
     });
-
-    const userInfo = JSON.parse(localStorage.getItem("user_info") || "{}");
 
     const categorias = [
         "avatar",

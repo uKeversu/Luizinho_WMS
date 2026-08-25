@@ -35,31 +35,30 @@ import SearchIcon from '@mui/icons-material/Search';
 
 import { ThemeContext } from "../context/ThemeContext";
 
+import LoginFuncionario from "../components/LoginFuncionario";
+
 import '../style/App.css';
 
 function ConsultaGeral() {
 
     const { dark } = useContext(ThemeContext);
 
-    const navigate = useNavigate();
-
+    // API BASE
     const API = "http://192.168.1.185:8077";
 
-    // LOGIN
+    // Acessar outras pages
+    const navigate = useNavigate();
+
+    // Login e Logout
     const [userInfo, setUserInfo] = useState(() => {
         const user = localStorage.getItem("user_info");
         return user ? JSON.parse(user) : null;
     });
-
-    const [token, setToken] = useState(
-        () => localStorage.getItem("nfe_token") || ""
-    );
+    const [token, setToken] = useState(() => localStorage.getItem("nfe_token") || "");
 
     const logout = () => {
-
         setToken("");
         setUserInfo(null);
-
         localStorage.removeItem("nfe_token");
         localStorage.removeItem("user_info");
     };
@@ -390,7 +389,7 @@ function ConsultaGeral() {
 
         const logs = logsNotas[notaId] || [];
 
-        
+
         return logs
             .filter(log =>
                 log.acao === "Escaneou item" &&
@@ -541,675 +540,703 @@ function ConsultaGeral() {
     };
 
     return (
+        !token ? (
+            <LoginFuncionario
+                onLogin={(data) => {
 
-        <Container
-            maxWidth="100%"
-            sx={{
-                mt: 4,
-                bgcolor: "background.default"
-            }}
-        >
+                    localStorage.setItem(
+                        "nfe_token",
+                        data.token
+                    );
 
-            {/* HEADER */}
-            <Box
-                sx={{
-                    display: 'flex',
-                    flexDirection: {
-                        xs: 'column',
-                        md: 'row'
-                    },
-                    justifyContent: 'space-between',
-                    alignItems: {
-                        xs: 'flex-start',
-                        md: 'center'
-                    },
-                    gap: 2,
-                    p: 2,
-                    bgcolor: 'var(--azul)',
-                    mb: 4,
-                    borderRadius: '2vh',
-                    zoom: 0.9
+                    const user = {
+                        id: data.id,
+                        nome: data.nome,
+                        codigo: data.codigo,
+                        tipo: data.tipo,
+                        pode_autorizar_conferencia:
+                            data.pode_autorizar_conferencia
+                    };
+
+                    localStorage.setItem(
+                        "user_info",
+                        JSON.stringify(user)
+                    );
+
+                    setUserInfo(user);
+                    setToken(data.token);
                 }}
-            >
-                <Typography
-                    variant="h4"
-                    sx={{
-                        fontFamily: 'Consolas',
-                        color: "background.paper"
-                    }}
-                >
-                    <strong>
-                        Consulta Geral
-                    </strong>
-                </Typography>
-
-                <Box>
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'right'
-                        }}
-                    >
-
-                        <PersonIcon
-                            sx={{
-                                color: "background.paper",
-                                pr: 1
-                            }}
-                        />
-
-                        <Typography
-                            sx={{
-                                color: "background.paper",
-                                fontSize: '0.9rem'
-                            }}
-                        >
-                            {userInfo?.nome}
-                        </Typography>
-
-                        {token && (
-
-                            <Button
-                                size="small"
-                                onClick={logout}
-                                sx={{
-                                    color: "background.paper"
-                                }}
-                            >
-                                <LogoutIcon />
-                            </Button>
-                        )}
-                    </Box>
-
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            justifyContent: 'right'
-                        }}
-                    >
-
-                        <Button
-                            onClick={() =>
-                                navigate("/")
-                            }
-                            sx={{
-                                color: "background.paper",
-                                gap: 1, mr: 2
-                            }}
-                        >
-                            Voltar
-                            <ArrowBackIcon />
-                        </Button>
-                    </Box>
-                </Box>
-            </Box>
-
-            {/* FILTRO */}
-            <Paper
-                elevation={0}
+            />
+        ) : (
+            <Container
+                maxWidth="100%"
                 sx={{
-                    p: 3,
-                    mb: 4,
-                    borderRadius: '2vh',
-                    bgcolor: 'background.alerta',
-                    border: dark
-                        ? '1px solid rgba(255,255,255,0.08)'
-                        : '1px solid rgba(0,0,0,0.08)',
-                    zoom: '0.9'
+                    mt: 4,
+                    bgcolor: "background.default"
                 }}
             >
 
-                <Grid
-                    container
-                    spacing={2}
-                    alignItems="center"
-                >
-
-                    <Grid item xs={12} md={5}>
-
-                        <TextField
-                            fullWidth
-                            size="small"
-                            placeholder="Buscar por produto"
-
-                            inputRef={buscaRef}
-
-                            value={busca}
-
-                            onChange={(e) =>
-                                setBusca(e.target.value)
-                            }
-
-                            onKeyDown={(e) =>
-                                navegarCampos(
-                                    e,
-                                    dataInicioRef,
-                                    null
-                                )
-                            }
-                            autoComplete="off"
-                            inputProps={{
-                                spellCheck: false,
-                                autoCorrect: "off",
-                                autoCapitalize: "off",
-                            }}
-                            InputProps={{
-                                startAdornment: (
-                                    <SearchIcon
-                                        sx={{
-                                            mr: 1,
-                                            color: 'text.secondary'
-                                        }}
-                                    />
-                                )
-                            }}
-                            sx={{ minWidth: "80vh" }}
-                        />
-
-                    </Grid>
-
-                    <Grid item xs={12} md={2}>
-
-                        <TextField
-                            fullWidth
-                            type="date"
-                            size="small"
-
-                            inputRef={dataInicioRef}
-
-                            value={dataInicio}
-
-                            onChange={(e) =>
-                                setDataInicio(
-                                    e.target.value
-                                )
-                            }
-
-                            onKeyDown={(e) =>
-                                navegarCampos(
-                                    e,
-                                    dataFimRef,
-                                    buscaRef
-                                )
-                            }
-                        />
-
-                    </Grid>
-
-                    <Grid item xs={12} md={2}>
-
-                        <TextField
-                            fullWidth
-                            type="date"
-                            size="small"
-
-                            inputRef={dataFimRef}
-
-                            value={dataFim}
-
-                            onChange={(e) =>
-                                setDataFim(
-                                    e.target.value
-                                )
-                            }
-
-                            onKeyDown={(e) =>
-                                navegarCampos(
-                                    e,
-                                    null,
-                                    dataInicioRef,
-                                    buscarNotas
-                                )
-                            }
-                        />
-
-                    </Grid>
-
-                    <Grid item xs={12} md={3}>
-
-                        <Button
-                            fullWidth
-                            variant="contained"
-                            size="large"
-                            startIcon={<SearchIcon />}
-                            onClick={buscarNotas}
-                            sx={{
-                                height: '40px'
-                            }}
-                        >
-                            Buscar Item
-                        </Button>
-
-                    </Grid>
-
-                </Grid>
-            </Paper>
-
-            {/* LOADING */}
-            {loading ? (
-
+                {/* HEADER */}
                 <Box
                     sx={{
                         display: 'flex',
-                        justifyContent: 'center',
-                        mt: 10
+                        flexDirection: {
+                            xs: 'column',
+                            md: 'row'
+                        },
+                        justifyContent: 'space-between',
+                        alignItems: {
+                            xs: 'flex-start',
+                            md: 'center'
+                        },
+                        gap: 2,
+                        p: 2,
+                        bgcolor: 'var(--azul)',
+                        mb: 4,
+                        borderRadius: '2vh',
+                        zoom: 0.9
                     }}
                 >
-                    <CircularProgress />
-                </Box>
-
-            ) : (
-
-                notas.map((nota) => (
-
-                    <Card
-                        key={nota.id}
-
+                    <Typography
+                        variant="h4"
                         sx={{
-                            mb: 2,
-                            borderRadius: '2vh',
-                            boxShadow:
-                                '0vh 0.1vh 0.5vh var(--sombra)',
-                            bgcolor: 'background.alerta'
+                            fontFamily: 'Consolas',
+                            color: "background.paper"
                         }}
                     >
+                        <strong>
+                            Consulta Geral
+                        </strong>
+                    </Typography>
 
-                        <CardContent>
+                    <Box>
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'right'
+                            }}
+                        >
 
-                            {/* HEADER NOTA */}
-                            <Box
-
-                                onClick={async () => {
-
-                                    const expandindo =
-                                        expandedNota !== nota.id;
-
-                                    setExpandedNota(
-                                        expandindo
-                                            ? nota.id
-                                            : null
-                                    );
-                                    if (expandindo) {
-                                        buscarLogsNota(nota.id);
-                                    }
-                                }}
-
+                            <PersonIcon
                                 sx={{
-                                    cursor: "pointer"
+                                    color: "background.paper",
+                                    pr: 1
+                                }}
+                            />
+
+                            <Typography
+                                sx={{
+                                    color: "background.paper",
+                                    fontSize: '0.9rem'
                                 }}
                             >
+                                {userInfo?.nome}
+                            </Typography>
 
-                                <Box
+                            {token && (
+
+                                <Button
+                                    size="small"
+                                    onClick={logout}
                                     sx={{
-                                        display: 'flex',
-                                        justifyContent:
-                                            'space-between',
-                                        alignItems: 'center'
+                                        color: "background.paper"
+                                    }}
+                                >
+                                    <LogoutIcon />
+                                </Button>
+                            )}
+                        </Box>
+
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                justifyContent: 'right'
+                            }}
+                        >
+
+                            <Button
+                                onClick={() =>
+                                    navigate("/")
+                                }
+                                sx={{
+                                    color: "background.paper",
+                                    gap: 1, mr: 2
+                                }}
+                            >
+                                Voltar
+                                <ArrowBackIcon />
+                            </Button>
+                        </Box>
+                    </Box>
+                </Box>
+
+                {/* FILTRO */}
+                <Paper
+                    elevation={0}
+                    sx={{
+                        p: 3,
+                        mb: 4,
+                        borderRadius: '2vh',
+                        bgcolor: 'background.alerta',
+                        border: dark
+                            ? '1px solid rgba(255,255,255,0.08)'
+                            : '1px solid rgba(0,0,0,0.08)',
+                        zoom: '0.9'
+                    }}
+                >
+
+                    <Grid
+                        container
+                        spacing={2}
+                        alignItems="center"
+                    >
+
+                        <Grid item xs={12} md={5}>
+
+                            <TextField
+                                fullWidth
+                                size="small"
+                                placeholder="Buscar por produto"
+
+                                inputRef={buscaRef}
+
+                                value={busca}
+
+                                onChange={(e) =>
+                                    setBusca(e.target.value)
+                                }
+
+                                onKeyDown={(e) =>
+                                    navegarCampos(
+                                        e,
+                                        dataInicioRef,
+                                        null
+                                    )
+                                }
+                                autoComplete="off"
+                                inputProps={{
+                                    spellCheck: false,
+                                    autoCorrect: "off",
+                                    autoCapitalize: "off",
+                                }}
+                                InputProps={{
+                                    startAdornment: (
+                                        <SearchIcon
+                                            sx={{
+                                                mr: 1,
+                                                color: 'text.secondary'
+                                            }}
+                                        />
+                                    )
+                                }}
+                                sx={{ minWidth: "80vh" }}
+                            />
+
+                        </Grid>
+
+                        <Grid item xs={12} md={2}>
+
+                            <TextField
+                                fullWidth
+                                type="date"
+                                size="small"
+
+                                inputRef={dataInicioRef}
+
+                                value={dataInicio}
+
+                                onChange={(e) =>
+                                    setDataInicio(
+                                        e.target.value
+                                    )
+                                }
+
+                                onKeyDown={(e) =>
+                                    navegarCampos(
+                                        e,
+                                        dataFimRef,
+                                        buscaRef
+                                    )
+                                }
+                            />
+
+                        </Grid>
+
+                        <Grid item xs={12} md={2}>
+
+                            <TextField
+                                fullWidth
+                                type="date"
+                                size="small"
+
+                                inputRef={dataFimRef}
+
+                                value={dataFim}
+
+                                onChange={(e) =>
+                                    setDataFim(
+                                        e.target.value
+                                    )
+                                }
+
+                                onKeyDown={(e) =>
+                                    navegarCampos(
+                                        e,
+                                        null,
+                                        dataInicioRef,
+                                        buscarNotas
+                                    )
+                                }
+                            />
+
+                        </Grid>
+
+                        <Grid item xs={12} md={3}>
+
+                            <Button
+                                fullWidth
+                                variant="contained"
+                                size="large"
+                                startIcon={<SearchIcon />}
+                                onClick={buscarNotas}
+                                sx={{
+                                    height: '40px'
+                                }}
+                            >
+                                Buscar Item
+                            </Button>
+
+                        </Grid>
+
+                    </Grid>
+                </Paper>
+
+                {/* LOADING */}
+                {loading ? (
+
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            mt: 10
+                        }}
+                    >
+                        <CircularProgress />
+                    </Box>
+
+                ) : (
+
+                    notas.map((nota) => (
+
+                        <Card
+                            key={nota.id}
+
+                            sx={{
+                                mb: 2,
+                                borderRadius: '2vh',
+                                boxShadow:
+                                    '0vh 0.1vh 0.5vh var(--sombra)',
+                                bgcolor: 'background.alerta'
+                            }}
+                        >
+
+                            <CardContent>
+
+                                {/* HEADER NOTA */}
+                                <Box
+
+                                    onClick={async () => {
+
+                                        const expandindo =
+                                            expandedNota !== nota.id;
+
+                                        setExpandedNota(
+                                            expandindo
+                                                ? nota.id
+                                                : null
+                                        );
+                                        if (expandindo) {
+                                            buscarLogsNota(nota.id);
+                                        }
+                                    }}
+
+                                    sx={{
+                                        cursor: "pointer"
                                     }}
                                 >
 
-                                    <Box>
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            justifyContent:
+                                                'space-between',
+                                            alignItems: 'center'
+                                        }}
+                                    >
 
-                                        <Typography
-                                            fontWeight="bold"
-                                        >
-                                            📄 {nota.numero}/{nota.serie}
-                                        </Typography>
+                                        <Box>
 
-                                        <Typography
-                                            fontSize={'0.85rem'}
-                                        >
-                                            {nota.fornecedor}
-                                        </Typography>
+                                            <Typography
+                                                fontWeight="bold"
+                                            >
+                                                📄 {nota.numero}/{nota.serie}
+                                            </Typography>
 
-                                        {nota.observacao &&
-                                            nota.observacao !== "null" &&
-                                            nota.observacao.trim() !== "" && (
-                                                <Typography
-                                                    fontSize={'0.85rem'}
-                                                    sx={{ color: 'primary.observacao' }}
-                                                >
-                                                    Obs: {nota.observacao}
-                                                </Typography>
-                                            )
-                                        }
-                                    </Box>
-                                    <Box>
-                                        <Chip
-                                            label={nota.status}
-                                            size="small"
-                                            sx={{
-                                                p: 1,
-                                                m: 2,
-                                                bgcolor: getCorStatusNota(nota.status),
-                                                color: "primary.branco",
-                                                fontWeight: "bold"
-                                            }}
-                                        />
-                                        <Chip
-                                            label={formatarData(nota.data_recebimento)}
-                                            size="small"
-                                            sx={{ padding: 1, margin: 2 }}
-                                        />
-                                    </Box>
-                                </Box>
-                            </Box>
+                                            <Typography
+                                                fontSize={'0.85rem'}
+                                            >
+                                                {nota.fornecedor}
+                                            </Typography>
 
-                            {/* ITENS */}
-                            <Collapse
-                                in={
-                                    expandedNota === nota.id
-                                }
-                            >
-                                <Box sx={{ mt: 2 }}>
-                                    {loadingItens[nota.id] ? (
-                                        <Box
-                                            sx={{
-                                                display: 'flex',
-                                                justifyContent:
-                                                    'center',
-                                                p: 3
-                                            }}
-                                        >
-                                            <CircularProgress
-                                                size={25}
+                                            {nota.observacao &&
+                                                nota.observacao !== "null" &&
+                                                nota.observacao.trim() !== "" && (
+                                                    <Typography
+                                                        fontSize={'0.85rem'}
+                                                        sx={{ color: 'primary.observacao' }}
+                                                    >
+                                                        Obs: {nota.observacao}
+                                                    </Typography>
+                                                )
+                                            }
+                                        </Box>
+                                        <Box>
+                                            <Chip
+                                                label={nota.status}
+                                                size="small"
+                                                sx={{
+                                                    p: 1,
+                                                    m: 2,
+                                                    bgcolor: getCorStatusNota(nota.status),
+                                                    color: "primary.branco",
+                                                    fontWeight: "bold"
+                                                }}
+                                            />
+                                            <Chip
+                                                label={formatarData(nota.data_recebimento)}
+                                                size="small"
+                                                sx={{ padding: 1, margin: 2 }}
                                             />
                                         </Box>
-                                    ) : (
-                                        <>
-                                            {!nota.itens ||
-                                                nota.itens.length === 0 ? (
-                                                <Typography>
-                                                    Nenhum item encontrado
-                                                </Typography>
-                                            ) : (
-                                                <Table size="small">
-                                                    <TableHead>
-                                                        <TableRow>
-                                                            <TableCell>
-                                                                LOC
-                                                            </TableCell>
+                                    </Box>
+                                </Box>
 
-                                                            <TableCell>
-                                                                Código
-                                                            </TableCell>
+                                {/* ITENS */}
+                                <Collapse
+                                    in={
+                                        expandedNota === nota.id
+                                    }
+                                >
+                                    <Box sx={{ mt: 2 }}>
+                                        {loadingItens[nota.id] ? (
+                                            <Box
+                                                sx={{
+                                                    display: 'flex',
+                                                    justifyContent:
+                                                        'center',
+                                                    p: 3
+                                                }}
+                                            >
+                                                <CircularProgress
+                                                    size={25}
+                                                />
+                                            </Box>
+                                        ) : (
+                                            <>
+                                                {!nota.itens ||
+                                                    nota.itens.length === 0 ? (
+                                                    <Typography>
+                                                        Nenhum item encontrado
+                                                    </Typography>
+                                                ) : (
+                                                    <Table size="small">
+                                                        <TableHead>
+                                                            <TableRow>
+                                                                <TableCell>
+                                                                    LOC
+                                                                </TableCell>
 
-                                                            <TableCell>
-                                                                Descrição
-                                                            </TableCell>
+                                                                <TableCell>
+                                                                    Código
+                                                                </TableCell>
 
-                                                            <TableCell>
-                                                                Qtd
-                                                            </TableCell>
+                                                                <TableCell>
+                                                                    Descrição
+                                                                </TableCell>
 
-                                                            <TableCell>
-                                                                Status
-                                                            </TableCell>
+                                                                <TableCell>
+                                                                    Qtd
+                                                                </TableCell>
 
-                                                            <TableCell>
-                                                                Caixa
-                                                            </TableCell>
+                                                                <TableCell>
+                                                                    Status
+                                                                </TableCell>
 
-                                                        </TableRow>
+                                                                <TableCell>
+                                                                    Caixa
+                                                                </TableCell>
 
-                                                    </TableHead>
+                                                            </TableRow>
 
-                                                    <TableBody>
+                                                        </TableHead>
 
-                                                        {nota.itens.map(
-                                                            (
-                                                                item,
-                                                                idx
-                                                            ) => {
+                                                        <TableBody>
 
-                                                                const cod =
-                                                                    item.cean
-                                                                    ??
-                                                                    item.codire
-                                                                    ??
-                                                                    item.cod_produto
-                                                                    ??
-                                                                    `idx-${idx}`;
+                                                            {nota.itens.map(
+                                                                (
+                                                                    item,
+                                                                    idx
+                                                                ) => {
 
-                                                                const key = item.id;
+                                                                    const cod =
+                                                                        item.cean
+                                                                        ??
+                                                                        item.codire
+                                                                        ??
+                                                                        item.cod_produto
+                                                                        ??
+                                                                        `idx-${idx}`;
 
-                                                                return (
+                                                                    const key = item.id;
 
-                                                                    <Fragment
-                                                                        key={key}
-                                                                    >
+                                                                    return (
 
-                                                                        {/* ITEM */}
-                                                                        <TableRow
-
-                                                                            onClick={(e) => {
-
-                                                                                e.stopPropagation();
-
-                                                                                handleExpandItem(
-                                                                                    nota.id,
-                                                                                    item.id
-                                                                                );
-                                                                            }}
-
-                                                                            sx={{
-                                                                                cursor:
-                                                                                    "pointer",
-
-                                                                                backgroundColor:
-                                                                                    isItemBuscado(item)
-                                                                                        ? 'primary.achouItem'
-                                                                                        : 'inherit',
-
-                                                                                transition:
-                                                                                    '0.2s'
-                                                                            }}
+                                                                        <Fragment
+                                                                            key={key}
                                                                         >
 
-                                                                            <TableCell>
-                                                                                {item.loc_sistema}
-                                                                            </TableCell>
+                                                                            {/* ITEM */}
+                                                                            <TableRow
 
-                                                                            <TableCell>
-                                                                                {item.basico}
-                                                                            </TableCell>
+                                                                                onClick={(e) => {
 
-                                                                            <TableCell>
-                                                                                {item.descricao}
-                                                                            </TableCell>
+                                                                                    e.stopPropagation();
 
-                                                                            <TableCell>
-                                                                                {item.qtd_conferida ?? 0}/
-                                                                                {Number(item.quantidade_comercial)}
-                                                                            </TableCell>
+                                                                                    handleExpandItem(
+                                                                                        nota.id,
+                                                                                        item.id
+                                                                                    );
+                                                                                }}
 
-                                                                            <TableCell>
-
-                                                                                <Box
-                                                                                    sx={{
-                                                                                        display: 'flex',
-                                                                                        alignItems: 'center',
-                                                                                        gap: 1
-                                                                                    }}
-                                                                                >
-
-                                                                                    {getIconStatus(
-                                                                                        item.status_item
-                                                                                    )}
-
-                                                                                    {getDescricaoStatus(
-                                                                                        item.status_item
-                                                                                    )}
-
-                                                                                </Box>
-
-                                                                            </TableCell>
-
-                                                                            <TableCell>
-                                                                                {!item.caixa || item.caixa === "0"
-                                                                                    ? "Sem caixa"
-                                                                                    : item.caixa}
-                                                                            </TableCell>
-
-                                                                        </TableRow>
-
-                                                                        {/* UNIDADES */}
-                                                                        <TableRow>
-
-                                                                            <TableCell
-                                                                                colSpan={6}
                                                                                 sx={{
-                                                                                    p: 0,
-                                                                                    border: 0
+                                                                                    cursor:
+                                                                                        "pointer",
+
+                                                                                    backgroundColor:
+                                                                                        isItemBuscado(item)
+                                                                                            ? 'primary.achouItem'
+                                                                                            : 'inherit',
+
+                                                                                    transition:
+                                                                                        '0.2s'
                                                                                 }}
                                                                             >
 
-                                                                                <Collapse
-                                                                                    in={
-                                                                                        expandedItem === key
-                                                                                    }
-                                                                                >
+                                                                                <TableCell>
+                                                                                    {item.loc_sistema}
+                                                                                </TableCell>
+
+                                                                                <TableCell>
+                                                                                    {item.basico}
+                                                                                </TableCell>
+
+                                                                                <TableCell>
+                                                                                    {item.descricao}
+                                                                                </TableCell>
+
+                                                                                <TableCell>
+                                                                                    {item.qtd_conferida ?? 0}/
+                                                                                    {Number(item.quantidade_comercial)}
+                                                                                </TableCell>
+
+                                                                                <TableCell>
 
                                                                                     <Box
                                                                                         sx={{
-                                                                                            p: 2,
-                                                                                            bgcolor:
-                                                                                                'background.tabela'
+                                                                                            display: 'flex',
+                                                                                            alignItems: 'center',
+                                                                                            gap: 1
                                                                                         }}
                                                                                     >
 
-                                                                                        {loadingUnidades[item.id] ? (
-
-
-                                                                                            <Box
-                                                                                                sx={{
-                                                                                                    display: 'flex',
-                                                                                                    justifyContent:
-                                                                                                        'center'
-                                                                                                }}
-                                                                                            >
-                                                                                                <CircularProgress
-                                                                                                    size={25}
-                                                                                                />
-                                                                                            </Box>
-
-                                                                                        ) : (
-
-                                                                                            <Table
-                                                                                                size="small"
-                                                                                            >
-
-                                                                                                <TableHead>
-
-                                                                                                    <TableRow>
-
-                                                                                                        <TableCell>
-                                                                                                            ID ÚNICO
-                                                                                                        </TableCell>
-
-                                                                                                        <TableCell>
-                                                                                                            ITEM
-                                                                                                        </TableCell>
-
-                                                                                                        <TableCell>
-                                                                                                            STATUS
-                                                                                                        </TableCell>
-
-                                                                                                        <TableCell>
-                                                                                                            DATA
-                                                                                                        </TableCell>
-
-                                                                                                        <TableCell>
-                                                                                                            FUNCIONÁRIO
-                                                                                                        </TableCell>
-
-                                                                                                        <TableCell>
-                                                                                                            RASTREIO
-                                                                                                        </TableCell>
-
-                                                                                                    </TableRow>
-
-                                                                                                </TableHead>
-
-                                                                                                <TableBody>
-
-                                                                                                    {(unidadesItem[item.id] || []).map((un) => {
-
-                                                                                                        const log = getLogConferencia(nota.id, item);
-
-                                                                                                        return (
-                                                                                                            <TableRow key={un.id_unico}>
-
-                                                                                                                <TableCell>
-                                                                                                                    {un.id_unico}
-                                                                                                                </TableCell>
-
-                                                                                                                <TableCell>
-                                                                                                                    {un.basico}
-                                                                                                                </TableCell>
-
-                                                                                                                <TableCell>
-                                                                                                                    {item.status_item}
-                                                                                                                </TableCell>
-
-                                                                                                                <TableCell>
-                                                                                                                    {log ? formatarDataLog(log.data_hora) : "-"}
-                                                                                                                </TableCell>
-
-                                                                                                                <TableCell>
-                                                                                                                    {log
-                                                                                                                        ? funcionarios[log.usuario] || log.usuario
-                                                                                                                        : "Sem conferente"}
-                                                                                                                </TableCell>
-
-                                                                                                                <TableCell>
-                                                                                                                    <Button
-                                                                                                                        disabled
-                                                                                                                        onClick={() =>
-                                                                                                                            navigate(`/Rastreio/${un.id_unico}`)
-                                                                                                                        }
-                                                                                                                    >
-                                                                                                                        Histórico
-                                                                                                                    </Button>
-                                                                                                                </TableCell>
-
-                                                                                                            </TableRow>
-                                                                                                        );
-                                                                                                    })}
-                                                                                                </TableBody>
-
-                                                                                            </Table>
+                                                                                        {getIconStatus(
+                                                                                            item.status_item
                                                                                         )}
+
+                                                                                        {getDescricaoStatus(
+                                                                                            item.status_item
+                                                                                        )}
+
                                                                                     </Box>
 
-                                                                                </Collapse>
+                                                                                </TableCell>
 
-                                                                            </TableCell>
+                                                                                <TableCell>
+                                                                                    {!item.caixa || item.caixa === "0"
+                                                                                        ? "Sem caixa"
+                                                                                        : item.caixa}
+                                                                                </TableCell>
 
-                                                                        </TableRow>
+                                                                            </TableRow>
 
-                                                                    </Fragment>
-                                                                );
-                                                            }
-                                                        )}
+                                                                            {/* UNIDADES */}
+                                                                            <TableRow>
 
-                                                    </TableBody>
+                                                                                <TableCell
+                                                                                    colSpan={6}
+                                                                                    sx={{
+                                                                                        p: 0,
+                                                                                        border: 0
+                                                                                    }}
+                                                                                >
 
-                                                </Table>
-                                            )}
-                                        </>
-                                    )}
-                                </Box>
+                                                                                    <Collapse
+                                                                                        in={
+                                                                                            expandedItem === key
+                                                                                        }
+                                                                                    >
 
-                            </Collapse>
+                                                                                        <Box
+                                                                                            sx={{
+                                                                                                p: 2,
+                                                                                                bgcolor:
+                                                                                                    'background.tabela'
+                                                                                            }}
+                                                                                        >
 
-                        </CardContent>
+                                                                                            {loadingUnidades[item.id] ? (
 
-                    </Card>
-                ))
-            )}
-        </Container>
+
+                                                                                                <Box
+                                                                                                    sx={{
+                                                                                                        display: 'flex',
+                                                                                                        justifyContent:
+                                                                                                            'center'
+                                                                                                    }}
+                                                                                                >
+                                                                                                    <CircularProgress
+                                                                                                        size={25}
+                                                                                                    />
+                                                                                                </Box>
+
+                                                                                            ) : (
+
+                                                                                                <Table
+                                                                                                    size="small"
+                                                                                                >
+
+                                                                                                    <TableHead>
+
+                                                                                                        <TableRow>
+
+                                                                                                            <TableCell>
+                                                                                                                ID ÚNICO
+                                                                                                            </TableCell>
+
+                                                                                                            <TableCell>
+                                                                                                                ITEM
+                                                                                                            </TableCell>
+
+                                                                                                            <TableCell>
+                                                                                                                STATUS
+                                                                                                            </TableCell>
+
+                                                                                                            <TableCell>
+                                                                                                                DATA
+                                                                                                            </TableCell>
+
+                                                                                                            <TableCell>
+                                                                                                                FUNCIONÁRIO
+                                                                                                            </TableCell>
+
+                                                                                                            <TableCell>
+                                                                                                                RASTREIO
+                                                                                                            </TableCell>
+
+                                                                                                        </TableRow>
+
+                                                                                                    </TableHead>
+
+                                                                                                    <TableBody>
+
+                                                                                                        {(unidadesItem[item.id] || []).map((un) => {
+
+                                                                                                            const log = getLogConferencia(nota.id, item);
+
+                                                                                                            return (
+                                                                                                                <TableRow key={un.id_unico}>
+
+                                                                                                                    <TableCell>
+                                                                                                                        {un.id_unico}
+                                                                                                                    </TableCell>
+
+                                                                                                                    <TableCell>
+                                                                                                                        {un.basico}
+                                                                                                                    </TableCell>
+
+                                                                                                                    <TableCell>
+                                                                                                                        {item.status_item}
+                                                                                                                    </TableCell>
+
+                                                                                                                    <TableCell>
+                                                                                                                        {log ? formatarDataLog(log.data_hora) : "-"}
+                                                                                                                    </TableCell>
+
+                                                                                                                    <TableCell>
+                                                                                                                        {log
+                                                                                                                            ? funcionarios[log.usuario] || log.usuario
+                                                                                                                            : "Sem conferente"}
+                                                                                                                    </TableCell>
+
+                                                                                                                    <TableCell>
+                                                                                                                        <Button
+                                                                                                                            disabled
+                                                                                                                            onClick={() =>
+                                                                                                                                navigate(`/Rastreio/${un.id_unico}`)
+                                                                                                                            }
+                                                                                                                        >
+                                                                                                                            Histórico
+                                                                                                                        </Button>
+                                                                                                                    </TableCell>
+
+                                                                                                                </TableRow>
+                                                                                                            );
+                                                                                                        })}
+                                                                                                    </TableBody>
+
+                                                                                                </Table>
+                                                                                            )}
+                                                                                        </Box>
+
+                                                                                    </Collapse>
+
+                                                                                </TableCell>
+
+                                                                            </TableRow>
+
+                                                                        </Fragment>
+                                                                    );
+                                                                }
+                                                            )}
+
+                                                        </TableBody>
+
+                                                    </Table>
+                                                )}
+                                            </>
+                                        )}
+                                    </Box>
+
+                                </Collapse>
+
+                            </CardContent>
+
+                        </Card>
+                    ))
+                )}
+            </Container>
+        )
     );
 }
 

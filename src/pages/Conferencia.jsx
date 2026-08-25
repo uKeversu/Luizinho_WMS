@@ -1150,12 +1150,12 @@ function Conferencia() {
         try {
             for (const nota of notaInfo) {
                 const response = await fetch(
-                    `${API}/api/nfe/atualizar_por_nfe/${nota.serie}/${nota.numero}`,
+                    `${API}/api/nfe/finalizar_nfe/${nota.serie}/${nota.numero}`,
                     {
                         method: "PUT",
                         headers: {
                             "Content-Type": "application/json",
-                            "Authorization": `Bearer ${token}`
+                            "X-Auth-Token": token
                         },
                         body: JSON.stringify({
                             status: "EM_CONFERENCIA"
@@ -2412,7 +2412,7 @@ function Conferencia() {
 
             for (const nota of notaInfo) {
                 const response = await fetch(
-                    `${API}/api/nfe/atualizar_por_nfe/${nota.serie}/${nota.numero}`,
+                    `${API}/api/nfe/finalizar_nfe/${nota.serie}/${nota.numero}`,
                     {
                         method: "PUT",
                         headers: {
@@ -2432,7 +2432,14 @@ function Conferencia() {
                 const text = await response.text();
 
                 if (!response.ok) {
-                    throw new Error(text || "Erro ao finalizar");
+
+                    if (tratarErroAutenticacao(text)) {
+                        return;
+                    }
+
+                    throw new Error(
+                        text?.erro || "Erro ao finalizar nota"
+                    );
                 }
             }
 
@@ -2917,6 +2924,33 @@ function Conferencia() {
         }
 
         cancelarConferenciaManual();
+    };
+
+    const tratarErroAutenticacao = (data) => {
+
+        if (data?.codigo === "SESSION_EXPIRED") {
+
+            setSnackbar({
+                open: true,
+                message: "Sua sessão expirou. Faça login novamente.",
+                severity: "error"
+            });
+
+            return true;
+        }
+
+        if (data?.codigo === "NFE_PERMISSION_DENIED") {
+
+            setSnackbar({
+                open: true,
+                message: "Você não tem permissão para alterar esta informação.",
+                severity: "error"
+            });
+
+            return true;
+        }
+
+        return false;
     };
 
     if (!token) {
