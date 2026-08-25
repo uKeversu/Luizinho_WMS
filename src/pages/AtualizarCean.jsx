@@ -22,6 +22,8 @@ import {
 
 import { ThemeContext } from "../context/ThemeContext";
 
+import LoginFuncionario from "../components/LoginFuncionario";
+
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -32,15 +34,18 @@ import UploadFileIcon from "@mui/icons-material/UploadFile";
 function AtualizarCean() {
 
     const { dark } = useContext(ThemeContext);
-    const navigate = useNavigate();
 
+    // API BASE
     const API = "http://192.168.1.185:8077";
 
+    // Acessar outras pages
+    const navigate = useNavigate();
+
+    // Login e Logout
     const [userInfo, setUserInfo] = useState(() => {
         const user = localStorage.getItem("user_info");
         return user ? JSON.parse(user) : null;
     });
-
     const [token, setToken] = useState(() => localStorage.getItem("nfe_token") || "");
 
     const logout = () => {
@@ -342,7 +347,8 @@ function AtualizarCean() {
                 {
                     method: "PUT",
                     headers: {
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
+                        "X-Auth-Token": token
                     },
                     body: JSON.stringify({
                         basico: item.basico,
@@ -353,7 +359,23 @@ function AtualizarCean() {
                 }
             );
 
-            if (!res.ok) throw new Error(await res.text());
+            if (!res.ok) {
+                const data = await res.json().catch(() => null);
+
+                const mensagens = {
+                    NFE_PERMISSION_DENIED:
+                        "Você não tem permissão para corrigir notas fiscais.",
+
+                    SESSION_EXPIRED:
+                        "Sua sessão expirou. Faça login novamente."
+                };
+
+                throw new Error(
+                    mensagens[data?.codigo] ||
+                    data?.erro ||
+                    "Não foi possível atualizar o item."
+                );
+            }
 
             await registrarLog({
                 item,
@@ -690,509 +712,538 @@ function AtualizarCean() {
     }
 
     return (
-        <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "background.default" }}>
-            <input
-                ref={inputArquivoRef}
-                type="file"
-                accept=".txt,.csv"
-                hidden
-                onChange={(e) => {
+        !token ? (
+            <LoginFuncionario
+                onLogin={(data) => {
 
-                    if (!e.target.files?.length)
-                        return;
+                    localStorage.setItem(
+                        "nfe_token",
+                        data.token
+                    );
 
-                    importarCorrespondencias(e.target.files[0]);
+                    const user = {
+                        id: data.id,
+                        nome: data.nome,
+                        codigo: data.codigo,
+                        tipo: data.tipo,
+                        pode_autorizar_conferencia:
+                            data.pode_autorizar_conferencia
+                    };
 
-                    e.target.value = "";
+                    localStorage.setItem(
+                        "user_info",
+                        JSON.stringify(user)
+                    );
 
+                    setUserInfo(user);
+                    setToken(data.token);
                 }}
             />
+        ) : (
+            <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "background.default" }}>
+                <input
+                    ref={inputArquivoRef}
+                    type="file"
+                    accept=".txt,.csv"
+                    hidden
+                    onChange={(e) => {
 
-            {/* Header */}
-            <Box
-                sx={{
-                    display: 'flex',
-                    flexDirection: {
-                        xs: 'column',
-                        md: 'row'
-                    },
-                    justifyContent: 'space-between',
-                    alignItems: {
-                        xs: 'flex-start',
-                        md: 'center'
-                    },
-                    gap: 2,
-                    p: 2,
-                    bgcolor: 'var(--azul)',
-                    mb: 4,
-                    borderRadius: '2vh',
-                    zoom: '0.9'
-                }}
-            >
-                <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "background.paper" }}>
-                    <strong>Correção de Notas</strong>
-                </Typography>
-                <Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '0' }}>
-                        {<PersonIcon sx={{ color: "background.paper", paddingRight: '1vh' }} />}
-                        <Typography sx={{ color: "background.paper", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>
-                            {userInfo?.nome}
-                        </Typography>
-                        {token && (
-                            <Button
-                                size="small"
-                                onClick={logout}
-                                sx={{ color: "background.paper", display: 'flex', gap: 1 }}
-                            >{<LogoutIcon />}
-                            </Button>
-                        )}
-                    </Box>
-                    <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
-                        <Tooltip title="Importar base do fornecedor e aplicar automaticamente">
-                            <span>
+                        if (!e.target.files?.length)
+                            return;
+
+                        importarCorrespondencias(e.target.files[0]);
+
+                        e.target.value = "";
+
+                    }}
+                />
+
+                {/* Header */}
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: {
+                            xs: 'column',
+                            md: 'row'
+                        },
+                        justifyContent: 'space-between',
+                        alignItems: {
+                            xs: 'flex-start',
+                            md: 'center'
+                        },
+                        gap: 2,
+                        p: 2,
+                        bgcolor: 'var(--azul)',
+                        mb: 4,
+                        borderRadius: '2vh',
+                        zoom: '0.9'
+                    }}
+                >
+                    <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "background.paper" }}>
+                        <strong>Correção de Notas</strong>
+                    </Typography>
+                    <Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '0' }}>
+                            {<PersonIcon sx={{ color: "background.paper", paddingRight: '1vh' }} />}
+                            <Typography sx={{ color: "background.paper", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>
+                                {userInfo?.nome}
+                            </Typography>
+                            {token && (
                                 <Button
                                     size="small"
-                                    disabled={!notaSelecionada || loadingCorrespondencias}
-                                    onClick={() => inputArquivoRef.current?.click()}
-                                    sx={{
-                                        color: "background.paper",
-                                        display: "flex",
-                                        gap: 0.5,
-                                        fontSize: "0.75rem",
-                                        minWidth: "auto",
-                                        padding: "4px 8px",
-                                        whiteSpace: "nowrap"
-                                    }}
-                                >
-                                    {loadingCorrespondencias ? (
-                                        <>
-                                            <CircularProgress
-                                                size={14}
-                                                sx={{ color: "background.paper" }}
-                                            />
-                                            Importando...
-                                        </>
-                                    ) : (
-                                        <>
-                                            Importar Base
-                                            <UploadFileIcon />
-                                        </>
-                                    )}
+                                    onClick={logout}
+                                    sx={{ color: "background.paper", display: 'flex', gap: 1 }}
+                                >{<LogoutIcon />}
                                 </Button>
-                            </span>
-                        </Tooltip>
-                        <Tooltip title="Buscar códigos e localizações do SS Plus">
-                            <Button
-                                id="btnAtualizar" onClick={syncSSPlus}
-                                disabled={loadingSync}
-                                size="small"
-                                sx={{
-                                    color: "background.paper",
-                                    display: 'flex',
-                                    gap: 0.5,
-                                    fontSize: '0.75rem',
-                                    minWidth: 'auto',
-                                    padding: '4px 8px',
-                                    whiteSpace: 'nowrap'
-                                }}>
-                                SS Plus Sync
-                                {<SyncIcon />}
-                            </Button>
-                        </Tooltip>
-                        <Tooltip title="Voltar ao Dashboard">
-                            <Button
-                                onClick={() => navigate("/")}
-                                sx={{
-                                    color: "background.paper",
-                                    display: 'flex',
-                                    gap: 0.5,
-                                    fontSize: '0.75rem',
-                                    minWidth: 'auto',
-                                    padding: '4px 8px',
-                                    whiteSpace: 'nowrap'
-                                }}
-                            >
-                                Voltar
-                                {< ArrowBackIcon />}
-                            </Button>
-                        </Tooltip>
-                        <pre id="resultado"></pre>
-                    </Box>
-                </Box>
-            </Box>
-
-            {/* Loading de sincronização SS Plus*/}
-            <Backdrop
-                open={loadingSync}
-                sx={{ zIndex: (theme) => theme.zIndex.drawer + 999 }}
-            >
-                <Box textAlign="center">
-                    <CircularProgress sx={{ color: "background.paper" }} color="inherit" />
-                    <Typography mt={2} sx={{ color: "background.paper" }}>
-                        Sincronizando itens com o SS Plus...
-                    </Typography>
-                </Box>
-            </Backdrop>
-
-            {/* BUSCA NOTA */}
-            <Box
-                mb={2}
-                display="flex"
-                gap={1}
-                alignItems="stretch"
-                sx={{ zoom: 0.9 }}
-            >
-                <TextField
-                    label="Número NF"
-                    size="small"
-                    value={numeroNota}
-                    onChange={(e) => setNumeroNota(e.target.value)}
-                    sx={{ flex: 1 }}
-                    autoComplete="off"
-                    inputProps={{
-                        spellCheck: false,
-                        autoCorrect: "off",
-                        autoCapitalize: "off",
-                    }}
-                />
-
-                <TextField
-                    label="Fornecedor"
-                    size="small"
-                    value={razaoSocial}
-                    onChange={(e) => setRazaoSocial(e.target.value)}
-                    sx={{ flex: 2 }}
-                    autoComplete="off"
-                    inputProps={{
-                        spellCheck: false,
-                        autoCorrect: "off",
-                        autoCapitalize: "off",
-                    }}
-                />
-
-                <TextField
-                    label="CNPJ"
-                    size="small"
-                    value={cnpjEmitente}
-                    onChange={(e) => setCnpjEmitente(e.target.value)}
-                    sx={{ flex: 1 }}
-                    autoComplete="off"
-                    inputProps={{
-                        spellCheck: false,
-                        autoCorrect: "off",
-                        autoCapitalize: "off",
-                    }}
-                />
-
-                <Button
-                    variant="contained"
-                    onClick={buscarNotas}
-                    sx={{
-                        height: "40px",
-                        minWidth: "140px"
-                    }}
-                >
-                    Buscar
-                </Button>
-            </Box>
-
-            {notasEncontradas.length > 0 && (
-
-                <Paper
-                    sx={{
-                        mb: 2,
-                        maxHeight: 250,
-                        overflow: "auto",
-                        bgcolor: 'background.alerta',
-                        zoom: 0.9
-                    }}
-                >
-                    <Typography variant="h6">
-                        NOTAS ENCONTRADAS
-                    </Typography>
-                    {notasEncontradas.map((nota) => (
-
-                        <Box
-                            key={nota.id}
-                            onClick={() => {
-                                setItens([]);
-                                setItensEditados({});
-                                setEditIndex(null);
-
-                                setNotaSelecionada(nota);
-
-                                buscarItens(nota.id);
-                            }}
-                            sx={{
-                                p: 1.5,
-                                borderBottom: "1px solid",
-                                borderColor: "divider",
-                                cursor: "pointer",
-                                display: 'flex',
-                                justifyContent: 'space-around',
-                                "&:hover": {
-                                    bgcolor: "action.hover"
-                                },
-                            }}
-                        >
-                            <Typography fontWeight={600}>
-                                NF: {nota.numero}-{nota.serie}
-                            </Typography>
-                            <Typography variant="body2">
-                                {nota.fornecedor}
-                            </Typography>
-                            <Typography variant="body2">
-                                CNPJ: {nota.cnpj_emitente}
-                            </Typography>
+                            )}
                         </Box>
-
-                    ))}
-                </Paper>
-
-            )}
-
-            {loadingNotas && <CircularProgress size={22} />}
-
-            {notaSelecionada && (
-
-                <Paper sx={{ p: 2, mb: 2, bgcolor: 'background.alerta', zoom: 0.8 }}>
-
-                    <Typography variant="h6">
-                        NOTA SELECIONADA
-                    </Typography>
-                    <Typography variant="h5">
-                        NF {notaSelecionada.numero}-{notaSelecionada.serie}
-                    </Typography>
-
-                    <Typography variant="h7">
-                        {notaSelecionada.fornecedor}
-                    </Typography>
-
-                </Paper>
-
-            )}
-
-            {loadingItens ? (
-                <CircularProgress size={22} />
-            ) : (
-                <TableContainer
-                    component={Paper}
-                    sx={{
-                        maxHeight: "78vh",
-                        boxShadow: '0vh 0.1vh 0.5vh var(--sombra)',
-                        bgcolor: 'background.tabela',
-                        color: 'text.primary',
-                        mb: 5,
-                        zoom: 0.9
-                    }}
-                >
-                    <Table stickyHeader size="small">
-
-                        <TableHead>
-                            <TableRow>
-                                <TableCell sx={{ color: 'background.paper', bgcolor: 'primary.main' }} />
-                                <TableCell sx={{ color: 'background.paper', bgcolor: 'primary.main' }}>LOC</TableCell>
-                                <TableCell sx={{ color: 'background.paper', bgcolor: 'primary.main' }}>Código SSPlus</TableCell>
-                                <TableCell sx={{ color: 'background.paper', bgcolor: 'primary.main' }}>Código NFe</TableCell>
-                                <TableCell sx={{ color: 'background.paper', bgcolor: 'primary.main' }}>Descrição</TableCell>
-                                <TableCell sx={{ color: 'background.paper', bgcolor: 'primary.main' }}>CEAN</TableCell>
-                                <TableCell sx={{ color: 'background.paper', bgcolor: 'primary.main' }} align="right">Ação</TableCell>
-                            </TableRow>
-                        </TableHead>
-
-                        <TableBody>
-                            {itens.map((item, index) => {
-
-                                const camposVazios = [
-                                    item.loc_sistema,
-                                    item.basico,
-                                    item.cod_produto,
-                                    item.descricao,
-                                    item.cean
-                                ].some(campo =>
-                                    !campo || String(campo).trim() === "" || campo === "SEM GTIN"
-                                );
-
-                                const isEditing = editIndex === index;
-                                const hasChanges = !!itensEditados[index];
-
-                                return (
-                                    <TableRow
-                                        key={item.id}
-                                        onClick={() => setEditIndex(index)}
+                        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
+                            <Tooltip title="Importar base do fornecedor e aplicar automaticamente">
+                                <span>
+                                    <Button
+                                        size="small"
+                                        disabled={!notaSelecionada || loadingCorrespondencias}
+                                        onClick={() => inputArquivoRef.current?.click()}
                                         sx={{
-                                            bgcolor: camposVazios
-                                                ? 'background.alerta'
-                                                : hasChanges
-                                                    ? 'background.editado'
-                                                    : 'inherit',
-
-                                            transition: "0.2s",
-                                            cursor: "pointer",
-
-                                            "&:hover": {
-                                                bgcolor: "action.hover"
-                                            }
+                                            color: "background.paper",
+                                            display: "flex",
+                                            gap: 0.5,
+                                            fontSize: "0.75rem",
+                                            minWidth: "auto",
+                                            padding: "4px 8px",
+                                            whiteSpace: "nowrap"
                                         }}
                                     >
+                                        {loadingCorrespondencias ? (
+                                            <>
+                                                <CircularProgress
+                                                    size={14}
+                                                    sx={{ color: "background.paper" }}
+                                                />
+                                                Importando...
+                                            </>
+                                        ) : (
+                                            <>
+                                                Importar Base
+                                                <UploadFileIcon />
+                                            </>
+                                        )}
+                                    </Button>
+                                </span>
+                            </Tooltip>
+                            <Tooltip title="Buscar códigos e localizações do SS Plus">
+                                <Button
+                                    id="btnAtualizar" onClick={syncSSPlus}
+                                    disabled={loadingSync}
+                                    size="small"
+                                    sx={{
+                                        color: "background.paper",
+                                        display: 'flex',
+                                        gap: 0.5,
+                                        fontSize: '0.75rem',
+                                        minWidth: 'auto',
+                                        padding: '4px 8px',
+                                        whiteSpace: 'nowrap'
+                                    }}>
+                                    SS Plus Sync
+                                    {<SyncIcon />}
+                                </Button>
+                            </Tooltip>
+                            <Tooltip title="Voltar ao Dashboard">
+                                <Button
+                                    onClick={() => navigate("/")}
+                                    sx={{
+                                        color: "background.paper",
+                                        display: 'flex',
+                                        gap: 0.5,
+                                        fontSize: '0.75rem',
+                                        minWidth: 'auto',
+                                        padding: '4px 8px',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    Voltar
+                                    {< ArrowBackIcon />}
+                                </Button>
+                            </Tooltip>
+                            <pre id="resultado"></pre>
+                        </Box>
+                    </Box>
+                </Box>
 
-                                        {/* ALERTA */}
-                                        <TableCell sx={{ p: 0.5 }}>
-                                            {camposVazios && (
-                                                <Tooltip title="Campos pendentes">
-                                                    <WarningAmberIcon
+                {/* Loading de sincronização SS Plus*/}
+                <Backdrop
+                    open={loadingSync}
+                    sx={{ zIndex: (theme) => theme.zIndex.drawer + 999 }}
+                >
+                    <Box textAlign="center">
+                        <CircularProgress sx={{ color: "background.paper" }} color="inherit" />
+                        <Typography mt={2} sx={{ color: "background.paper" }}>
+                            Sincronizando itens com o SS Plus...
+                        </Typography>
+                    </Box>
+                </Backdrop>
+
+                {/* BUSCA NOTA */}
+                <Box
+                    mb={2}
+                    display="flex"
+                    gap={1}
+                    alignItems="stretch"
+                    sx={{ zoom: 0.9 }}
+                >
+                    <TextField
+                        label="Número NF"
+                        size="small"
+                        value={numeroNota}
+                        onChange={(e) => setNumeroNota(e.target.value)}
+                        sx={{ flex: 1 }}
+                        autoComplete="off"
+                        inputProps={{
+                            spellCheck: false,
+                            autoCorrect: "off",
+                            autoCapitalize: "off",
+                        }}
+                    />
+
+                    <TextField
+                        label="Fornecedor"
+                        size="small"
+                        value={razaoSocial}
+                        onChange={(e) => setRazaoSocial(e.target.value)}
+                        sx={{ flex: 2 }}
+                        autoComplete="off"
+                        inputProps={{
+                            spellCheck: false,
+                            autoCorrect: "off",
+                            autoCapitalize: "off",
+                        }}
+                    />
+
+                    <TextField
+                        label="CNPJ"
+                        size="small"
+                        value={cnpjEmitente}
+                        onChange={(e) => setCnpjEmitente(e.target.value)}
+                        sx={{ flex: 1 }}
+                        autoComplete="off"
+                        inputProps={{
+                            spellCheck: false,
+                            autoCorrect: "off",
+                            autoCapitalize: "off",
+                        }}
+                    />
+
+                    <Button
+                        variant="contained"
+                        onClick={buscarNotas}
+                        sx={{
+                            height: "40px",
+                            minWidth: "140px"
+                        }}
+                    >
+                        Buscar
+                    </Button>
+                </Box>
+
+                {notasEncontradas.length > 0 && (
+
+                    <Paper
+                        sx={{
+                            mb: 2,
+                            maxHeight: 250,
+                            overflow: "auto",
+                            bgcolor: 'background.alerta',
+                            zoom: 0.9
+                        }}
+                    >
+                        <Typography variant="h6">
+                            NOTAS ENCONTRADAS
+                        </Typography>
+                        {notasEncontradas.map((nota) => (
+
+                            <Box
+                                key={nota.id}
+                                onClick={() => {
+                                    setItens([]);
+                                    setItensEditados({});
+                                    setEditIndex(null);
+
+                                    setNotaSelecionada(nota);
+
+                                    buscarItens(nota.id);
+                                }}
+                                sx={{
+                                    p: 1.5,
+                                    borderBottom: "1px solid",
+                                    borderColor: "divider",
+                                    cursor: "pointer",
+                                    display: 'flex',
+                                    justifyContent: 'space-around',
+                                    "&:hover": {
+                                        bgcolor: "action.hover"
+                                    },
+                                }}
+                            >
+                                <Typography fontWeight={600}>
+                                    NF: {nota.numero}-{nota.serie}
+                                </Typography>
+                                <Typography variant="body2">
+                                    {nota.fornecedor}
+                                </Typography>
+                                <Typography variant="body2">
+                                    CNPJ: {nota.cnpj_emitente}
+                                </Typography>
+                            </Box>
+
+                        ))}
+                    </Paper>
+
+                )}
+
+                {loadingNotas && <CircularProgress size={22} />}
+
+                {notaSelecionada && (
+
+                    <Paper sx={{ p: 2, mb: 2, bgcolor: 'background.alerta', zoom: 0.8 }}>
+
+                        <Typography variant="h6">
+                            NOTA SELECIONADA
+                        </Typography>
+                        <Typography variant="h5">
+                            NF {notaSelecionada.numero}-{notaSelecionada.serie}
+                        </Typography>
+
+                        <Typography variant="h7">
+                            {notaSelecionada.fornecedor}
+                        </Typography>
+
+                    </Paper>
+
+                )}
+
+                {loadingItens ? (
+                    <CircularProgress size={22} />
+                ) : (
+                    <TableContainer
+                        component={Paper}
+                        sx={{
+                            maxHeight: "78vh",
+                            boxShadow: '0vh 0.1vh 0.5vh var(--sombra)',
+                            bgcolor: 'background.tabela',
+                            color: 'text.primary',
+                            mb: 5,
+                            zoom: 0.9
+                        }}
+                    >
+                        <Table stickyHeader size="small">
+
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell sx={{ color: 'background.paper', bgcolor: 'primary.main' }} />
+                                    <TableCell sx={{ color: 'background.paper', bgcolor: 'primary.main' }}>LOC</TableCell>
+                                    <TableCell sx={{ color: 'background.paper', bgcolor: 'primary.main' }}>Código SSPlus</TableCell>
+                                    <TableCell sx={{ color: 'background.paper', bgcolor: 'primary.main' }}>Código NFe</TableCell>
+                                    <TableCell sx={{ color: 'background.paper', bgcolor: 'primary.main' }}>Descrição</TableCell>
+                                    <TableCell sx={{ color: 'background.paper', bgcolor: 'primary.main' }}>CEAN</TableCell>
+                                    <TableCell sx={{ color: 'background.paper', bgcolor: 'primary.main' }} align="right">Ação</TableCell>
+                                </TableRow>
+                            </TableHead>
+
+                            <TableBody>
+                                {itens.map((item, index) => {
+
+                                    const camposVazios = [
+                                        item.loc_sistema,
+                                        item.basico,
+                                        item.cod_produto,
+                                        item.descricao,
+                                        item.cean
+                                    ].some(campo =>
+                                        !campo || String(campo).trim() === "" || campo === "SEM GTIN"
+                                    );
+
+                                    const isEditing = editIndex === index;
+                                    const hasChanges = !!itensEditados[index];
+
+                                    return (
+                                        <TableRow
+                                            key={item.id}
+                                            onClick={() => setEditIndex(index)}
+                                            sx={{
+                                                bgcolor: camposVazios
+                                                    ? 'background.alerta'
+                                                    : hasChanges
+                                                        ? 'background.editado'
+                                                        : 'inherit',
+
+                                                transition: "0.2s",
+                                                cursor: "pointer",
+
+                                                "&:hover": {
+                                                    bgcolor: "action.hover"
+                                                }
+                                            }}
+                                        >
+
+                                            {/* ALERTA */}
+                                            <TableCell sx={{ p: 0.5 }}>
+                                                {camposVazios && (
+                                                    <Tooltip title="Campos pendentes">
+                                                        <WarningAmberIcon
+                                                            sx={{
+                                                                color: "primary.parcial",
+                                                                fontSize: 18
+                                                            }}
+                                                        />
+                                                    </Tooltip>
+                                                )}
+                                            </TableCell>
+
+                                            {/* LOC */}
+                                            <TableCell sx={{ p: 0.5 }}>
+                                                {isEditing ? (
+                                                    <TextField
+                                                        size="small"
+                                                        value={item.loc_sistema || ""}
+                                                        onChange={(e) =>
+                                                            alterarCampo(index, "loc_sistema", e.target.value)
+                                                        }
+                                                        onKeyDown={(e) => handleKeyDown(e, item, index)}
+                                                        autoFocus
                                                         sx={{
-                                                            color: "primary.parcial",
-                                                            fontSize: 18
+                                                            "& .MuiOutlinedInput-root": { height: 32, fontSize: "0.75rem" }
                                                         }}
                                                     />
-                                                </Tooltip>
-                                            )}
-                                        </TableCell>
+                                                ) : (
+                                                    item.loc_sistema
+                                                )}
+                                            </TableCell>
 
-                                        {/* LOC */}
-                                        <TableCell sx={{ p: 0.5 }}>
-                                            {isEditing ? (
-                                                <TextField
+                                            {/* SSPLUS */}
+                                            <TableCell sx={{ p: 0.5 }}>
+                                                {isEditing ? (
+                                                    <TextField
+                                                        size="small"
+                                                        value={item.basico || ""}
+                                                        onChange={(e) =>
+                                                            alterarCampo(index, "basico", e.target.value)
+                                                        }
+                                                        onKeyDown={(e) => handleKeyDown(e, item, index)}
+                                                        sx={{ "& .MuiOutlinedInput-root": { height: 32 } }}
+                                                    />
+                                                ) : (
+                                                    item.basico
+                                                )}
+                                            </TableCell>
+
+                                            {/* NFE */}
+                                            <TableCell sx={{ p: 0.5 }}>
+                                                {isEditing ? (
+                                                    <TextField
+                                                        size="small"
+                                                        value={item.cod_produto || ""}
+                                                        onChange={(e) =>
+                                                            alterarCampo(index, "cod_produto", e.target.value)
+                                                        }
+                                                        onKeyDown={(e) => handleKeyDown(e, item, index)}
+                                                        sx={{ "& .MuiOutlinedInput-root": { height: 32 } }}
+                                                    />
+                                                ) : (
+                                                    item.cod_produto
+                                                )}
+                                            </TableCell>
+
+                                            {/* DESCRIÇÃO */}
+                                            <TableCell sx={{ p: 0.5 }}>
+                                                {isEditing ? (
+                                                    <TextField
+                                                        fullWidth
+                                                        size="small"
+                                                        value={item.descricao || ""}
+                                                        onChange={(e) =>
+                                                            alterarCampo(index, "descricao", e.target.value)
+                                                        }
+                                                        onKeyDown={(e) => handleKeyDown(e, item, index)}
+                                                        sx={{ "& .MuiOutlinedInput-root": { height: 32 } }}
+                                                    />
+                                                ) : (
+                                                    item.descricao
+                                                )}
+                                            </TableCell>
+
+                                            {/* CEAN */}
+                                            <TableCell sx={{ p: 0.5 }}>
+                                                {isEditing ? (
+                                                    <TextField
+                                                        fullWidth
+                                                        size="small"
+                                                        value={item.cean || ""}
+                                                        onChange={(e) =>
+                                                            alterarCampo(index, "cean", e.target.value)
+                                                        }
+                                                        onKeyDown={(e) => handleKeyDown(e, item, index)}
+                                                        sx={{ "& .MuiOutlinedInput-root": { height: 32 } }}
+                                                    />
+                                                ) : (
+                                                    item.cean
+                                                )}
+                                            </TableCell>
+
+                                            {/* SALVAR ALTERAÇÃO */}
+                                            <TableCell sx={{ p: 0.5 }}>
+                                                <Button
+                                                    variant="contained"
                                                     size="small"
-                                                    value={item.loc_sistema || ""}
-                                                    onChange={(e) =>
-                                                        alterarCampo(index, "loc_sistema", e.target.value)
-                                                    }
-                                                    onKeyDown={(e) => handleKeyDown(e, item, index)}
-                                                    autoFocus
+                                                    onClick={() => salvarItem(item, index)}
                                                     sx={{
-                                                        "& .MuiOutlinedInput-root": { height: 32, fontSize: "0.75rem" }
+                                                        minWidth: 70,
+                                                        height: 28,
+                                                        fontSize: "0.7rem",
+                                                        opacity: hasChanges ? 1 : 0.4
                                                     }}
-                                                />
-                                            ) : (
-                                                item.loc_sistema
-                                            )}
-                                        </TableCell>
+                                                >
+                                                    Salvar
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                )}
 
-                                        {/* SSPLUS */}
-                                        <TableCell sx={{ p: 0.5 }}>
-                                            {isEditing ? (
-                                                <TextField
-                                                    size="small"
-                                                    value={item.basico || ""}
-                                                    onChange={(e) =>
-                                                        alterarCampo(index, "basico", e.target.value)
-                                                    }
-                                                    onKeyDown={(e) => handleKeyDown(e, item, index)}
-                                                    sx={{ "& .MuiOutlinedInput-root": { height: 32 } }}
-                                                />
-                                            ) : (
-                                                item.basico
-                                            )}
-                                        </TableCell>
-
-                                        {/* NFE */}
-                                        <TableCell sx={{ p: 0.5 }}>
-                                            {isEditing ? (
-                                                <TextField
-                                                    size="small"
-                                                    value={item.cod_produto || ""}
-                                                    onChange={(e) =>
-                                                        alterarCampo(index, "cod_produto", e.target.value)
-                                                    }
-                                                    onKeyDown={(e) => handleKeyDown(e, item, index)}
-                                                    sx={{ "& .MuiOutlinedInput-root": { height: 32 } }}
-                                                />
-                                            ) : (
-                                                item.cod_produto
-                                            )}
-                                        </TableCell>
-
-                                        {/* DESCRIÇÃO */}
-                                        <TableCell sx={{ p: 0.5 }}>
-                                            {isEditing ? (
-                                                <TextField
-                                                    fullWidth
-                                                    size="small"
-                                                    value={item.descricao || ""}
-                                                    onChange={(e) =>
-                                                        alterarCampo(index, "descricao", e.target.value)
-                                                    }
-                                                    onKeyDown={(e) => handleKeyDown(e, item, index)}
-                                                    sx={{ "& .MuiOutlinedInput-root": { height: 32 } }}
-                                                />
-                                            ) : (
-                                                item.descricao
-                                            )}
-                                        </TableCell>
-
-                                        {/* CEAN */}
-                                        <TableCell sx={{ p: 0.5 }}>
-                                            {isEditing ? (
-                                                <TextField
-                                                    fullWidth
-                                                    size="small"
-                                                    value={item.cean || ""}
-                                                    onChange={(e) =>
-                                                        alterarCampo(index, "cean", e.target.value)
-                                                    }
-                                                    onKeyDown={(e) => handleKeyDown(e, item, index)}
-                                                    sx={{ "& .MuiOutlinedInput-root": { height: 32 } }}
-                                                />
-                                            ) : (
-                                                item.cean
-                                            )}
-                                        </TableCell>
-
-                                        {/* SALVAR ALTERAÇÃO */}
-                                        <TableCell sx={{ p: 0.5 }}>
-                                            <Button
-                                                variant="contained"
-                                                size="small"
-                                                onClick={() => salvarItem(item, index)}
-                                                sx={{
-                                                    minWidth: 70,
-                                                    height: 28,
-                                                    fontSize: "0.7rem",
-                                                    opacity: hasChanges ? 1 : 0.4
-                                                }}
-                                            >
-                                                Salvar
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            )}
-
-            <Snackbar
-                open={snackbar.open}
-                autoHideDuration={3000}
-                onClose={() =>
-                    setSnackbar({
-                        ...snackbar,
-                        open: false
-                    })
-                }
-            >
-                <Alert
-                    severity={snackbar.severity}
-                    variant="filled"
-                    sx={{
-                        color: 'primary.branco',
-
-                        "& .MuiAlert-icon": {
-                            color: 'primary.branco'
-                        },
-
-                        "& .MuiAlert-action": {
-                            color: 'primary.branco'
-                        }
-                    }}
+                <Snackbar
+                    open={snackbar.open}
+                    autoHideDuration={3000}
+                    onClose={() =>
+                        setSnackbar({
+                            ...snackbar,
+                            open: false
+                        })
+                    }
                 >
-                    {snackbar.message}
-                </Alert>
-            </Snackbar>
-        </Container>
+                    <Alert
+                        severity={snackbar.severity}
+                        variant="filled"
+                        sx={{
+                            color: 'primary.branco',
+
+                            "& .MuiAlert-icon": {
+                                color: 'primary.branco'
+                            },
+
+                            "& .MuiAlert-action": {
+                                color: 'primary.branco'
+                            }
+                        }}
+                    >
+                        {snackbar.message}
+                    </Alert>
+                </Snackbar>
+            </Container>
+        )
     );
 }
 
