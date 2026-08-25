@@ -492,7 +492,14 @@ function Dashboard({ tipo }) {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data?.erro || "Erro ao atualizar");
+
+                if (tratarErroAutenticacao(data)) {
+                    return;
+                }
+
+                throw new Error(
+                    data?.erro || "Erro ao atualizar"
+                );
             }
 
             await registrarLog({
@@ -582,7 +589,14 @@ function Dashboard({ tipo }) {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data?.erro || "Erro ao atualizar etiqueta");
+
+                if (tratarErroAutenticacao(data)) {
+                    return;
+                }
+
+                throw new Error(
+                    data?.erro || "Erro ao atualizar etiqueta"
+                );
             }
 
             await registrarLog({
@@ -711,6 +725,33 @@ function Dashboard({ tipo }) {
                 finalizar();
             }
         }
+    };
+
+    const tratarErroAutenticacao = (data) => {
+
+        if (data?.codigo === "SESSION_EXPIRED") {
+
+            setSnackbar({
+                open: true,
+                message: "Sua sessão expirou. Faça login novamente.",
+                severity: "error"
+            });
+
+            return true;
+        }
+
+        if (data?.codigo === "NFE_PERMISSION_DENIED") {
+
+            setSnackbar({
+                open: true,
+                message: "Você não tem permissão para alterar esta informação.",
+                severity: "error"
+            });
+
+            return true;
+        }
+
+        return false;
     };
 
     return (

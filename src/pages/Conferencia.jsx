@@ -2417,7 +2417,7 @@ function Conferencia() {
                         method: "PUT",
                         headers: {
                             "Content-Type": "application/json",
-                            "Authorization": `Bearer ${token}`
+                            "X-Auth-Token": token
                         },
                         body: JSON.stringify({
                             status: "CONFERIDA",
