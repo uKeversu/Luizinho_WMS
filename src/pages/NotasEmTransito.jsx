@@ -21,21 +21,28 @@ import {
 import RefreshIcon from "@mui/icons-material/Refresh";
 import ClearIcon from "@mui/icons-material/Clear";
 import SearchIcon from "@mui/icons-material/Search";
+import LogoutIcon from "@mui/icons-material/Logout";
 
 import LoginFuncionario from "../components/LoginFuncionario";
 
 function NotasEmTransito() {
 
+    // API BASE
     const API = "http://192.168.1.185:8077";
 
-    const [token, setToken] = useState(
-        () => localStorage.getItem("nfe_token") || ""
-    );
-
+    // Login e Logout
     const [userInfo, setUserInfo] = useState(() => {
         const user = localStorage.getItem("user_info");
         return user ? JSON.parse(user) : null;
     });
+    const [token, setToken] = useState(() => localStorage.getItem("nfe_token") || "");
+
+    const logout = () => {
+        setToken("");
+        setUserInfo(null);
+        localStorage.removeItem("nfe_token");
+        localStorage.removeItem("user_info");
+    };
 
     const [notas, setNotas] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -326,7 +333,7 @@ function NotasEmTransito() {
             }
 
             const response = await fetch(
-                `${API}/api/nfe/atualizar_por_nfe/${nota.serie}/${nota.numero}`,
+                `${API}/api/nfe/finalizar_nfe/${nota.serie}/${nota.numero}`,
                 {
                     method: "PUT",
                     headers: {
@@ -479,7 +486,7 @@ function NotasEmTransito() {
                         color="primary"
                         startIcon={<ClearIcon />}
                         onClick={limparBusca}
-                        sx={{ minWidth: '15vh' }}
+                        sx={{ minWidth: '14vh' }}
                     >
                         Limpar
                     </Button>
@@ -489,9 +496,18 @@ function NotasEmTransito() {
                         color="primary"
                         startIcon={<RefreshIcon />}
                         onClick={atualizarTela}
-                        sx={{ minWidth: '15vh' }}
+                        sx={{ minWidth: '17vh' }}
                     >
                         Atualizar
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        color="error"
+                        startIcon={<LogoutIcon />}
+                        onClick={logout}
+                        sx={{ minWidth: '12vh' }}
+                    >
+                        Sair
                     </Button>
                 </Box>
 
