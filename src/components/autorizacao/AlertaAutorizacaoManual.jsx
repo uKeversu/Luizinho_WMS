@@ -32,14 +32,6 @@ export default function AlertaAutorizacaoManual({ userInfo, token }) {
             return;
         }
 
-        console.log("🔐 TOKEN DO ALERTA:", token);
-        console.log(
-            "🔐 TOKEN LOCALSTORAGE:",
-            localStorage.getItem("nfe_token")
-        );
-
-        console.log("👤 USER INFO:", userInfo);
-
         try {
 
             const response = await fetch(
@@ -52,10 +44,7 @@ export default function AlertaAutorizacaoManual({ userInfo, token }) {
                 }
             );
 
-            console.log(
-                "📡 /pendentes:",
-                response.status
-            );
+            console.log("📡 /pendentes:", response.status);
 
             if (!response.ok) {
 
