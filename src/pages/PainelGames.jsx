@@ -43,7 +43,25 @@ const API = "http://192.168.1.185:8077";
 
 export default function PainelGames() {
 
+    // API BASE
+    const API = "http://192.168.1.185:8077";
+
+    // Acessar outras pages
     const navigate = useNavigate();
+
+    // Login e Logout
+    const [userInfo, setUserInfo] = useState(() => {
+        const user = localStorage.getItem("user_info");
+        return user ? JSON.parse(user) : null;
+    });
+    const [token, setToken] = useState(() => localStorage.getItem("nfe_token") || "");
+
+    const logout = () => {
+        setToken("");
+        setUserInfo(null);
+        localStorage.removeItem("nfe_token");
+        localStorage.removeItem("user_info");
+    };
 
     const { dark } = useContext(ThemeContext);
 

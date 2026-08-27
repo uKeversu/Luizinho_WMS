@@ -51,7 +51,11 @@ function App() {
 
           <Route
             path="/Recebimento"
-            element={<Recebimentos />}
+            element={
+              <ProtectedRoute permissao="pode_finalizar_nfe">
+                <Recebimentos />
+              </ProtectedRoute>
+            }
           />
 
           <Route

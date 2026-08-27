@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     Container,
@@ -43,6 +43,7 @@ import LocalPrintshopIcon from '@mui/icons-material/LocalPrintshop';
 import ReplayIcon from '@mui/icons-material/Replay';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import HistoryIcon from '@mui/icons-material/History';
+
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import WarningIcon from '@mui/icons-material/Warning';
@@ -51,13 +52,19 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 
+import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+
 import LoginFuncionario from "../components/LoginFuncionario";
 
+import { ThemeContext } from "../context/ThemeContext";
 import '../style/App.css';
 
 import Conferencia from "./Conferencia";
 
 function Dashboard({ tipo }) {
+
+    const { dark, toggleTheme } = useContext(ThemeContext);
 
     // API BASE
     const API = "http://192.168.1.185:8077";
@@ -147,6 +154,12 @@ function Dashboard({ tipo }) {
             rota: "/Produtividade",
             permissao: null,
             icone: <LeaderboardIcon fontSize="small" />
+        },
+        {
+            nome: "Recebimento",
+            rota: "/Recebimento",
+            permissao: "pode_finalizar_nfe",
+            icone: <LocalShippingIcon fontSize="small" />
         },
         {
             nome: "Tarefas",
@@ -919,27 +932,6 @@ function Dashboard({ tipo }) {
                         </Box>
                         <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
 
-                            <Tooltip title="Reimprimir etiquetas">
-                                <Button
-                                    onClick={() => navigate("/PainelReimpressao")}
-                                    sx={{
-                                        color: "background.paper",
-                                        display: 'flex',
-                                        gap: 0.5,
-                                        fontSize: '0.75rem',
-                                        minWidth: 'auto',
-                                        padding: '4px 8px',
-                                        whiteSpace: 'nowrap'
-                                    }}
-                                >
-                                    Reimpressão
-                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                        <LocalPrintshopIcon fontSize="small" />
-                                        <ReplayIcon fontSize="small" sx={{ fontSize: 14 }} />
-                                    </Box>
-                                </Button>
-                            </Tooltip>
-
                             <Tooltip title="Sincronizar itens com SS Plus">
                                 <Button
                                     id="btnAtualizar"
@@ -958,6 +950,27 @@ function Dashboard({ tipo }) {
                                 >
                                     SS Plus Sync
                                     <SyncIcon />
+                                </Button>
+                            </Tooltip>
+
+                            <Tooltip title="Reimprimir etiquetas">
+                                <Button
+                                    onClick={() => navigate("/PainelReimpressao")}
+                                    sx={{
+                                        color: "background.paper",
+                                        display: 'flex',
+                                        gap: 0.5,
+                                        fontSize: '0.75rem',
+                                        minWidth: 'auto',
+                                        padding: '4px 8px',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    Reimpressão
+                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                        <LocalPrintshopIcon fontSize="small" />
+                                        <ReplayIcon fontSize="small" sx={{ fontSize: 14 }} />
+                                    </Box>
                                 </Button>
                             </Tooltip>
 
@@ -994,24 +1007,6 @@ function Dashboard({ tipo }) {
                                 >
                                     Guardas
                                     <Inventory2Icon />
-                                </Button>
-                            </Tooltip>
-
-                            <Tooltip title="Tela de recebimento">
-                                <Button
-                                    onClick={() => navigate("/Recebimento")}
-                                    sx={{
-                                        color: "background.paper",
-                                        display: 'flex',
-                                        gap: 0.5,
-                                        fontSize: '0.75rem',
-                                        minWidth: 'auto',
-                                        padding: '4px 8px',
-                                        whiteSpace: 'nowrap'
-                                    }}
-                                >
-                                    Recebimento
-                                    <LocalShippingIcon />
                                 </Button>
                             </Tooltip>
 
@@ -1057,6 +1052,33 @@ function Dashboard({ tipo }) {
                             </Typography>
                         </MenuItem>
                     ))}
+
+                    {/* ALTERAR TEMA */}
+                    <MenuItem
+                        onClick={() => {
+                            toggleTheme();
+                        }}
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.2,
+                            color: 'text.primary'
+                        }}
+                    >
+                        {dark ? (
+                            <LightModeIcon fontSize="small" />
+                        ) : (
+                            <DarkModeIcon fontSize="small" />
+                        )}
+
+                        <Typography
+                            sx={{
+                                fontSize: '0.85rem'
+                            }}
+                        >
+                            {dark ? "Tema claro" : "Tema escuro"}
+                        </Typography>
+                    </MenuItem>
                 </Menu>
 
                 {/* Loading de sincronização SS Plus*/}

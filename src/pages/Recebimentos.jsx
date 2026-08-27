@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
     Container,
@@ -28,7 +28,6 @@ import ArticleIcon from '@mui/icons-material/Article';
 import AttachmentIcon from '@mui/icons-material/Attachment';
 import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
-import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 
 import Visibility from "@mui/icons-material/Visibility";
@@ -43,13 +42,9 @@ import ModalObservacao from "../components/ModalObservacoes";
 import ModalConfirmaRecebimento from "../components/ModalConfirmaRecebimento";
 import Cronometro from "../components/Cronometro";
 
-import { ThemeContext } from "../context/ThemeContext";
 import '../style/App.css';
 
 function Recebimentos() {
-
-    // Tema noturno
-    const { dark, toggleTheme } = useContext(ThemeContext);
 
     // Acessar outras pages
     const navigate = useNavigate();
@@ -1016,9 +1011,6 @@ function Recebimentos() {
                                 >{<LogoutIcon />}
                                 </Button>
                             )}
-                            <Button sx={{ color: 'background.paper' }} onClick={toggleTheme}>
-                                {dark ? <LightModeIcon /> : <DarkModeIcon />}
-                            </Button>
                         </Box>
                         <Box
                             sx={{
