@@ -26,13 +26,10 @@ import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ArticleIcon from '@mui/icons-material/Article';
 import AttachmentIcon from '@mui/icons-material/Attachment';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
-import WarningIcon from '@mui/icons-material/Warning';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
-import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
@@ -1033,57 +1030,6 @@ function Recebimentos() {
                                 flexWrap: 'nowrap',
                                 overflow: 'hidden'
                             }}>
-                            <Tooltip title="Cadastro de funcionários">
-                                <Button
-                                    onClick={() => setOpenDialog(true)}
-                                    sx={{
-                                        color: "background.paper",
-                                        display: 'flex',
-                                        gap: 0.5,
-                                        fontSize: '0.75rem',
-                                        minWidth: 'auto',
-                                        padding: '4px 8px',
-                                        whiteSpace: 'nowrap'
-                                    }}
-                                >
-                                    FUNCIONARIOS
-                                    {< PersonAddIcon />}
-                                </Button>
-                            </Tooltip>
-                            <Tooltip title="Desempenho dos conferentes">
-                                <Button
-                                    onClick={() => navigate("/Produtividade")}
-                                    sx={{
-                                        color: "background.paper",
-                                        display: "flex",
-                                        gap: 0.7,
-                                        fontSize: "0.75rem",
-                                        minWidth: "auto",
-                                        padding: "4px 10px",
-                                        whiteSpace: "nowrap",
-                                    }}
-                                >
-                                    PRODUTIVIDADE
-                                    <LeaderboardIcon fontSize="small" />
-                                </Button>
-                            </Tooltip>
-                            <Tooltip title="Notas com pendências ou alertas">
-                                <Button
-                                    onClick={() => navigate("/Alertas")}
-                                    sx={{
-                                        color: "background.paper",
-                                        display: 'flex',
-                                        gap: 0.5,
-                                        fontSize: '0.75rem',
-                                        minWidth: 'auto',
-                                        padding: '4px 8px',
-                                        whiteSpace: 'nowrap'
-                                    }}
-                                >
-                                    Alertas
-                                    {< WarningIcon />}
-                                </Button>
-                            </Tooltip>
                             <Tooltip title="Dashboard de notas recebidas">
                                 <Button
                                     onClick={() => navigate("/")}

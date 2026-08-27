@@ -99,7 +99,11 @@ function App() {
 
           <Route
             path="/AtualizarCean"
-            element={<AtualizarCean />}
+            element={
+              <ProtectedRoute permissao="pode_corrigir_nfe">
+                <AtualizarCean />
+              </ProtectedRoute>
+            }
           />
 
           <Route
