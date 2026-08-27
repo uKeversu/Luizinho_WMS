@@ -29,8 +29,10 @@ import {
     Menu
 } from "@mui/material";
 
+// Paginação
 import Pagination from "@mui/material/Pagination";
 
+// Ícones
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
@@ -44,6 +46,7 @@ import ReplayIcon from '@mui/icons-material/Replay';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import HistoryIcon from '@mui/icons-material/History';
 
+// Ícones do dropdown
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import WarningIcon from '@mui/icons-material/Warning';
@@ -52,11 +55,12 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 
-import LightModeIcon from '@mui/icons-material/LightMode';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
-
+// Componente de login
 import LoginFuncionario from "../components/LoginFuncionario";
 
+// Tema
+import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
 import { ThemeContext } from "../context/ThemeContext";
 import '../style/App.css';
 
@@ -64,6 +68,7 @@ import Conferencia from "./Conferencia";
 
 function Dashboard({ tipo }) {
 
+    // Tema
     const { dark, toggleTheme } = useContext(ThemeContext);
 
     // API BASE

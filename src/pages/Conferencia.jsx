@@ -2407,19 +2407,19 @@ function Conferencia() {
 ^BQN,2,8
 ^FDLA,${codigoCaixa}^FS
 
-^FO260,110
+^FO220,110
 ^A0N,32,32
 ^FDCAIXA^FS
 
-^FO260,145
+^FO220,145
 ^A0N,50,50
 ^FD${codigoCaixa}^FS
 
-^FO260,235
+^FO220,235
 ^A0N,26,26
 ^FD${new Date().toLocaleString("pt-BR")}^FS
 
-^FO260,315
+^FO220,315
 ^A0N,35,35
 ^FD${userInfo?.codigo}^FS
 
