@@ -244,97 +244,133 @@ function ReimpressaoCredenciais() {
     }
 
     return (
-        <Container maxWidth="lg" sx={{ mt: 4 }}>
+        !token ? (
+            <LoginFuncionario
+                onLogin={(data) => {
 
-            <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                mb={3}
-            >
-                <Typography variant="h4" fontWeight="bold">
-                    Reimpressão de Credenciais
-                </Typography>
+                    localStorage.setItem(
+                        "nfe_token",
+                        data.token
+                    );
 
-                <Button
-                    variant="contained"
-                    startIcon={<PrintIcon />}
-                    onClick={imprimirTodos}
+                    const user = {
+                        id: data.id,
+                        nome: data.nome,
+                        codigo: data.codigo,
+                        tipo: data.tipo,
+                        pode_autorizar_conferencia: data.pode_autorizar_conferencia,
+                        pode_corrigir_nfe: data.pode_corrigir_nfe,
+                        pode_finalizar_nfe: data.pode_finalizar_nfe,
+                        pode_acessar_alertas: data.pode_acessar_alertas,
+                        pode_acessar_cadastrar_funcionario: data.pode_acessar_cadastrar_funcionario,
+                        pode_acessar_painel_games: data.pode_acessar_painel_games,
+                        pode_acessar_painel_gerencial: data.pode_acessar_painel_gerencial,
+                        pode_acessar_reimprimir_senhas: data.pode_acessar_reimprimir_senhas,
+                        pode_acessar_tarefas: data.pode_acessar_tarefas,
+                    };
+
+                    localStorage.setItem(
+                        "user_info",
+                        JSON.stringify(user)
+                    );
+
+                    setUserInfo(user);
+                    setToken(data.token);
+                }}
+            />
+        ) : (
+            <Container maxWidth="lg" sx={{ mt: 4 }}>
+
+                <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    mb={3}
                 >
-                    Imprimir Todos
-                </Button>
-            </Box>
+                    <Typography variant="h4" fontWeight="bold">
+                        Reimpressão de Credenciais
+                    </Typography>
 
-            <Grid container spacing={3}>
+                    <Button
+                        variant="contained"
+                        startIcon={<PrintIcon />}
+                        onClick={imprimirTodos}
+                    >
+                        Imprimir Todos
+                    </Button>
+                </Box>
 
-                {usuarios.map((user) => (
+                <Grid container spacing={3}>
 
-                    <Grid item xs={12} md={6} key={user.senha}>
+                    {usuarios.map((user) => (
 
-                        <Card
-                            sx={{
-                                borderRadius: 3,
-                                height: "100%",
-                                bgcolor: 'background.default'
-                            }}
-                        >
-                            <CardContent>
+                        <Grid item xs={12} md={6} key={user.senha}>
 
-                                <Typography
-                                    variant="h6"
-                                    fontWeight="bold"
-                                    gutterBottom
-                                >
-                                    {user.nome}
-                                </Typography>
+                            <Card
+                                sx={{
+                                    borderRadius: 3,
+                                    height: "100%",
+                                    bgcolor: 'background.default'
+                                }}
+                            >
+                                <CardContent>
 
-                                <Typography
-                                    sx={{
-                                        fontFamily: "monospace",
-                                        fontSize: "1rem",
-                                        mb: 3
-                                    }}
-                                >
-                                    {user.senha}
-                                </Typography>
+                                    <Typography
+                                        variant="h6"
+                                        fontWeight="bold"
+                                        gutterBottom
+                                    >
+                                        {user.nome}
+                                    </Typography>
 
-                                <Button
-                                    fullWidth
-                                    variant="contained"
-                                    startIcon={<PrintIcon />}
-                                    onClick={() => imprimir(user)}
-                                >
-                                    Imprimir Etiqueta
-                                </Button>
+                                    <Typography
+                                        sx={{
+                                            fontFamily: "monospace",
+                                            fontSize: "1rem",
+                                            mb: 3
+                                        }}
+                                    >
+                                        {user.senha}
+                                    </Typography>
 
-                            </CardContent>
-                        </Card>
+                                    <Button
+                                        fullWidth
+                                        variant="contained"
+                                        startIcon={<PrintIcon />}
+                                        onClick={() => imprimir(user)}
+                                    >
+                                        Imprimir Etiqueta
+                                    </Button>
 
-                    </Grid>
+                                </CardContent>
+                            </Card>
 
-                ))}
+                        </Grid>
 
-            </Grid>
+                    ))}
 
-            <Snackbar
-                open={snackbar.open}
-                autoHideDuration={3000}
-                onClose={() =>
-                    setSnackbar(prev => ({
-                        ...prev,
-                        open: false
-                    }))
-                }
-            >
-                <Alert
-                    severity={snackbar.severity}
-                    variant="filled"
+                </Grid>
+
+                <Snackbar
+                    open={snackbar.open}
+                    autoHideDuration={3000}
+                    onClose={() =>
+                        setSnackbar(prev => ({
+                            ...prev,
+                            open: false
+                        }))
+                    }
                 >
-                    {snackbar.message}
-                </Alert>
-            </Snackbar>
+                    <Alert
+                        severity={snackbar.severity}
+                        variant="filled"
+                    >
+                        {snackbar.message}
+                    </Alert>
+                </Snackbar>
 
-        </Container>
+            </Container>
+        )
     );
 }
 

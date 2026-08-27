@@ -169,8 +169,15 @@ function Alertas() {
                         nome: data.nome,
                         codigo: data.codigo,
                         tipo: data.tipo,
-                        pode_autorizar_conferencia:
-                            data.pode_autorizar_conferencia
+                        pode_autorizar_conferencia: data.pode_autorizar_conferencia,
+                        pode_corrigir_nfe: data.pode_corrigir_nfe,
+                        pode_finalizar_nfe: data.pode_finalizar_nfe,
+                        pode_acessar_alertas: data.pode_acessar_alertas,
+                        pode_acessar_cadastrar_funcionario: data.pode_acessar_cadastrar_funcionario,
+                        pode_acessar_painel_games: data.pode_acessar_painel_games,
+                        pode_acessar_painel_gerencial: data.pode_acessar_painel_gerencial,
+                        pode_acessar_reimprimir_senhas: data.pode_acessar_reimprimir_senhas,
+                        pode_acessar_tarefas: data.pode_acessar_tarefas,
                     };
 
                     localStorage.setItem(

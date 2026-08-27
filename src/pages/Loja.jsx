@@ -280,271 +280,307 @@ export default function Loja() {
     }, [categoria, itens]);
 
     return (
-        <Container maxWidth="xl" sx={{ mt: 4, mb: 2 }}>
+        !token ? (
+            <LoginFuncionario
+                onLogin={(data) => {
 
-            {/* HEADER */}
-            <Paper sx={{
-                p: 4,
-                borderRadius: 4,
-                mb: 2,
-                background: dark
-                    ? "linear-gradient(135deg,#161616,#0d0d0d)"
-                    : "linear-gradient(135deg,#ffffff,#f5f5f5)"
-            }}>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
+                    localStorage.setItem(
+                        "nfe_token",
+                        data.token
+                    );
 
-                    <Box>
-                        <Typography variant="h4" fontWeight="bold">
-                            <Storefront sx={{ mr: 1, verticalAlign: "middle" }} />
-                            Loja SigelCoins
-                        </Typography>
-                        <Typography>
-                            Personalize seu perfil
-                        </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <PersonIcon
-                            sx={{
-                                color: "background.paper",
-                                mr: 1
-                            }}
-                        />
-                        <Typography sx={{ mr: 2 }}>
-                            {userInfo?.nome}
-                        </Typography>
-                        <Button
-                            variant="contained"
-                            startIcon={<ArrowBack />}
-                            onClick={() => navigate("/Produtividade")}
-                        >
-                            Voltar
-                        </Button>
-                    </Box>
-                </Box>
-            </Paper>
+                    const user = {
+                        id: data.id,
+                        nome: data.nome,
+                        codigo: data.codigo,
+                        tipo: data.tipo,
+                        pode_autorizar_conferencia: data.pode_autorizar_conferencia,
+                        pode_corrigir_nfe: data.pode_corrigir_nfe,
+                        pode_finalizar_nfe: data.pode_finalizar_nfe,
+                        pode_acessar_alertas: data.pode_acessar_alertas,
+                        pode_acessar_cadastrar_funcionario: data.pode_acessar_cadastrar_funcionario,
+                        pode_acessar_painel_games: data.pode_acessar_painel_games,
+                        pode_acessar_painel_gerencial: data.pode_acessar_painel_gerencial,
+                        pode_acessar_reimprimir_senhas: data.pode_acessar_reimprimir_senhas,
+                        pode_acessar_tarefas: data.pode_acessar_tarefas,
+                    };
 
-            {/* SALDO */}
-            <Paper sx={{ p: 3, borderRadius: 4, mb: 2, bgcolor: 'background.default' }}>
-                <Box display="flex" alignItems="center" gap={2}>
-                    <MonetizationOn color="warning" />
-                    <Typography variant="h5" fontWeight="bold">
-                        {saldo.toLocaleString()} SigelCoins
-                    </Typography>
-                </Box>
-            </Paper>
+                    localStorage.setItem(
+                        "user_info",
+                        JSON.stringify(user)
+                    );
 
-            {/* TABS */}
-            <Paper sx={{ mb: 2, borderRadius: 4, bgcolor: 'background.default' }}>
-                <Tabs
-                    value={categoria}
-                    onChange={(_, v) => setCategoria(v)}
-                    centered
-                >
-                    <Tab label="🧑 Avatares" />
-                    <Tab label="👑 Títulos" />
-                    <Tab label="💎 Molduras" />
-                    <Tab label="⚡ Efeitos" />
-                </Tabs>
-            </Paper>
-            <Paper
-                sx={{
-                    p: 2,
+                    setUserInfo(user);
+                    setToken(data.token);
+                }}
+            />
+        ) : (
+            <Container maxWidth="xl" sx={{ mt: 4, mb: 2 }}>
+
+                {/* HEADER */}
+                <Paper sx={{
+                    p: 4,
+                    borderRadius: 4,
                     mb: 2,
-                    borderRadius: 3,
-                    bgcolor: "background.default"
-                }}
-            >
-                <Typography
-                    variant="subtitle2"
-                    fontWeight="bold"
-                    mb={1}
-                >
-                    Raridade dos Itens
-                </Typography>
+                    background: dark
+                        ? "linear-gradient(135deg,#161616,#0d0d0d)"
+                        : "linear-gradient(135deg,#ffffff,#f5f5f5)"
+                }}>
+                    <Box display="flex" justifyContent="space-between" alignItems="center">
 
-                <Box display="flex" gap={2} flexWrap="wrap">
+                        <Box>
+                            <Typography variant="h4" fontWeight="bold">
+                                <Storefront sx={{ mr: 1, verticalAlign: "middle" }} />
+                                Loja SigelCoins
+                            </Typography>
+                            <Typography>
+                                Personalize seu perfil
+                            </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <PersonIcon
+                                sx={{
+                                    color: "background.paper",
+                                    mr: 1
+                                }}
+                            />
+                            <Typography sx={{ mr: 2 }}>
+                                {userInfo?.nome}
+                            </Typography>
+                            <Button
+                                variant="contained"
+                                startIcon={<ArrowBack />}
+                                onClick={() => navigate("/Produtividade")}
+                            >
+                                Voltar
+                            </Button>
+                        </Box>
+                    </Box>
+                </Paper>
 
-                    <Typography sx={{ color: "#2196F3", fontWeight: 700 }}>Incomum</Typography>
-                    <Typography sx={{ color: "#E53935", fontWeight: 700 }}>Raro</Typography>
-                    <Typography sx={{ color: "#9C27B0", fontWeight: 700 }}>Épico</Typography>
-                    <Typography sx={{ color: "#FF9800", fontWeight: 700 }}>Lendário</Typography>
-                    <Typography sx={{ color: "#00d335", fontWeight: 700 }}>Mítico</Typography>
+                {/* SALDO */}
+                <Paper sx={{ p: 3, borderRadius: 4, mb: 2, bgcolor: 'background.default' }}>
+                    <Box display="flex" alignItems="center" gap={2}>
+                        <MonetizationOn color="warning" />
+                        <Typography variant="h5" fontWeight="bold">
+                            {saldo.toLocaleString()} SigelCoins
+                        </Typography>
+                    </Box>
+                </Paper>
 
-                </Box>
-            </Paper>
-
-            {/* LOADING */}
-            {loading ? (
-                <Box display="flex" justifyContent="center" mt={5}>
-                    <CircularProgress />
-                </Box>
-            ) : (
-                <Grid container spacing={3}>
-
-                    {filtrados.map(item => (
-
-                        <Grid item xs={12} sm={6} md={4} lg={3} key={item.id}>
-                            <motion.div whileHover={{ y: -5 }}>
-
-                                <Card
-                                    sx={{
-                                        position: "relative",
-                                        height: "100%",
-                                        bgcolor: "background.default",
-                                        mb: 5,
-                                        border: `2px solid ${corRaridade(item.raridade)}`,
-                                        transition: "0.25s",
-                                        "&:hover": {
-                                            boxShadow: `0 0 18px ${corRaridade(item.raridade)}80`,
-                                            transform: "translateY(-2px)"
-                                        },
-                                        zoom: '0.9'
-                                    }}
-                                >
-                                    <Chip
-                                        label={nomeColecao(item.colecao)}
-                                        size="small"
-                                        sx={{
-                                            position: "absolute",
-                                            top: 12,
-                                            right: 12,
-                                            bgcolor: "rgba(0,0,0,.45)",
-                                            color: "#fff",
-                                            backdropFilter: "blur(8px)",
-                                            fontSize: "11px"
-                                        }}
-                                    />
-
-                                    <CardContent sx={{ textAlign: "center" }}>
-
-                                        <Typography sx={{
-                                            fontSize: 70, color: item?.nome === "Cruz de Malta"
-                                                ? "primary.cancelar"
-                                                : "primary.branco",
-                                        }}>
-                                            {item.icone}
-                                        </Typography>
-
-                                        <Typography variant="h6" fontWeight="bold">
-                                            {item.nome}
-                                        </Typography>
-
-                                        <Chip
-                                            sx={{ mt: 2, color: "white" }}
-                                            color="warning"
-                                            label={`${item.preco.toLocaleString()} SigelCoins`}
-                                        />
-
-                                        <Box mt={3}>
-                                            <Button
-                                                fullWidth
-                                                variant="outlined"
-                                                startIcon={<VisibilityIcon />}
-                                                sx={{ mb: 1 }}
-                                                onClick={() => visualizar(item)}
-                                            >
-                                                Visualizar
-                                            </Button>
-                                            {item.equipado ? (
-                                                <Button
-                                                    fullWidth
-                                                    color="error"
-                                                    variant="outlined"
-                                                    onClick={() => desequipar(item)}
-                                                >
-                                                    Desequipar
-                                                </Button>
-                                            ) : item.possui ? (
-                                                <Button
-                                                    fullWidth
-                                                    variant="outlined"
-                                                    sx={{ mt: 1 }}
-                                                    onClick={() => equipar(item)}
-                                                >
-                                                    Equipar
-                                                </Button>
-                                            ) : item.evento === 1 ? (
-                                                <Button
-                                                    fullWidth
-                                                    variant="contained"
-                                                    color="warning"
-                                                    disabled
-                                                >
-                                                    Evento
-                                                </Button>
-                                            ) : (
-                                                <Button
-                                                    fullWidth
-                                                    variant="contained"
-                                                    onClick={() => comprarItem(item)}
-                                                >
-                                                    Comprar
-                                                </Button>
-                                            )}
-
-                                        </Box>
-
-                                    </CardContent>
-                                </Card>
-
-                            </motion.div>
-                        </Grid>
-
-                    ))}
-
-                </Grid>
-            )}
-
-            <Dialog
-                open={previewOpen}
-                onClose={() => setPreviewOpen(false)}
-                maxWidth="md"
-                fullWidth
-                slotProps={{
-                    paper: {
-                        sx: {
-                            width: 430,
-                            maxWidth: "95vw",
-                            borderRadius: 4,
-                            bgcolor: "transparent",
-                            boxShadow: "none",
-                            overflow: "visible"
-                        }
-                    }
-                }}
-            >
-                <DialogContent
+                {/* TABS */}
+                <Paper sx={{ mb: 2, borderRadius: 4, bgcolor: 'background.default' }}>
+                    <Tabs
+                        value={categoria}
+                        onChange={(_, v) => setCategoria(v)}
+                        centered
+                    >
+                        <Tab label="🧑 Avatares" />
+                        <Tab label="👑 Títulos" />
+                        <Tab label="💎 Molduras" />
+                        <Tab label="⚡ Efeitos" />
+                    </Tabs>
+                </Paper>
+                <Paper
                     sx={{
-                        p: 0,
-                        bgcolor: "transparent",
-                        display: "flex",
-                        justifyContent: "center"
+                        p: 2,
+                        mb: 2,
+                        borderRadius: 3,
+                        bgcolor: "background.default"
                     }}
                 >
-                    {perfilPreview && (
-                        <CardJogador
-                            perfil={perfilPreview.perfil}
-                            codigo={perfilPreview.codigo}
-                            saldo={perfilPreview.saldo}
-                            funcionarios={funcionarios}
-                            equipados={previewEquipados}
-                            preview
-                        />
-                    )}
-                </DialogContent>
-            </Dialog>
+                    <Typography
+                        variant="subtitle2"
+                        fontWeight="bold"
+                        mb={1}
+                    >
+                        Raridade dos Itens
+                    </Typography>
 
-            {/* SNACKBAR */}
-            <Snackbar
-                open={snack.open}
-                autoHideDuration={3000}
-                onClose={() => setSnack({ ...snack, open: false })}
-            >
-                <Alert severity={snack.severity}>
-                    {snack.message}
-                </Alert>
-            </Snackbar>
+                    <Box display="flex" gap={2} flexWrap="wrap">
 
-        </Container>
+                        <Typography sx={{ color: "#2196F3", fontWeight: 700 }}>Incomum</Typography>
+                        <Typography sx={{ color: "#E53935", fontWeight: 700 }}>Raro</Typography>
+                        <Typography sx={{ color: "#9C27B0", fontWeight: 700 }}>Épico</Typography>
+                        <Typography sx={{ color: "#FF9800", fontWeight: 700 }}>Lendário</Typography>
+                        <Typography sx={{ color: "#00d335", fontWeight: 700 }}>Mítico</Typography>
+
+                    </Box>
+                </Paper>
+
+                {/* LOADING */}
+                {loading ? (
+                    <Box display="flex" justifyContent="center" mt={5}>
+                        <CircularProgress />
+                    </Box>
+                ) : (
+                    <Grid container spacing={3}>
+
+                        {filtrados.map(item => (
+
+                            <Grid item xs={12} sm={6} md={4} lg={3} key={item.id}>
+                                <motion.div whileHover={{ y: -5 }}>
+
+                                    <Card
+                                        sx={{
+                                            position: "relative",
+                                            height: "100%",
+                                            bgcolor: "background.default",
+                                            mb: 5,
+                                            border: `2px solid ${corRaridade(item.raridade)}`,
+                                            transition: "0.25s",
+                                            "&:hover": {
+                                                boxShadow: `0 0 18px ${corRaridade(item.raridade)}80`,
+                                                transform: "translateY(-2px)"
+                                            },
+                                            zoom: '0.9'
+                                        }}
+                                    >
+                                        <Chip
+                                            label={nomeColecao(item.colecao)}
+                                            size="small"
+                                            sx={{
+                                                position: "absolute",
+                                                top: 12,
+                                                right: 12,
+                                                bgcolor: "rgba(0,0,0,.45)",
+                                                color: "#fff",
+                                                backdropFilter: "blur(8px)",
+                                                fontSize: "11px"
+                                            }}
+                                        />
+
+                                        <CardContent sx={{ textAlign: "center" }}>
+
+                                            <Typography sx={{
+                                                fontSize: 70, color: item?.nome === "Cruz de Malta"
+                                                    ? "primary.cancelar"
+                                                    : "primary.branco",
+                                            }}>
+                                                {item.icone}
+                                            </Typography>
+
+                                            <Typography variant="h6" fontWeight="bold">
+                                                {item.nome}
+                                            </Typography>
+
+                                            <Chip
+                                                sx={{ mt: 2, color: "white" }}
+                                                color="warning"
+                                                label={`${item.preco.toLocaleString()} SigelCoins`}
+                                            />
+
+                                            <Box mt={3}>
+                                                <Button
+                                                    fullWidth
+                                                    variant="outlined"
+                                                    startIcon={<VisibilityIcon />}
+                                                    sx={{ mb: 1 }}
+                                                    onClick={() => visualizar(item)}
+                                                >
+                                                    Visualizar
+                                                </Button>
+                                                {item.equipado ? (
+                                                    <Button
+                                                        fullWidth
+                                                        color="error"
+                                                        variant="outlined"
+                                                        onClick={() => desequipar(item)}
+                                                    >
+                                                        Desequipar
+                                                    </Button>
+                                                ) : item.possui ? (
+                                                    <Button
+                                                        fullWidth
+                                                        variant="outlined"
+                                                        sx={{ mt: 1 }}
+                                                        onClick={() => equipar(item)}
+                                                    >
+                                                        Equipar
+                                                    </Button>
+                                                ) : item.evento === 1 ? (
+                                                    <Button
+                                                        fullWidth
+                                                        variant="contained"
+                                                        color="warning"
+                                                        disabled
+                                                    >
+                                                        Evento
+                                                    </Button>
+                                                ) : (
+                                                    <Button
+                                                        fullWidth
+                                                        variant="contained"
+                                                        onClick={() => comprarItem(item)}
+                                                    >
+                                                        Comprar
+                                                    </Button>
+                                                )}
+
+                                            </Box>
+
+                                        </CardContent>
+                                    </Card>
+
+                                </motion.div>
+                            </Grid>
+
+                        ))}
+
+                    </Grid>
+                )}
+
+                <Dialog
+                    open={previewOpen}
+                    onClose={() => setPreviewOpen(false)}
+                    maxWidth="md"
+                    fullWidth
+                    slotProps={{
+                        paper: {
+                            sx: {
+                                width: 430,
+                                maxWidth: "95vw",
+                                borderRadius: 4,
+                                bgcolor: "transparent",
+                                boxShadow: "none",
+                                overflow: "visible"
+                            }
+                        }
+                    }}
+                >
+                    <DialogContent
+                        sx={{
+                            p: 0,
+                            bgcolor: "transparent",
+                            display: "flex",
+                            justifyContent: "center"
+                        }}
+                    >
+                        {perfilPreview && (
+                            <CardJogador
+                                perfil={perfilPreview.perfil}
+                                codigo={perfilPreview.codigo}
+                                saldo={perfilPreview.saldo}
+                                funcionarios={funcionarios}
+                                equipados={previewEquipados}
+                                preview
+                            />
+                        )}
+                    </DialogContent>
+                </Dialog>
+
+                {/* SNACKBAR */}
+                <Snackbar
+                    open={snack.open}
+                    autoHideDuration={3000}
+                    onClose={() => setSnack({ ...snack, open: false })}
+                >
+                    <Alert severity={snack.severity}>
+                        {snack.message}
+                    </Alert>
+                </Snackbar>
+
+            </Container>
+        )
     );
 }

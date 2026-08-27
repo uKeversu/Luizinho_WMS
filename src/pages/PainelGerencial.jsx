@@ -616,695 +616,279 @@ export default function DistribuicaoConferencia() {
     }
 
     return (
-        <Container
-            maxWidth="100%"
-            sx={{
-                mt: 2,
-                bgcolor: "background.default"
-            }}
-        >
-            <Box
+        !token ? (
+            <LoginFuncionario
+                onLogin={(data) => {
+
+                    localStorage.setItem(
+                        "nfe_token",
+                        data.token
+                    );
+
+                    const user = {
+                        id: data.id,
+                        nome: data.nome,
+                        codigo: data.codigo,
+                        tipo: data.tipo,
+                        pode_autorizar_conferencia: data.pode_autorizar_conferencia,
+                        pode_corrigir_nfe: data.pode_corrigir_nfe,
+                        pode_finalizar_nfe: data.pode_finalizar_nfe,
+                        pode_acessar_alertas: data.pode_acessar_alertas,
+                        pode_acessar_cadastrar_funcionario: data.pode_acessar_cadastrar_funcionario,
+                        pode_acessar_painel_games: data.pode_acessar_painel_games,
+                        pode_acessar_painel_gerencial: data.pode_acessar_painel_gerencial,
+                        pode_acessar_reimprimir_senhas: data.pode_acessar_reimprimir_senhas,
+                        pode_acessar_tarefas: data.pode_acessar_tarefas,
+                    };
+
+                    localStorage.setItem(
+                        "user_info",
+                        JSON.stringify(user)
+                    );
+
+                    setUserInfo(user);
+                    setToken(data.token);
+                }}
+            />
+        ) : (
+            <Container
+                maxWidth="100%"
                 sx={{
-                    display: "flex",
-                    flexDirection: {
-                        xs: "column",
-                        md: "row"
-                    },
-                    justifyContent: "space-between",
-                    alignItems: {
-                        xs: "flex-start",
-                        md: "center"
-                    },
-                    gap: 2,
-                    p: 2,
-                    bgcolor: "var(--azul)",
-                    mb: 4,
-                    borderRadius: "2vh",
-                    zoom: '0.9'
+                    mt: 2,
+                    bgcolor: "background.default"
                 }}
             >
-                <Typography
-                    variant="h4"
+                <Box
                     sx={{
-                        fontFamily: "Consolas",
-                        color: "background.paper"
+                        display: "flex",
+                        flexDirection: {
+                            xs: "column",
+                            md: "row"
+                        },
+                        justifyContent: "space-between",
+                        alignItems: {
+                            xs: "flex-start",
+                            md: "center"
+                        },
+                        gap: 2,
+                        p: 2,
+                        bgcolor: "var(--azul)",
+                        mb: 4,
+                        borderRadius: "2vh",
+                        zoom: '0.9'
                     }}
                 >
-                    <strong>
-                        Distribuição de Conferências
-                    </strong>
-                </Typography>
-
-                <Box>
-                    <Box
+                    <Typography
+                        variant="h4"
                         sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'right'
+                            fontFamily: "Consolas",
+                            color: "background.paper"
                         }}
                     >
+                        <strong>
+                            Distribuição de Conferências
+                        </strong>
+                    </Typography>
 
-                        <PersonIcon
+                    <Box>
+                        <Box
                             sx={{
-                                color: "background.paper",
-                                pr: 1
-                            }}
-                        />
-
-                        <Typography
-                            sx={{
-                                color: "background.paper",
-                                fontSize: '0.9rem'
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'right'
                             }}
                         >
-                            {userInfo?.nome}
-                        </Typography>
 
-                        {token && (
-
-                            <Button
-                                size="small"
-                                onClick={logout}
-                                sx={{
-                                    color: "background.paper"
-                                }}
-                            >
-                                <LogoutIcon />
-                            </Button>
-                        )}
-                    </Box>
-
-                    <Box
-                        sx={{
-                            display: "flex",
-                            justifyContent: "right"
-                        }}
-                    >
-                        <Tooltip title="Gestão de colaboradores">
-                            <Button
-                                onClick={() =>
-                                    navigate("/Tarefas")
-                                }
+                            <PersonIcon
                                 sx={{
                                     color: "background.paper",
-                                    display: 'flex',
-                                    gap: 0.5,
-                                    fontSize: '0.75rem',
-                                    minWidth: 'auto',
-                                    padding: '4px 8px',
-                                    whiteSpace: 'nowrap'
-                                }}
-                            >
-                                TAREFAS
-                                <AssignmentIcon />
-                            </Button>
-                        </Tooltip>
-                        <Tooltip title="Retornar ao dashboard">
-                            <Button
-                                onClick={() =>
-                                    navigate("/")
-                                }
-                                sx={{
-                                    color: "background.paper",
-                                    display: 'flex',
-                                    gap: 0.5,
-                                    fontSize: '0.75rem',
-                                    minWidth: 'auto',
-                                    padding: '4px 8px',
-                                    whiteSpace: 'nowrap'
-                                }}
-                            >
-                                VOLTAR
-                                <ArrowBackIcon />
-                            </Button>
-                        </Tooltip>
-                    </Box>
-
-                </Box>
-            </Box>
-
-            <Grid
-                container
-                spacing={2}
-                mb={2}
-            >
-
-                <Grid item xs={12} md={3}>
-                    <Card sx={{ bgcolor: 'background.card', width: { xs: 'calc(50% - 8px)', md: '140px' }, height: '100%' }}>
-                        <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center' }}>
-                            <Typography
-                                variant="h4"
-                                color="primary"
-                                fontWeight="bold"
-                            >
-                                {todasNotas.length}
-                            </Typography>
-
-                            <Typography variant="caption" color="text.secondary" display="block" noWrap>
-                                Notas Pendentes
-                            </Typography>
-                        </CardContent>
-                    </Card>
-                </Grid>
-
-                <Grid item xs={12} md={3}>
-                    <Card sx={{ bgcolor: 'background.card', width: { xs: 'calc(50% - 8px)', md: '140px' }, height: '100%' }}>
-                        <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center' }}>
-                            <Typography
-                                variant="h4"
-                                color="success.main"
-                                fontWeight="bold"
-                            >
-                                {notasAtribuidas}
-                            </Typography>
-
-                            <Typography variant="caption" color="text.secondary" display="block" noWrap>
-                                Atribuídas
-                            </Typography>
-                        </CardContent>
-                    </Card>
-                </Grid>
-
-                <Grid item xs={12} md={3}>
-                    <Card sx={{ bgcolor: 'background.card', width: { xs: 'calc(50% - 8px)', md: '140px' }, height: '100%' }}>
-                        <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center' }}>
-                            <Typography
-                                variant="h4"
-                                color="warning.main"
-                                fontWeight="bold"
-                            >
-                                {notasSemAtribuicao}
-                            </Typography>
-
-                            <Typography variant="caption" color="text.secondary" display="block" noWrap>
-                                Sem Atribuição
-                            </Typography>
-                        </CardContent>
-                    </Card>
-                </Grid>
-
-                <Grid item xs={12} md={3}>
-                    <Card sx={{ bgcolor: 'background.card', width: { xs: 'calc(50% - 8px)', md: '140px' }, height: '100%' }}>
-                        <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center' }}>
-                            <Typography
-                                variant="h4"
-                                color="secondary"
-                                fontWeight="bold"
-                            >
-                                {conferentesComNotas}
-                            </Typography>
-
-                            <Typography variant="caption" color="text.secondary" display="block" noWrap>
-                                Conferentes Ativos
-                            </Typography>
-                        </CardContent>
-                    </Card>
-                </Grid>
-            </Grid>
-
-            <Card sx={{ mb: 3, bgcolor: "background.card", zoom: '0.8' }}>
-                <CardContent>
-                    <Grid container spacing={2} alignItems="center">
-
-                        {/* Busca */}
-                        <Grid size={{ xs: 12, md: 6 }}>
-                            <TextField
-                                fullWidth
-                                label="Buscar NF, fornecedor ou CNPJ"
-                                value={busca}
-                                onChange={(e) => {
-                                    setBusca(e.target.value);
-                                    setPagina(1);
-                                }}
-                                autoComplete="off"
-                                inputProps={{
-                                    spellCheck: false,
-                                    autoCorrect: "off",
-                                    autoCapitalize: "off",
+                                    pr: 1
                                 }}
                             />
-                        </Grid>
-
-                        {/* Atribuição */}
-                        <Grid size={{ xs: 12, md: 2 }}>
-                            <FormControl fullWidth>
-                                <InputLabel>Atribuição</InputLabel>
-                                <Select
-                                    value={filtroAtribuicao}
-                                    label="Atribuição"
-                                    onChange={(e) =>
-                                        setFiltroAtribuicao(e.target.value)
-                                    }
-                                    MenuProps={{
-                                        PaperProps: {
-                                            sx: {
-                                                bgcolor: "background.default",
-                                                color: "text.primary",
-                                            },
-                                        },
-                                    }}
-                                >
-                                    <MenuItem value="TODAS">Todas</MenuItem>
-                                    <MenuItem value="ATRIBUIDAS">
-                                        Apenas atribuídas
-                                    </MenuItem>
-                                    <MenuItem value="SEM_ATRIBUICAO">
-                                        Sem atribuição
-                                    </MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Grid>
-
-                        {/* Status */}
-                        <Grid size={{ xs: 12, md: 2 }}>
-                            <FormControl fullWidth>
-                                <InputLabel>Status</InputLabel>
-                                <Select
-                                    value={filtroStatus}
-                                    label="Status"
-                                    onChange={(e) =>
-                                        setFiltroStatus(e.target.value)
-                                    }
-                                    MenuProps={{
-                                        PaperProps: {
-                                            sx: {
-                                                bgcolor: "background.default",
-                                                color: "text.primary",
-                                            },
-                                        },
-                                    }}
-                                >
-                                    <MenuItem value="TODOS">Todos</MenuItem>
-                                    <MenuItem value="PENDENTE">
-                                        Pendente
-                                    </MenuItem>
-                                    <MenuItem value="EM_CONFERENCIA">
-                                        Em Conferência
-                                    </MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                        {/* Prioridade */}
-                        <Grid size={{ xs: 12, md: 2 }}>
-                            <FormControl fullWidth>
-                                <InputLabel>Prioridade</InputLabel>
-                                <Select
-                                    value={filtroPrioridade}
-                                    label="Prioridade"
-                                    onChange={(e) =>
-                                        setFiltroPrioridade(e.target.value)
-                                    }
-                                    MenuProps={{
-                                        PaperProps: {
-                                            sx: {
-                                                bgcolor: "background.default",
-                                                color: "text.primary",
-                                            },
-                                        },
-                                    }}
-                                >
-                                    <MenuItem value="TODAS">Todas</MenuItem>
-                                    <MenuItem value="URGENTE">
-                                        Urgente
-                                    </MenuItem>
-                                    <MenuItem value="ALTA">
-                                        Alta
-                                    </MenuItem>
-                                    <MenuItem value="MEDIA">
-                                        Média
-                                    </MenuItem>
-                                    <MenuItem value="BAIXA">
-                                        Baixa
-                                    </MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Grid>
-
-                    </Grid>
-                </CardContent>
-            </Card>
-
-            <Grid container spacing={3}>
-
-                <Grid size={{ xs: 12, md: 8 }}>
-                    <Box
-                        display="flex"
-                        justifyContent="center"
-                        mt={0} mb={3}
-                    >
-                        <Pagination
-                            page={pagina}
-                            count={totalPaginas}
-                            color="primary"
-                            size="small"
-                            onChange={(_, value) =>
-                                setPagina(value)
-                            }
-                            sx={{
-                                "& .MuiPaginationItem-root": {
-                                    color: "text.primary"
-                                }
-                            }}
-                        />
-                    </Box>
-                    <Card
-                        sx={{
-                            bgcolor: "background.card",
-                            mb: 3,
-                            zoom: '0.9'
-                        }}
-                    >
-                        <CardContent>
 
                             <Typography
-                                variant="h6"
-                                gutterBottom
-                            >
-                                Notas Pendentes
-                            </Typography>
-
-                            <Divider sx={{ mb: 2 }} />
-
-                            <Grid container spacing={2}>
-
-                                {notas.map((nota) => {
-
-                                    const diasPendentes =
-                                        calcularDiasPendentes(
-                                            nota.data_emissao
-                                        );
-
-                                    return (
-
-                                        <Grid
-                                            key={nota.id}
-                                            size={{
-                                                xs: 12,
-                                                md: 3,
-                                                xl: 3
-                                            }}
-                                        >
-                                            <Card
-                                                sx={{
-                                                    height: "100%",
-                                                    borderRadius: 3,
-                                                    bgcolor: "background.alerta",
-                                                    border: notasSelecionadas.includes(nota.id)
-                                                        ? "2px solid"
-                                                        : "1px solid",
-                                                    borderColor: notasSelecionadas.includes(nota.id)
-                                                        ? "primary.main"
-                                                        : "divider",
-                                                    transition: "all .2s ease",
-
-                                                    "&:hover": {
-                                                        transform: "translateY(-2px)",
-                                                        boxShadow: 6
-                                                    }
-                                                }}
-                                            >
-                                                <CardContent>
-
-                                                    <Box
-                                                        display="flex"
-                                                        justifyContent="space-between"
-                                                        alignItems="flex-start"
-                                                        mb={1}
-                                                    >
-
-                                                        <Checkbox
-                                                            checked={
-                                                                notasSelecionadas.includes(
-                                                                    nota.id
-                                                                )
-                                                            }
-                                                            onChange={() =>
-                                                                selecionarNota(
-                                                                    nota.id
-                                                                )
-                                                            }
-                                                        />
-
-                                                        <Chip sx={{
-                                                            color: 'primary.branco',
-                                                            bgcolor:
-                                                                nota.status === "PENDENTE"
-                                                                    ? 'primary.parcial'
-                                                                    : nota.status === "EM_CONFERENCIA"
-                                                                        ? 'primary.em_conferencia'
-                                                                        : 'primary.default',
-                                                        }}
-                                                            size="small"
-                                                            label={nota.status}
-                                                        />
-                                                    </Box>
-
-                                                    <Typography
-                                                        variant="h6"
-                                                        fontWeight="bold"
-                                                    >
-                                                        NF {nota.numero}
-                                                    </Typography>
-
-                                                    <Typography
-                                                        variant="caption"
-                                                        color="text.secondary"
-                                                    >
-                                                        Série {nota.serie}
-                                                    </Typography>
-
-                                                    <Typography
-                                                        sx={{
-                                                            mt: 1,
-                                                            minHeight: 48,
-                                                            fontWeight: 500
-                                                        }}
-                                                    >
-                                                        {nota.fornecedor}
-                                                    </Typography>
-
-                                                    <Divider sx={{ my: 1.5 }} />
-
-                                                    <Box
-                                                        display="flex"
-                                                        flexDirection="column"
-                                                        gap={0.5}
-                                                    >
-                                                        <Typography
-                                                            variant="caption"
-                                                            color="text.secondary"
-                                                        >
-                                                            CNPJ: {nota.cnpj_emitente}
-                                                        </Typography>
-
-                                                        <Typography
-                                                            variant="caption"
-                                                            color="text.secondary"
-                                                        >
-                                                            Recebimento: {nota.data_recebimento}
-                                                        </Typography>
-                                                    </Box>
-
-                                                    {nota.observacao && (
-
-                                                        <Typography
-                                                            variant="caption"
-                                                            display="block"
-                                                            color="warning.main"
-                                                            sx={{
-                                                                mt: 1,
-                                                                minHeight: 35
-                                                            }}
-                                                        >
-                                                            {nota.observacao}
-                                                        </Typography>
-
-                                                    )}
-
-                                                    <Box
-                                                        mt={2}
-                                                        display="flex"
-                                                        gap={1}
-                                                        flexWrap="wrap"
-                                                    >
-                                                        <Chip sx={{ color: 'primary.branco', fontSize: '0.65rem' }}
-                                                            size="small"
-                                                            label={(nota.prioridade ||
-                                                                "SEM PRIORIDADE").toUpperCase()
-                                                            }
-                                                            color={prioridadeColor(
-                                                                nota.prioridade
-                                                            )}
-                                                        />
-                                                        <Chip sx={{ color: 'primary.branco', fontSize: '0.65rem' }}
-                                                            size="small"
-                                                            variant="contained"
-                                                            label={`${diasPendentes} dia(s)`}
-                                                            color={
-                                                                diasPendentes > 7
-                                                                    ? "error"
-                                                                    : diasPendentes > 3
-                                                                        ? "warning"
-                                                                        : "success"
-                                                            }
-                                                        />
-                                                        <Button
-                                                            fullWidth
-                                                            size="small"
-                                                            variant="contained"
-                                                            sx={{ mt: 2 }}
-                                                            onClick={() => visualizarItens(nota)}
-                                                        >
-                                                            Ver Itens
-                                                        </Button>
-                                                    </Box>
-
-                                                    {nota.usuarios_atribuidos?.length > 0 && (
-                                                        <>
-                                                            <Divider sx={{ my: 1.5 }} />
-
-                                                            <Typography
-                                                                variant="caption"
-                                                                color="text.secondary"
-                                                            >
-                                                                Conferentes
-                                                            </Typography>
-
-                                                            <Box
-                                                                mt={1}
-                                                                display="flex"
-                                                                gap={0.5}
-                                                                flexWrap="wrap"
-                                                            >
-                                                                {nota.usuarios_atribuidos.map(
-                                                                    codigo => (
-                                                                        <Chip
-                                                                            key={codigo}
-                                                                            size="small"
-                                                                            label={
-                                                                                funcionariosMap[codigo] ||
-                                                                                codigo
-                                                                            }
-                                                                        />
-                                                                    )
-                                                                )}
-                                                            </Box>
-                                                        </>
-                                                    )}
-
-                                                </CardContent>
-                                            </Card>
-                                        </Grid>
-
-                                    );
-                                })}
-                            </Grid>
-                        </CardContent>
-                    </Card>
-                    <Box
-                        display="flex"
-                        justifyContent="center"
-                        mt={3} mb={3}
-                    >
-                        <Pagination
-                            page={pagina}
-                            count={totalPaginas}
-                            color="primary"
-                            size="small"
-                            onChange={(_, value) =>
-                                setPagina(value)
-                            }
-                            sx={{
-                                "& .MuiPaginationItem-root": {
-                                    color: "text.primary"
-                                }
-                            }}
-                        />
-                    </Box>
-                </Grid>
-
-                <Grid size={{ xs: 12, md: 4 }}>
-                    <Card sx={{ bgcolor: 'background.card', zoom: '0.8' }}>
-                        <CardContent>
-
-                            <Typography
-                                variant="h6"
-                                gutterBottom
-                            >
-                                Atribuição
-                            </Typography>
-
-                            <Divider sx={{ mb: 2 }} />
-
-                            <Typography mb={1}>
-                                Conferentes
-                            </Typography>
-
-                            <TextField
-                                fullWidth
-                                size="small"
-                                placeholder="Buscar conferente..."
-                                value={buscaFuncionario}
-                                onChange={(e) =>
-                                    setBuscaFuncionario(
-                                        e.target.value
-                                    )
-                                }
-                                sx={{ mb: 2 }}
-                                autoComplete="off"
-                                inputProps={{
-                                    spellCheck: false,
-                                    autoCorrect: "off",
-                                    autoCapitalize: "off",
-                                }} />
-
-                            <FormGroup
                                 sx={{
-                                    maxHeight: 350,
-                                    overflow: "auto"
+                                    color: "background.paper",
+                                    fontSize: '0.9rem'
                                 }}
                             >
+                                {userInfo?.nome}
+                            </Typography>
 
-                                {funcionariosFiltrados.map(
-                                    funcionario => (
-                                        <FormControlLabel
-                                            key={
-                                                funcionario.codigo
-                                            }
-                                            control={
-                                                <Checkbox
-                                                    checked={usuariosSelecionados.includes(
-                                                        funcionario.codigo
-                                                    )}
-                                                    onChange={() =>
-                                                        selecionarUsuario(
-                                                            funcionario.codigo
-                                                        )
-                                                    }
-                                                />
-                                            }
-                                            label={`${funcionario.nome} (${funcionario.codigo})`}
-                                        />
-                                    )
-                                )}
+                            {token && (
 
-                            </FormGroup>
+                                <Button
+                                    size="small"
+                                    onClick={logout}
+                                    sx={{
+                                        color: "background.paper"
+                                    }}
+                                >
+                                    <LogoutIcon />
+                                </Button>
+                            )}
+                        </Box>
 
-                            <Box mt={3}>
+                        <Box
+                            sx={{
+                                display: "flex",
+                                justifyContent: "right"
+                            }}
+                        >
+                            <Tooltip title="Gestão de colaboradores">
+                                <Button
+                                    onClick={() =>
+                                        navigate("/Tarefas")
+                                    }
+                                    sx={{
+                                        color: "background.paper",
+                                        display: 'flex',
+                                        gap: 0.5,
+                                        fontSize: '0.75rem',
+                                        minWidth: 'auto',
+                                        padding: '4px 8px',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    TAREFAS
+                                    <AssignmentIcon />
+                                </Button>
+                            </Tooltip>
+                            <Tooltip title="Retornar ao dashboard">
+                                <Button
+                                    onClick={() =>
+                                        navigate("/")
+                                    }
+                                    sx={{
+                                        color: "background.paper",
+                                        display: 'flex',
+                                        gap: 0.5,
+                                        fontSize: '0.75rem',
+                                        minWidth: 'auto',
+                                        padding: '4px 8px',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    VOLTAR
+                                    <ArrowBackIcon />
+                                </Button>
+                            </Tooltip>
+                        </Box>
 
+                    </Box>
+                </Box>
+
+                <Grid
+                    container
+                    spacing={2}
+                    mb={2}
+                >
+
+                    <Grid item xs={12} md={3}>
+                        <Card sx={{ bgcolor: 'background.card', width: { xs: 'calc(50% - 8px)', md: '140px' }, height: '100%' }}>
+                            <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center' }}>
+                                <Typography
+                                    variant="h4"
+                                    color="primary"
+                                    fontWeight="bold"
+                                >
+                                    {todasNotas.length}
+                                </Typography>
+
+                                <Typography variant="caption" color="text.secondary" display="block" noWrap>
+                                    Notas Pendentes
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+
+                    <Grid item xs={12} md={3}>
+                        <Card sx={{ bgcolor: 'background.card', width: { xs: 'calc(50% - 8px)', md: '140px' }, height: '100%' }}>
+                            <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center' }}>
+                                <Typography
+                                    variant="h4"
+                                    color="success.main"
+                                    fontWeight="bold"
+                                >
+                                    {notasAtribuidas}
+                                </Typography>
+
+                                <Typography variant="caption" color="text.secondary" display="block" noWrap>
+                                    Atribuídas
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+
+                    <Grid item xs={12} md={3}>
+                        <Card sx={{ bgcolor: 'background.card', width: { xs: 'calc(50% - 8px)', md: '140px' }, height: '100%' }}>
+                            <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center' }}>
+                                <Typography
+                                    variant="h4"
+                                    color="warning.main"
+                                    fontWeight="bold"
+                                >
+                                    {notasSemAtribuicao}
+                                </Typography>
+
+                                <Typography variant="caption" color="text.secondary" display="block" noWrap>
+                                    Sem Atribuição
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+
+                    <Grid item xs={12} md={3}>
+                        <Card sx={{ bgcolor: 'background.card', width: { xs: 'calc(50% - 8px)', md: '140px' }, height: '100%' }}>
+                            <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center' }}>
+                                <Typography
+                                    variant="h4"
+                                    color="secondary"
+                                    fontWeight="bold"
+                                >
+                                    {conferentesComNotas}
+                                </Typography>
+
+                                <Typography variant="caption" color="text.secondary" display="block" noWrap>
+                                    Conferentes Ativos
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+                </Grid>
+
+                <Card sx={{ mb: 3, bgcolor: "background.card", zoom: '0.8' }}>
+                    <CardContent>
+                        <Grid container spacing={2} alignItems="center">
+
+                            {/* Busca */}
+                            <Grid size={{ xs: 12, md: 6 }}>
+                                <TextField
+                                    fullWidth
+                                    label="Buscar NF, fornecedor ou CNPJ"
+                                    value={busca}
+                                    onChange={(e) => {
+                                        setBusca(e.target.value);
+                                        setPagina(1);
+                                    }}
+                                    autoComplete="off"
+                                    inputProps={{
+                                        spellCheck: false,
+                                        autoCorrect: "off",
+                                        autoCapitalize: "off",
+                                    }}
+                                />
+                            </Grid>
+
+                            {/* Atribuição */}
+                            <Grid size={{ xs: 12, md: 2 }}>
                                 <FormControl fullWidth>
-
-                                    <InputLabel>
-                                        Prioridade
-                                    </InputLabel>
-
+                                    <InputLabel>Atribuição</InputLabel>
                                     <Select
-                                        value={prioridade}
-                                        label="Prioridade"
+                                        value={filtroAtribuicao}
+                                        label="Atribuição"
                                         onChange={(e) =>
-                                            setPrioridade(
-                                                e.target.value
-                                            )
+                                            setFiltroAtribuicao(e.target.value)
                                         }
                                         MenuProps={{
                                             PaperProps: {
@@ -1315,68 +899,632 @@ export default function DistribuicaoConferencia() {
                                             },
                                         }}
                                     >
-                                        <MenuItem value="URGENTE">
-                                            URGENTE
+                                        <MenuItem value="TODAS">Todas</MenuItem>
+                                        <MenuItem value="ATRIBUIDAS">
+                                            Apenas atribuídas
                                         </MenuItem>
-                                        <MenuItem value="ALTA">
-                                            ALTA
-                                        </MenuItem>
-                                        <MenuItem value="MEDIA">
-                                            MÉDIA
-                                        </MenuItem>
-                                        <MenuItem value="BAIXA">
-                                            BAIXA
+                                        <MenuItem value="SEM_ATRIBUICAO">
+                                            Sem atribuição
                                         </MenuItem>
                                     </Select>
                                 </FormControl>
-                            </Box>
+                            </Grid>
 
-                            <Button
-                                fullWidth
-                                variant="contained"
-                                sx={{ mt: 3 }}
-                                onClick={atribuirNotas}
-                            >
-                                ATRIBUIR NOTAS
-                            </Button>
-
-                        </CardContent>
-                    </Card>
-                    <Card sx={{ mt: 3, bgcolor: 'background.card', zoom: '0.9' }}>
-                        <CardContent>
-
-                            <Typography
-                                variant="h6"
-                                gutterBottom
-                            >
-                                Gestão de Atribuições
-                            </Typography>
-
-                            <Divider sx={{ mb: 2 }} />
-
-                            {atribuicoesPorFuncionario.length === 0 && (
-
-                                <Typography
-                                    color="text.secondary"
-                                >
-                                    Nenhuma atribuição encontrada
-                                </Typography>
-
-                            )}
-
-                            {atribuicoesPorFuncionario.map(
-                                funcionario => (
-
-                                    <Box
-                                        key={funcionario.codigo}
-                                        sx={{
-                                            border:
-                                                "1px solid #ddd",
-                                            borderRadius: 2,
-                                            p: 2,
-                                            mb: 2
+                            {/* Status */}
+                            <Grid size={{ xs: 12, md: 2 }}>
+                                <FormControl fullWidth>
+                                    <InputLabel>Status</InputLabel>
+                                    <Select
+                                        value={filtroStatus}
+                                        label="Status"
+                                        onChange={(e) =>
+                                            setFiltroStatus(e.target.value)
+                                        }
+                                        MenuProps={{
+                                            PaperProps: {
+                                                sx: {
+                                                    bgcolor: "background.default",
+                                                    color: "text.primary",
+                                                },
+                                            },
                                         }}
                                     >
+                                        <MenuItem value="TODOS">Todos</MenuItem>
+                                        <MenuItem value="PENDENTE">
+                                            Pendente
+                                        </MenuItem>
+                                        <MenuItem value="EM_CONFERENCIA">
+                                            Em Conferência
+                                        </MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                            {/* Prioridade */}
+                            <Grid size={{ xs: 12, md: 2 }}>
+                                <FormControl fullWidth>
+                                    <InputLabel>Prioridade</InputLabel>
+                                    <Select
+                                        value={filtroPrioridade}
+                                        label="Prioridade"
+                                        onChange={(e) =>
+                                            setFiltroPrioridade(e.target.value)
+                                        }
+                                        MenuProps={{
+                                            PaperProps: {
+                                                sx: {
+                                                    bgcolor: "background.default",
+                                                    color: "text.primary",
+                                                },
+                                            },
+                                        }}
+                                    >
+                                        <MenuItem value="TODAS">Todas</MenuItem>
+                                        <MenuItem value="URGENTE">
+                                            Urgente
+                                        </MenuItem>
+                                        <MenuItem value="ALTA">
+                                            Alta
+                                        </MenuItem>
+                                        <MenuItem value="MEDIA">
+                                            Média
+                                        </MenuItem>
+                                        <MenuItem value="BAIXA">
+                                            Baixa
+                                        </MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+
+                        </Grid>
+                    </CardContent>
+                </Card>
+
+                <Grid container spacing={3}>
+
+                    <Grid size={{ xs: 12, md: 8 }}>
+                        <Box
+                            display="flex"
+                            justifyContent="center"
+                            mt={0} mb={3}
+                        >
+                            <Pagination
+                                page={pagina}
+                                count={totalPaginas}
+                                color="primary"
+                                size="small"
+                                onChange={(_, value) =>
+                                    setPagina(value)
+                                }
+                                sx={{
+                                    "& .MuiPaginationItem-root": {
+                                        color: "text.primary"
+                                    }
+                                }}
+                            />
+                        </Box>
+                        <Card
+                            sx={{
+                                bgcolor: "background.card",
+                                mb: 3,
+                                zoom: '0.9'
+                            }}
+                        >
+                            <CardContent>
+
+                                <Typography
+                                    variant="h6"
+                                    gutterBottom
+                                >
+                                    Notas Pendentes
+                                </Typography>
+
+                                <Divider sx={{ mb: 2 }} />
+
+                                <Grid container spacing={2}>
+
+                                    {notas.map((nota) => {
+
+                                        const diasPendentes =
+                                            calcularDiasPendentes(
+                                                nota.data_emissao
+                                            );
+
+                                        return (
+
+                                            <Grid
+                                                key={nota.id}
+                                                size={{
+                                                    xs: 12,
+                                                    md: 3,
+                                                    xl: 3
+                                                }}
+                                            >
+                                                <Card
+                                                    sx={{
+                                                        height: "100%",
+                                                        borderRadius: 3,
+                                                        bgcolor: "background.alerta",
+                                                        border: notasSelecionadas.includes(nota.id)
+                                                            ? "2px solid"
+                                                            : "1px solid",
+                                                        borderColor: notasSelecionadas.includes(nota.id)
+                                                            ? "primary.main"
+                                                            : "divider",
+                                                        transition: "all .2s ease",
+
+                                                        "&:hover": {
+                                                            transform: "translateY(-2px)",
+                                                            boxShadow: 6
+                                                        }
+                                                    }}
+                                                >
+                                                    <CardContent>
+
+                                                        <Box
+                                                            display="flex"
+                                                            justifyContent="space-between"
+                                                            alignItems="flex-start"
+                                                            mb={1}
+                                                        >
+
+                                                            <Checkbox
+                                                                checked={
+                                                                    notasSelecionadas.includes(
+                                                                        nota.id
+                                                                    )
+                                                                }
+                                                                onChange={() =>
+                                                                    selecionarNota(
+                                                                        nota.id
+                                                                    )
+                                                                }
+                                                            />
+
+                                                            <Chip sx={{
+                                                                color: 'primary.branco',
+                                                                bgcolor:
+                                                                    nota.status === "PENDENTE"
+                                                                        ? 'primary.parcial'
+                                                                        : nota.status === "EM_CONFERENCIA"
+                                                                            ? 'primary.em_conferencia'
+                                                                            : 'primary.default',
+                                                            }}
+                                                                size="small"
+                                                                label={nota.status}
+                                                            />
+                                                        </Box>
+
+                                                        <Typography
+                                                            variant="h6"
+                                                            fontWeight="bold"
+                                                        >
+                                                            NF {nota.numero}
+                                                        </Typography>
+
+                                                        <Typography
+                                                            variant="caption"
+                                                            color="text.secondary"
+                                                        >
+                                                            Série {nota.serie}
+                                                        </Typography>
+
+                                                        <Typography
+                                                            sx={{
+                                                                mt: 1,
+                                                                minHeight: 48,
+                                                                fontWeight: 500
+                                                            }}
+                                                        >
+                                                            {nota.fornecedor}
+                                                        </Typography>
+
+                                                        <Divider sx={{ my: 1.5 }} />
+
+                                                        <Box
+                                                            display="flex"
+                                                            flexDirection="column"
+                                                            gap={0.5}
+                                                        >
+                                                            <Typography
+                                                                variant="caption"
+                                                                color="text.secondary"
+                                                            >
+                                                                CNPJ: {nota.cnpj_emitente}
+                                                            </Typography>
+
+                                                            <Typography
+                                                                variant="caption"
+                                                                color="text.secondary"
+                                                            >
+                                                                Recebimento: {nota.data_recebimento}
+                                                            </Typography>
+                                                        </Box>
+
+                                                        {nota.observacao && (
+
+                                                            <Typography
+                                                                variant="caption"
+                                                                display="block"
+                                                                color="warning.main"
+                                                                sx={{
+                                                                    mt: 1,
+                                                                    minHeight: 35
+                                                                }}
+                                                            >
+                                                                {nota.observacao}
+                                                            </Typography>
+
+                                                        )}
+
+                                                        <Box
+                                                            mt={2}
+                                                            display="flex"
+                                                            gap={1}
+                                                            flexWrap="wrap"
+                                                        >
+                                                            <Chip sx={{ color: 'primary.branco', fontSize: '0.65rem' }}
+                                                                size="small"
+                                                                label={(nota.prioridade ||
+                                                                    "SEM PRIORIDADE").toUpperCase()
+                                                                }
+                                                                color={prioridadeColor(
+                                                                    nota.prioridade
+                                                                )}
+                                                            />
+                                                            <Chip sx={{ color: 'primary.branco', fontSize: '0.65rem' }}
+                                                                size="small"
+                                                                variant="contained"
+                                                                label={`${diasPendentes} dia(s)`}
+                                                                color={
+                                                                    diasPendentes > 7
+                                                                        ? "error"
+                                                                        : diasPendentes > 3
+                                                                            ? "warning"
+                                                                            : "success"
+                                                                }
+                                                            />
+                                                            <Button
+                                                                fullWidth
+                                                                size="small"
+                                                                variant="contained"
+                                                                sx={{ mt: 2 }}
+                                                                onClick={() => visualizarItens(nota)}
+                                                            >
+                                                                Ver Itens
+                                                            </Button>
+                                                        </Box>
+
+                                                        {nota.usuarios_atribuidos?.length > 0 && (
+                                                            <>
+                                                                <Divider sx={{ my: 1.5 }} />
+
+                                                                <Typography
+                                                                    variant="caption"
+                                                                    color="text.secondary"
+                                                                >
+                                                                    Conferentes
+                                                                </Typography>
+
+                                                                <Box
+                                                                    mt={1}
+                                                                    display="flex"
+                                                                    gap={0.5}
+                                                                    flexWrap="wrap"
+                                                                >
+                                                                    {nota.usuarios_atribuidos.map(
+                                                                        codigo => (
+                                                                            <Chip
+                                                                                key={codigo}
+                                                                                size="small"
+                                                                                label={
+                                                                                    funcionariosMap[codigo] ||
+                                                                                    codigo
+                                                                                }
+                                                                            />
+                                                                        )
+                                                                    )}
+                                                                </Box>
+                                                            </>
+                                                        )}
+
+                                                    </CardContent>
+                                                </Card>
+                                            </Grid>
+
+                                        );
+                                    })}
+                                </Grid>
+                            </CardContent>
+                        </Card>
+                        <Box
+                            display="flex"
+                            justifyContent="center"
+                            mt={3} mb={3}
+                        >
+                            <Pagination
+                                page={pagina}
+                                count={totalPaginas}
+                                color="primary"
+                                size="small"
+                                onChange={(_, value) =>
+                                    setPagina(value)
+                                }
+                                sx={{
+                                    "& .MuiPaginationItem-root": {
+                                        color: "text.primary"
+                                    }
+                                }}
+                            />
+                        </Box>
+                    </Grid>
+
+                    <Grid size={{ xs: 12, md: 4 }}>
+                        <Card sx={{ bgcolor: 'background.card', zoom: '0.8' }}>
+                            <CardContent>
+
+                                <Typography
+                                    variant="h6"
+                                    gutterBottom
+                                >
+                                    Atribuição
+                                </Typography>
+
+                                <Divider sx={{ mb: 2 }} />
+
+                                <Typography mb={1}>
+                                    Conferentes
+                                </Typography>
+
+                                <TextField
+                                    fullWidth
+                                    size="small"
+                                    placeholder="Buscar conferente..."
+                                    value={buscaFuncionario}
+                                    onChange={(e) =>
+                                        setBuscaFuncionario(
+                                            e.target.value
+                                        )
+                                    }
+                                    sx={{ mb: 2 }}
+                                    autoComplete="off"
+                                    inputProps={{
+                                        spellCheck: false,
+                                        autoCorrect: "off",
+                                        autoCapitalize: "off",
+                                    }} />
+
+                                <FormGroup
+                                    sx={{
+                                        maxHeight: 350,
+                                        overflow: "auto"
+                                    }}
+                                >
+
+                                    {funcionariosFiltrados.map(
+                                        funcionario => (
+                                            <FormControlLabel
+                                                key={
+                                                    funcionario.codigo
+                                                }
+                                                control={
+                                                    <Checkbox
+                                                        checked={usuariosSelecionados.includes(
+                                                            funcionario.codigo
+                                                        )}
+                                                        onChange={() =>
+                                                            selecionarUsuario(
+                                                                funcionario.codigo
+                                                            )
+                                                        }
+                                                    />
+                                                }
+                                                label={`${funcionario.nome} (${funcionario.codigo})`}
+                                            />
+                                        )
+                                    )}
+
+                                </FormGroup>
+
+                                <Box mt={3}>
+
+                                    <FormControl fullWidth>
+
+                                        <InputLabel>
+                                            Prioridade
+                                        </InputLabel>
+
+                                        <Select
+                                            value={prioridade}
+                                            label="Prioridade"
+                                            onChange={(e) =>
+                                                setPrioridade(
+                                                    e.target.value
+                                                )
+                                            }
+                                            MenuProps={{
+                                                PaperProps: {
+                                                    sx: {
+                                                        bgcolor: "background.default",
+                                                        color: "text.primary",
+                                                    },
+                                                },
+                                            }}
+                                        >
+                                            <MenuItem value="URGENTE">
+                                                URGENTE
+                                            </MenuItem>
+                                            <MenuItem value="ALTA">
+                                                ALTA
+                                            </MenuItem>
+                                            <MenuItem value="MEDIA">
+                                                MÉDIA
+                                            </MenuItem>
+                                            <MenuItem value="BAIXA">
+                                                BAIXA
+                                            </MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                </Box>
+
+                                <Button
+                                    fullWidth
+                                    variant="contained"
+                                    sx={{ mt: 3 }}
+                                    onClick={atribuirNotas}
+                                >
+                                    ATRIBUIR NOTAS
+                                </Button>
+
+                            </CardContent>
+                        </Card>
+                        <Card sx={{ mt: 3, bgcolor: 'background.card', zoom: '0.9' }}>
+                            <CardContent>
+
+                                <Typography
+                                    variant="h6"
+                                    gutterBottom
+                                >
+                                    Gestão de Atribuições
+                                </Typography>
+
+                                <Divider sx={{ mb: 2 }} />
+
+                                {atribuicoesPorFuncionario.length === 0 && (
+
+                                    <Typography
+                                        color="text.secondary"
+                                    >
+                                        Nenhuma atribuição encontrada
+                                    </Typography>
+
+                                )}
+
+                                {atribuicoesPorFuncionario.map(
+                                    funcionario => (
+
+                                        <Box
+                                            key={funcionario.codigo}
+                                            sx={{
+                                                border:
+                                                    "1px solid #ddd",
+                                                borderRadius: 2,
+                                                p: 2,
+                                                mb: 2
+                                            }}
+                                        >
+
+                                            <Box
+                                                display="flex"
+                                                justifyContent="space-between"
+                                                alignItems="center"
+                                            >
+
+                                                <Box>
+
+                                                    <Typography
+                                                        fontWeight="bold"
+                                                    >
+                                                        {funcionario.nome}
+                                                    </Typography>
+
+                                                    <Typography
+                                                        variant="body2"
+                                                        color="text.secondary"
+                                                    >
+                                                        Código:
+                                                        {" "}
+                                                        {funcionario.codigo}
+                                                    </Typography>
+
+                                                </Box>
+
+                                                <Box
+                                                    display="flex"
+                                                    gap={2}
+                                                    alignItems="center"
+                                                >
+
+                                                    <Chip
+                                                        color="primary"
+                                                        label={`${funcionario.notas.length} notas`}
+                                                    />
+
+                                                    <Button
+                                                        variant="outlined"
+                                                        onClick={() => {
+
+                                                            setFuncionarioSelecionado(
+                                                                funcionario
+                                                            );
+
+                                                            setDialogFuncionario(
+                                                                true
+                                                            );
+
+                                                        }}
+                                                    >
+                                                        Ver Notas
+                                                    </Button>
+
+                                                </Box>
+
+                                            </Box>
+
+                                        </Box>
+
+                                    )
+                                )}
+
+                            </CardContent>
+                        </Card>
+                    </Grid>
+                </Grid>
+
+                <Dialog
+                    open={dialogFuncionario}
+                    onClose={() =>
+                        setDialogFuncionario(false)
+                    }
+                    maxWidth="md"
+                    fullWidth
+                    slotProps={{
+                        paper: {
+                            sx: {
+                                bgcolor: "background.card",
+                                color: "text.primary",
+                            }
+                        }
+                    }}
+                    sx={{ zoom: '0.9' }}
+                >
+
+                    <DialogTitle>
+
+                        Notas atribuídas
+
+                        <Typography
+                            variant="body2"
+                            color="text.secondary"
+                        >
+                            {funcionarioSelecionado?.nome}
+                        </Typography>
+
+                    </DialogTitle>
+
+                    <DialogContent>
+
+                        {funcionarioSelecionado?.notas?.map(
+                            nota => (
+
+                                <Card
+                                    key={nota.id}
+                                    sx={{
+                                        mb: 2,
+                                        bgcolor: 'background.alerta'
+                                    }}
+                                >
+
+                                    <CardContent>
 
                                         <Box
                                             display="flex"
@@ -1389,400 +1537,288 @@ export default function DistribuicaoConferencia() {
                                                 <Typography
                                                     fontWeight="bold"
                                                 >
-                                                    {funcionario.nome}
+                                                    NF {nota.numero}
                                                 </Typography>
 
                                                 <Typography
                                                     variant="body2"
-                                                    color="text.secondary"
                                                 >
-                                                    Código:
-                                                    {" "}
-                                                    {funcionario.codigo}
+                                                    {
+                                                        nota.fornecedor
+                                                    }
                                                 </Typography>
 
                                             </Box>
 
                                             <Box
                                                 display="flex"
-                                                gap={2}
-                                                alignItems="center"
+                                                gap={1}
                                             >
 
                                                 <Chip
-                                                    color="primary"
-                                                    label={`${funcionario.notas.length} notas`}
+                                                    label={
+                                                        nota.prioridade ||
+                                                        "SEM PRIORIDADE"
+                                                    }
+                                                    color={prioridadeColor(
+                                                        nota.prioridade
+                                                    )}
+                                                    sx={{ color: 'white' }}
                                                 />
 
                                                 <Button
+                                                    color="error"
                                                     variant="outlined"
                                                     onClick={() => {
-
-                                                        setFuncionarioSelecionado(
-                                                            funcionario
-                                                        );
-
-                                                        setDialogFuncionario(
-                                                            true
-                                                        );
-
+                                                        removerAtribuicao(nota.id)
+                                                        setDialogFuncionario(false);
                                                     }}
                                                 >
-                                                    Ver Notas
+                                                    Remover
                                                 </Button>
 
                                             </Box>
 
                                         </Box>
 
-                                    </Box>
+                                    </CardContent>
 
-                                )
-                            )}
+                                </Card>
 
-                        </CardContent>
-                    </Card>
-                </Grid>
-            </Grid>
+                            )
+                        )}
 
-            <Dialog
-                open={dialogFuncionario}
-                onClose={() =>
-                    setDialogFuncionario(false)
-                }
-                maxWidth="md"
-                fullWidth
-                slotProps={{
-                    paper: {
-                        sx: {
-                            bgcolor: "background.card",
-                            color: "text.primary",
-                        }
-                    }
-                }}
-                sx={{ zoom: '0.9' }}
-            >
+                    </DialogContent>
 
-                <DialogTitle>
+                    <DialogActions>
 
-                    Notas atribuídas
+                        <Button
+                            onClick={() =>
+                                setDialogFuncionario(false)
+                            }
+                        >
+                            Fechar
+                        </Button>
 
-                    <Typography
-                        variant="body2"
-                        color="text.secondary"
-                    >
-                        {funcionarioSelecionado?.nome}
-                    </Typography>
+                    </DialogActions>
 
-                </DialogTitle>
+                </Dialog>
 
-                <DialogContent>
-
-                    {funcionarioSelecionado?.notas?.map(
-                        nota => (
-
-                            <Card
-                                key={nota.id}
-                                sx={{
-                                    mb: 2,
-                                    bgcolor: 'background.alerta'
-                                }}
-                            >
-
-                                <CardContent>
-
-                                    <Box
-                                        display="flex"
-                                        justifyContent="space-between"
-                                        alignItems="center"
-                                    >
-
-                                        <Box>
-
-                                            <Typography
-                                                fontWeight="bold"
-                                            >
-                                                NF {nota.numero}
-                                            </Typography>
-
-                                            <Typography
-                                                variant="body2"
-                                            >
-                                                {
-                                                    nota.fornecedor
-                                                }
-                                            </Typography>
-
-                                        </Box>
-
-                                        <Box
-                                            display="flex"
-                                            gap={1}
-                                        >
-
-                                            <Chip
-                                                label={
-                                                    nota.prioridade ||
-                                                    "SEM PRIORIDADE"
-                                                }
-                                                color={prioridadeColor(
-                                                    nota.prioridade
-                                                )}
-                                                sx={{ color: 'white' }}
-                                            />
-
-                                            <Button
-                                                color="error"
-                                                variant="outlined"
-                                                onClick={() => {
-                                                    removerAtribuicao(nota.id)
-                                                    setDialogFuncionario(false);
-                                                }}
-                                            >
-                                                Remover
-                                            </Button>
-
-                                        </Box>
-
-                                    </Box>
-
-                                </CardContent>
-
-                            </Card>
-
-                        )
-                    )}
-
-                </DialogContent>
-
-                <DialogActions>
-
-                    <Button
-                        onClick={() =>
-                            setDialogFuncionario(false)
-                        }
-                    >
-                        Fechar
-                    </Button>
-
-                </DialogActions>
-
-            </Dialog>
-
-            <Dialog open={openModal} onClose={() => setOpenModal(false)} fullWidth maxWidth="md"
-                slotProps={{
-                    paper: {
-                        sx: {
-                            bgcolor: "background.card",
-                            color: "text.primary",
-                        }
-                    }
-                }}
-                sx={{ zoom: '0.9' }}>
-                <DialogTitle>
-                    Itens da NF {notaSelecionada?.numero}
-                </DialogTitle>
-                <TextField
-                    label="Buscar por item"
-                    variant="outlined"
-                    size="small"
-                    sx={{
-                        mb: 2, display: 'flex', margin: 'auto', width: '90%', bgcolor: 'inputBg',
-                        '& .MuiOutlinedInput-root': {
-                            '&:hover fieldset': {
-                                borderColor: 'primary.main',
-                            },
-                            '&.Mui-focused fieldset': {
-                                borderColor: 'primary.main',
+                <Dialog open={openModal} onClose={() => setOpenModal(false)} fullWidth maxWidth="md"
+                    slotProps={{
+                        paper: {
+                            sx: {
+                                bgcolor: "background.card",
+                                color: "text.primary",
                             }
                         }
                     }}
-                    autoComplete="off"
-                    inputProps={{
-                        spellCheck: false,
-                        autoCorrect: "off",
-                        autoCapitalize: "off",
-                    }}
-                    value={buscaItem}
-                    onChange={(e) => setBuscaItem(e.target.value)}
-                />
-                <DialogContent sx={{ mt: 2 }} dividers>
+                    sx={{ zoom: '0.9' }}>
+                    <DialogTitle>
+                        Itens da NF {notaSelecionada?.numero}
+                    </DialogTitle>
+                    <TextField
+                        label="Buscar por item"
+                        variant="outlined"
+                        size="small"
+                        sx={{
+                            mb: 2, display: 'flex', margin: 'auto', width: '90%', bgcolor: 'inputBg',
+                            '& .MuiOutlinedInput-root': {
+                                '&:hover fieldset': {
+                                    borderColor: 'primary.main',
+                                },
+                                '&.Mui-focused fieldset': {
+                                    borderColor: 'primary.main',
+                                }
+                            }
+                        }}
+                        autoComplete="off"
+                        inputProps={{
+                            spellCheck: false,
+                            autoCorrect: "off",
+                            autoCapitalize: "off",
+                        }}
+                        value={buscaItem}
+                        onChange={(e) => setBuscaItem(e.target.value)}
+                    />
+                    <DialogContent sx={{ mt: 2 }} dividers>
 
-                    {loadingItens ? (
+                        {loadingItens ? (
 
-                        <Box
-                            sx={{
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                minHeight: "250px",
-                                flexDirection: 'column'
-                            }}
-                        >
-                            <CircularProgress />
-                            <Typography
-                                mt={2}
+                            <Box
                                 sx={{
-                                    color: 'text.secondary'
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    minHeight: "250px",
+                                    flexDirection: 'column'
                                 }}
                             >
-                                Carregando itens...
-                            </Typography>
-                        </Box>
-
-                    ) : itensNota.length === 0 ? (
-
-                        <Typography>Nenhum item encontrado</Typography>
-
-                    ) : (
-
-                        itensFiltrados.map((item, index) => {
-
-                            return (
-
-                                <Card
-                                    key={index}
+                                <CircularProgress />
+                                <Typography
+                                    mt={2}
                                     sx={{
-                                        mt: 1,
-                                        mb: 1,
-                                        p: 1.5,
-                                        borderRadius: '1vh',
-                                        boxShadow: '0vh 0.1vh 0.5vh background.sombra',
-                                        bgcolor: 'background.default',
-                                        fontSize: '0.85rem'
+                                        color: 'text.secondary'
                                     }}
                                 >
+                                    Carregando itens...
+                                </Typography>
+                            </Box>
 
-                                    {/* Linha 1 */}
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <Typography>
-                                            <strong>{item.basico || item.cod_produto || "-"}</strong>
-                                        </Typography>
+                        ) : itensNota.length === 0 ? (
 
-                                        <Typography sx={{
-                                            color:
-                                                item.status_item === "PENDENTE" ? "primary.pendentes" :
-                                                    item.status_item === "FORNECEDOR_DIRETO" ? "primary.pendentes" :
-                                                        item.status_item === "ITEM_CONFERIDO" ? "primary.conferidos" :
-                                                            item.status_item === "CONFERIDO_PARCIAL" ? "primary.parcial" :
-                                                                item.status_item === "ITEM_GUARDADO" ? "primary.guardado" :
-                                                                    item.status_item === "ITEM_VENDIDO" ? "primary.vendido" :
-                                                                        item.status_item === "ITEM_DEVOLVIDO" ? "primary.devolvido" :
-                                                                            item.status_item === "GARANTIA" ? "primary.garantia" :
-                                                                                item.status_item === "EM_TRANSITO" ? "primary.observacao" :
-                                                                                    "var(--em-transito)"
-                                        }}>
-                                            <strong>Status:</strong> {item.status_item || "SEM STATUS"}
-                                        </Typography>
-                                    </Box>
+                            <Typography>Nenhum item encontrado</Typography>
 
-                                    {/* Linha 2 */}
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <Typography
-                                            sx={{
-                                                fontSize: '0.8rem',
-                                                whiteSpace: 'nowrap',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis'
-                                            }}
-                                        >
-                                            {item.descricao || item.xProd}
-                                        </Typography>
+                        ) : (
 
-                                        <Typography sx={{ fontSize: '0.8rem' }}>
-                                            {funcionariosMap[String(item.conferente).trim()] || item.conferente || "-"}
-                                        </Typography>
-                                    </Box>
+                            itensFiltrados.map((item, index) => {
 
-                                    {/* Linha 3 */}
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
-                                        <Typography>{item.loc_sistema || "-"}</Typography>
-                                        <Typography>
-                                            {item.qtd_conferida || 0} / {Number(item.quantidade_comercial)}
-                                        </Typography>
-                                    </Box>
+                                return (
 
-                                    {/* Linha 4 */}
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
-                                        <Typography sx={{ fontSize: '0.75rem' }}>
-                                            {item.cean || item.codigo_barras || "-"}
-                                        </Typography>
+                                    <Card
+                                        key={index}
+                                        sx={{
+                                            mt: 1,
+                                            mb: 1,
+                                            p: 1.5,
+                                            borderRadius: '1vh',
+                                            boxShadow: '0vh 0.1vh 0.5vh background.sombra',
+                                            bgcolor: 'background.default',
+                                            fontSize: '0.85rem'
+                                        }}
+                                    >
 
-                                        <Typography sx={{ fontSize: '0.75rem' }}>
-                                            {caixaInvalida(item.caixa)
-                                                ? "SEM CAIXA"
-                                                : `Caixa ${item.caixa}`
-                                            }
-                                        </Typography>
-                                    </Box>
+                                        {/* Linha 1 */}
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <Typography>
+                                                <strong>{item.basico || item.cod_produto || "-"}</strong>
+                                            </Typography>
 
-                                </Card>
-                            );
-                        })
-                    )}
+                                            <Typography sx={{
+                                                color:
+                                                    item.status_item === "PENDENTE" ? "primary.pendentes" :
+                                                        item.status_item === "FORNECEDOR_DIRETO" ? "primary.pendentes" :
+                                                            item.status_item === "ITEM_CONFERIDO" ? "primary.conferidos" :
+                                                                item.status_item === "CONFERIDO_PARCIAL" ? "primary.parcial" :
+                                                                    item.status_item === "ITEM_GUARDADO" ? "primary.guardado" :
+                                                                        item.status_item === "ITEM_VENDIDO" ? "primary.vendido" :
+                                                                            item.status_item === "ITEM_DEVOLVIDO" ? "primary.devolvido" :
+                                                                                item.status_item === "GARANTIA" ? "primary.garantia" :
+                                                                                    item.status_item === "EM_TRANSITO" ? "primary.observacao" :
+                                                                                        "var(--em-transito)"
+                                            }}>
+                                                <strong>Status:</strong> {item.status_item || "SEM STATUS"}
+                                            </Typography>
+                                        </Box>
 
-                </DialogContent>
-                <DialogActions>
-                    <Button sx={{ color: "primary.branco", bgcolor: 'primary.cancelar', '&:hover': { bgcolor: 'primary.cancelarHover' } }}
-                        onClick={() => {
-                            setOpenModal(false);
-                            setBuscaItem("");
+                                        {/* Linha 2 */}
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <Typography
+                                                sx={{
+                                                    fontSize: '0.8rem',
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis'
+                                                }}
+                                            >
+                                                {item.descricao || item.xProd}
+                                            </Typography>
+
+                                            <Typography sx={{ fontSize: '0.8rem' }}>
+                                                {funcionariosMap[String(item.conferente).trim()] || item.conferente || "-"}
+                                            </Typography>
+                                        </Box>
+
+                                        {/* Linha 3 */}
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
+                                            <Typography>{item.loc_sistema || "-"}</Typography>
+                                            <Typography>
+                                                {item.qtd_conferida || 0} / {Number(item.quantidade_comercial)}
+                                            </Typography>
+                                        </Box>
+
+                                        {/* Linha 4 */}
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
+                                            <Typography sx={{ fontSize: '0.75rem' }}>
+                                                {item.cean || item.codigo_barras || "-"}
+                                            </Typography>
+
+                                            <Typography sx={{ fontSize: '0.75rem' }}>
+                                                {caixaInvalida(item.caixa)
+                                                    ? "SEM CAIXA"
+                                                    : `Caixa ${item.caixa}`
+                                                }
+                                            </Typography>
+                                        </Box>
+
+                                    </Card>
+                                );
+                            })
+                        )}
+
+                    </DialogContent>
+                    <DialogActions>
+                        <Button sx={{ color: "primary.branco", bgcolor: 'primary.cancelar', '&:hover': { bgcolor: 'primary.cancelarHover' } }}
+                            onClick={() => {
+                                setOpenModal(false);
+                                setBuscaItem("");
+                            }}
+                        >
+                            Fechar
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
+                <Snackbar
+                    open={snackbar.open}
+                    autoHideDuration={4000}
+                    onClose={() =>
+                        setSnackbar(prev => ({
+                            ...prev,
+                            open: false
+                        }))
+                    }
+                >
+                    <Alert
+                        severity={snackbar.severity}
+                        variant="filled"
+                        sx={{
+                            color: 'primary.branco',
+
+                            "& .MuiAlert-icon": {
+                                color: 'primary.branco'
+                            },
+
+                            "& .MuiAlert-action": {
+                                color: 'primary.branco'
+                            }
                         }}
                     >
-                        Fechar
-                    </Button>
-                </DialogActions>
-            </Dialog>
+                        {snackbar.message}
+                    </Alert>
+                </Snackbar>
 
-            <Snackbar
-                open={snackbar.open}
-                autoHideDuration={4000}
-                onClose={() =>
-                    setSnackbar(prev => ({
-                        ...prev,
-                        open: false
-                    }))
-                }
-            >
-                <Alert
-                    severity={snackbar.severity}
-                    variant="filled"
-                    sx={{
-                        color: 'primary.branco',
+                {loading && (
 
-                        "& .MuiAlert-icon": {
-                            color: 'primary.branco'
-                        },
+                    <Box
+                        position="fixed"
+                        top={0}
+                        left={0}
+                        right={0}
+                        bottom={0}
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center"
+                        bgcolor="rgba(0,0,0,0.4)"
+                        zIndex={9999}
+                    >
 
-                        "& .MuiAlert-action": {
-                            color: 'primary.branco'
-                        }
-                    }}
-                >
-                    {snackbar.message}
-                </Alert>
-            </Snackbar>
+                        <CircularProgress />
 
-            {loading && (
+                    </Box>
 
-                <Box
-                    position="fixed"
-                    top={0}
-                    left={0}
-                    right={0}
-                    bottom={0}
-                    display="flex"
-                    justifyContent="center"
-                    alignItems="center"
-                    bgcolor="rgba(0,0,0,0.4)"
-                    zIndex={9999}
-                >
-
-                    <CircularProgress />
-
-                </Box>
-
-            )}
-        </Container>
+                )}
+            </Container>
+        )
     );
 }

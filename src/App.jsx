@@ -26,6 +26,7 @@ import PerfilJogador from "./pages/PerfilJogador";
 import Tarefas from "./pages/Tarefas";
 
 import AlertaAutorizacaoManual from "./components/autorizacao/AlertaAutorizacaoManual";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 import './index.css';
 
@@ -46,10 +47,7 @@ function App() {
 
         <Routes>
 
-          <Route
-            path="/"
-            element={<Dashboard />}
-          />
+          <Route path="/" element={<Dashboard />} />
 
           <Route
             path="/Recebimento"
@@ -63,12 +61,20 @@ function App() {
 
           <Route
             path="/CadastrarFuncionario"
-            element={<CadastrarFuncionario />}
+            element={
+              <ProtectedRoute permissao="pode_acessar_cadastrar_funcionario">
+                <CadastrarFuncionario />
+              </ProtectedRoute>
+            }
           />
 
           <Route
             path="/Alertas"
-            element={<Alertas />}
+            element={
+              <ProtectedRoute permissao="pode_acessar_alertas">
+                <Alertas />
+              </ProtectedRoute>
+            }
           />
 
           <Route
@@ -123,7 +129,11 @@ function App() {
 
           <Route
             path="/ReimprimirSenhas"
-            element={<ReimprimirSenhas />}
+            element={
+              <ProtectedRoute permissao="pode_acessar_reimprimir_senhas">
+                <ReimprimirSenhas />
+              </ProtectedRoute>
+            }
           />
 
           <Route
@@ -133,7 +143,11 @@ function App() {
 
           <Route
             path="/PainelGerencial"
-            element={<PainelGerencial />}
+            element={
+              <ProtectedRoute permissao="pode_acessar_painel_gerencial">
+                <PainelGerencial />
+              </ProtectedRoute>
+            }
           />
 
           <Route
@@ -153,7 +167,11 @@ function App() {
 
           <Route
             path="/PainelGames"
-            element={<PainelGames />}
+            element={
+              <ProtectedRoute permissao="pode_acessar_painel_games">
+                <PainelGames />
+              </ProtectedRoute>
+            }
           />
 
           <Route
@@ -163,7 +181,11 @@ function App() {
 
           <Route
             path="/Tarefas"
-            element={<Tarefas />}
+            element={
+              <ProtectedRoute permissao="pode_acessar_tarefas">
+                <Tarefas />
+              </ProtectedRoute>
+            }
           />
 
         </Routes>

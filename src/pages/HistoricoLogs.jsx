@@ -210,382 +210,418 @@ function HistoricoLogs() {
     ].sort();
 
     return (
-        <Container
-            maxWidth="100%"
-            sx={{
-                mt: 4,
-                bgcolor: "background.default"
-            }}
-        >
+        !token ? (
+            <LoginFuncionario
+                onLogin={(data) => {
 
-            {/* HEADER */}
+                    localStorage.setItem(
+                        "nfe_token",
+                        data.token
+                    );
 
-            <Box
+                    const user = {
+                        id: data.id,
+                        nome: data.nome,
+                        codigo: data.codigo,
+                        tipo: data.tipo,
+                        pode_autorizar_conferencia: data.pode_autorizar_conferencia,
+                        pode_corrigir_nfe: data.pode_corrigir_nfe,
+                        pode_finalizar_nfe: data.pode_finalizar_nfe,
+                        pode_acessar_alertas: data.pode_acessar_alertas,
+                        pode_acessar_cadastrar_funcionario: data.pode_acessar_cadastrar_funcionario,
+                        pode_acessar_painel_games: data.pode_acessar_painel_games,
+                        pode_acessar_painel_gerencial: data.pode_acessar_painel_gerencial,
+                        pode_acessar_reimprimir_senhas: data.pode_acessar_reimprimir_senhas,
+                        pode_acessar_tarefas: data.pode_acessar_tarefas,
+                    };
+
+                    localStorage.setItem(
+                        "user_info",
+                        JSON.stringify(user)
+                    );
+
+                    setUserInfo(user);
+                    setToken(data.token);
+                }}
+            />
+        ) : (
+            <Container
+                maxWidth="100%"
                 sx={{
-                    display: "flex",
-                    flexDirection: {
-                        xs: "column",
-                        md: "row"
-                    },
-                    justifyContent: "space-between",
-                    alignItems: {
-                        xs: "flex-start",
-                        md: "center"
-                    },
-                    gap: 2,
-                    p: 2,
-                    bgcolor: "var(--azul)",
-                    mb: 4,
-                    borderRadius: "2vh",
-                    zoom: '0.9'
+                    mt: 4,
+                    bgcolor: "background.default"
                 }}
             >
 
-                <Typography
-                    variant="h4"
+                {/* HEADER */}
+
+                <Box
                     sx={{
-                        fontFamily: "Consolas",
-                        color: "background.paper"
+                        display: "flex",
+                        flexDirection: {
+                            xs: "column",
+                            md: "row"
+                        },
+                        justifyContent: "space-between",
+                        alignItems: {
+                            xs: "flex-start",
+                            md: "center"
+                        },
+                        gap: 2,
+                        p: 2,
+                        bgcolor: "var(--azul)",
+                        mb: 4,
+                        borderRadius: "2vh",
+                        zoom: '0.9'
                     }}
                 >
-                    <strong>
-                        Histórico de Logs
-                    </strong>
-                </Typography>
 
-                <Box>
-
-                    <Box
+                    <Typography
+                        variant="h4"
                         sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "right"
+                            fontFamily: "Consolas",
+                            color: "background.paper"
                         }}
                     >
+                        <strong>
+                            Histórico de Logs
+                        </strong>
+                    </Typography>
 
-                        <PersonIcon
-                            sx={{
-                                color: "background.paper",
-                                pr: 1
-                            }}
-                        />
+                    <Box>
 
-                        <Typography
+                        <Box
                             sx={{
-                                color: "background.paper",
-                                fontSize: "0.9rem"
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "right"
                             }}
                         >
-                            {userInfo?.nome}
-                        </Typography>
 
-                        {token && (
-                            <Button
-                                size="small"
-                                onClick={logout}
+                            <PersonIcon
                                 sx={{
-                                    color: "background.paper"
+                                    color: "background.paper",
+                                    pr: 1
+                                }}
+                            />
+
+                            <Typography
+                                sx={{
+                                    color: "background.paper",
+                                    fontSize: "0.9rem"
                                 }}
                             >
-                                <LogoutIcon />
-                            </Button>
-                        )}
+                                {userInfo?.nome}
+                            </Typography>
 
-                    </Box>
+                            {token && (
+                                <Button
+                                    size="small"
+                                    onClick={logout}
+                                    sx={{
+                                        color: "background.paper"
+                                    }}
+                                >
+                                    <LogoutIcon />
+                                </Button>
+                            )}
 
-                    <Box
-                        sx={{
-                            display: "flex",
-                            justifyContent: "right"
-                        }}
-                    >
+                        </Box>
 
-                        <Button
-                            onClick={() => navigate("/")}
+                        <Box
                             sx={{
-                                color: "background.paper",
-                                gap: 1
+                                display: "flex",
+                                justifyContent: "right"
                             }}
                         >
-                            Voltar
-                            <ArrowBackIcon />
-                        </Button>
+
+                            <Button
+                                onClick={() => navigate("/")}
+                                sx={{
+                                    color: "background.paper",
+                                    gap: 1
+                                }}
+                            >
+                                Voltar
+                                <ArrowBackIcon />
+                            </Button>
+
+                        </Box>
 
                     </Box>
 
                 </Box>
 
-            </Box>
+                {/* FILTROS */}
 
-            {/* FILTROS */}
+                <Paper sx={{ p: 2, mb: 3, bgcolor: 'background.alerta', zoom: '0.9' }}>
 
-            <Paper sx={{ p: 2, mb: 3, bgcolor: 'background.alerta', zoom: '0.9' }}>
+                    <Box
+                        display="flex"
+                        gap={2}
+                        flexWrap="wrap"
+                    >
+
+                        <TextField
+                            label="Buscar"
+                            value={busca}
+                            onChange={(e) =>
+                                setBusca(e.target.value)
+                            }
+                            sx={{ minWidth: 300 }}
+                            InputProps={{
+                                startAdornment:
+                                    <SearchIcon />
+                            }}
+                        />
+
+                        <TextField
+                            label="Usuário"
+                            value={usuarioFiltro}
+                            onChange={(e) =>
+                                setUsuarioFiltro(
+                                    e.target.value
+                                )
+                            }
+                        />
+
+                        <TextField
+                            select
+                            label="Filtrar ação"
+                            size="small"
+                            value={acaoFiltro}
+                            onChange={(e) => {
+                                setAcaoFiltro(e.target.value);
+                            }}
+                            sx={{
+                                minWidth: 250,
+                            }}
+                            SelectProps={{
+                                MenuProps: {
+                                    PaperProps: {
+                                        sx: {
+                                            bgcolor: "background.default",
+                                            color: "text.primary"
+                                        }
+                                    }
+                                }
+                            }}
+                        >
+                            <MenuItem value="">
+                                Todas as ações
+                            </MenuItem>
+
+                            {acoes.map((acao) => (
+                                <MenuItem
+                                    key={acao}
+                                    value={acao}
+                                >
+                                    {acao} (
+                                    {
+                                        logs.filter(
+                                            l => l.acao === acao
+                                        ).length
+                                    }
+                                    )
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                    </Box>
+                </Paper>
+
+                {/* NOTA */}
+                <Paper
+                    sx={{
+                        p: 2,
+                        mb: 3,
+                        bgcolor: "background.alerta"
+                    }}
+                >
+                    <Box
+                        display="flex"
+                        gap={4}
+                        flexWrap="wrap"
+                        sx={{ justifyContent: 'space-around', zoom: '0.9' }}
+                    >
+                        <Box>
+                            <Typography variant="caption">
+                                Nota Fiscal
+                            </Typography>
+                            <Typography variant="h6">
+                                {notaInfo?.numero}
+                            </Typography>
+                        </Box>
+                        <Box>
+                            <Typography variant="caption">
+                                Série
+                            </Typography>
+                            <Typography variant="h6">
+                                {notaInfo?.serie}
+                            </Typography>
+                        </Box>
+                        <Box>
+                            <Typography variant="caption">
+                                Fornecedor
+                            </Typography>
+                            <Typography variant="h6">
+                                {notaInfo?.fornecedor}
+                            </Typography>
+                        </Box>
+                        <Box>
+                            <Typography variant="caption">
+                                Status
+                            </Typography>
+                            <Typography variant="h6">
+                                {notaInfo?.status}
+                            </Typography>
+                        </Box>
+                        <Box>
+                            <Typography variant="caption">
+                                Emissão
+                            </Typography>
+                            <Typography variant="h6">
+                                {notaInfo?.data_emissao}
+                            </Typography>
+                        </Box>
+                        <Box>
+                            <Typography variant="caption">
+                                Importação/Recebimento
+                            </Typography>
+                            <Typography variant="h6">
+                                {notaInfo?.data_recebimento}
+                            </Typography>
+                        </Box>
+
+                    </Box>
+                </Paper>
+
+                {/* RESUMO */}
 
                 <Box
                     display="flex"
                     gap={2}
+                    mb={3}
                     flexWrap="wrap"
+                    sx={{ zoom: '0.9' }}
                 >
-
-                    <TextField
-                        label="Buscar"
-                        value={busca}
-                        onChange={(e) =>
-                            setBusca(e.target.value)
-                        }
-                        sx={{ minWidth: 300 }}
-                        InputProps={{
-                            startAdornment:
-                                <SearchIcon />
-                        }}
+                    <Chip
+                        color="primary"
+                        label={`Total Logs: ${logsFiltrados.length}`}
                     />
-
-                    <TextField
-                        label="Usuário"
-                        value={usuarioFiltro}
-                        onChange={(e) =>
-                            setUsuarioFiltro(
-                                e.target.value
-                            )
-                        }
+                    <Chip
+                        color="success"
+                        label={`Produtos movimentados: ${new Set(
+                            logsFiltrados
+                                .map(l => l.cod_produto)
+                                .filter(Boolean)
+                        ).size
+                            }`}
                     />
-
-                    <TextField
-                        select
-                        label="Filtrar ação"
-                        size="small"
-                        value={acaoFiltro}
-                        onChange={(e) => {
-                            setAcaoFiltro(e.target.value);
-                        }}
-                        sx={{
-                            minWidth: 250,
-                        }}
-                        SelectProps={{
-                            MenuProps: {
-                                PaperProps: {
-                                    sx: {
-                                        bgcolor: "background.default",
-                                        color: "text.primary"
-                                    }
-                                }
-                            }
-                        }}
-                    >
-                        <MenuItem value="">
-                            Todas as ações
-                        </MenuItem>
-
-                        {acoes.map((acao) => (
-                            <MenuItem
-                                key={acao}
-                                value={acao}
-                            >
-                                {acao} (
-                                {
-                                    logs.filter(
-                                        l => l.acao === acao
-                                    ).length
-                                }
-                                )
-                            </MenuItem>
-                        ))}
-                    </TextField>
+                    <Chip
+                        color="warning"
+                        label={`Usuários: ${new Set(
+                            logsFiltrados
+                                .map(l => l.usuario)
+                                .filter(Boolean)
+                        ).size
+                            }`}
+                    />
                 </Box>
-            </Paper>
 
-            {/* NOTA */}
-            <Paper
-                sx={{
-                    p: 2,
-                    mb: 3,
-                    bgcolor: "background.alerta"
-                }}
-            >
-                <Box
-                    display="flex"
-                    gap={4}
-                    flexWrap="wrap"
-                    sx={{ justifyContent: 'space-around', zoom: '0.9' }}
-                >
-                    <Box>
-                        <Typography variant="caption">
-                            Nota Fiscal
-                        </Typography>
-                        <Typography variant="h6">
-                            {notaInfo?.numero}
-                        </Typography>
-                    </Box>
-                    <Box>
-                        <Typography variant="caption">
-                            Série
-                        </Typography>
-                        <Typography variant="h6">
-                            {notaInfo?.serie}
-                        </Typography>
-                    </Box>
-                    <Box>
-                        <Typography variant="caption">
-                            Fornecedor
-                        </Typography>
-                        <Typography variant="h6">
-                            {notaInfo?.fornecedor}
-                        </Typography>
-                    </Box>
-                    <Box>
-                        <Typography variant="caption">
-                            Status
-                        </Typography>
-                        <Typography variant="h6">
-                            {notaInfo?.status}
-                        </Typography>
-                    </Box>
-                    <Box>
-                        <Typography variant="caption">
-                            Emissão
-                        </Typography>
-                        <Typography variant="h6">
-                            {notaInfo?.data_emissao}
-                        </Typography>
-                    </Box>
-                    <Box>
-                        <Typography variant="caption">
-                            Importação/Recebimento
-                        </Typography>
-                        <Typography variant="h6">
-                            {notaInfo?.data_recebimento}
-                        </Typography>
-                    </Box>
+                {/* TABELA */}
 
-                </Box>
-            </Paper>
+                <Paper sx={{ bgcolor: 'background.alerta', zoom: '0.9' }}>
 
-            {/* RESUMO */}
+                    {loading ? (
 
-            <Box
-                display="flex"
-                gap={2}
-                mb={3}
-                flexWrap="wrap"
-                sx={{ zoom: '0.9' }}
-            >
-                <Chip
-                    color="primary"
-                    label={`Total Logs: ${logsFiltrados.length}`}
-                />
-                <Chip
-                    color="success"
-                    label={`Produtos movimentados: ${new Set(
-                        logsFiltrados
-                            .map(l => l.cod_produto)
-                            .filter(Boolean)
-                    ).size
-                        }`}
-                />
-                <Chip
-                    color="warning"
-                    label={`Usuários: ${new Set(
-                        logsFiltrados
-                            .map(l => l.usuario)
-                            .filter(Boolean)
-                    ).size
-                        }`}
-                />
-            </Box>
+                        <Box
+                            display="flex"
+                            justifyContent="center"
+                            p={5}
+                        >
+                            <CircularProgress />
+                        </Box>
 
-            {/* TABELA */}
+                    ) : (
 
-            <Paper sx={{ bgcolor: 'background.alerta', zoom: '0.9' }}>
+                        <Table>
 
-                {loading ? (
+                            <TableHead>
 
-                    <Box
-                        display="flex"
-                        justifyContent="center"
-                        p={5}
-                    >
-                        <CircularProgress />
-                    </Box>
+                                <TableRow>
 
-                ) : (
-
-                    <Table>
-
-                        <TableHead>
-
-                            <TableRow>
-
-                                <TableCell>Data/Hora</TableCell>
-                                <TableCell>Ação</TableCell>
-                                <TableCell>Observação</TableCell>
-                                <TableCell>Produto</TableCell>
-                                <TableCell>Código Barras</TableCell>
-                                <TableCell>Qtd</TableCell>
-                                <TableCell>Caixa</TableCell>
-                                <TableCell>LOC</TableCell>
-                                <TableCell>Usuário</TableCell>
-
-                            </TableRow>
-
-                        </TableHead>
-
-                        <TableBody>
-
-                            {logsFiltrados.map(log => (
-
-                                <TableRow key={log.id}>
-
-                                    <TableCell>
-                                        {formatarData(
-                                            log.data_hora
-                                        )}
-                                    </TableCell>
-
-                                    <TableCell>
-                                        {log.acao}
-                                    </TableCell>
-
-                                    <TableCell>
-                                        {log.observacoes}
-                                    </TableCell>
-
-                                    <TableCell>
-                                        {log.cod_produto || "-"}
-                                    </TableCell>
-
-                                    <TableCell>
-                                        {log.cod_barras || "-"}
-                                    </TableCell>
-
-                                    <TableCell>
-                                        {log.quantidade || "-"}
-                                    </TableCell>
-
-                                    <TableCell>
-                                        {log.caixa || "-"}
-                                    </TableCell>
-
-                                    <TableCell>
-                                        {log.local_novo || "-"}
-                                    </TableCell>
-
-                                    <TableCell>
-                                        {funcionariosMap[String(log.usuario)] || log.usuario}
-                                    </TableCell>
+                                    <TableCell>Data/Hora</TableCell>
+                                    <TableCell>Ação</TableCell>
+                                    <TableCell>Observação</TableCell>
+                                    <TableCell>Produto</TableCell>
+                                    <TableCell>Código Barras</TableCell>
+                                    <TableCell>Qtd</TableCell>
+                                    <TableCell>Caixa</TableCell>
+                                    <TableCell>LOC</TableCell>
+                                    <TableCell>Usuário</TableCell>
 
                                 </TableRow>
 
-                            ))}
+                            </TableHead>
 
-                        </TableBody>
+                            <TableBody>
 
-                    </Table>
+                                {logsFiltrados.map(log => (
 
-                )}
+                                    <TableRow key={log.id}>
 
-            </Paper>
+                                        <TableCell>
+                                            {formatarData(
+                                                log.data_hora
+                                            )}
+                                        </TableCell>
 
-        </Container>
+                                        <TableCell>
+                                            {log.acao}
+                                        </TableCell>
+
+                                        <TableCell>
+                                            {log.observacoes}
+                                        </TableCell>
+
+                                        <TableCell>
+                                            {log.cod_produto || "-"}
+                                        </TableCell>
+
+                                        <TableCell>
+                                            {log.cod_barras || "-"}
+                                        </TableCell>
+
+                                        <TableCell>
+                                            {log.quantidade || "-"}
+                                        </TableCell>
+
+                                        <TableCell>
+                                            {log.caixa || "-"}
+                                        </TableCell>
+
+                                        <TableCell>
+                                            {log.local_novo || "-"}
+                                        </TableCell>
+
+                                        <TableCell>
+                                            {funcionariosMap[String(log.usuario)] || log.usuario}
+                                        </TableCell>
+
+                                    </TableRow>
+
+                                ))}
+
+                            </TableBody>
+
+                        </Table>
+
+                    )}
+
+                </Paper>
+
+            </Container>
+        )
     );
 }
 

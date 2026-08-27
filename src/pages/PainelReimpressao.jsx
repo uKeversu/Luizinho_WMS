@@ -299,237 +299,273 @@ function PainelReimpressao() {
     };
 
     return (
-        <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "background.default" }}>
-            {/* Header */}
-            <Box
-                sx={{
-                    display: 'flex',
-                    flexDirection: {
-                        xs: 'column',
-                        md: 'row'
-                    },
-                    justifyContent: 'space-between',
-                    alignItems: {
-                        xs: 'flex-start',
-                        md: 'center'
-                    },
-                    gap: 2,
-                    p: 2,
-                    bgcolor: 'var(--azul)',
-                    mb: 4,
-                    borderRadius: '2vh',
-                    zoom: '0.9'
+        !token ? (
+            <LoginFuncionario
+                onLogin={(data) => {
+
+                    localStorage.setItem(
+                        "nfe_token",
+                        data.token
+                    );
+
+                    const user = {
+                        id: data.id,
+                        nome: data.nome,
+                        codigo: data.codigo,
+                        tipo: data.tipo,
+                        pode_autorizar_conferencia: data.pode_autorizar_conferencia,
+                        pode_corrigir_nfe: data.pode_corrigir_nfe,
+                        pode_finalizar_nfe: data.pode_finalizar_nfe,
+                        pode_acessar_alertas: data.pode_acessar_alertas,
+                        pode_acessar_cadastrar_funcionario: data.pode_acessar_cadastrar_funcionario,
+                        pode_acessar_painel_games: data.pode_acessar_painel_games,
+                        pode_acessar_painel_gerencial: data.pode_acessar_painel_gerencial,
+                        pode_acessar_reimprimir_senhas: data.pode_acessar_reimprimir_senhas,
+                        pode_acessar_tarefas: data.pode_acessar_tarefas,
+                    };
+
+                    localStorage.setItem(
+                        "user_info",
+                        JSON.stringify(user)
+                    );
+
+                    setUserInfo(user);
+                    setToken(data.token);
                 }}
-            >
-                <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "background.paper" }}>
-                    <strong>Painel de reimpressão de etiquetas</strong>
-                </Typography>
-                <Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '0' }}>
-                        {<PersonIcon sx={{ color: "background.paper", paddingRight: '1vh' }} />}
-                        <Typography sx={{ color: "background.paper", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>
-                            {userInfo?.nome}
-                        </Typography>
-                        {token && (
+            />
+        ) : (
+            <Container maxWidth="100%" sx={{ mt: 4, bgcolor: "background.default" }}>
+                {/* Header */}
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: {
+                            xs: 'column',
+                            md: 'row'
+                        },
+                        justifyContent: 'space-between',
+                        alignItems: {
+                            xs: 'flex-start',
+                            md: 'center'
+                        },
+                        gap: 2,
+                        p: 2,
+                        bgcolor: 'var(--azul)',
+                        mb: 4,
+                        borderRadius: '2vh',
+                        zoom: '0.9'
+                    }}
+                >
+                    <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "background.paper" }}>
+                        <strong>Painel de reimpressão de etiquetas</strong>
+                    </Typography>
+                    <Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '0' }}>
+                            {<PersonIcon sx={{ color: "background.paper", paddingRight: '1vh' }} />}
+                            <Typography sx={{ color: "background.paper", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>
+                                {userInfo?.nome}
+                            </Typography>
+                            {token && (
+                                <Button
+                                    size="small"
+                                    onClick={logout}
+                                    sx={{ color: "background.paper", display: 'flex', gap: 1 }}
+                                >{<LogoutIcon />}
+                                </Button>
+                            )}
+                        </Box>
+                        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
                             <Button
-                                size="small"
-                                onClick={logout}
+                                onClick={() => navigate("/")}
                                 sx={{ color: "background.paper", display: 'flex', gap: 1 }}
-                            >{<LogoutIcon />}
+                            >
+                                Voltar
+                                {< ArrowBackIcon />}
                             </Button>
-                        )}
-                    </Box>
-                    <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
-                        <Button
-                            onClick={() => navigate("/")}
-                            sx={{ color: "background.paper", display: 'flex', gap: 1 }}
-                        >
-                            Voltar
-                            {< ArrowBackIcon />}
-                        </Button>
-                        <pre id="resultado"></pre>
+                            <pre id="resultado"></pre>
+                        </Box>
                     </Box>
                 </Box>
-            </Box>
 
-            <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-                <Button
-                    variant={modoImpressao === "completa" ? "contained" : "outlined"}
-                    onClick={() => setModoImpressao("completa")}
-                >
-                    Etiqueta completa
-                </Button>
+                <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+                    <Button
+                        variant={modoImpressao === "completa" ? "contained" : "outlined"}
+                        onClick={() => setModoImpressao("completa")}
+                    >
+                        Etiqueta completa
+                    </Button>
 
-                <Button
-                    variant={modoImpressao === "barcode" ? "contained" : "outlined"}
-                    onClick={() => setModoImpressao("barcode")}
-                >
-                    Código de barras
-                </Button>
-            </Box>
+                    <Button
+                        variant={modoImpressao === "barcode" ? "contained" : "outlined"}
+                        onClick={() => setModoImpressao("barcode")}
+                    >
+                        Código de barras
+                    </Button>
+                </Box>
 
-            {/* BUSCA */}
-            <Box sx={{ display: 'flex', gap: 2, mb: 3, zoom: '0.9' }}>
-                <TextField
-                    fullWidth
-                    placeholder="Buscar por código do item"
-                    value={busca}
-                    onChange={(e) => setBusca(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && buscarNotas()}
-                    autoComplete="off"
-                    inputProps={{
-                        spellCheck: false,
-                        autoCorrect: "off",
-                        autoCapitalize: "off",
-                    }}
-                />
+                {/* BUSCA */}
+                <Box sx={{ display: 'flex', gap: 2, mb: 3, zoom: '0.9' }}>
+                    <TextField
+                        fullWidth
+                        placeholder="Buscar por código do item"
+                        value={busca}
+                        onChange={(e) => setBusca(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && buscarNotas()}
+                        autoComplete="off"
+                        inputProps={{
+                            spellCheck: false,
+                            autoCorrect: "off",
+                            autoCapitalize: "off",
+                        }}
+                    />
 
-                <Button variant="contained" onClick={buscarNotas}>
-                    Buscar
-                </Button>
-            </Box>
+                    <Button variant="contained" onClick={buscarNotas}>
+                        Buscar
+                    </Button>
+                </Box>
 
-            {loading ? <CircularProgress /> : (
+                {loading ? <CircularProgress /> : (
 
-                notas.map((nota) => (
+                    notas.map((nota) => (
 
-                    <Card key={nota.id} sx={{ mb: 2, bgcolor: 'background.default' }}>
-                        <CardContent>
+                        <Card key={nota.id} sx={{ mb: 2, bgcolor: 'background.default' }}>
+                            <CardContent>
 
-                            {/* NOTA */}
-                            <Box
-                                onClick={() =>
-                                    setExpandedNota(expandedNota === nota.id ? null : nota.id)
-                                }
-                                sx={{ cursor: "pointer" }}
-                            >
-                                <Typography fontWeight="bold">
-                                    📄 {nota.numero} - {nota.fornecedor}
-                                </Typography>
-                            </Box>
+                                {/* NOTA */}
+                                <Box
+                                    onClick={() =>
+                                        setExpandedNota(expandedNota === nota.id ? null : nota.id)
+                                    }
+                                    sx={{ cursor: "pointer" }}
+                                >
+                                    <Typography fontWeight="bold">
+                                        📄 {nota.numero} - {nota.fornecedor}
+                                    </Typography>
+                                </Box>
 
-                            <Collapse in={expandedNota === nota.id}>
+                                <Collapse in={expandedNota === nota.id}>
 
-                                <Table size="small">
-                                    <TableBody>
+                                    <Table size="small">
+                                        <TableBody>
 
-                                        {nota.itens.map((item) => {
+                                            {nota.itens.map((item) => {
 
-                                            const key = item.id;
+                                                const key = item.id;
 
-                                            return (
-                                                <Fragment key={key}>
+                                                return (
+                                                    <Fragment key={key}>
 
-                                                    {/* ITEM */}
-                                                    <TableRow
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleExpandItem(item)
-                                                        }}
-                                                        sx={{ cursor: "pointer" }}
-                                                    >
-                                                        <TableCell>{item.basico}</TableCell>
-                                                        <TableCell>{item.descricao}</TableCell>
-                                                        <TableCell>{item.loc_sistema}</TableCell>
-                                                    </TableRow>
+                                                        {/* ITEM */}
+                                                        <TableRow
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleExpandItem(item)
+                                                            }}
+                                                            sx={{ cursor: "pointer" }}
+                                                        >
+                                                            <TableCell>{item.basico}</TableCell>
+                                                            <TableCell>{item.descricao}</TableCell>
+                                                            <TableCell>{item.loc_sistema}</TableCell>
+                                                        </TableRow>
 
-                                                    {/* UNIDADES */}
-                                                    <TableRow>
-                                                        <TableCell colSpan={5}>
+                                                        {/* UNIDADES */}
+                                                        <TableRow>
+                                                            <TableCell colSpan={5}>
 
-                                                            <Collapse in={expandedItem === key}>
+                                                                <Collapse in={expandedItem === key}>
 
-                                                                {loadingUnidades[item.id] ? (
-                                                                    <CircularProgress size={20} />
-                                                                ) : (
+                                                                    {loadingUnidades[item.id] ? (
+                                                                        <CircularProgress size={20} />
+                                                                    ) : (
 
-                                                                    <>
-                                                                        <Typography fontSize={12}>
-                                                                            {item.etiquetas_disponiveis} etiquetas disponíveis
-                                                                        </Typography>
+                                                                        <>
+                                                                            <Typography fontSize={12}>
+                                                                                {item.etiquetas_disponiveis} etiquetas disponíveis
+                                                                            </Typography>
 
-                                                                        <Button
-                                                                            startIcon={<PrintIcon />}
-                                                                            sx={{ mb: 1 }}
-                                                                            onClick={() =>
-                                                                                imprimirLote(unidadesItem[item.id] || [])
-                                                                            }
-                                                                        >
-                                                                            Imprimir todos
-                                                                        </Button>
+                                                                            <Button
+                                                                                startIcon={<PrintIcon />}
+                                                                                sx={{ mb: 1 }}
+                                                                                onClick={() =>
+                                                                                    imprimirLote(unidadesItem[item.id] || [])
+                                                                                }
+                                                                            >
+                                                                                Imprimir todos
+                                                                            </Button>
 
-                                                                        <Table size="small">
-                                                                            <TableHead>
-                                                                                <TableRow>
-                                                                                    <TableCell>ID ÚNICO</TableCell>
-                                                                                    <TableCell>AÇÃO</TableCell>
-                                                                                </TableRow>
-                                                                            </TableHead>
-
-                                                                            <TableBody>
-                                                                                {(unidadesItem[item.id] || []).map((un) => (
-                                                                                    <TableRow key={un.id_unico}>
-                                                                                        <TableCell>{un.id_unico}</TableCell>
-
-                                                                                        <TableCell>
-                                                                                            <Button
-                                                                                                size="small"
-                                                                                                variant="contained"
-                                                                                                onClick={() => imprimirUnidade(un)}
-                                                                                            >
-                                                                                                IMPRIMIR
-                                                                                            </Button>
-                                                                                        </TableCell>
+                                                                            <Table size="small">
+                                                                                <TableHead>
+                                                                                    <TableRow>
+                                                                                        <TableCell>ID ÚNICO</TableCell>
+                                                                                        <TableCell>AÇÃO</TableCell>
                                                                                     </TableRow>
-                                                                                ))}
-                                                                            </TableBody>
-                                                                        </Table>
-                                                                    </>
-                                                                )}
+                                                                                </TableHead>
 
-                                                            </Collapse>
-                                                        </TableCell>
-                                                    </TableRow>
+                                                                                <TableBody>
+                                                                                    {(unidadesItem[item.id] || []).map((un) => (
+                                                                                        <TableRow key={un.id_unico}>
+                                                                                            <TableCell>{un.id_unico}</TableCell>
 
-                                                </Fragment>
-                                            );
-                                        })}
-                                    </TableBody>
-                                </Table>
+                                                                                            <TableCell>
+                                                                                                <Button
+                                                                                                    size="small"
+                                                                                                    variant="contained"
+                                                                                                    onClick={() => imprimirUnidade(un)}
+                                                                                                >
+                                                                                                    IMPRIMIR
+                                                                                                </Button>
+                                                                                            </TableCell>
+                                                                                        </TableRow>
+                                                                                    ))}
+                                                                                </TableBody>
+                                                                            </Table>
+                                                                        </>
+                                                                    )}
 
-                            </Collapse>
+                                                                </Collapse>
+                                                            </TableCell>
+                                                        </TableRow>
 
-                        </CardContent>
-                    </Card>
-                ))
-            )}
+                                                    </Fragment>
+                                                );
+                                            })}
+                                        </TableBody>
+                                    </Table>
 
-            {/* Snackbar */}
-            <Snackbar
-                open={snackbar.open}
-                autoHideDuration={3000}
-                onClose={() => setSnackbar({ ...snackbar, open: false })}
-            >
-                <Alert
-                    variant="filled"
-                    severity={snackbar.severity}
-                    sx={{
-                        color: 'primary.branco',
+                                </Collapse>
 
-                        "& .MuiAlert-icon": {
-                            color: 'primary.branco'
-                        },
+                            </CardContent>
+                        </Card>
+                    ))
+                )}
 
-                        "& .MuiAlert-action": {
-                            color: 'primary.branco'
-                        }
-                    }}
+                {/* Snackbar */}
+                <Snackbar
+                    open={snackbar.open}
+                    autoHideDuration={3000}
+                    onClose={() => setSnackbar({ ...snackbar, open: false })}
                 >
-                    {snackbar.message}
-                </Alert>
-            </Snackbar>
+                    <Alert
+                        variant="filled"
+                        severity={snackbar.severity}
+                        sx={{
+                            color: 'primary.branco',
 
-        </Container>
+                            "& .MuiAlert-icon": {
+                                color: 'primary.branco'
+                            },
+
+                            "& .MuiAlert-action": {
+                                color: 'primary.branco'
+                            }
+                        }}
+                    >
+                        {snackbar.message}
+                    </Alert>
+                </Snackbar>
+
+            </Container>
+        )
     );
 }
 

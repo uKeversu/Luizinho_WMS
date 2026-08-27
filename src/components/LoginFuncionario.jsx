@@ -32,7 +32,7 @@ function LoginFuncionario({ onLogin }) {
       setSnackbar({
         open: true,
         severity: "warning",
-        message: "Digite o código"
+        message: "Digite um código de funcionário!"
       });
       return;
     }
