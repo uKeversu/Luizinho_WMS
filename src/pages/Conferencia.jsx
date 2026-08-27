@@ -104,6 +104,16 @@ function Conferencia() {
     const [printer, setPrinter] = useState("");
     const [printers, setPrinters] = useState([]);
 
+    // Etiquetas
+    const [modoEtiqueta, setModoEtiqueta] = useState(
+        localStorage.getItem("modoEtiqueta") || "padrao"
+    );
+
+    const alterarModoEtiqueta = (modo) => {
+        setModoEtiqueta(modo);
+        localStorage.setItem("modoEtiqueta", modo);
+    };
+
     useEffect(() => {
 
         const carregarImpressoras = async () => {
@@ -2105,7 +2115,7 @@ function Conferencia() {
     };
 
     // Impressão de etiquetas de peça
-    const gerarZPL = (unidade, qr) => {
+    const gerarZPLPadrao = (unidade, qr) => {
         const url = `http://192.168.1.82:4173/Rastreio/${unidade.id_unico}`;
 
         return `
@@ -2149,6 +2159,71 @@ function Conferencia() {
 
 `;
     }
+
+    const gerarZPLBremsys = (unidade, qr) => {
+        const url = `http://192.168.1.82:4173/Rastreio/${unidade.id_unico}`;
+
+        const dataHora = new Date().toLocaleString("pt-BR");
+
+        // Limpa os campos recebidos da API
+        const idUnico = (unidade.id_unico || "").trim();
+        const basico = (unidade.basico || "").trim();
+        const localizacao = (unidade.loc_sistema || "").trim();
+        const numero = (unidade.numero || "").trim();
+        const serie = (unidade.serie || "").trim();
+        const descricao = (unidade.descricao || "").trim();
+        const codigoBarras = (unidade.cean || "").trim();
+
+        return `
+^XA
+^PW840
+^LL480
+^LH0,0
+
+^PR3
+^MD15
+
+^FO80,120
+^BQN,2,6
+^FDLA,${url}^FS
+
+^FO140,380
+^A0N,25,25
+^FD${idUnico}^FS
+
+^FO300,220
+^A0N,32,32
+^FD${basico}^FS
+
+^FO300,260
+^A0N,40,42
+^FD${localizacao}^FS
+
+^FO300,315
+^A0N,26,26
+^FD${numero}/${serie}^FS
+
+^FO300,340
+^A0N,23,23
+^FD${dataHora}^FS
+
+^FO500,240
+^A0B,30,30
+^FD${userInfo?.codigo || ""}^FS
+
+^FO250,420
+^BY4,3,70
+^BEN,70,Y,N
+^FD${codigoBarras}^FS
+
+^FO300,540
+^A0N,22,22
+^FB750,2,0,L,0
+^FD${descricao}^FS
+
+^XZ
+`;
+    };
 
     const imprimirViaPython = async (zpl) => {
         try {
@@ -2255,7 +2330,10 @@ function Conferencia() {
 
             if (!qr.qr_url) return;
 
-            const zpl = gerarZPL(unidade, qr);
+            const zpl =
+                modoEtiqueta === "bremsys"
+                    ? gerarZPLBremsys(unidade, qr)
+                    : gerarZPLPadrao(unidade, qr);
 
             await imprimirViaPython(zpl);
 
@@ -2275,7 +2353,7 @@ function Conferencia() {
     };
 
     // Impressão etiquetas de caixa
-    const gerarZPLCaixa = (caixa) => {
+    const gerarZPLCaixaPadrao = (caixa) => {
         const codigoCaixa = caixa.numero;
         const dataAtual = new Date().toLocaleDateString("pt-BR");
 
@@ -2312,10 +2390,50 @@ function Conferencia() {
 `;
     };
 
+    const gerarZPLCaixaBremsys = (caixa) => {
+        const codigoCaixa = caixa.numero;
+        const dataAtual = new Date().toLocaleDateString("pt-BR");
+
+        return `
+^XA
+^PW480
+^LL240
+^LH0,0
+
+^PR3
+^MD15
+
+^FO5,120
+^BQN,2,8
+^FDLA,${codigoCaixa}^FS
+
+^FO260,110
+^A0N,32,32
+^FDCAIXA^FS
+
+^FO260,145
+^A0N,50,50
+^FD${codigoCaixa}^FS
+
+^FO260,235
+^A0N,26,26
+^FD${new Date().toLocaleString("pt-BR")}^FS
+
+^FO260,315
+^A0N,35,35
+^FD${userInfo?.codigo}^FS
+
+^XZ
+`;
+    };
+
     // Imprime etiqueta chamando API
     const imprimirEtiquetaCaixa = async (caixa) => {
         try {
-            const zpl = gerarZPLCaixa(caixa);
+            const zpl =
+                modoEtiqueta === "bremsys"
+                    ? gerarZPLCaixaBremsys(caixa)
+                    : gerarZPLCaixaPadrao(caixa);
 
             await imprimirViaPython(zpl);
 
@@ -3184,6 +3302,7 @@ function Conferencia() {
                             autoCapitalize: "off",
                         }}
                     />
+
                     {modoQuantidade && (
                         <TextField
                             label="Qtd"
@@ -3194,6 +3313,31 @@ function Conferencia() {
                             sx={{ ml: 2, mb: 2, zoom: 0.9 }}
                         />
                     )}
+                    <FormControl size="small" sx={{ ml: 2, mb: 2, zoom: 0.9, width: 200 }}>
+                        <InputLabel>Etiqueta</InputLabel>
+
+                        <Select
+                            value={modoEtiqueta}
+                            label="Etiqueta"
+                            onChange={(e) => alterarModoEtiqueta(e.target.value)}
+                            MenuProps={{
+                                PaperProps: {
+                                    sx: {
+                                        bgcolor: "background.default",
+                                        color: "text.primary",
+                                    },
+                                },
+                            }}
+                        >
+                            <MenuItem value="padrao">
+                                Padrão
+                            </MenuItem>
+
+                            <MenuItem value="bremsys">
+                                Bremsys
+                            </MenuItem>
+                        </Select>
+                    </FormControl>
                 </Box>
 
                 {/* Tabela de conferência + caixas*/}

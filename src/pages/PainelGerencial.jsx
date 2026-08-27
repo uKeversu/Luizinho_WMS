@@ -54,7 +54,7 @@ export default function DistribuicaoConferencia() {
         const user = localStorage.getItem("user_info");
         return user ? JSON.parse(user) : null;
     });
-    
+
     const [token, setToken] = useState(() => localStorage.getItem("nfe_token") || "");
 
     const logout = () => {
