@@ -1,9 +1,9 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-    Container, Typography, Card, CardContent, TextField, Button,
-    Box, CircularProgress, Table, TableBody, TableCell,
-    TableContainer, TableHead, TableRow, Snackbar, Alert
+    Container, Typography, Card, CardContent, TextField, Button, Select, MenuItem,
+    Box, CircularProgress, Table, TableBody, TableCell, FormControl,
+    TableContainer, TableHead, TableRow, Snackbar, Alert, InputLabel
 } from "@mui/material";
 import Collapse from "@mui/material/Collapse";
 import { Fragment } from "react";
@@ -12,6 +12,9 @@ import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PrintIcon from '@mui/icons-material/Print';
+
+// Componente de login
+import LoginFuncionario from "../components/LoginFuncionario";
 
 import { ThemeContext } from "../context/ThemeContext";
 
@@ -46,13 +49,65 @@ function PainelReimpressao() {
     const [unidadesItem, setUnidadesItem] = useState({});
     const [loadingUnidades, setLoadingUnidades] = useState({});
 
+    // Impressora
     const [modoImpressao, setModoImpressao] = useState("completa");
+    const [printer, setPrinter] = useState("");
+    const [printers, setPrinters] = useState([]);
 
     const [snackbar, setSnackbar] = useState({
         open: false,
         message: "",
         severity: "info"
     });
+
+    useEffect(() => {
+
+        const carregarImpressoras = async () => {
+
+            try {
+
+                const response = await fetch("http://127.0.0.1:5000/printers");
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    setPrinters(data.printers || []);
+                }
+
+            } catch (error) {
+
+                console.error("Erro ao buscar impressoras:", error);
+
+                setSnackbar({
+                    open: true,
+                    message: "SIGEL Print não encontrado",
+                    severity: "error"
+                });
+            }
+        };
+
+        carregarImpressoras();
+
+        const salva = localStorage.getItem("printer");
+
+        if (salva) {
+            setPrinter(salva);
+        }
+
+    }, []);
+
+    const selecionarImpressora = (novaPrinter) => {
+
+        setPrinter(novaPrinter);
+
+        localStorage.setItem("printer", novaPrinter);
+
+        setSnackbar({
+            open: true,
+            message: `Impressora alterada para ${novaPrinter}`,
+            severity: "success"
+        });
+    };
 
     // ---------------- BUSCA ----------------
 
@@ -140,8 +195,7 @@ function PainelReimpressao() {
 
     };
 
-    // ---------------- IMPRESSÃO ----------------
-
+    // IMPRESSÃO
     const gerarZPLCompleta = (unidade) => {
         const url = `http://192.168.1.82:4173/Rastreio/${unidade.id_unico}`;
 
@@ -191,6 +245,7 @@ function PainelReimpressao() {
 `;
     };
 
+    // Etiqueta apenas código de barras
     const gerarZPLBarcode = (unidade) => {
         const cean =
             unidade.cean ||
@@ -218,10 +273,78 @@ function PainelReimpressao() {
 `;
     };
 
+    // Etiqueta Bremsys
+    const gerarZPLBremsys = (unidade, qr) => {
+        const url = `http://192.168.1.82:4173/Rastreio/${unidade.id_unico}`;
+
+        const dataHora = new Date().toLocaleString("pt-BR");
+
+        // Limpa os campos recebidos da API
+        const idUnico = (unidade.id_unico || "").trim();
+        const basico = (unidade.basico || "").trim();
+        const localizacao = (unidade.loc_sistema || "").trim();
+        const numero = (unidade.numero || "").trim();
+        const serie = (unidade.serie || "").trim();
+        const descricao = (unidade.descricao || "").trim();
+        const codigoBarras = (unidade.cean || "").trim();
+
+        return `
+^XA
+^PW840
+^LL480
+^LH0,0
+
+^PR3
+^MD15
+
+^FO80,120
+^BQN,2,6
+^FDLA,${url}^FS
+
+^FO140,380
+^A0N,25,25
+^FD${idUnico}^FS
+
+^FO300,220
+^A0N,32,32
+^FD${basico}^FS
+
+^FO300,260
+^A0N,40,42
+^FD${localizacao}^FS
+
+^FO300,315
+^A0N,26,26
+^FD${numero}/${serie}^FS
+
+^FO300,340
+^A0N,23,23
+^FD${dataHora}^FS
+
+^FO500,240
+^A0B,30,30
+^FD${userInfo?.codigo || ""}^FS
+
+^FO250,420
+^BY4,3,70
+^BEN,70,Y,N
+^FD${codigoBarras}^FS
+
+^FO300,540
+^A0N,22,22
+^FB750,2,0,L,0
+^FD${descricao}^FS
+
+^XZ
+`;
+    };
+
     const gerarZPL = (unidade) => {
 
         if (modoImpressao === "barcode") {
             return gerarZPLBarcode(unidade);
+        } else if (modoImpressao === "bremsys") {
+            return gerarZPLBremsys(unidade);
         }
 
         return gerarZPLCompleta(unidade);
@@ -392,7 +515,7 @@ function PainelReimpressao() {
                         variant={modoImpressao === "completa" ? "contained" : "outlined"}
                         onClick={() => setModoImpressao("completa")}
                     >
-                        Etiqueta completa
+                        Etiqueta padrão
                     </Button>
 
                     <Button
@@ -401,6 +524,38 @@ function PainelReimpressao() {
                     >
                         Código de barras
                     </Button>
+                    <Button
+                        variant={modoImpressao === "bremsys" ? "contained" : "outlined"}
+                        onClick={() => setModoImpressao("bremsys")}
+                    >
+                        Etiqueta Bremsys
+                    </Button>
+                    <FormControl sx={{ width: 200 }} size="small">
+                        <InputLabel>Impressora</InputLabel>
+
+                        <Select
+                            value={printer}
+                            label="Impressora"
+                            onChange={(e) => selecionarImpressora(e.target.value)}
+                            MenuProps={{
+                                PaperProps: {
+                                    sx: {
+                                        bgcolor: "background.default",
+                                        color: "text.primary",
+                                    },
+                                },
+                            }}
+                        >
+                            {printers.map((p) => (
+                                <MenuItem
+                                    key={p}
+                                    value={p}
+                                >
+                                    {p}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
                 </Box>
 
                 {/* BUSCA */}
