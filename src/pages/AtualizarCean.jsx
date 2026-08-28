@@ -20,10 +20,7 @@ import {
     Tooltip
 } from "@mui/material";
 
-import { ThemeContext } from "../context/ThemeContext";
-
-import LoginFuncionario from "../components/LoginFuncionario";
-
+// Ícones do MUI
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -31,9 +28,11 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SyncIcon from '@mui/icons-material/Sync';
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 
-function AtualizarCean() {
+// Componentes
+import MenuUsuario from "../components/MenuUsuario";
+import LoginFuncionario from "../components/LoginFuncionario";
 
-    const { dark } = useContext(ThemeContext);
+function AtualizarCean() {
 
     // API BASE
     const API = "http://192.168.1.185:8077";
@@ -790,21 +789,19 @@ function AtualizarCean() {
                         <strong>Correção de Notas</strong>
                     </Typography>
                     <Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '0' }}>
-                            {<PersonIcon sx={{ color: "background.paper", paddingRight: '1vh' }} />}
-                            <Typography sx={{ color: "background.paper", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>
-                                {userInfo?.nome}
-                            </Typography>
-                            {token && (
-                                <Button
-                                    size="small"
-                                    onClick={logout}
-                                    sx={{ color: "background.paper", display: 'flex', gap: 1 }}
-                                >{<LogoutIcon />}
-                                </Button>
-                            )}
-                        </Box>
-                        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
+                        <MenuUsuario
+                            userInfo={userInfo}
+                            onLogout={logout}
+                        />
+
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "right",
+                                mr: "2vh"
+                            }}
+                        >
                             <Tooltip title="Importar base do fornecedor e aplicar automaticamente">
                                 <span>
                                     <Button

@@ -30,13 +30,17 @@ import {
     Tooltip
 } from "@mui/material";
 
+// Paginação
 import Pagination from "@mui/material/Pagination";
 
+// Ícones
 import PersonIcon from "@mui/icons-material/Person";
 import LogoutIcon from "@mui/icons-material/Logout";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 
+// Componentes
+import MenuUsuario from "../components/MenuUsuario";
 import LoginFuncionario from "../components/LoginFuncionario";
 
 const API_URL = "http://192.168.1.185:8077";
@@ -691,69 +695,18 @@ export default function DistribuicaoConferencia() {
                     </Typography>
 
                     <Box>
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'right'
-                            }}
-                        >
-
-                            <PersonIcon
-                                sx={{
-                                    color: "background.paper",
-                                    pr: 1
-                                }}
-                            />
-
-                            <Typography
-                                sx={{
-                                    color: "background.paper",
-                                    fontSize: '0.9rem'
-                                }}
-                            >
-                                {userInfo?.nome}
-                            </Typography>
-
-                            {token && (
-
-                                <Button
-                                    size="small"
-                                    onClick={logout}
-                                    sx={{
-                                        color: "background.paper"
-                                    }}
-                                >
-                                    <LogoutIcon />
-                                </Button>
-                            )}
-                        </Box>
-
+                        <MenuUsuario
+                            userInfo={userInfo}
+                            onLogout={logout}
+                        />
                         <Box
                             sx={{
                                 display: "flex",
-                                justifyContent: "right"
+                                flexDirection: "row",
+                                justifyContent: "right",
+                                mr: "2vh"
                             }}
                         >
-                            <Tooltip title="Gestão de colaboradores">
-                                <Button
-                                    onClick={() =>
-                                        navigate("/Tarefas")
-                                    }
-                                    sx={{
-                                        color: "background.paper",
-                                        display: 'flex',
-                                        gap: 0.5,
-                                        fontSize: '0.75rem',
-                                        minWidth: 'auto',
-                                        padding: '4px 8px',
-                                        whiteSpace: 'nowrap'
-                                    }}
-                                >
-                                    TAREFAS
-                                    <AssignmentIcon />
-                                </Button>
-                            </Tooltip>
                             <Tooltip title="Retornar ao dashboard">
                                 <Button
                                     onClick={() =>
@@ -774,7 +727,6 @@ export default function DistribuicaoConferencia() {
                                 </Button>
                             </Tooltip>
                         </Box>
-
                     </Box>
                 </Box>
 

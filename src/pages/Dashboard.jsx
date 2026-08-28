@@ -46,30 +46,15 @@ import ReplayIcon from '@mui/icons-material/Replay';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import HistoryIcon from '@mui/icons-material/History';
 
-// Ícones do dropdown
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import WarningIcon from '@mui/icons-material/Warning';
-import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
-import AssignmentIcon from '@mui/icons-material/Assignment';
-import LeaderboardIcon from "@mui/icons-material/Leaderboard";
-import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
-
-// Componente de login
+// Componentes
+import MenuUsuario from "../components/MenuUsuario";
 import LoginFuncionario from "../components/LoginFuncionario";
 
-// Tema
-import LightModeIcon from '@mui/icons-material/LightMode';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
-import { ThemeContext } from "../context/ThemeContext";
 import '../style/App.css';
 
 import Conferencia from "./Conferencia";
 
 function Dashboard({ tipo }) {
-
-    // Tema
-    const { dark, toggleTheme } = useContext(ThemeContext);
 
     // API BASE
     const API = "http://192.168.1.185:8077";
@@ -120,59 +105,6 @@ function Dashboard({ tipo }) {
 
     // SS Plus Sync
     const [loadingSync, setLoadingSync] = useState(false);
-
-    // Permissões
-    const [anchorPaginas, setAnchorPaginas] = useState(null);
-    const paginas = [
-        {
-            nome: "Alertas",
-            rota: "/Alertas",
-            permissao: "pode_acessar_alertas",
-            icone: <WarningIcon fontSize="small" />
-        },
-        {
-            nome: "Cadastrar Funcionário",
-            rota: "/CadastrarFuncionario",
-            permissao: "pode_acessar_cadastrar_funcionario",
-            icone: <PersonAddIcon fontSize="small" />
-        },
-        {
-            nome: "Correção de Notas",
-            rota: "/AtualizarCean",
-            permissao: "pode_corrigir_nfe",
-            icone: <BorderColorIcon fontSize="small" />
-        },
-        {
-            nome: "Atribuir Notas",
-            rota: "/PainelGerencial",
-            permissao: "pode_acessar_painel_gerencial",
-            icone: <AssignmentTurnedInIcon fontSize="small" />
-        },
-        {
-            nome: "Gamificação",
-            rota: "/PainelGames",
-            permissao: "pode_acessar_painel_games",
-            icone: <SportsEsportsIcon fontSize="small" />
-        },
-        {
-            nome: "Produtividade",
-            rota: "/Produtividade",
-            permissao: null,
-            icone: <LeaderboardIcon fontSize="small" />
-        },
-        {
-            nome: "Recebimento",
-            rota: "/Recebimento",
-            permissao: "pode_finalizar_nfe",
-            icone: <LocalShippingIcon fontSize="small" />
-        },
-        {
-            nome: "Tarefas",
-            rota: "/Tarefas",
-            permissao: "pode_acessar_tarefas",
-            icone: <AssignmentIcon fontSize="small" />
-        }
-    ];
 
     useEffect(() => {
 
@@ -262,23 +194,6 @@ function Dashboard({ tipo }) {
         ALTA: 3,
         MEDIA: 2,
         BAIXA: 1
-    };
-
-    // Páginas que o usuário pode acessar
-    const paginasPermitidas = paginas.filter((pagina) => {
-        if (!pagina.permissao) {
-            return true;
-        }
-
-        return userInfo?.[pagina.permissao] === true;
-    });
-
-    const abrirMenuPaginas = (event) => {
-        setAnchorPaginas(event.currentTarget);
-    };
-
-    const fecharMenuPaginas = () => {
-        setAnchorPaginas(null);
     };
 
     // Logs de alteração de notas
@@ -910,33 +825,18 @@ function Dashboard({ tipo }) {
                         </strong>
                     </Typography>
                     <Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '0' }}>
-                            <Button
-                                onClick={abrirMenuPaginas}
-                                sx={{
-                                    color: "background.paper",
-                                    display: 'flex',
-                                    gap: 0.5,
-                                    fontSize: '0.75rem',
-                                    minWidth: 'auto',
-                                    padding: '4px 8px',
-                                    whiteSpace: 'nowrap'
-                                }}
-                            >
-                                <ArrowDropDownIcon fontSize="small" />
-                            </Button>
-                            {<PersonIcon sx={{ color: "var(--branco)", paddingRight: '1vh' }} />}
-                            <Typography sx={{ color: "var(--branco)", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>
-                                {userInfo?.nome}
-                            </Typography>
-                            {token && (
-                                <Tooltip title="Logout">
-                                    <Button size="small" onClick={logout} sx={{ color: "background.paper", display: 'flex', gap: 1 }}>{<LogoutIcon />}</Button>
-                                </Tooltip>
-                            )}
-                        </Box>
-                        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
-
+                        <MenuUsuario
+                            userInfo={userInfo}
+                            onLogout={logout}
+                        />
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "right",
+                                mr: "2vh"
+                            }}
+                        >
                             <Tooltip title="Sincronizar itens com SS Plus">
                                 <Button
                                     id="btnAtualizar"
@@ -1014,77 +914,9 @@ function Dashboard({ tipo }) {
                                     <Inventory2Icon />
                                 </Button>
                             </Tooltip>
-
-                            <pre id="resultado"></pre>
                         </Box>
                     </Box>
                 </Box>
-
-                <Menu
-                    anchorEl={anchorPaginas}
-                    open={Boolean(anchorPaginas)}
-                    onClose={fecharMenuPaginas}
-                    PaperProps={{
-                        sx: {
-                            bgcolor: 'background.default',
-                            color: 'text.primary',
-                            minWidth: 220
-                        }
-                    }}
-                >
-                    {paginasPermitidas.map((pagina) => (
-                        <MenuItem
-                            key={pagina.rota}
-                            onClick={() => {
-                                fecharMenuPaginas();
-                                navigate(pagina.rota);
-                            }}
-                            sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 1.2,
-                                color: 'text.primary'
-                            }}
-                        >
-                            {pagina.icone}
-
-                            <Typography
-                                sx={{
-                                    fontSize: '0.85rem'
-                                }}
-                            >
-                                {pagina.nome}
-                            </Typography>
-                        </MenuItem>
-                    ))}
-
-                    {/* ALTERAR TEMA */}
-                    <MenuItem
-                        onClick={() => {
-                            toggleTheme();
-                        }}
-                        sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1.2,
-                            color: 'text.primary'
-                        }}
-                    >
-                        {dark ? (
-                            <LightModeIcon fontSize="small" />
-                        ) : (
-                            <DarkModeIcon fontSize="small" />
-                        )}
-
-                        <Typography
-                            sx={{
-                                fontSize: '0.85rem'
-                            }}
-                        >
-                            {dark ? "Tema claro" : "Tema escuro"}
-                        </Typography>
-                    </MenuItem>
-                </Menu>
 
                 {/* Loading de sincronização SS Plus*/}
                 <Backdrop

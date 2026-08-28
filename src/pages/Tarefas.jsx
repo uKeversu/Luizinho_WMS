@@ -42,6 +42,7 @@ import {
     Fab
 } from "@mui/material";
 
+// Ícones
 import PersonIcon from "@mui/icons-material/Person";
 import LogoutIcon from "@mui/icons-material/Logout";
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
@@ -66,7 +67,10 @@ import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
+// Componentes
+import MenuUsuario from "../components/MenuUsuario";
 import LoginFuncionario from "../components/LoginFuncionario";
 
 const API_URL = "http://192.168.1.185:8077";
@@ -76,7 +80,6 @@ export default function Tarefas() {
     const navigate = useNavigate();
 
     // USUÁRIO
-
     const [userInfo] = useState(() => {
         const u = localStorage.getItem("user_info");
         return u ? JSON.parse(u) : null;
@@ -769,122 +772,22 @@ export default function Tarefas() {
                     </Typography>
 
                     <Box>
+                        <MenuUsuario
+                            userInfo={userInfo}
+                            onLogout={logout}
+                        />
                         <Box
                             sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'right'
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "right",
+                                mr: "2vh"
                             }}
                         >
-
-                            <PersonIcon
-                                sx={{
-                                    color: "background.paper",
-                                    pr: 1
-                                }}
-                            />
-
-                            <Typography
-                                sx={{
-                                    color: "background.paper",
-                                    fontSize: '0.9rem'
-                                }}
-                            >
-                                {userInfo?.nome}
-                            </Typography>
-
-                            {token && (
-
-                                <Button
-                                    size="small"
-                                    onClick={logout}
-                                    sx={{
-                                        color: "background.paper"
-                                    }}
-                                >
-                                    <LogoutIcon />
-                                </Button>
-                            )}
-                        </Box>
-
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                justifyContent: 'right'
-                            }}
-                        >
-                            <Tooltip title="Cadastro de funcionários">
-                                <Button
-                                    onClick={() => setOpenDialog(true)}
-                                    sx={{
-                                        color: "background.paper",
-                                        display: 'flex',
-                                        gap: 0.5,
-                                        fontSize: '0.75rem',
-                                        minWidth: 'auto',
-                                        padding: '4px 8px',
-                                        whiteSpace: 'nowrap'
-                                    }}
-                                >
-                                    FUNCIONARIOS
-                                    {< PersonAddIcon />}
-                                </Button>
-                            </Tooltip>
-                            <Tooltip title="Desempenho dos conferentes">
-                                <Button
-                                    onClick={() => navigate("/Produtividade")}
-                                    sx={{
-                                        color: "background.paper",
-                                        display: "flex",
-                                        gap: 0.7,
-                                        fontSize: "0.75rem",
-                                        minWidth: "auto",
-                                        padding: "4px 10px",
-                                        whiteSpace: "nowrap",
-                                    }}
-                                >
-                                    PRODUTIVIDADE
-                                    <LeaderboardIcon fontSize="small" />
-                                </Button>
-                            </Tooltip>
-                            <Tooltip title="Notas com pendências ou alertas">
-                                <Button
-                                    onClick={() => navigate("/Alertas")}
-                                    sx={{
-                                        color: "background.paper",
-                                        display: 'flex',
-                                        gap: 0.5,
-                                        fontSize: '0.75rem',
-                                        minWidth: 'auto',
-                                        padding: '4px 8px',
-                                        whiteSpace: 'nowrap'
-                                    }}
-                                >
-                                    Alertas
-                                    {< WarningIcon />}
-                                </Button>
-                            </Tooltip>
-                            <Tooltip title="Dashboard de notas recebidas">
-                                <Button
-                                    onClick={() => navigate("/")}
-                                    sx={{
-                                        color: "background.paper",
-                                        display: 'flex',
-                                        gap: 0.5,
-                                        fontSize: '0.75rem',
-                                        minWidth: 'auto',
-                                        padding: '4px 8px',
-                                        whiteSpace: 'nowrap'
-                                    }}
-                                >
-                                    NOTAS
-                                    {< ArticleIcon />}
-                                </Button>
-                            </Tooltip>
-                            <Tooltip title="Atribua notas para conferentes">
+                            <Tooltip title="Retornar ao dashboard">
                                 <Button
                                     onClick={() =>
-                                        navigate("/PainelGerencial")
+                                        navigate("/")
                                     }
                                     sx={{
                                         color: "background.paper",
@@ -896,8 +799,8 @@ export default function Tarefas() {
                                         whiteSpace: 'nowrap'
                                     }}
                                 >
-                                    ATRIBUIÇÕES
-                                    <AssignmentTurnedInIcon />
+                                    VOLTAR
+                                    <ArrowBackIcon />
                                 </Button>
                             </Tooltip>
                         </Box>

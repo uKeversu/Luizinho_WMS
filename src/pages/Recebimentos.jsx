@@ -22,6 +22,7 @@ import {
     Tooltip
 } from "@mui/material";
 
+// Ícones
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ArticleIcon from '@mui/icons-material/Article';
@@ -29,18 +30,19 @@ import AttachmentIcon from '@mui/icons-material/Attachment';
 import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
 import LightModeIcon from '@mui/icons-material/LightMode';
-
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
+// Componentes
+import MenuUsuario from "../components/MenuUsuario";
 import LoginFuncionario from "../components/LoginFuncionario";
-import Dashboard from "./Dashboard";
-
 import ModalErro from "../components/ModalErro";
 import ModalRetira from "../components/ModalRetira";
 import ModalObservacao from "../components/ModalObservacoes";
 import ModalConfirmaRecebimento from "../components/ModalConfirmaRecebimento";
 import Cronometro from "../components/Cronometro";
+
+import Dashboard from "./Dashboard";
 
 import '../style/App.css';
 
@@ -998,30 +1000,18 @@ function Recebimentos() {
                         <strong>Recebimento de mercadorias</strong>
                     </Typography>
                     <Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '0' }}>
-                            {<PersonIcon sx={{ color: "background.paper", paddingRight: '1vh' }} />}
-                            <Typography sx={{ color: "background.paper", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>
-                                {userInfo?.nome}
-                            </Typography>
-                            {token && (
-                                <Button
-                                    size="small"
-                                    onClick={logout}
-                                    sx={{ color: "background.paper", display: 'flex', gap: 1 }}
-                                >{<LogoutIcon />}
-                                </Button>
-                            )}
-                        </Box>
+                        <MenuUsuario
+                            userInfo={userInfo}
+                            onLogout={logout}
+                        />
                         <Box
                             sx={{
-                                display: 'flex',
-                                flexDirection: 'row',
-                                justifyContent: 'flex-end',
-                                alignItems: 'center',
-                                gap: 1,
-                                flexWrap: 'nowrap',
-                                overflow: 'hidden'
-                            }}>
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "right",
+                                mr: "2vh"
+                            }}
+                        >
                             <Tooltip title="Dashboard de notas recebidas">
                                 <Button
                                     onClick={() => navigate("/")}

@@ -31,15 +31,13 @@ import AccessTimeFilledRoundedIcon from '@mui/icons-material/AccessTimeFilled';
 import AssignmentReturnRoundedIcon from '@mui/icons-material/AssignmentReturnRounded';
 import BarcodeReaderIcon from '@mui/icons-material/BarcodeReader';
 
-import { ThemeContext } from "../context/ThemeContext";
-
+// Componentes
+import MenuUsuario from "../components/MenuUsuario";
 import LoginFuncionario from "../components/LoginFuncionario";
 
 import '../style/App.css';
 
 function Alertas() {
-
-    const { dark } = useContext(ThemeContext);
 
     // API BASE
     const API = "http://192.168.1.185:8077";
@@ -229,29 +227,19 @@ function Alertas() {
                         </Typography>
                     </Box>
                     <Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '0' }}>
-                            {<PersonIcon sx={{ color: "background.paper", paddingRight: '1vh' }} />}
-                            <Typography sx={{ color: "background.paper", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>
-                                {userInfo?.nome}
-                            </Typography>
-                            {token && (
-                                <Button
-                                    size="small"
-                                    onClick={logout}
-                                    sx={{
-                                        color: "background.paper",
-                                        display: 'flex',
-                                        gap: 0.5,
-                                        fontSize: '0.75rem',
-                                        minWidth: 'auto',
-                                        padding: '4px 8px',
-                                        whiteSpace: 'nowrap'
-                                    }}
-                                >{<LogoutIcon />}
-                                </Button>
-                            )}
-                        </Box>
-                        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
+                        <MenuUsuario
+                            userInfo={userInfo}
+                            onLogout={logout}
+                        />
+
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "right",
+                                mr: "2vh"
+                            }}
+                        >
                             <Button
                                 onClick={() => navigate("/")}
                                 sx={{

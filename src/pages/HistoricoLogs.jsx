@@ -23,15 +23,13 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SearchIcon from '@mui/icons-material/Search';
 
-import { ThemeContext } from "../context/ThemeContext";
-
+// Componentes
+import MenuUsuario from "../components/MenuUsuario";
 import LoginFuncionario from "../components/LoginFuncionario";
 
 import "../style/App.css";
 
 function HistoricoLogs() {
-
-    const { dark } = useContext(ThemeContext);
 
     const { notaId } = useParams();
 
@@ -252,9 +250,7 @@ function HistoricoLogs() {
                     bgcolor: "background.default"
                 }}
             >
-
                 {/* HEADER */}
-
                 <Box
                     sx={{
                         display: "flex",
@@ -289,52 +285,18 @@ function HistoricoLogs() {
                     </Typography>
 
                     <Box>
-
+                        <MenuUsuario
+                            userInfo={userInfo}
+                            onLogout={logout}
+                        />
                         <Box
                             sx={{
                                 display: "flex",
-                                alignItems: "center",
-                                justifyContent: "right"
+                                flexDirection: "row",
+                                justifyContent: "right",
+                                mr: "2vh"
                             }}
                         >
-
-                            <PersonIcon
-                                sx={{
-                                    color: "background.paper",
-                                    pr: 1
-                                }}
-                            />
-
-                            <Typography
-                                sx={{
-                                    color: "background.paper",
-                                    fontSize: "0.9rem"
-                                }}
-                            >
-                                {userInfo?.nome}
-                            </Typography>
-
-                            {token && (
-                                <Button
-                                    size="small"
-                                    onClick={logout}
-                                    sx={{
-                                        color: "background.paper"
-                                    }}
-                                >
-                                    <LogoutIcon />
-                                </Button>
-                            )}
-
-                        </Box>
-
-                        <Box
-                            sx={{
-                                display: "flex",
-                                justifyContent: "right"
-                            }}
-                        >
-
                             <Button
                                 onClick={() => navigate("/")}
                                 sx={{
@@ -345,11 +307,8 @@ function HistoricoLogs() {
                                 Voltar
                                 <ArrowBackIcon />
                             </Button>
-
                         </Box>
-
                     </Box>
-
                 </Box>
 
                 {/* FILTROS */}

@@ -13,14 +13,12 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PrintIcon from '@mui/icons-material/Print';
 
-// Componente de login
+// Componentes
+import MenuUsuario from "../components/MenuUsuario";
 import LoginFuncionario from "../components/LoginFuncionario";
-
-import { ThemeContext } from "../context/ThemeContext";
 
 function PainelReimpressao() {
 
-    const { dark } = useContext(ThemeContext);
     const navigate = useNavigate();
 
     const API = "http://192.168.1.185:8077";
@@ -482,22 +480,20 @@ function PainelReimpressao() {
                     <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "background.paper" }}>
                         <strong>Painel de reimpressão de etiquetas</strong>
                     </Typography>
+
                     <Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '0' }}>
-                            {<PersonIcon sx={{ color: "background.paper", paddingRight: '1vh' }} />}
-                            <Typography sx={{ color: "background.paper", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>
-                                {userInfo?.nome}
-                            </Typography>
-                            {token && (
-                                <Button
-                                    size="small"
-                                    onClick={logout}
-                                    sx={{ color: "background.paper", display: 'flex', gap: 1 }}
-                                >{<LogoutIcon />}
-                                </Button>
-                            )}
-                        </Box>
-                        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
+                        <MenuUsuario
+                            userInfo={userInfo}
+                            onLogout={logout}
+                        />
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "right",
+                                mr: "2vh"
+                            }}
+                        >
                             <Button
                                 onClick={() => navigate("/")}
                                 sx={{ color: "background.paper", display: 'flex', gap: 1 }}

@@ -17,12 +17,14 @@ import {
     TableRow,
     Chip,
     Grid,
-    Paper
+    Paper,
+    Tooltip
 } from "@mui/material";
 
 import Collapse from "@mui/material/Collapse";
 import { Fragment } from "react";
 
+// Ícones
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -33,15 +35,13 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import WarningIcon from '@mui/icons-material/Warning';
 import SearchIcon from '@mui/icons-material/Search';
 
-import { ThemeContext } from "../context/ThemeContext";
-
+// Componentes
+import MenuUsuario from "../components/MenuUsuario";
 import LoginFuncionario from "../components/LoginFuncionario";
 
 import '../style/App.css';
 
 function ConsultaGeral() {
-
-    const { dark } = useContext(ThemeContext);
 
     // API BASE
     const API = "http://192.168.1.185:8077";
@@ -617,63 +617,37 @@ function ConsultaGeral() {
                     </Typography>
 
                     <Box>
+                        <MenuUsuario
+                            userInfo={userInfo}
+                            onLogout={logout}
+                        />
                         <Box
                             sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'right'
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "right",
+                                mr: "2vh"
                             }}
                         >
-
-                            <PersonIcon
-                                sx={{
-                                    color: "background.paper",
-                                    pr: 1
-                                }}
-                            />
-
-                            <Typography
-                                sx={{
-                                    color: "background.paper",
-                                    fontSize: '0.9rem'
-                                }}
-                            >
-                                {userInfo?.nome}
-                            </Typography>
-
-                            {token && (
-
+                            <Tooltip title="Retornar ao dashboard">
                                 <Button
-                                    size="small"
-                                    onClick={logout}
+                                    onClick={() =>
+                                        navigate("/")
+                                    }
                                     sx={{
-                                        color: "background.paper"
+                                        color: "background.paper",
+                                        display: 'flex',
+                                        gap: 0.5,
+                                        fontSize: '0.75rem',
+                                        minWidth: 'auto',
+                                        padding: '4px 8px',
+                                        whiteSpace: 'nowrap'
                                     }}
                                 >
-                                    <LogoutIcon />
+                                    VOLTAR
+                                    <ArrowBackIcon />
                                 </Button>
-                            )}
-                        </Box>
-
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                justifyContent: 'right'
-                            }}
-                        >
-
-                            <Button
-                                onClick={() =>
-                                    navigate("/")
-                                }
-                                sx={{
-                                    color: "background.paper",
-                                    gap: 1, mr: 2
-                                }}
-                            >
-                                Voltar
-                                <ArrowBackIcon />
-                            </Button>
+                            </Tooltip>
                         </Box>
                     </Box>
                 </Box>
@@ -686,9 +660,7 @@ function ConsultaGeral() {
                         mb: 4,
                         borderRadius: '2vh',
                         bgcolor: 'background.alerta',
-                        border: dark
-                            ? '1px solid rgba(255,255,255,0.08)'
-                            : '1px solid rgba(0,0,0,0.08)',
+                        border: '1px solid rgba(0,0,0,0.08)',
                         zoom: '0.9'
                     }}
                 >

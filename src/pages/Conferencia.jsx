@@ -21,15 +21,13 @@ import Inventory2Icon from '@mui/icons-material/Inventory2';
 import ListIcon from "@mui/icons-material/List";
 import ReplayIcon from "@mui/icons-material/Replay";
 
+// Componentes
+import MenuUsuario from "../components/MenuUsuario";
 import LoginFuncionario from "../components/LoginFuncionario";
 
-import { ThemeContext } from "../context/ThemeContext";
 import '../style/App.css';
 
 function Conferencia() {
-
-    // Tema noturno
-    const { dark, toggleTheme } = useContext(ThemeContext);
 
     // Acessar outras pages        
     const navigate = useNavigate();
@@ -3140,16 +3138,18 @@ function Conferencia() {
                     </strong>
                 </Typography>
                 <Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '0' }}>
-                        {<PersonIcon sx={{ color: "background.paper", paddingRight: '1vh' }} />}
-                        <Typography sx={{ color: "background.paper", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>{userInfo?.nome}</Typography>
-                        {token && (
-                            <Tooltip title="Logout">
-                                <Button size="small" onClick={logout} sx={{ color: "background.paper", display: 'flex', gap: 1 }}>{<LogoutIcon />}</Button>
-                            </Tooltip>
-                        )}
-                    </Box>
-                    <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'right', mr: '2vh' }}>
+                    <MenuUsuario
+                        userInfo={userInfo}
+                        onLogout={logout}
+                    />
+                    <Box
+                        sx={{
+                            display: "flex",
+                            flexDirection: "row",
+                            justifyContent: "right",
+                            mr: "2vh"
+                        }}
+                    >
                         <Tooltip title="Sincronizar itens da nota com SS Plus">
                             <Button
                                 id="btnAtualizar" onClick={syncSSPlus}

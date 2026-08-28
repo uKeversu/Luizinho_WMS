@@ -34,15 +34,13 @@ import BarcodeReaderIcon from '@mui/icons-material/BarcodeReader';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import BadgeIcon from '@mui/icons-material/Badge';
 
-import { ThemeContext } from "../context/ThemeContext";
-
+// Componentes
+import MenuUsuario from "../components/MenuUsuario";
 import LoginFuncionario from "../components/LoginFuncionario";
 
 import "../style/App.css";
 
 function ConsultaGuarda() {
-
-    const { dark } = useContext(ThemeContext);
 
     const navigate = useNavigate();
 
@@ -471,52 +469,18 @@ function ConsultaGuarda() {
                     </Box>
 
                     <Box>
-
+                        <MenuUsuario
+                            userInfo={userInfo}
+                            onLogout={logout}
+                        />
                         <Box
                             sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'right'
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "right",
+                                mr: "2vh"
                             }}
                         >
-
-                            <PersonIcon
-                                sx={{
-                                    color: "background.paper",
-                                    pr: 1
-                                }}
-                            />
-
-                            <Typography
-                                sx={{
-                                    color: "background.paper",
-                                    fontSize: '0.9rem'
-                                }}
-                            >
-                                {userInfo?.nome}
-                            </Typography>
-
-                            {token && (
-
-                                <Button
-                                    size="small"
-                                    onClick={logout}
-                                    sx={{
-                                        color: "background.paper"
-                                    }}
-                                >
-                                    <LogoutIcon />
-                                </Button>
-                            )}
-                        </Box>
-
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                justifyContent: 'right'
-                            }}
-                        >
-
                             <Button
                                 onClick={() =>
                                     navigate("/")
@@ -529,11 +493,8 @@ function ConsultaGuarda() {
                                 Voltar
                                 <ArrowBackIcon />
                             </Button>
-
                         </Box>
-
                     </Box>
-
                 </Box>
 
                 {/* FILTROS */}
@@ -544,9 +505,7 @@ function ConsultaGuarda() {
                         mb: 4,
                         borderRadius: '2vh',
                         bgcolor: 'background.alerta',
-                        border: dark
-                            ? '1px solid rgba(255,255,255,0.08)'
-                            : '1px solid rgba(0,0,0,0.08)',
+                        border: '1px solid rgba(0,0,0,0.08)',
                         zoom: '0.9'
                     }}
                 >
@@ -973,10 +932,7 @@ function ConsultaGuarda() {
                             <Box
                                 sx={{
                                     p: 2,
-                                    borderBottom:
-                                        dark
-                                            ? '1px solid rgba(255,255,255,0.08)'
-                                            : '1px solid rgba(0,0,0,0.08)'
+                                    borderBottom: '1px solid rgba(0,0,0,0.08)'
                                 }}
                             >
                                 <Typography
@@ -1258,10 +1214,7 @@ function ConsultaGuarda() {
                                 <Box
                                     sx={{
                                         p: 2,
-                                        borderBottom:
-                                            dark
-                                                ? '1px solid rgba(255,255,255,0.08)'
-                                                : '1px solid rgba(0,0,0,0.08)'
+                                        borderBottom: '1px solid rgba(0,0,0,0.08)'
                                     }}
                                 >
                                     <Typography

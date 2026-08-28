@@ -12,9 +12,8 @@ import {
     Alert,
 } from "@mui/material";
 
-import PersonIcon from '@mui/icons-material/Person';
-import LogoutIcon from '@mui/icons-material/Logout';
-
+// Componentes
+import MenuUsuario from "../components/MenuUsuario";
 import LoginFuncionario from "../components/LoginFuncionario";
 
 import '../style/App.css';
@@ -182,13 +181,11 @@ function CadastroFuncionario() {
                 </Typography>
 
                 <Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '0' }}>
-                        {<PersonIcon sx={{ color: "background.paper", paddingRight: '1vh' }} />}
-                        <Typography sx={{ color: "background.paper", fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>{userInfo?.nome}</Typography>
-                        {token && (
-                            <Button size="small" onClick={logout} sx={{ color: "background.paper", display: 'flex', gap: 1 }}>{<LogoutIcon />}</Button>
-                        )}
-                    </Box>
+                    <MenuUsuario
+                        userInfo={userInfo}
+                        onLogout={logout}
+                    />
+
                 </Box>
             </Box>
 
