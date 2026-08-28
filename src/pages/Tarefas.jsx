@@ -2187,7 +2187,7 @@ export default function Tarefas() {
                     </DialogActions>
                 </Dialog>
 
-                <Dialog open={modalNovaTarefa} onClose={() => setModalNovaTarefa(false)}
+                <Dialog open={modalNovaTarefa} onClose={() => {setModalNovaTarefa(false), setNovaTarefa("")}}
                     slotProps={{
                         paper: {
                             sx: {
