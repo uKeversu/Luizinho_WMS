@@ -73,11 +73,27 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import MenuUsuario from "../components/MenuUsuario";
 import LoginFuncionario from "../components/LoginFuncionario";
 
-const API_URL = "http://192.168.1.185:8077";
-
 export default function Tarefas() {
 
     const navigate = useNavigate();
+
+    // API Base
+    const API_URL = "http://192.168.1.185:8077";
+
+    const api = axios.create({
+        baseURL: API_URL,
+    });
+
+    api.interceptors.request.use((config) => {
+
+        const token = localStorage.getItem("nfe_token");
+
+        if (token) {
+            config.headers["X-Auth-Token"] = token;
+        }
+
+        return config;
+    });
 
     // USUÁRIO
     const [userInfo] = useState(() => {
@@ -96,11 +112,6 @@ export default function Tarefas() {
         navigate("/");
     }
 
-    // Cadastro de funcionario
-    const [openDialog, setOpenDialog] = useState(false);
-    const [senhaAdmin, setSenhaAdmin] = useState("");
-    const [showSenha, setShowSenha] = useState(false);
-
     // STATES
     const [tarefas, setTarefas] = useState([]);
     const [funcionarios, setFuncionarios] = useState([]);
@@ -116,6 +127,7 @@ export default function Tarefas() {
     const [funcionariosSelecionados, setFuncionariosSelecionados] = useState([]);
     const [novaTarefa, setNovaTarefa] = useState("");
     const [editarTarefa, setEditarTarefa] = useState(null);
+    const [tarefaParaExcluir, setTarefaParaExcluir] = useState(null);
     const [dialogExcluir, setDialogExcluir] = useState(false);
     const [modalColaboradores, setModalColaboradores] = useState(null);
     const [drawerFuncionario, setDrawerFuncionario] = useState(false);
@@ -163,8 +175,8 @@ export default function Tarefas() {
                 tarefasRes,
                 funcionariosRes
             ] = await Promise.all([
-                axios.get(`${API_URL}/api/tarefas`),
-                axios.get(`${API_URL}/api/tarefas/funcionarios`)
+                api.get("/api/tarefas"),
+                api.get("/api/tarefas/funcionarios")
             ]);
 
             setTarefas(tarefasRes.data);
@@ -193,7 +205,6 @@ export default function Tarefas() {
                 setLoading(false);
 
         }
-
     }
 
     // DETALHES DO FUNCIONÁRIO
@@ -203,16 +214,25 @@ export default function Tarefas() {
 
             setLoading(true);
 
-            const { data } = await axios.get(
-                `${API_URL}/api/tarefas/funcionarios/${codigo}`
+            const { data } = await api.get(
+                `/api/tarefas/funcionarios/${codigo}`
             );
 
+            const funcionarioNormalizado = {
+                funcionario: data.funcionario ?? {},
+                competencias: data.competencias ?? [],
+                observacoes: data.observacoes ?? [],
+                estatisticas: {
+                    elogios: data.estatisticas?.elogios ?? 0,
+                    advertencias: data.estatisticas?.advertencias ?? 0,
+                    erros: data.estatisticas?.erros ?? 0,
+                    saldo_pontos: data.estatisticas?.saldo_pontos ?? 0
+                }
+            };
+
             setFuncionarioSelecionado(codigo);
-
-            setDetalhesFuncionario(data);
-
+            setDetalhesFuncionario(funcionarioNormalizado);
             setDrawerFuncionario(true);
-
             setTabDrawer(0);
 
         }
@@ -410,14 +430,11 @@ export default function Tarefas() {
 
             setLoading(true);
 
-            const { data } = await axios.post(
-                `${API_URL}/api/tarefas/atribuir`,
-                {
-                    tarefa: tarefaSelecionada,
-                    funcionarios: funcionariosSelecionados,
-                    supervisor: userInfo.codigo
-                }
-            );
+            const { data } = await api.post("/api/tarefas/atribuir", {
+                tarefa: tarefaSelecionada,
+                funcionarios: funcionariosSelecionados,
+                supervisor: userInfo.codigo
+            })
 
             limparSelecao();
 
@@ -463,24 +480,26 @@ export default function Tarefas() {
     async function cadastrarTarefa() {
         if (!novaTarefa.trim())
             return;
+
         try {
-            await axios.post(
-                `${API_URL}/api/tarefas`,
-                {
-                    nome: novaTarefa,
-                    usuario: userInfo.codigo
-                }
-            );
+            await api.post("/api/tarefas", {
+                nome: novaTarefa,
+                usuario: userInfo.codigo
+            });
+
             setNovaTarefa("");
             carregar(false);
+
             setSnackbar({
                 open: true,
                 severity: "success",
                 message: "Tarefa cadastrada."
             });
-        }
-        catch (err) {
+
+        } catch (err) {
+
             console.error(err);
+
             setSnackbar({
                 open: true,
                 severity: "error",
@@ -496,12 +515,10 @@ export default function Tarefas() {
         if (!editarTarefa)
             return;
         try {
-            await axios.put(
-                `${API_URL}/api/tarefas/${editarTarefa.id}`,
-                {
-                    nome: editarTarefa.nome
-                }
-            );
+            await api.put(`/api/tarefas/${editarTarefa.id}`, {
+                nome: editarTarefa.nome
+            })
+
             setEditarTarefa(null);
             carregar(false);
             setSnackbar({
@@ -524,23 +541,34 @@ export default function Tarefas() {
 
     // EXCLUIR TAREFA
     async function excluirTarefa() {
-        if (!editarTarefa)
+
+        if (!tarefaParaExcluir) {
+            setSnackbar({
+                open: true,
+                severity: "error",
+                message: "Não foi possível encontrar a tarefa."
+            });
             return;
+        }
+
         try {
-            await axios.delete(
-                `${API_URL}/api/tarefas/${editarTarefa.id}`
-            );
+            await api.delete(`/api/tarefas/${tarefaParaExcluir.id}`);
+
             setDialogExcluir(false);
-            setEditarTarefa(null);
+            setTarefaParaExcluir(null);
+
             carregar(false);
+
             setSnackbar({
                 open: true,
                 severity: "success",
                 message: "Tarefa removida."
             });
-        }
-        catch (err) {
+
+        } catch (err) {
+
             console.error(err);
+
             setSnackbar({
                 open: true,
                 severity: "error",
@@ -554,14 +582,10 @@ export default function Tarefas() {
     // REMOVER COLABORADOR
     async function removerFuncionario(codigo) {
         try {
-            await axios.delete(
-                `${API_URL}/api/tarefas/remover/${codigo}`,
-                {
-                    params: {
-                        supervisor: userInfo.codigo
-                    }
-                }
-            );
+            await api.delete(`/api/tarefas/remover/${codigo}`, {
+                supervisor: userInfo.codigo
+            })
+
             setModalColaboradores(null);
             carregar(false);
             setSnackbar({
@@ -585,9 +609,8 @@ export default function Tarefas() {
     // CARREGAR COMPETÊNCIAS
     async function abrirCompetencias() {
         try {
-            const { data } = await axios.get(
-                `${API_URL}/api/tarefas/competencias/${funcionarioSelecionado}`
-            );
+            const { data } = await api.get(`/api/tarefas/competencias/${funcionarioSelecionado}`)
+
             setCompetencias(data.competencias);
             setModalCompetencias(true);
         }
@@ -599,14 +622,12 @@ export default function Tarefas() {
     // SALVAR COMPETÊNCIAS
     async function salvarCompetencias() {
         try {
-            await axios.post(
-                `${API_URL}/api/tarefas/competencias`,
-                {
-                    funcionario: funcionarioSelecionado,
-                    supervisor: userInfo.codigo,
-                    competencias
-                }
-            );
+            await api.post(`/api/tarefas/competencias`, {
+                funcionario: funcionarioSelecionado,
+                supervisor: userInfo.codigo,
+                competencias
+            })
+
             setModalCompetencias(false);
             abrirFuncionario(funcionarioSelecionado);
             setSnackbar({
@@ -623,17 +644,14 @@ export default function Tarefas() {
     // NOVA OBSERVAÇÃO
     async function salvarObservacao() {
         try {
-            await axios.post(
-                `${API_URL}/api/tarefas/observacoes`,
-                {
-                    funcionario: funcionarioSelecionado,
-                    tarefa_id:
-                        detalhesFuncionario.funcionario.tarefa_id,
-                    supervisor: userInfo.codigo,
-                    tipo: tipoObservacao,
-                    descricao: descricaoObservacao,
-                }
-            );
+            await api.post(`/api/tarefas/observacoes`, {
+                funcionario: funcionarioSelecionado,
+                tarefa_id: detalhesFuncionario.funcionario.tarefa_id,
+                supervisor: userInfo.codigo,
+                tipo: tipoObservacao,
+                descricao: descricaoObservacao
+            })
+
             setDescricaoObservacao("");
             setTipoObservacao("ELOGIO");
             setModalObservacao(false);
@@ -651,15 +669,8 @@ export default function Tarefas() {
 
     // EXCLUIR OBSERVAÇÃO
     async function excluirObservacao(id) {
-
         try {
-
-            await axios.delete(
-
-                `${API_URL}/api/tarefas/observacoes/${id}`
-
-            );
-
+            await api.delete(`/api/tarefas/observacoes/${id}`)
             abrirFuncionario(funcionarioSelecionado);
 
             setSnackbar({
@@ -670,28 +681,9 @@ export default function Tarefas() {
         }
 
         catch (err) {
-
             console.error(err);
-
         }
-
     }
-
-    // Bloqueia cadastro sem senha
-    const acessarCadastro = () => {
-        if (senhaAdmin !== "Admin100378") {
-            setSnackbar({
-                open: true,
-                message: "Senha de administrador inválida",
-                severity: "error"
-            });
-            return;
-        }
-
-        setOpenDialog(false);
-        setSenhaAdmin("");
-        navigate("/CadastrarFuncionario");
-    };
 
     return (
         !token ? (
@@ -1101,6 +1093,10 @@ export default function Tarefas() {
                                                         size="small"
                                                         color="error"
                                                         onClick={() => {
+                                                            setTarefaParaExcluir({
+                                                                id: tarefa.id,
+                                                                nome: tarefa.nome
+                                                            });
                                                             setDialogExcluir(true);
                                                         }}
                                                     >
@@ -2187,7 +2183,7 @@ export default function Tarefas() {
                     </DialogActions>
                 </Dialog>
 
-                <Dialog open={modalNovaTarefa} onClose={() => {setModalNovaTarefa(false), setNovaTarefa("")}}
+                <Dialog open={modalNovaTarefa} onClose={() => { setModalNovaTarefa(false), setNovaTarefa("") }}
                     slotProps={{
                         paper: {
                             sx: {
@@ -2226,71 +2222,6 @@ export default function Tarefas() {
                             disabled={!novaTarefa.trim()}
                         >
                             Salvar
-                        </Button>
-                    </DialogActions>
-                </Dialog>
-
-                <Dialog open={openDialog} onClose={() => setOpenDialog(false)}
-                    slotProps={{
-                        paper: {
-                            sx: {
-                                bgcolor: "background.card",
-                                color: "text.primary",
-                            }
-                        }
-                    }}>
-                    <DialogTitle>Acesso restrito</DialogTitle>
-
-                    <DialogContent>
-                        <TextField
-                            label="Senha de administrador"
-                            type={showSenha ? "text" : "password"}
-                            fullWidth
-                            value={senhaAdmin}
-                            onChange={(e) => setSenhaAdmin(e.target.value)}
-                            autoFocus
-                            sx={{
-                                mt: 1,
-                                '& .MuiOutlinedInput-root': {
-                                    '&:hover fieldset': {
-                                        borderColor: 'primary.main',
-                                    },
-                                    '&.Mui-focused fieldset': {
-                                        borderColor: 'primary.main',
-                                    }
-                                }
-                            }}
-                            autoComplete="off"
-                            inputProps={{
-                                spellCheck: false,
-                                autoCorrect: "off",
-                                autoCapitalize: "off",
-                            }}
-                            InputProps={{
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <IconButton
-                                            onClick={() => setShowSenha(!showSenha)}
-                                            edge="end"
-                                        >
-                                            {showSenha ? <VisibilityOff /> : <Visibility />}
-                                        </IconButton>
-                                    </InputAdornment>
-                                )
-                            }}
-                        />
-                    </DialogContent>
-
-                    <DialogActions>
-                        <Button sx={{ color: "primary.branco", bgcolor: 'primary.cancelar', '&:hover': { bgcolor: 'primary.cancelarHover' } }} onClick={() => setOpenDialog(false)}>
-                            Cancelar
-                        </Button>
-
-                        <Button
-                            variant="contained"
-                            onClick={acessarCadastro}
-                            sx={{ color: "primary.branco", bgcolor: 'primary.confirmar', '&:hover': { bgcolor: 'primary.confirmarHover' } }}>
-                            Entrar
                         </Button>
                     </DialogActions>
                 </Dialog>
