@@ -230,6 +230,8 @@ export default function Tarefas() {
                 }
             };
 
+            console.log(data)
+
             setFuncionarioSelecionado(codigo);
             setDetalhesFuncionario(funcionarioNormalizado);
             setDrawerFuncionario(true);
@@ -643,6 +645,9 @@ export default function Tarefas() {
 
     // NOVA OBSERVAÇÃO
     async function salvarObservacao() {
+
+        console.log(detalhesFuncionario)
+
         try {
             await api.post(`/api/tarefas/observacoes`, {
                 funcionario: funcionarioSelecionado,
@@ -664,6 +669,11 @@ export default function Tarefas() {
         }
         catch (err) {
             console.error(err);
+            setSnackbar({
+                open: true,
+                severity: "error",
+                message: "Falha ao adicionar observação, verifique a tarefa."
+            });
         }
     }
 
