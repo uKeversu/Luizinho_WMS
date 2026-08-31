@@ -584,12 +584,11 @@ export default function Tarefas() {
     // REMOVER COLABORADOR
     async function removerFuncionario(codigo) {
         try {
-            await api.delete(`/api/tarefas/remover/${codigo}`, {
-                supervisor: userInfo.codigo
-            })
+            await api.delete(`/api/tarefas/remover/${codigo}`);
 
             setModalColaboradores(null);
             carregar(false);
+
             setSnackbar({
                 open: true,
                 severity: "success",
@@ -598,6 +597,7 @@ export default function Tarefas() {
         }
         catch (err) {
             console.error(err);
+
             setSnackbar({
                 open: true,
                 severity: "error",
