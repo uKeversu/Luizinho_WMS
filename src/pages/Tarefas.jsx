@@ -956,7 +956,7 @@ export default function Tarefas() {
                                 <Box
                                     sx={{
                                         flexGrow: 1,
-                                        maxHeight: "380px",
+                                        maxHeight: "100%",
                                         overflowY: "auto",
                                         pr: 0.5,
                                         "&::-webkit-scrollbar": { width: "6px" },
@@ -1196,7 +1196,7 @@ export default function Tarefas() {
                                 <Box
                                     sx={{
                                         flexGrow: 1,
-                                        maxHeight: "220px",
+                                        maxHeight: "100vh",
                                         overflowY: "auto",
                                         mt: 1,
                                         pr: 0.5,
