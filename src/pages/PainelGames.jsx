@@ -336,7 +336,7 @@ export default function PainelGames() {
 
                         <Box
                             component="img"
-                            src="/banner_seasons/banner_temporada_optimus.png"
+                            src="/banner_seasons/banner_temporada_nexus.png"
                             sx={{
                                 width: "100%",
                                 height: 240,

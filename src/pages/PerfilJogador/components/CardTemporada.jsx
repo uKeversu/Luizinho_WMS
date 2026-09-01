@@ -54,7 +54,7 @@ export default function CardTemporada({
             <Box>
                 <Box
                     component="img"
-                    src="/banner_seasons/banner_temporada_optimus.png"
+                    src="/banner_seasons/banner_temporada_nexus.png"
                     alt="banner_season"
                     sx={{
                         width: "100%",
