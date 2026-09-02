@@ -76,6 +76,12 @@ export const TITULOS = {
     `
     },
 
+    "Gaudério": {
+        color: "#00ff62",
+        textShadow:
+            "0 0 8px #2bcfff, 0 0 18px #0d5eff"
+    },
+
     default: {
         color: "#90caf9",
     },

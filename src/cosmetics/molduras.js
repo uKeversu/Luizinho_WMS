@@ -81,6 +81,12 @@ export const MOLDURAS = {
     `,
     },
 
+    "Rei dos Pampas": {
+        borderColor: "#7f962b",
+        glow:
+            "0 0 10px #4f6318, 0 0 22px #7f962b, 0 0 42px rgba(212,175,55,.45)",
+    },
+
     default: {
         borderColor: "#222",
         glow: "none",

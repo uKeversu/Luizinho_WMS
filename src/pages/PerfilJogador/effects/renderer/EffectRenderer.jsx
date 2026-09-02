@@ -4,6 +4,7 @@ import CaravelaEffect from "../caravela/CaravelaEffect";
 import LeviathanEffect from "../leviathan/LeviathanEffect";
 import ArcaneEffect from "../arcane/ArcaneEffect";
 import OptimusEffect from "../optimus/OptimusEffect";
+import GauderioEffect from "../gauderio/GauderioEffect"
 
 const EFFECT_COMPONENTS = {
     sentinela: SentinelaEffect,
@@ -12,6 +13,7 @@ const EFFECT_COMPONENTS = {
     leviathan: LeviathanEffect,
     pulse: ArcaneEffect,
     optimus: OptimusEffect,
+    gauderio: GauderioEffect,
 };
 
 export default function EffectRenderer({ animation }) {
