@@ -138,13 +138,12 @@ export const EFEITOS = {
     },
 
     "Fundo da Grota": {
-        background: "linear-gradient(135deg, #001a0b, #003d1c)",
-        cardGlow: "0 0 18px rgba(0,255,102,.65), 0 0 40px rgba(0,255,102,.35), inset 0 0 25px rgba(0,255,102,.08)",
-        nomeGlow: "0 0 12px #ffffff, 0 0 24px #00ff66",
-        accent: "#00ff66",
-        overlay: "radial-gradient(circle at 50% 45%, rgba(0,255,102,.22), transparent 55%), radial-gradient(circle at 50% 50%, rgba(255,255,255,.06), transparent 70%)",
+        background: "linear-gradient(135deg, #07110a, #142b18, #0b1c10)",
+        cardGlow: "0 0 14px rgba(72,96,45,.55), 0 0 32px rgba(39,67,31,.4), inset 0 0 25px rgba(126,150,43,.08)",
+        nomeGlow: "0 0 10px #d8e0c0, 0 0 22px #7f962b",
+        accent: "#7f962b",
+        overlay: "radial-gradient(circle at 50% 45%, rgba(126,150,43,.16), transparent 55%), radial-gradient(circle at 50% 80%, rgba(0,0,0,.35), transparent 70%)",
         animation: "gauderio"
-
     },
 
     default: {

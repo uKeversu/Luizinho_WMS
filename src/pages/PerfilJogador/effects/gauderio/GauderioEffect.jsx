@@ -4,7 +4,7 @@ const GauderioEffect = () => {
 
     const meats = useMemo(
         () =>
-            ["🥩", "🍖", "🔥", "🍖", "🥩"].map((emoji, i) => ({
+            ["🥩", "🍖", "🧉", "🍖", "🥩"].map((emoji, i) => ({
                 id: i,
                 emoji,
                 y: 8 + i * 16 + Math.random() * 10,
