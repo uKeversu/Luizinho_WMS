@@ -1284,6 +1284,8 @@ export default function Tarefas() {
                             p: 3,
                             maxHeight: "80vh",
                             overflow: "auto",
+                            "&::-webkit-scrollbar": { width: "6px" },
+                            "&::-webkit-scrollbar-thumb": { bgcolor: "rgba(255,255,255,0.15)", borderRadius: "4px" }
                         }}
                     >
 

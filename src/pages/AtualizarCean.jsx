@@ -1037,7 +1037,9 @@ function AtualizarCean() {
                             bgcolor: 'background.tabela',
                             color: 'text.primary',
                             mb: 5,
-                            zoom: 0.9
+                            zoom: 0.9,
+                            "&::-webkit-scrollbar": { width: "6px" },
+                            "&::-webkit-scrollbar-thumb": { bgcolor: "rgba(255,255,255,0.15)", borderRadius: "4px" }
                         }}
                     >
                         <Table stickyHeader size="small">

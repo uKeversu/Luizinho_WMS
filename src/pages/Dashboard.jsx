@@ -1714,6 +1714,7 @@ function Dashboard({ tipo }) {
                         </Grid>
                     )}
                 </Box>
+
                 <Box sx={{ margin: 4, display: "flex", justifyContent: "center" }}>
                     <Pagination
                         count={totalPages}
@@ -1722,6 +1723,7 @@ function Dashboard({ tipo }) {
                         color="primary"
                     />
                 </Box>
+
                 <Dialog open={openModal} onClose={() => {
                     setOpenModal(false), setBuscaItem("")
                 }} fullWidth maxWidth="md"
@@ -1730,9 +1732,10 @@ function Dashboard({ tipo }) {
                             sx: {
                                 bgcolor: "background.card",
                                 color: "text.primary",
-                                zoom: '0.9'
+                                zoom: '0.9',
                             }
                         }
+
                     }}>
                     <DialogTitle>
                         Itens da NF {notaSelecionada?.numero}
@@ -1755,7 +1758,11 @@ function Dashboard({ tipo }) {
                         value={buscaItem}
                         onChange={(e) => setBuscaItem(e.target.value)}
                     />
-                    <DialogContent sx={{ mt: 2 }} dividers>
+                    <DialogContent sx={{
+                        mt: 2,
+                        "&::-webkit-scrollbar": { width: "6px" },
+                        "&::-webkit-scrollbar-thumb": { bgcolor: "rgba(255,255,255,0.15)", borderRadius: "4px" }
+                    }} dividers>
 
                         {loadingItens ? (
 

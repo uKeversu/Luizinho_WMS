@@ -1248,7 +1248,9 @@ export default function DistribuicaoConferencia() {
                                 <FormGroup
                                     sx={{
                                         maxHeight: 350,
-                                        overflow: "auto"
+                                        overflow: "auto",
+                                        "&::-webkit-scrollbar": { height: "6px" },
+                                        "&::-webkit-scrollbar-thumb": { bgcolor: "rgba(255,255,255,0.15)", borderRadius: "4px" }
                                     }}
                                 >
 
@@ -1463,7 +1465,10 @@ export default function DistribuicaoConferencia() {
 
                     </DialogTitle>
 
-                    <DialogContent>
+                    <DialogContent sx={{
+                        "&::-webkit-scrollbar": { width: "6px" },
+                        "&::-webkit-scrollbar-thumb": { bgcolor: "rgba(255,255,255,0.15)", borderRadius: "4px" }
+                    }}>
 
                         {funcionarioSelecionado?.notas?.map(
                             nota => (
@@ -1593,7 +1598,11 @@ export default function DistribuicaoConferencia() {
                         value={buscaItem}
                         onChange={(e) => setBuscaItem(e.target.value)}
                     />
-                    <DialogContent sx={{ mt: 2 }} dividers>
+                    <DialogContent sx={{
+                        mt: 2,
+                        "&::-webkit-scrollbar": { width: "6px" },
+                        "&::-webkit-scrollbar-thumb": { bgcolor: "rgba(255,255,255,0.15)", borderRadius: "4px" }
+                    }} dividers>
 
                         {loadingItens ? (
 
@@ -1604,6 +1613,7 @@ export default function DistribuicaoConferencia() {
                                     alignItems: "center",
                                     minHeight: "250px",
                                     flexDirection: 'column'
+
                                 }}
                             >
                                 <CircularProgress />
