@@ -1658,7 +1658,7 @@ function Conferencia() {
         setConfirmDialog({ open: false, type: null, payload: null });
     };
 
-    const removerItemDaCaixa = (itemAlvo) => {
+    const removerItemDaCaixa = async (itemAlvo) => {
         const novosItens = [...itens];
 
         const index = novosItens.findIndex(i =>
@@ -1670,17 +1670,88 @@ function Conferencia() {
 
         const itemOriginal = itens[index];
 
+        if (itemOriginal.conferido <= 0) return;
+
         const item = {
             ...itemOriginal,
+            conferido: itemOriginal.conferido - 1,
         };
 
-        if (item.conferido <= 0) return;
-
-        item.conferido -= 1;
-
-        // Se zerou, remove da caixa
+        // Só envia para API quando o item sair completamente da caixa
         if (item.conferido === 0) {
-            item.caixaId = null;
+
+            const codigoEnvio =
+                item.codigo_barras && item.codigo_barras !== "SEM GTIN"
+                    ? item.codigo_barras
+                    : item.codigo_produto;
+
+            if (!codigoEnvio) {
+                setSnackbar({
+                    open: true,
+                    message: "Código inválido para atualizar o item",
+                    severity: "error"
+                });
+                return;
+            }
+
+            try {
+                const hoje = new Date()
+                    .toISOString()
+                    .slice(0, 19)
+                    .replace("T", " ");
+
+                console.log("REMOVENDO ITEM DA CAIXA");
+                console.log("NOTA:", item.notaId);
+                console.log("CÓDIGO:", codigoEnvio);
+                console.log("CAIXA:", item.caixaId);
+
+                const response = await fetch(
+                    `${API}/api/atualizar_item/${item.notaId}/${codigoEnvio}`,
+                    {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            status_item: "CONFERIDO_PARCIAL",
+
+                            // Remove o item da caixa
+                            caixa: 0,
+                            conferente: userInfo?.codigo,
+                            qtd_conferida: 0,
+                            loc_em_conferencia: item.localizacao,
+                            data_conferencia: hoje
+                        })
+                    }
+                );
+
+                console.log("STATUS_REMOVER_ITEM:", response.status);
+
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(text);
+                }
+
+                // Só altera localmente depois que a API confirmou
+                item.caixaId = null;
+
+            } catch (error) {
+                console.error("Erro ao remover item da caixa:", error);
+
+                setSnackbar({
+                    open: true,
+                    message: "Erro ao remover item da caixa",
+                    severity: "error"
+                });
+
+                return;
+            }
         }
 
         novosItens.splice(index, 1);
@@ -2547,11 +2618,11 @@ function Conferencia() {
 ^BQN,2,6
 ^FDLA,${url}^FS
 
-^FO190,120
+^FO190,115
 ^A0N,30,30
 ^FDQTD: ${quantidade}^FS
 
-^FO25,210
+^FO20,210
 ^A0N,30,30
 ^FD${idGrupo}^FS
 
