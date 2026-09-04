@@ -392,7 +392,7 @@ function ConsultaGeral() {
 
         return logs
             .filter(log =>
-                log.acao === "Escaneou item" &&
+                log.acao === "Escaneou item" || "Escaneou item em modo agrupamento" &&
                 (
                     log.cod_barras?.trim() === item.cean?.trim() ||
                     log.cod_produto?.trim() === item.cod_produto?.trim()
@@ -1155,17 +1155,23 @@ function ConsultaGeral() {
                                                                                                                     </TableCell>
 
                                                                                                                     <TableCell>
-                                                                                                                        {item.status_item}
+                                                                                                                        {un.status}
                                                                                                                     </TableCell>
 
                                                                                                                     <TableCell>
-                                                                                                                        {log ? formatarDataLog(log.data_hora) : "-"}
+                                                                                                                        {un.status === "PENDENTE"
+                                                                                                                            ? "-"
+                                                                                                                            : log
+                                                                                                                                ? formatarDataLog(log.data_hora)
+                                                                                                                                : "-"}
                                                                                                                     </TableCell>
 
                                                                                                                     <TableCell>
-                                                                                                                        {log
-                                                                                                                            ? funcionarios[log.usuario] || log.usuario
-                                                                                                                            : "Sem conferente"}
+                                                                                                                        {un.status === "PENDENTE"
+                                                                                                                            ? "-"
+                                                                                                                            : log
+                                                                                                                                ? funcionarios[log.usuario] || log.usuario
+                                                                                                                                : "-"}
                                                                                                                     </TableCell>
 
                                                                                                                     <TableCell>

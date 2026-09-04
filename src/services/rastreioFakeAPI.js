@@ -1,14 +1,94 @@
-export const fakeRastreio = async (id_unico) => {
-    
+export const fakeRastreio = async (codigo, tipo = "unidade") => {
+
     // Simula delay de API
     await new Promise(resolve => setTimeout(resolve, 500));
 
+    // RASTREIO DE GRUPO
+    if (tipo === "grupo") {
+
+        return {
+            tipo: "grupo",
+
+            id_grupo: codigo,
+
+            codigo: "2618CPA",
+            descricao: "Produto agrupado",
+            numero: "973525",
+            serie: "1",
+            localizacao: "002A 022",
+
+            quantidade: 8,
+
+            unidades: [
+                {
+                    id_unico: "PL818H",
+                    status: "CONFERIDO"
+                },
+                {
+                    id_unico: "7PIKAA",
+                    status: "CONFERIDO"
+                },
+                {
+                    id_unico: "UWCZZ4",
+                    status: "CONFERIDO"
+                },
+                {
+                    id_unico: "CBPW25",
+                    status: "CONFERIDO"
+                },
+                {
+                    id_unico: "LEP97Q",
+                    status: "CONFERIDO"
+                },
+                {
+                    id_unico: "NB0MBF",
+                    status: "CONFERIDO"
+                },
+                {
+                    id_unico: "EZDBFC",
+                    status: "CONFERIDO"
+                },
+                {
+                    id_unico: "J3JKC3",
+                    status: "CONFERIDO"
+                }
+            ],
+
+            eventos: [
+                {
+                    tipo: "COMPRA",
+                    data: "19-03-2026 14:12",
+                    funcionario: "Kelwin Gameiro",
+                },
+                {
+                    tipo: "PENDENTE",
+                    data: "30-03-2026 10:40",
+                    funcionario: "Kelwin Gameiro",
+                },
+                {
+                    tipo: "CONFERIDO",
+                    data: "01-04-2026 15:30",
+                    funcionario: "Kelwin Gameiro",
+                }
+            ]
+        };
+    }
+
+    // RASTREIO DE UNIDADE
     return {
-        id_unico,
+
+        tipo: "unidade",
+
+        id_unico: codigo,
+
         codigo: "2618CPA",
+        descricao: "Produto de teste",
+
         numero: "973525",
         serie: "1",
-        localizacao: "002A  022",
+
+        localizacao: "002A 022",
+
         eventos: [
             {
                 tipo: "COMPRA",
@@ -54,18 +134,7 @@ export const fakeRastreio = async (id_unico) => {
                 tipo: "VENDIDO",
                 data: "15-04-2026 14:15",
                 funcionario: "Kelwin Gameiro",
-            },
-            /*{
-                tipo: "GARANTIA",
-                data: "20-04-2026 14:15",
-                funcionario: "Kelwin Gameiro",
-            },
-            {
-                tipo: "RETORNO",
-                data: "4-06-2026 14:15",
-                funcionario: "Kelwin Gameiro",
-            },*/
-
+            }
         ]
     };
 };

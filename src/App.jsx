@@ -97,6 +97,11 @@ function App() {
           />
 
           <Route
+            path="/Rastreio/grupo/:codigo"
+            element={<Rastreio tipo="grupo" />}
+          />
+
+          <Route
             path="/Rastreio/:codigo"
             element={<Rastreio />}
           />

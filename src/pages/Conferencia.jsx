@@ -164,9 +164,15 @@ function Conferencia() {
     // Atalhos
     const inputRef = useRef(null);
     const qtdRef = useRef(null);
+    const grupoRef = useRef(null);
+
     const [modoQuantidade, setModoQuantidade] = useState(false);
     const [ultimoItemScaneado, setUltimoItemScaneado] = useState(null);
     const [quantidadeInput, setQuantidadeInput] = useState("");
+
+    const [modoAgrupamento, setModoAgrupamento] = useState(false);
+    const [tamanhoGrupoInput, setTamanhoGrupoInput] = useState("");
+    const [processandoAgrupamento, setProcessandoAgrupamento] = useState(false);
 
     // Caixa aberta e fechadas
     const [caixaAberta, setCaixaAberta] = useState(null);
@@ -319,9 +325,56 @@ function Conferencia() {
 
                 case "F3":
                     e.preventDefault();
-                    if (caixaAberta) {
-                        setOpenFecharDialog(true);
+
+                    const quantidade = Number(quantidadeInput);
+
+                    if (!modoQuantidade || !quantidade || quantidade <= 0) {
+                        setSnackbar({
+                            open: true,
+                            message: "Informe primeiro uma quantidade válida no F7",
+                            severity: "warning"
+                        });
+
+                        setTimeout(() => qtdRef.current?.focus(), 100);
+                        return;
                     }
+
+                    const novoModoAgrupamento = !modoAgrupamento;
+
+                    setModoAgrupamento(novoModoAgrupamento);
+
+                    if (novoModoAgrupamento) {
+                        setTamanhoGrupoInput("");
+
+                        setSnackbar({
+                            open: true,
+                            message: "Modo agrupamento ATIVADO. Informe o tamanho do grupo.",
+                            severity: "info"
+                        });
+
+                        registrarLog({
+                            acao: "Modo agrupamento ATIVADO"
+                        });
+
+                        setTimeout(() => grupoRef.current?.focus(), 100);
+
+                    } else {
+
+                        setTamanhoGrupoInput("");
+
+                        setSnackbar({
+                            open: true,
+                            message: "Modo agrupamento DESATIVADO",
+                            severity: "info"
+                        });
+
+                        registrarLog({
+                            acao: "Modo agrupamento DESATIVADO"
+                        });
+
+                        setTimeout(() => inputRef.current?.focus(), 100);
+                    }
+
                     break;
 
                 case "F4":
@@ -399,7 +452,7 @@ function Conferencia() {
         return () => {
             window.removeEventListener("keydown", handleKeyDown);
         };
-    }, [caixaAberta, ultimoItemScaneado, modoQuantidade]);
+    }, [caixaAberta, ultimoItemScaneado, modoQuantidade, modoAgrupamento, quantidadeInput]);
 
     // Pooling da solicitação para sincronização
     useEffect(() => {
@@ -1841,6 +1894,62 @@ function Conferencia() {
                 return;
             }
 
+            // MODO AGRUPAMENTO
+            if (modoAgrupamento) {
+
+                const quantidade = Number(quantidadeInput);
+                const tamanhoGrupo = Number(tamanhoGrupoInput);
+
+                if (!quantidade || quantidade <= 0) {
+                    setSnackbar({
+                        open: true,
+                        message: "Informe uma quantidade válida",
+                        severity: "warning"
+                    });
+
+                    setCodigo("");
+                    return;
+                }
+
+                if (!tamanhoGrupo || tamanhoGrupo <= 0) {
+                    setSnackbar({
+                        open: true,
+                        message: "Informe um tamanho de grupo válido",
+                        severity: "warning"
+                    });
+
+                    setCodigo("");
+                    setTimeout(() => grupoRef.current?.focus(), 100);
+                    return;
+                }
+
+                if (quantidade % tamanhoGrupo !== 0) {
+                    setSnackbar({
+                        open: true,
+                        message: "A quantidade deve ser dividida igualmente entre os grupos",
+                        severity: "warning"
+                    });
+
+                    setCodigo("");
+                    setTimeout(() => grupoRef.current?.focus(), 100);
+                    return;
+                }
+
+                const restante =
+                    itemAtual.quantidade - itemAtual.conferido;
+
+                if (quantidade > restante) {
+                    setSnackbar({
+                        open: true,
+                        message: `Quantidade solicitada maior que o restante (${restante})`,
+                        severity: "warning"
+                    });
+
+                    setCodigo("");
+                    return;
+                }
+            }
+
             // Procura caixa
             const resultadoCaixa = resolverCaixa(itemAtual);
 
@@ -1904,6 +2013,197 @@ function Conferencia() {
                 });
 
                 setCodigo("");
+                return;
+            }
+
+            // MODO AGRUPAMENTO
+            if (modoAgrupamento) {
+
+                const quantidade = Number(quantidadeInput);
+                const tamanhoGrupo = Number(tamanhoGrupoInput);
+
+                const resposta = await fetch(
+                    `${API}/api/conferencia/agrupar`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            nfe_item_id: itemAtual.id,
+                            quantidade: quantidade,
+                            tamanho_grupo: tamanhoGrupo
+                        })
+                    }
+                );
+
+                const data = await resposta.json();
+
+                if (!resposta.ok) {
+
+                    setSnackbar({
+                        open: true,
+                        message: data.erro || "Erro ao criar agrupamento",
+                        severity: "error"
+                    });
+
+                    setCodigo("");
+                    return;
+                }
+
+                const incremento = quantidade;
+
+                const ehCaixaNova = !caixasRef.current.some(
+                    c => c.id === caixaDestino.id
+                );
+
+                // Garante que a caixa existe
+                addCaixaSafe({
+                    ...caixaDestino,
+                    itens: caixaDestino.itens || []
+                });
+
+                // Atualiza quantidade conferida do item
+                const novosItensBase = itens.map((i, idx) => {
+
+                    if (idx !== index) return i;
+
+                    return {
+                        ...i,
+                        conferido: i.conferido + incremento,
+                        caixaId: caixaDestino.id
+                    };
+                });
+
+                const itemAtualizado = novosItensBase[index];
+
+                // Ordena item escaneado para cima e se conferido, vai para baixo 
+                const listaFinal = [
+                    itemAtualizado,
+                    ...novosItensBase.filter((_, idx) => idx !== index)
+                ].sort((a, b) => {
+
+                    const aFinalizado =
+                        Number(a.conferido) >= Number(a.quantidade);
+
+                    const bFinalizado =
+                        Number(b.conferido) >= Number(b.quantidade);
+
+                    if (aFinalizado && !bFinalizado) return 1;
+                    if (!aFinalizado && bFinalizado) return -1;
+
+                    if (a === itemAtualizado) return -1;
+                    if (b === itemAtualizado) return 1;
+
+                    return 0;
+                });
+
+                setItens(listaFinal);
+
+                // Atualiza caixa
+                const caixasAtualizadas = [
+                    ...caixasRef.current.filter(
+                        c => c.id !== caixaDestino.id
+                    ),
+                    {
+                        ...caixaDestino,
+                        itens: listaFinal.filter(
+                            i => i.caixaId === caixaDestino.id
+                        ),
+                        jaImprimiu: caixaDestino.jaImprimiu ?? false,
+                        cheia: caixaDestino.cheia ?? false
+                    }
+                ];
+
+                atualizarCaixas(caixasAtualizadas);
+
+                // Caixa final
+                const caixaFinal = {
+                    ...caixaDestino,
+                    itens: listaFinal.filter(
+                        i => i.caixaId === caixaDestino.id
+                    ),
+                    jaImprimiu: caixaDestino.jaImprimiu ?? false,
+                    cheia: caixaDestino.cheia ?? false
+                };
+
+                // Envia os itens da caixa para a API existente
+                const sucesso = await enviarItensDaCaixa(
+                    caixaFinal,
+                    listaFinal
+                );
+
+                if (!sucesso) {
+                    return;
+                }
+
+                await iniciarConferencia();
+                await atribuirNotas();
+
+                // Imprime uma etiqueta para cada grupo criado
+                for (const grupo of data.grupos) {
+
+                    await imprimirEtiquetaGrupo(
+                        itemAtual,
+                        grupo
+                    );
+                }
+
+                // Logs
+                registrarLog({
+                    item: itemAtual,
+                    quantidade: incremento,
+                    caixa: caixaFinal,
+                    acao: "Escaneou item em modo agrupamento"
+                });
+
+                if (ehCaixaNova) {
+
+                    registrarLog({
+                        caixa: caixaFinal,
+                        acao: "Criou caixa"
+                    });
+                }
+
+                if (
+                    ehCaixaNova &&
+                    !caixaFinal.jaImprimiu
+                ) {
+
+                    await imprimirEtiquetaCaixa(caixaFinal);
+
+                    caixaFinal.jaImprimiu = true;
+
+                    atualizarCaixas(prev =>
+                        prev.map(c =>
+                            c.id === caixaDestino.id
+                                ? {
+                                    ...c,
+                                    jaImprimiu: true
+                                }
+                                : c
+                        )
+                    );
+                }
+
+                setUltimoItemScaneado(itemAtualizado);
+
+                registrarLog({
+                    item: itemAtual,
+                    quantidade: incremento,
+                    caixa: caixaFinal,
+                    acao: `Item agrupado e adicionado na caixa ${caixaFinal.numero}`
+                });
+
+                setSnackbar({
+                    open: true,
+                    message: `${data.quantidade_grupos} grupos criados e adicionados à caixa ${caixaFinal.numero}`,
+                    severity: "success"
+                });
+
+                setCodigo("");
+
                 return;
             }
 
@@ -2223,6 +2523,131 @@ function Conferencia() {
 `;
     };
 
+    // Impressão de etiquetas de grupo
+    const gerarZPLGrupoPadrao = (item, grupo) => {
+
+        const url = `http://192.168.1.82:4173/Rastreio/grupo/${grupo.id_grupo}`;
+        const idGrupo = (grupo.id_grupo || "").trim();
+        const basico = (item.basico || "").trim();
+        const localizacao = (item.localizacao || "").trim();
+        const numero = (item.notaNumero || "").trim();
+        const serie = (item.notaSerie || "").trim();
+        const quantidade = grupo.quantidade || 0;
+
+        return `
+^XA
+^PW480
+^LL240
+^LH0,0
+
+^PR3
+^MD15
+
+^FO10,20
+^BQN,2,6
+^FDLA,${url}^FS
+
+^FO190,120
+^A0N,30,30
+^FDQTD: ${quantidade}^FS
+
+^FO25,210
+^A0N,30,30
+^FD${idGrupo}^FS
+
+^FO190,30
+^A0N,35,35
+^FD${basico}^FS
+
+^FO190,70
+^A0N,45,50
+^FD${localizacao}^FS
+
+^FO190,150
+^A0N,30,30
+^FD${numero}/${serie}^FS
+
+^FO190,180
+^A0N,28,28
+^FD${new Date().toLocaleString("pt-BR")}^FS
+
+^FO440,70
+^A0B,35,35
+^FD${userInfo?.codigo || ""}^FS
+
+^XZ
+`;
+    };
+
+
+    const gerarZPLGrupoBremsys = (item, grupo) => {
+
+        const url = `http://192.168.1.82:4173/Rastreio/grupo/${grupo.id_grupo}`;
+        const dataHora = new Date().toLocaleString("pt-BR");
+        const idGrupo = (grupo.id_grupo || "").trim();
+        const basico = (item.basico || "").trim();
+        const localizacao = (item.localizacao || "").trim();
+        const numero = (item.notaNumero || "").trim();
+        const serie = (item.notaSerie || "").trim();
+        const descricao = (item.descricao || "").trim();
+        const codigoBarras = (item.codigo_barras || "").trim();
+        const quantidade = grupo.quantidade || 0;
+
+        return `
+^XA
+^PW840
+^LL480
+^LH0,0
+
+^PR3
+^MD15
+
+^FO80,120
+^BQN,2,6
+^FDLA,${url}^FS
+
+^FO140,340
+^A0N,25,25
+^FDQTD: ${quantidade}^FS
+
+^FO140,370
+^A0N,25,25
+^FD${idGrupo}^FS
+
+^FO300,220
+^A0N,32,32
+^FD${basico}^FS
+
+^FO300,260
+^A0N,40,42
+^FD${localizacao}^FS
+
+^FO300,315
+^A0N,26,26
+^FD${numero}/${serie}^FS
+
+^FO300,340
+^A0N,23,23
+^FD${dataHora}^FS
+
+^FO500,240
+^A0B,30,30
+^FD${userInfo?.codigo || ""}^FS
+
+^FO250,420
+^BY4,3,70
+^BEN,70,Y,N
+^FD${codigoBarras}^FS
+
+^FO300,540
+^A0N,22,22
+^FB750,2,0,L,0
+^FD${descricao}^FS
+
+^XZ
+`;
+    };
+
     const imprimirViaPython = async (zpl) => {
         try {
             const printerSalva = localStorage.getItem("printer");
@@ -2345,6 +2770,50 @@ function Conferencia() {
             setSnackbar({
                 open: true,
                 message: "Erro ao imprimir etiqueta",
+                severity: "error"
+            });
+        }
+    };
+
+    const imprimirEtiquetaGrupo = async (item, grupo) => {
+
+        try {
+
+            if (!grupo?.id_grupo) {
+
+                setSnackbar({
+                    open: true,
+                    message: "Grupo inválido para impressão",
+                    severity: "error"
+                });
+
+                return;
+            }
+
+            const zpl =
+                modoEtiqueta === "bremsys"
+                    ? gerarZPLGrupoBremsys(item, grupo)
+                    : gerarZPLGrupoPadrao(item, grupo);
+
+            await imprimirViaPython(zpl);
+
+            registrarLog({
+                item,
+                grupo: grupo.id_grupo,
+                quantidade: grupo.quantidade,
+                acao: "Imprimiu etiqueta de grupo"
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Erro ao imprimir etiqueta de grupo:",
+                error
+            );
+
+            setSnackbar({
+                open: true,
+                message: "Erro ao imprimir etiqueta de grupo",
                 severity: "error"
             });
         }
@@ -3211,7 +3680,7 @@ function Conferencia() {
             >
                 {[
                     { tecla: "F2", acao: "Abrir caixa" },
-                    { tecla: "F3", acao: "Fechar caixa" },
+                    { tecla: "F3", acao: "Modo Agrupamento" },
                     { tecla: "F4", acao: "Finalizar conferência" },
                     { tecla: "F6", acao: "Reabrir caixa" },
                     { tecla: "F7", acao: "Modo quantidade" },
@@ -3320,6 +3789,83 @@ function Conferencia() {
                             sx={{ ml: 2, mb: 2, zoom: 0.9 }}
                         />
                     )}
+
+                    {modoAgrupamento && (
+                        <TextField
+                            label="Grupo"
+                            size="small"
+                            value={tamanhoGrupoInput}
+                            onChange={(e) => {
+                                setTamanhoGrupoInput(e.target.value);
+                            }}
+                            inputRef={grupoRef}
+                            onKeyDown={(e) => {
+
+                                if (e.key !== "Enter") {
+                                    return;
+                                }
+
+                                e.preventDefault();
+
+                                const quantidade = Number(quantidadeInput);
+                                const tamanhoGrupo = Number(tamanhoGrupoInput);
+
+                                if (!quantidade || quantidade <= 0) {
+                                    setSnackbar({
+                                        open: true,
+                                        message: "Informe uma quantidade válida no campo Qtd",
+                                        severity: "warning"
+                                    });
+
+                                    qtdRef.current?.focus();
+                                    return;
+                                }
+
+                                if (!tamanhoGrupo || tamanhoGrupo <= 0) {
+                                    setSnackbar({
+                                        open: true,
+                                        message: "Informe um tamanho de grupo válido",
+                                        severity: "warning"
+                                    });
+
+                                    return;
+                                }
+
+                                if (quantidade % tamanhoGrupo !== 0) {
+                                    setSnackbar({
+                                        open: true,
+                                        message: "A quantidade deve ser dividida igualmente entre os grupos",
+                                        severity: "warning"
+                                    });
+
+                                    return;
+                                }
+
+                                setSnackbar({
+                                    open: true,
+                                    message: `${quantidade / tamanhoGrupo} grupos de ${tamanhoGrupo} unidades. Bipe o produto.`,
+                                    severity: "success"
+                                });
+
+                                registrarLog({
+                                    acao: "Tamanho de grupo definido",
+                                    observacao: `Quantidade: ${quantidade} | Grupo: ${tamanhoGrupo}`
+                                });
+
+                                setTimeout(() => inputRef.current?.focus(), 100);
+                            }}
+                            sx={{
+                                ml: 2,
+                                mb: 2,
+                                zoom: 0.9,
+                                width: 110
+                            }}
+                            inputProps={{
+                                inputMode: "numeric"
+                            }}
+                        />
+                    )}
+
                     <FormControl size="small" sx={{ ml: 2, mb: 2, zoom: 0.9, width: 200 }}>
                         <InputLabel>Etiqueta</InputLabel>
 
