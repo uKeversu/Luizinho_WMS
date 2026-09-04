@@ -308,6 +308,7 @@ function Conferencia() {
 
                 setCodigo("");
                 setQuantidadeInput("");
+                setTamanhoGrupoInput("");
                 return;
             }
 
@@ -328,7 +329,8 @@ function Conferencia() {
 
                     const quantidade = Number(quantidadeInput);
 
-                    if (!modoQuantidade || !quantidade || quantidade <= 0) {
+                    // 1. Validar modo de quantidade
+                    if (!modoQuantidade) {
                         setSnackbar({
                             open: true,
                             message: "Informe primeiro uma quantidade válida no F7",
@@ -339,12 +341,41 @@ function Conferencia() {
                         return;
                     }
 
+                    // 2. Validar quantidade
+                    if (
+                        !Number.isFinite(quantidade) ||
+                        quantidade <= 0 ||
+                        !Number.isInteger(quantidade)
+                    ) {
+                        setSnackbar({
+                            open: true,
+                            message: "A quantidade informada deve ser um número inteiro maior que zero",
+                            severity: "warning"
+                        });
+
+                        setTimeout(() => qtdRef.current?.focus(), 100);
+                        return;
+                    }
+
+                    // 3. Agrupamento não pode ser utilizado com Bremsys
+                    if (modoEtiqueta === "bremsys") {
+                        setSnackbar({
+                            open: true,
+                            message: "Não é permitido agrupar itens da marca Bremsys",
+                            severity: "warning"
+                        });
+
+                        setTimeout(() => qtdRef.current?.focus(), 100);
+                        return;
+                    }
+
+                    // 4. Alternar modo
                     const novoModoAgrupamento = !modoAgrupamento;
 
                     setModoAgrupamento(novoModoAgrupamento);
+                    setTamanhoGrupoInput("");
 
                     if (novoModoAgrupamento) {
-                        setTamanhoGrupoInput("");
 
                         setSnackbar({
                             open: true,
@@ -359,8 +390,6 @@ function Conferencia() {
                         setTimeout(() => grupoRef.current?.focus(), 100);
 
                     } else {
-
-                        setTamanhoGrupoInput("");
 
                         setSnackbar({
                             open: true,
@@ -1970,6 +1999,17 @@ function Conferencia() {
 
                 const quantidade = Number(quantidadeInput);
                 const tamanhoGrupo = Number(tamanhoGrupoInput);
+
+                if (modoEtiqueta === "bremsys") {
+                    setSnackbar({
+                        open: true,
+                        message: "Não é permitido agrupar itens da marca Bremsys",
+                        severity: "warning"
+                    });
+
+                    setCodigo("");
+                    return;
+                }
 
                 if (!quantidade || quantidade <= 0) {
                     setSnackbar({
@@ -3912,6 +3952,20 @@ function Conferencia() {
                                     return;
                                 }
 
+                                if (modoEtiqueta === "bremsys") {
+                                    setSnackbar({
+                                        open: true,
+                                        message: "Não é permitido agrupar itens da marca Bremsys",
+                                        severity: "warning"
+                                    });
+
+                                    setCodigo("");
+                                    setQuantidadeInput("");
+                                    setTamanhoGrupoInput("");
+
+                                    return;
+                                }
+
                                 setSnackbar({
                                     open: true,
                                     message: `${quantidade / tamanhoGrupo} grupos de ${tamanhoGrupo} unidades. Bipe o produto.`,
@@ -3937,7 +3991,10 @@ function Conferencia() {
                         />
                     )}
 
-                    <FormControl size="small" sx={{ ml: 2, mb: 2, zoom: 0.9, width: 200 }}>
+                    <FormControl
+                        size="small"
+                        sx={{ ml: 2, mb: 2, zoom: 0.9, width: 200 }}
+                    >
                         <InputLabel>Etiqueta</InputLabel>
 
                         <Select
@@ -3957,7 +4014,10 @@ function Conferencia() {
                                 Padrão
                             </MenuItem>
 
-                            <MenuItem value="bremsys">
+                            <MenuItem
+                                value="bremsys"
+                                disabled={modoAgrupamento}
+                            >
                                 Bremsys
                             </MenuItem>
                         </Select>
