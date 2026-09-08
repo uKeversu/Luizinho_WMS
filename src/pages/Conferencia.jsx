@@ -1688,6 +1688,7 @@ function Conferencia() {
     };
 
     const removerItemDaCaixa = async (itemAlvo) => {
+
         const novosItens = [...itens];
 
         const index = novosItens.findIndex(i =>
@@ -1706,30 +1707,51 @@ function Conferencia() {
             conferido: itemOriginal.conferido - 1,
         };
 
-        // Só envia para API quando o item sair completamente da caixa
+        // Código necessário caso o item saia completamente da caixa
+        let codigoEnvio = null;
+
         if (item.conferido === 0) {
 
-            const codigoEnvio =
-                item.codigo_barras && item.codigo_barras !== "SEM GTIN"
+            codigoEnvio =
+                item.codigo_barras &&
+                    item.codigo_barras !== "SEM GTIN"
                     ? item.codigo_barras
                     : item.codigo_produto;
 
             if (!codigoEnvio) {
+
                 setSnackbar({
                     open: true,
                     message: "Código inválido para atualizar o item",
                     severity: "error"
                 });
+
                 return;
             }
+        }
+
+        // Devolve UMA unidade para PENDENTE
+        const unidadeDesconferida = await desconferirUnidade(
+            itemOriginal.id,
+            1
+        );
+
+        if (!unidadeDesconferida) {
+            return;
+        }
+
+        // Só envia para API quando o item sair completamente da caixa
+        if (item.conferido === 0) {
 
             try {
+
                 const hoje = new Date()
                     .toISOString()
                     .slice(0, 19)
                     .replace("T", " ");
 
                 console.log("REMOVENDO ITEM DA CAIXA");
+                console.log("NFE ITEM:", item.id);
                 console.log("NOTA:", item.notaId);
                 console.log("CÓDIGO:", codigoEnvio);
                 console.log("CAIXA:", item.caixaId);
@@ -1738,13 +1760,14 @@ function Conferencia() {
                     `${API}/api/atualizar_item/${item.notaId}/${codigoEnvio}`,
                     {
                         method: "PUT",
+
                         headers: {
                             "Content-Type": "application/json",
                             "Authorization": `Bearer ${token}`
                         },
+
                         body: JSON.stringify({
                             status_item: "CONFERIDO_PARCIAL",
-
                             // Remove o item da caixa
                             caixa: 0,
                             conferente: userInfo?.codigo,
@@ -1755,23 +1778,34 @@ function Conferencia() {
                     }
                 );
 
-                console.log("STATUS_REMOVER_ITEM:", response.status);
+                console.log(
+                    "STATUS_REMOVER_ITEM:",
+                    response.status
+                );
 
                 if (response.status === 401) {
+
                     logout();
                     return;
                 }
 
                 if (!response.ok) {
+
                     const text = await response.text();
+
                     throw new Error(text);
                 }
 
-                // Só altera localmente depois que a API confirmou
+                // Só remove a associação local da caixa
+                // depois que a API confirmou
                 item.caixaId = null;
 
             } catch (error) {
-                console.error("Erro ao remover item da caixa:", error);
+
+                console.error(
+                    "Erro ao remover item da caixa:",
+                    error
+                );
 
                 setSnackbar({
                     open: true,
@@ -1783,16 +1817,22 @@ function Conferencia() {
             }
         }
 
+        // Atualiza lista local
         novosItens.splice(index, 1);
+
         novosItens.unshift(item);
 
         setItens(novosItens);
 
         // Atualiza caixa aberta
         if (caixaAberta) {
+
             setCaixaAberta(prev => ({
                 ...prev,
-                itens: novosItens.filter(i => i.caixaId === prev.id)
+
+                itens: novosItens.filter(
+                    i => i.caixaId === prev.id
+                )
             }));
         }
 
@@ -1855,6 +1895,125 @@ function Conferencia() {
         });
     };
 
+    // Altera status das unidades IDs unicos
+    const conferirUnidades = async (nfeItemId, quantidade) => {
+        try {
+
+            const response = await fetch(
+                `${API}/api/conferencia/conferir_unidades`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        nfe_item_id: nfeItemId,
+                        quantidade: quantidade
+                    })
+                }
+            );
+
+            const data = await response.json();
+
+            if (response.status === 401) {
+                logout();
+                return false;
+            }
+
+            if (!response.ok) {
+                throw new Error(
+                    data.erro || "Erro ao conferir unidades"
+                );
+            }
+
+            console.log("UNIDADES CONFERIDAS:", data.unidades);
+
+            return data;
+
+        } catch (error) {
+
+            console.error(
+                "Erro ao conferir unidades:",
+                error
+            );
+
+            setSnackbar({
+                open: true,
+                message: error.message || "Erro ao conferir unidades",
+                severity: "error"
+            });
+
+            return false;
+        }
+    };
+
+    // Remove itens da caixa e altera para PENDENTE
+    const desconferirUnidade = async (nfeItemId, quantidade = 1) => {
+        try {
+            const response = await fetch(
+                `${API}/api/conferencia/desconferir_unidade`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        nfe_item_id: nfeItemId,
+                        quantidade: quantidade
+                    })
+                }
+            );
+
+            const data = await response.json();
+
+            if (response.status === 401) {
+                logout();
+                return false;
+            }
+
+            if (!response.ok) {
+                throw new Error(
+                    data.erro ||
+                    "Erro ao devolver unidade para PENDENTE"
+                );
+            }
+
+            if (data.legado) {
+                console.warn(
+                    "ITEM LEGADO: nenhuma unidade CONFERIDO encontrada.",
+                    {
+                        nfeItemId,
+                        quantidade
+                    }
+                );
+
+            } else {
+                console.log("UNIDADES DESCONFERIDAS:",data.unidades);
+            }
+
+            return data;
+
+        } catch (error) {
+            console.error(
+                "Erro ao desconferir unidade:",
+                error
+            );
+
+            setSnackbar({
+                open: true,
+                message:
+                    error.message ||
+                    "Erro ao devolver unidade",
+                severity: "error"
+            });
+
+            return false;
+        }
+    };
+
+    // Identifica digitação para conferir item
     const handleCodigoKeyDown = async (e) => {
 
         if (bloqueioManual) {
@@ -2366,14 +2525,22 @@ function Conferencia() {
                 setQuantidadeInput("");
             }
 
-            // Imprime etiqueta dos itens
+            // Altera status das unidades IDs únicos
+            const unidadesConferidas = await conferirUnidades(
+                itemAtual.id,
+                incremento
+            );
 
+            if (!unidadesConferidas) {
+                return;
+            }
+
+            // Imprime etiqueta dos itens
             for (let i = 0; i < incremento; i++) {
                 await imprimirEtiqueta(itemAtual);
             }
 
             // Atualiza itens
-
             const novosItensBase = itens.map((i, idx) => {
 
                 if (idx !== index) return i;
