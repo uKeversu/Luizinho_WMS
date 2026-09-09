@@ -1990,7 +1990,7 @@ function Conferencia() {
                 );
 
             } else {
-                console.log("UNIDADES DESCONFERIDAS:",data.unidades);
+                console.log("UNIDADES DESCONFERIDAS:", data.unidades);
             }
 
             return data;
