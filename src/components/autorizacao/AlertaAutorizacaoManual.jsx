@@ -7,7 +7,9 @@ import {
     Typography,
     Button,
     Box,
-    CircularProgress
+    CircularProgress,
+    Snackbar,
+    Alert
 } from "@mui/material";
 
 const API = "http://192.168.1.185:8077";
@@ -20,6 +22,9 @@ export default function AlertaAutorizacaoManual({ userInfo, token }) {
 
     const intervaloRef = useRef(null);
     const ativoRef = useRef(true);
+
+    const sessaoExpiradaRef = useRef(false);
+    const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
     // Busca solicitações pendentes
     const buscarSolicitacoes = async () => {
@@ -55,6 +60,20 @@ export default function AlertaAutorizacaoManual({ userInfo, token }) {
                     response.status,
                     erro
                 );
+
+                if (
+                    (response.status === 401 || response.status === 403) &&
+                    !sessaoExpiradaRef.current
+                ) {
+
+                    sessaoExpiradaRef.current = true;
+
+                    setSnackbar({
+                        open: true,
+                        message: "Sessão expirada. Faça login novamente.",
+                        severity: "error"
+                    });
+                }
 
                 return;
             }
@@ -202,145 +221,176 @@ export default function AlertaAutorizacaoManual({ userInfo, token }) {
 
     // Não renderiza nada se não houver solicitação
     return (
-        <Dialog
-            open={abrir}
-            fullScreen
-            onClose={() => {
-                // Não permitimos fechar clicando fora.
-            }}
-            disableEscapeKeyDown
-            slotProps={{
-                backdrop: {
-                    sx: {
-                        backgroundColor: "rgba(0, 0, 0, 0.90)"
+        <>
+            <Dialog
+                open={abrir}
+                fullScreen
+                onClose={() => {
+                    // Não permitimos fechar clicando fora.
+                }}
+                disableEscapeKeyDown
+                slotProps={{
+                    backdrop: {
+                        sx: {
+                            backgroundColor: "rgba(0, 0, 0, 0.90)"
+                        }
+                    },
+                    paper: {
+                        sx: {
+                            backgroundColor: "#111",
+                            color: "#fff",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center"
+                        }
                     }
-                },
-                paper: {
-                    sx: {
-                        backgroundColor: "#111",
-                        color: "#fff",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center"
-                    }
-                }
-            }}
-        >
-
-            <DialogContent
-                sx={{
-                    width: "100%",
-                    height: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    textAlign: "center"
                 }}
             >
 
-                <Box
+                <DialogContent
                     sx={{
                         width: "100%",
-                        maxWidth: 700,
-                        px: 4
+                        height: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        textAlign: "center"
                     }}
                 >
 
-                    <Typography
+                    <Box
                         sx={{
-                            fontSize: {
-                                xs: "3rem",
-                                md: "5rem"
-                            },
-                            mb: 3
+                            width: "100%",
+                            maxWidth: 700,
+                            px: 4
                         }}
                     >
-                        ⚠️
-                    </Typography>
 
-                    <Typography
-                        variant="h3"
-                        sx={{
-                            fontWeight: 800,
-                            mb: 4,
-                            fontSize: {
-                                xs: "2rem",
-                                md: "3.5rem"
-                            }
-                        }}
-                    >
-                        AUTORIZAÇÃO SOLICITADA
-                    </Typography>
+                        <Typography
+                            sx={{
+                                fontSize: {
+                                    xs: "3rem",
+                                    md: "5rem"
+                                },
+                                mb: 3
+                            }}
+                        >
+                            ⚠️
+                        </Typography>
 
-                    {solicitacao && (
-                        <>
-                            <Typography
-                                variant="h5"
-                                sx={{
-                                    mb: 2
-                                }}
-                            >
-                                Operador:
-                            </Typography>
+                        <Typography
+                            variant="h3"
+                            sx={{
+                                fontWeight: 800,
+                                mb: 4,
+                                fontSize: {
+                                    xs: "2rem",
+                                    md: "3.5rem"
+                                }
+                            }}
+                        >
+                            AUTORIZAÇÃO SOLICITADA
+                        </Typography>
 
-                            <Typography
-                                variant="h4"
-                                sx={{
-                                    fontWeight: 700,
-                                    mb: 4
-                                }}
-                            >
-                                {solicitacao.operador_nome}
-                            </Typography>
+                        {solicitacao && (
+                            <>
+                                <Typography
+                                    variant="h5"
+                                    sx={{
+                                        mb: 2
+                                    }}
+                                >
+                                    Operador:
+                                </Typography>
 
-                            <Typography
-                                variant="h6"
-                                sx={{
-                                    mb: 1
-                                }}
-                            >
-                                Solicitação para conferência manual
-                            </Typography>
+                                <Typography
+                                    variant="h4"
+                                    sx={{
+                                        fontWeight: 700,
+                                        mb: 4
+                                    }}
+                                >
+                                    {solicitacao.operador_nome}
+                                </Typography>
 
-                            <Button
-                                variant="contained"
-                                size="large"
-                                onClick={assumirSolicitacao}
-                                disabled={assumindo}
-                                sx={{
-                                    width: "100%",
-                                    maxWidth: 500,
-                                    minHeight: 80,
-                                    fontSize: {
-                                        xs: "1.3rem",
-                                        md: "1.8rem"
-                                    },
-                                    fontWeight: 800,
-                                    borderRadius: 3
-                                }}
-                            >
+                                <Typography
+                                    variant="h6"
+                                    sx={{
+                                        mb: 1
+                                    }}
+                                >
+                                    Solicitação para conferência manual
+                                </Typography>
 
-                                {assumindo ? (
-                                    <>
-                                        <CircularProgress
-                                            size={30}
-                                            sx={{ mr: 2 }}
-                                        />
+                                <Button
+                                    variant="contained"
+                                    size="large"
+                                    onClick={assumirSolicitacao}
+                                    disabled={assumindo}
+                                    sx={{
+                                        width: "100%",
+                                        maxWidth: 500,
+                                        minHeight: 80,
+                                        fontSize: {
+                                            xs: "1.3rem",
+                                            md: "1.8rem"
+                                        },
+                                        fontWeight: 800,
+                                        borderRadius: 3
+                                    }}
+                                >
 
-                                        ASSUMINDO...
-                                    </>
-                                ) : (
-                                    "ESTOU À CAMINHO!"
-                                )}
+                                    {assumindo ? (
+                                        <>
+                                            <CircularProgress
+                                                size={30}
+                                                sx={{ mr: 2 }}
+                                            />
 
-                            </Button>
-                        </>
-                    )}
+                                            ASSUMINDO...
+                                        </>
+                                    ) : (
+                                        "ESTOU À CAMINHO!"
+                                    )}
 
-                </Box>
+                                </Button>
+                            </>
+                        )}
 
-            </DialogContent>
+                    </Box>
 
-        </Dialog>
+                </DialogContent>
+
+            </Dialog>
+
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={5000}
+                onClose={() =>
+                    setSnackbar({
+                        ...snackbar,
+                        open: false
+                    })
+                }
+            >
+                <Alert
+                    variant="filled"
+                    severity={snackbar.severity}
+                    sx={{
+                        color: "primary.branco",
+
+                        "& .MuiAlert-icon": {
+                            color: "primary.branco"
+                        },
+
+                        "& .MuiAlert-action": {
+                            color: "primary.branco"
+                        }
+                    }}
+                >
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
+        </>
     );
 }
