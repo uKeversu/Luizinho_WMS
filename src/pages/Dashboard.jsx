@@ -45,6 +45,7 @@ import LocalPrintshopIcon from '@mui/icons-material/LocalPrintshop';
 import ReplayIcon from '@mui/icons-material/Replay';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import HistoryIcon from '@mui/icons-material/History';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 
 // Componentes
 import MenuUsuario from "../components/MenuUsuario";
@@ -825,10 +826,21 @@ function Dashboard({ tipo }) {
                         </strong>
                     </Typography>
                     <Box>
-                        <MenuUsuario
-                            userInfo={userInfo}
-                            onLogout={logout}
-                        />
+                        <Box sx={{
+                            display: "flex",
+                            flexDirection: "row",
+                            justifyContent: "right",
+                        }}>
+                            <Box>
+                                <IconButton>
+                                    <NotificationsIcon />
+                                </IconButton>
+                            </Box>
+                            <MenuUsuario
+                                userInfo={userInfo}
+                                onLogout={logout}
+                            />
+                        </Box>
                         <Box
                             sx={{
                                 display: "flex",
