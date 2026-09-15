@@ -3286,6 +3286,7 @@ function Conferencia() {
                             status: "CONFERIDA",
                             localizacao: localizacaoFinal,
                             observacao: observacao,
+                            conferencia: true
                         })
                     }
                 );

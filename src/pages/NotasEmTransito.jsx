@@ -342,7 +342,9 @@ function NotasEmTransito() {
                     },
                     body: JSON.stringify({
                         status: "PENDENTE",
-                        observacao
+                        observacao,
+                        recebimento: true,
+                        recebimento_completo: recebimentoCompleto
                     })
                 }
             );

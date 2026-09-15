@@ -393,14 +393,24 @@ export default function DistribuicaoConferencia() {
 
             await Promise.all(
                 notasSelecionadas.map(async (notaId) => {
+                    console.log("TOKEN:", localStorage.getItem("nfe_token"));
+                    console.log(
+                        "X-Auth-Token:",
+                        localStorage.getItem("nfe_token")
+                    );
+                    const token = localStorage.getItem("nfe_token");
 
                     await axios.post(
                         `${API_URL}/api/notas/atribuir`,
                         {
                             nota_id: notaId,
                             usuarios: usuariosSelecionados,
-                            prioridade,
-                            atribuido_por: userInfo?.codigo
+                            prioridade
+                        },
+                        {
+                            headers: {
+                                "X-Auth-Token": token
+                            }
                         }
                     );
 

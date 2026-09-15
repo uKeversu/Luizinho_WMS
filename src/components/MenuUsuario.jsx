@@ -186,7 +186,7 @@ function MenuUsuario({ userInfo, onLogout }) {
                 onClose={fecharMenu}
                 PaperProps={{
                     sx: {
-                        bgcolor: "background.default",
+                        bgcolor: "background.card",
                         color: "text.primary",
                         minWidth: 220
                     }
