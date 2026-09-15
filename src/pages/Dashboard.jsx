@@ -176,6 +176,18 @@ function Dashboard({ tipo }) {
         return () => clearInterval(intervalo);
     }, []);
 
+    useEffect(() => {
+        if (quantidadeNaoLidas > 0) {
+            document.title = `(${quantidadeNaoLidas}) SIGEL WMS`;
+        } else {
+            document.title = "SIGEL WMS";
+        }
+
+        return () => {
+            document.title = "SIGEL WMS";
+        };
+    }, [quantidadeNaoLidas]);
+
     const obterFiltroStatus = () => {
         switch (aba) {
             case 0:

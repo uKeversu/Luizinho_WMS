@@ -182,8 +182,6 @@ export default function AlertaAutorizacaoManual({ userInfo, token }) {
             );
 
             if (response.ok) {
-
-                // Nós ganhamos
                 setAbrir(false);
                 setSolicitacao(null);
 
@@ -191,8 +189,6 @@ export default function AlertaAutorizacaoManual({ userInfo, token }) {
             }
 
             if (response.status === 409) {
-
-                // Outro superior ganhou
                 setAbrir(false);
                 setSolicitacao(null);
 
