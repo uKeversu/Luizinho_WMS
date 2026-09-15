@@ -30,7 +30,7 @@ import {
     Badge,
     Divider,
     List,
-    ListItemButton,
+    ListItem,
     Popover,
 } from "@mui/material";
 
@@ -51,10 +51,12 @@ import ReplayIcon from '@mui/icons-material/Replay';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import HistoryIcon from '@mui/icons-material/History';
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import DescriptionIcon from '@mui/icons-material/Description';
 
 // Componentes
 import MenuUsuario from "../components/MenuUsuario";
 import LoginFuncionario from "../components/LoginFuncionario";
+import XmlViewer from "../components/XmlViewer";
 
 import '../style/App.css';
 
@@ -113,6 +115,12 @@ function Dashboard({ tipo }) {
     const [notificacoes, setNotificacoes] = useState([]);
     const [quantidadeNaoLidas, setQuantidadeNaoLidas] = useState(0);
     const [anchorNotificacoes, setAnchorNotificacoes] = useState(null);
+
+    // Modal da Nfe
+    const [openXmlModal, setOpenXmlModal] = useState(false);
+    const [xmlSelecionado, setXmlSelecionado] = useState("");
+    const [nomeXmlSelecionado, setNomeXmlSelecionado] = useState("");
+    const [notaXmlSelecionada, setNotaXmlSelecionada] = useState(null);
 
     // SS Plus Sync
     const [loadingSync, setLoadingSync] = useState(false);
@@ -279,7 +287,7 @@ function Dashboard({ tipo }) {
             const token = localStorage.getItem("nfe_token");
 
             const response = await fetch(
-                `${API}/api/notificacoes/nao-lidas`,
+                `${API}/api/notificacoes`,
                 {
                     headers: {
                         "X-Auth-Token": token
@@ -293,11 +301,21 @@ function Dashboard({ tipo }) {
 
             const data = await response.json();
 
-            setNotificacoes(data.notificacoes || []);
-            setQuantidadeNaoLidas(data.quantidade || 0);
+            const listaNotificacoes = data.notificacoes || [];
+
+            setNotificacoes(listaNotificacoes);
+
+            setQuantidadeNaoLidas(
+                listaNotificacoes.filter(
+                    notificacao => !notificacao.lida
+                ).length
+            );
 
         } catch (error) {
-            console.error("Erro ao carregar notificações:", error);
+            console.error(
+                "Erro ao carregar notificações:",
+                error
+            );
         }
     };
 
@@ -320,7 +338,11 @@ function Dashboard({ tipo }) {
             }
 
             setNotificacoes(prev =>
-                prev.filter(notificacao => notificacao.id !== notificacaoId)
+                prev.map(notificacao =>
+                    notificacao.id === notificacaoId
+                        ? { ...notificacao, lida: true }
+                        : notificacao
+                )
             );
 
             setQuantidadeNaoLidas(prev =>
@@ -332,6 +354,57 @@ function Dashboard({ tipo }) {
                 "Erro ao marcar notificação como lida:",
                 error
             );
+        }
+    };
+
+    const marcarComoGravada = async (notificacao) => {
+        try {
+            let nota = notas.find(
+                n => n.id === notificacao.nfe_id
+            );
+
+            // Se a nota não estiver na página atual, busca diretamente pelo ID
+            if (!nota) {
+                nota = await buscarNotaPorId(
+                    notificacao.nfe_id
+                );
+            }
+
+            if (!nota) {
+                setSnackbar({
+                    open: true,
+                    message: "Não foi possível encontrar a nota.",
+                    severity: "error"
+                });
+
+                return;
+            }
+
+            const etiquetaAlterada = await alterarEtiqueta(
+                nota,
+                "Gravada"
+            );
+
+            // Só marca a notificação como lida se a alteração realmente funcionou
+            if (!etiquetaAlterada) {
+                return;
+            }
+
+            await marcarNotificacaoComoLida(
+                notificacao.id
+            );
+
+        } catch (error) {
+            console.error(
+                "Erro ao marcar notificação como gravada:",
+                error
+            );
+
+            setSnackbar({
+                open: true,
+                message: "Erro ao marcar nota como gravada.",
+                severity: "error"
+            });
         }
     };
 
@@ -353,7 +426,13 @@ function Dashboard({ tipo }) {
                 throw new Error("Erro ao marcar notificações");
             }
 
-            setNotificacoes([]);
+            setNotificacoes(prev =>
+                prev.map(notificacao => ({
+                    ...notificacao,
+                    lida: true
+                }))
+            );
+
             setQuantidadeNaoLidas(0);
 
         } catch (error) {
@@ -464,6 +543,37 @@ function Dashboard({ tipo }) {
 
         return prioridadeAtual > maior ? prioridadeAtual : maior;
     }, 0);
+
+    const buscarNotaPorId = async (nfeId) => {
+        try {
+            const token = localStorage.getItem("nfe_token");
+
+            const response = await fetch(
+                `${API}/api/notas/listar?id=${nfeId}`,
+                {
+                    headers: {
+                        "X-Auth-Token": token
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Erro ao buscar nota");
+            }
+
+            const data = await response.json();
+
+            return data.data?.[0] || null;
+
+        } catch (error) {
+            console.error(
+                "Erro ao buscar nota por ID:",
+                error
+            );
+
+            return null;
+        }
+    };
 
     // Busca itens das notas
     const buscarItens = async (nota) => {
@@ -594,6 +704,23 @@ function Dashboard({ tipo }) {
         }
     };
 
+    const visualizarXML = (nota) => {
+
+        if (!nota?.xml) {
+            setSnackbar({
+                open: true,
+                message: "XML não disponível para esta nota",
+                severity: "warning"
+            });
+
+            return;
+        }
+
+        setNotaXmlSelecionada(nota);
+        setXmlSelecionado(nota.xml);
+        setOpenXmlModal(true);
+    };
+
     // Logs de conferência
     const abrirHistoricoLogs = (nota) => {
         navigate(`/HistoricoLogs/${nota.id}`);
@@ -700,9 +827,9 @@ function Dashboard({ tipo }) {
 
     // Alterar etiqueta
     const alterarEtiqueta = async (nota, etiqueta) => {
-        if (!nota.numero || !nota.serie) {
+        if (!nota?.numero || !nota?.serie) {
             console.error("Nota inválida:", nota);
-            return;
+            return false;
         }
 
         try {
@@ -725,7 +852,7 @@ function Dashboard({ tipo }) {
             if (!response.ok) {
 
                 if (tratarErroAutenticacao(data)) {
-                    return;
+                    return false;
                 }
 
                 throw new Error(
@@ -753,6 +880,8 @@ function Dashboard({ tipo }) {
                 severity: "success"
             });
 
+            return true;
+
         } catch (error) {
             console.error(error);
 
@@ -761,6 +890,8 @@ function Dashboard({ tipo }) {
                 message: error.message || "Erro ao atualizar etiqueta",
                 severity: "error"
             });
+
+            return false;
         }
     };
 
@@ -1111,7 +1242,7 @@ function Dashboard({ tipo }) {
                                 Notificações
                             </Typography>
 
-                            {notificacoes.length > 0 && (
+                            {quantidadeNaoLidas > 0 && (
                                 <Button
                                     size="small"
                                     onClick={marcarTodasComoLidas}
@@ -1154,15 +1285,26 @@ function Dashboard({ tipo }) {
                                 }}
                             >
                                 {notificacoes.map((notificacao) => (
-                                    <ListItemButton
+                                    <ListItem
                                         key={notificacao.id}
-                                        onClick={() =>
-                                            marcarNotificacaoComoLida(notificacao.id)
-                                        }
                                         sx={{
                                             px: 2,
                                             py: 1.5,
-                                            alignItems: "flex-start"
+                                            alignItems: "flex-start",
+
+                                            bgcolor: notificacao.lida
+                                                ? "transparent"
+                                                : "action.hover",
+
+                                            opacity: notificacao.lida
+                                                ? '60%'
+                                                : '100%',
+
+                                            "&:hover": {
+                                                bgcolor: notificacao.lida
+                                                    ? "action.hover"
+                                                    : "action.selected"
+                                            }
                                         }}
                                     >
                                         <Box sx={{ width: "100%" }}>
@@ -1181,17 +1323,37 @@ function Dashboard({ tipo }) {
                                             >
                                                 {notificacao.mensagem}
                                             </Typography>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                <Typography
+                                                    variant="caption"
+                                                    color="text.secondary"
+                                                >
+                                                    {new Date(
+                                                        notificacao.data_criacao
+                                                    ).toLocaleString("pt-BR")}
+                                                </Typography>
 
-                                            <Typography
-                                                variant="caption"
-                                                color="text.secondary"
-                                            >
-                                                {new Date(
-                                                    notificacao.data_criacao
-                                                ).toLocaleString("pt-BR")}
-                                            </Typography>
+                                                {!notificacao.lida && (
+                                                    <Button
+                                                        size="small"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+
+                                                            if (notificacao.tipo === "CONFERENCIA_FINALIZADA") {
+                                                                marcarComoGravada(notificacao);
+                                                            } else {
+                                                                marcarNotificacaoComoLida(notificacao.id);
+                                                            }
+                                                        }}
+                                                    >
+                                                        {notificacao.tipo === "CONFERENCIA_FINALIZADA"
+                                                            ? "Marcar como gravada"
+                                                            : "Marcar como lida"}
+                                                    </Button>
+                                                )}
+                                            </Box>
                                         </Box>
-                                    </ListItemButton>
+                                    </ListItem>
                                 ))}
                             </List>
                         )}
@@ -1408,6 +1570,14 @@ function Dashboard({ tipo }) {
 
                                 <MenuItem value="emissao">
                                     Data Emissão
+                                </MenuItem>
+
+                                <MenuItem value="gravacao">
+                                    Data Gravação
+                                </MenuItem>
+
+                                <MenuItem value="conferencia">
+                                    Data Conferência
                                 </MenuItem>
                             </TextField>
 
@@ -1675,6 +1845,15 @@ function Dashboard({ tipo }) {
                                                                 gap: 0.5
                                                             }}
                                                         >
+                                                            <Tooltip title="Visualizar NFe">
+                                                                <IconButton
+                                                                    size="small"
+                                                                    onClick={() => visualizarXML(nota)}
+                                                                >
+                                                                    <DescriptionIcon fontSize="small" />
+                                                                </IconButton>
+                                                            </Tooltip>
+
                                                             <Tooltip title="Baixar XML completo da nota">
                                                                 <IconButton
                                                                     size="small"
@@ -2169,6 +2348,17 @@ function Dashboard({ tipo }) {
                         </Button>
                     </DialogActions>
                 </Dialog>
+
+                <XmlViewer
+                    open={openXmlModal}
+                    onClose={() => {
+                        setOpenXmlModal(false);
+                        setXmlSelecionado("");
+                        setNotaXmlSelecionada(null);
+                    }}
+                    xml={xmlSelecionado}
+                    nota={notaXmlSelecionada}
+                />
 
                 {/* Snackbar */}
                 <Snackbar
