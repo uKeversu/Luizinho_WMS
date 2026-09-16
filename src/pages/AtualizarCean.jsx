@@ -17,7 +17,11 @@ import {
     Snackbar,
     Alert,
     Button,
-    Tooltip
+    Tooltip,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
 } from "@mui/material";
 
 // Ícones do MUI
@@ -27,6 +31,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SyncIcon from '@mui/icons-material/Sync';
 import UploadFileIcon from "@mui/icons-material/UploadFile";
+import SearchIcon from "@mui/icons-material/Search";
 
 // Componentes
 import MenuUsuario from "../components/MenuUsuario";
@@ -67,9 +72,13 @@ function AtualizarCean() {
 
     const [loadingNotas, setLoadingNotas] = useState(false);
     const [loadingItens, setLoadingItens] = useState(false);
+    const [loadingCean, setLoadingCean] = useState(false);
     const [searchParams] = useSearchParams();
 
     const [loadingSync, setLoadingSync] = useState(false);
+
+    const [confirmarCorrecaoCean, setConfirmarCorrecaoCean] = useState(false);
+    const [resultadoCorrecaoCean, setResultadoCorrecaoCean] = useState(null);
 
     const [snackbar, setSnackbar] = useState({
         open: false,
@@ -205,7 +214,14 @@ function AtualizarCean() {
 
         try {
 
-            const res = await fetch(`${API}/api/itens_nfe/${notaId}`);
+            const res = await fetch(
+                `${API}/api/itens_nfe/${notaId}`,
+                {
+                    headers: {
+                        "X-Auth-Token": token
+                    }
+                }
+            );
             const data = await res.json();
 
             console.log(data);
@@ -632,6 +648,185 @@ function AtualizarCean() {
         }
     };
 
+    // CORRIGIR CEANS DA NOTA PELO HISTÓRICO
+    const corrigirCeansNota = async () => {
+
+        if (!notaSelecionada?.id) {
+            setSnackbar({
+                open: true,
+                message: "Selecione uma nota primeiro.",
+                severity: "warning"
+            });
+            return;
+        }
+        console.log(notaSelecionada.id)
+        try {
+
+            setLoadingCean(true);
+
+            const response = await fetch(
+                `${API}/api/nfe/cean/auto`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Auth-Token": token
+                    },
+                    body: JSON.stringify({
+                        nota_id: notaSelecionada.id
+                    })
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data?.erro ||
+                    data?.message ||
+                    "Erro ao corrigir CEANs."
+                );
+            }
+
+            console.log("Resultado correção CEAN:", data);
+
+            setResultadoCorrecaoCean(data);
+
+            /*
+             * Atualiza somente os itens que o backend
+             * conseguiu corrigir automaticamente.
+             */
+            if (Array.isArray(data.itens)) {
+
+                setItens(prev =>
+                    prev.map(item => {
+
+                        const resultado = data.itens.find(
+                            r => Number(r.item_id) === Number(item.id)
+                        );
+
+                        if (
+                            resultado?.status === "atualizado" &&
+                            resultado?.cean
+                        ) {
+
+                            return {
+                                ...item,
+
+                                cean: resultado.cean,
+
+                                // Mantém o código interno sincronizado
+                                codire: resultado.cean,
+
+                                // Atualiza o snapshot para o React
+                                // não considerar o CEAN como alteração manual
+                                original: {
+                                    ...item.original,
+                                    cean: resultado.cean,
+                                    codire: resultado.cean
+                                }
+                            };
+                        }
+
+                        return item;
+                    })
+                );
+            }
+
+            /*
+             * Quantidades retornadas pelo backend.
+             */
+            const atualizados = Number(
+                data.atualizados || 0
+            );
+
+            const naoEncontrados = Number(
+                data.nao_encontrados || 0
+            );
+
+            const conflitos = Number(
+                data.conflitos || 0
+            );
+
+            let mensagem = "";
+
+            if (atualizados > 0) {
+                mensagem +=
+                    `${atualizados} CEAN` +
+                    `${atualizados !== 1 ? "s" : ""} corrigido` +
+                    `${atualizados !== 1 ? "s" : ""}. `;
+            }
+
+            if (naoEncontrados > 0) {
+                mensagem +=
+                    `${naoEncontrados} sem correspondência. `;
+            }
+
+            if (conflitos > 0) {
+                mensagem +=
+                    `${conflitos} com conflito.`;
+            }
+
+            if (!mensagem) {
+                mensagem =
+                    "Nenhum CEAN precisou ser corrigido.";
+            }
+
+            setSnackbar({
+                open: true,
+                message: mensagem.trim(),
+                severity:
+                    conflitos > 0 || naoEncontrados > 0
+                        ? "warning"
+                        : "success"
+            });
+
+            // SINCRONIZA COM SSPLUS
+            await syncSSPlus();
+
+            // RECARREGA A TABELA
+            await buscarItens(notaSelecionada.id);
+
+            registrarLog({
+                acao: "Corrigiu CEANs automáticamente através do histórico"
+            });
+
+        } catch (err) {
+
+            console.error(
+                "Erro ao corrigir CEANs:",
+                err
+            );
+
+            setSnackbar({
+                open: true,
+                message:
+                    err.message ||
+                    "Erro ao corrigir CEANs.",
+                severity: "error"
+            });
+
+        } finally {
+
+            setLoadingCean(false);
+        }
+    };
+
+    const totalSemCean = itens.filter(item => {
+
+        const cean = String(
+            item.cean || ""
+        )
+            .trim()
+            .toUpperCase();
+
+        return (
+            !cean ||
+            cean === "SEM GTIN"
+        );
+
+    }).length;
+
     if (!autorizado) {
         return (
             <Container
@@ -835,10 +1030,62 @@ function AtualizarCean() {
                                     </Button>
                                 </span>
                             </Tooltip>
+
+                            <Tooltip
+                                title={
+                                    !notaSelecionada
+                                        ? "Selecione uma nota primeiro"
+                                        : totalSemCean === 0
+                                            ? "Esta nota não possui itens sem CEAN"
+                                            : "Procurar CEANs no histórico usando CNPJ do fornecedor + CPROD"
+                                }
+                            >
+                                <span>
+                                    <Button
+                                        size="small"
+                                        disabled={
+                                            !notaSelecionada ||
+                                            totalSemCean === 0 ||
+                                            loadingCean
+                                        }
+                                        onClick={() =>
+                                            setConfirmarCorrecaoCean(true)
+                                        }
+                                        sx={{
+                                            color: "background.paper",
+                                            display: "flex",
+                                            gap: 0.5,
+                                            fontSize: "0.75rem",
+                                            minWidth: "auto",
+                                            padding: "4px 8px",
+                                            whiteSpace: "nowrap"
+                                        }}
+                                    >
+                                        {loadingCean ? (
+                                            <>
+                                                <CircularProgress
+                                                    size={14}
+                                                    sx={{
+                                                        color: "background.paper"
+                                                    }}
+                                                />
+
+                                                Consultando...
+                                            </>
+                                        ) : (
+                                            <>
+                                                Corrigir CEANs
+                                                <SearchIcon />
+                                            </>
+                                        )}
+                                    </Button>
+                                </span>
+                            </Tooltip>
+
                             <Tooltip title="Buscar códigos e localizações do SS Plus">
                                 <Button
                                     id="btnAtualizar" onClick={syncSSPlus}
-                                    disabled={loadingSync}
+                                    disabled={!notaSelecionada || loadingCorrespondencias || loadingSync}
                                     size="small"
                                     sx={{
                                         color: "background.paper",
@@ -1009,17 +1256,35 @@ function AtualizarCean() {
 
                 {notaSelecionada && (
 
-                    <Paper sx={{ p: 2, mb: 2, bgcolor: 'background.alerta', zoom: 0.8 }}>
+                    <Paper
+                        sx={{
+                            p: 2,
+                            mb: 2,
+                            bgcolor: 'background.alerta',
+                            zoom: 0.8
+                        }}
+                    >
 
                         <Typography variant="h6">
                             NOTA SELECIONADA
                         </Typography>
+
                         <Typography variant="h5">
                             NF {notaSelecionada.numero}-{notaSelecionada.serie}
                         </Typography>
 
                         <Typography variant="h7">
                             {notaSelecionada.fornecedor}
+                        </Typography>
+
+                        <Typography
+                            variant="body2"
+                            sx={{ mt: 1 }}
+                        >
+                            Itens sem CEAN:{" "}
+                            <strong>
+                                {totalSemCean}
+                            </strong>
                         </Typography>
 
                     </Paper>
@@ -1219,6 +1484,115 @@ function AtualizarCean() {
                         </Table>
                     </TableContainer>
                 )}
+
+                <Dialog
+                    open={confirmarCorrecaoCean}
+                    onClose={() => {
+                        if (!loadingCean) {
+                            setConfirmarCorrecaoCean(false);
+                        }
+                    }}
+                    maxWidth="sm"
+                    fullWidth
+                    slotProps={{
+                        paper: {
+                            sx: {
+                                bgcolor: "background.card",
+                                color: "text.primary",
+                                zoom: '0.9',
+                            }
+                        }
+                    }}
+                >
+                    <DialogTitle>
+                        Corrigir CEANs automaticamente?
+                    </DialogTitle>
+
+                    <DialogContent>
+
+                        <Typography
+                            variant="body1"
+                            sx={{ mb: 2 }}
+                        >
+                            O sistema vai procurar correspondências
+                            históricas para os{" "}
+                            <strong>
+                                {totalSemCean}
+                            </strong>{" "}
+                            itens que estão sem CEAN nesta nota.
+                        </Typography>
+
+                        <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ mb: 2 }}
+                        >
+                            A busca será feita utilizando o CNPJ do
+                            fornecedor e o CPROD do produto.
+                        </Typography>
+
+                        <Alert
+                            severity="info"
+                            sx={{ mb: 1 }}
+                        >
+                            Se existir exatamente um CEAN válido no
+                            histórico para o CPROD, ele será preenchido
+                            automaticamente.
+                        </Alert>
+
+                        <Alert
+                            severity="warning"
+                        >
+                            Produtos sem histórico ou com múltiplos CEANs
+                            diferentes não serão alterados e continuarão
+                            disponíveis para correção manual.
+                        </Alert>
+
+                    </DialogContent>
+
+                    <DialogActions>
+
+                        <Button
+                            color="error"
+                            onClick={() =>
+                                setConfirmarCorrecaoCean(false)
+                            }
+                            disabled={loadingCean}
+                        >
+                            Cancelar
+                        </Button>
+
+                        <Button
+                            variant="contained"
+                            startIcon={
+                                loadingCean
+                                    ? (
+                                        <CircularProgress
+                                            size={16}
+                                            color="inherit"
+                                        />
+                                    )
+                                    : (
+                                        <SearchIcon />
+                                    )
+                            }
+                            disabled={loadingCean}
+                            onClick={() => {
+
+                                setConfirmarCorrecaoCean(false);
+
+                                corrigirCeansNota();
+
+                            }}
+                        >
+                            {loadingCean
+                                ? "Consultando..."
+                                : "Corrigir CEANs"}
+                        </Button>
+
+                    </DialogActions>
+
+                </Dialog>
 
                 <Snackbar
                     open={snackbar.open}
