@@ -116,11 +116,15 @@ function Dashboard({ tipo }) {
     const [quantidadeNaoLidas, setQuantidadeNaoLidas] = useState(0);
     const [anchorNotificacoes, setAnchorNotificacoes] = useState(null);
 
-    // Modal da Nfe
+    // Modal da NFe
     const [openXmlModal, setOpenXmlModal] = useState(false);
     const [xmlSelecionado, setXmlSelecionado] = useState("");
     const [nomeXmlSelecionado, setNomeXmlSelecionado] = useState("");
     const [notaXmlSelecionada, setNotaXmlSelecionada] = useState(null);
+
+    // Finalizar NFe para venda
+    const [modalFinalizarVenda, setModalFinalizarVenda] = useState({ open: false, nota: null });
+    const [finalizandoVenda, setFinalizandoVenda] = useState(false);
 
     // SS Plus Sync
     const [loadingSync, setLoadingSync] = useState(false);
@@ -243,6 +247,21 @@ function Dashboard({ tipo }) {
 
     const fecharNotificacoes = () => {
         setAnchorNotificacoes(null);
+    };
+
+    const abrirModalFinalizarParaVenda = (nota) => {
+        setModalFinalizarVenda({
+            open: true,
+            nota
+        });
+    };
+
+    const fecharModalFinalizarParaVenda = () => {
+        if (finalizandoVenda) return;
+        setModalFinalizarVenda({
+            open: false,
+            nota: null
+        });
     };
 
     // Logs de alteração de notas
@@ -413,7 +432,7 @@ function Dashboard({ tipo }) {
             const token = localStorage.getItem("nfe_token");
 
             const response = await fetch(
-                
+
                 `${API}/api/notificacoes/ler-todas`,
                 {
                     method: "PUT",
@@ -728,7 +747,7 @@ function Dashboard({ tipo }) {
         navigate(`/HistoricoLogs/${nota.id}`);
     };
 
-    // Altera status para recebida
+    // Altera status para pendente
     const atualizarStatusNota = async (nota) => {
         if (!nota.numero || !nota.serie) {
             console.error("Nota inválida:", nota);
@@ -824,6 +843,94 @@ function Dashboard({ tipo }) {
 
         } finally {
             setLoadingNotasIds(prev => prev.filter(id => id !== nota.id));
+        }
+    };
+
+    const finalizarNotaParaVenda = async () => {
+        const nota = modalFinalizarVenda.nota;
+
+        if (!nota?.id) {
+            setSnackbar({
+                open: true,
+                message: "Nota inválida.",
+                severity: "warning"
+            });
+            return;
+        }
+
+        try {
+            setFinalizandoVenda(true);
+
+            const observacao = `ITENS FORAM PARA VENDA - ${userInfo.nome}`;
+
+            const response = await fetch(
+                `${API}/api/nfe/finalizar_nfe/${nota.serie}/${nota.numero}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Auth-Token": token
+                    },
+                    body: JSON.stringify({
+                        status: "CONFERIDA",
+                        observacao: observacao,
+                        conferencia: true
+                    })
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data?.message ||
+                    data?.erro ||
+                    "Não foi possível finalizar a nota."
+                );
+            }
+
+            // REGISTRAR LOG
+            await registrarLog({
+                nota,
+                acao: "Finalizou nota para venda",
+                observacao: `Responsável: ${userInfo.nome}`
+            })
+
+            // Atualiza a nota na lista sem precisar recarregar tudo
+            setNotas(prevNotas =>
+                prevNotas.map(item =>
+                    item.id === nota.id
+                        ? {
+                            ...item,
+                            status: "CONFERIDA",
+                            observacao: observacao
+                        }
+                        : item
+                )
+            );
+
+            setSnackbar({
+                open: true,
+                message: `Nota ${nota.numero} finalizada para venda com sucesso.`,
+                severity: "success"
+            });
+
+            setModalFinalizarVenda({
+                open: false,
+                nota: null
+            });
+
+        } catch (error) {
+            console.error("Erro ao finalizar nota para venda:", error);
+
+            setSnackbar({
+                open: true,
+                message: error.message || "Erro ao finalizar nota.",
+                severity: "error"
+            });
+
+        } finally {
+            setFinalizandoVenda(false);
         }
     };
 
@@ -2166,6 +2273,36 @@ function Dashboard({ tipo }) {
                                                                 : "Marcar como Pendente"}
                                                         </Button>
                                                     )}
+
+                                                    {aba == 1 &&
+                                                        nota.status === "PENDENTE" &&
+                                                        userInfo.pode_acessar_painel_gerencial && (
+                                                            <Button
+                                                                fullWidth
+                                                                variant="contained"
+                                                                size="small"
+                                                                disabled={loadingNotasIds.includes(nota.id)}
+                                                                sx={{
+                                                                    borderRadius: '10px',
+                                                                    py: 0.7,
+                                                                    fontWeight: 700,
+                                                                    fontSize: '0.72rem',
+                                                                    textTransform: 'none',
+                                                                    bgcolor: 'primary.cancelar',
+                                                                    boxShadow: 'none',
+
+                                                                    '&:hover': {
+                                                                        bgcolor: 'primary.cancelarHover',
+                                                                        boxShadow: 'none'
+                                                                    }
+                                                                }}
+                                                                onClick={() => abrirModalFinalizarParaVenda(nota)}
+                                                            >
+                                                                {loadingNotasIds.includes(nota.id)
+                                                                    ? "Finalizando..."
+                                                                    : "Finalizar nota para venda"}
+                                                            </Button>
+                                                        )}
                                                 </Box>
                                             </CardContent>
                                         </Card>
@@ -2347,6 +2484,193 @@ function Dashboard({ tipo }) {
                             }}
                         >
                             Fechar
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
+                <Dialog
+                    open={modalFinalizarVenda.open}
+                    onClose={fecharModalFinalizarParaVenda}
+                    fullWidth
+                    maxWidth="sm"
+                    PaperProps={{
+                        sx: {
+                            borderRadius: 3,
+                            bgcolor: 'background.default',
+                            color: 'text.primary',
+                            boxShadow: 24
+                        }
+                    }}
+                >
+                    <DialogTitle
+                        sx={{
+                            fontWeight: 700,
+                            color: 'text.primary',
+                            pb: 1
+                        }}
+                    >
+                        Finalizar nota para venda
+                    </DialogTitle>
+
+                    <DialogContent>
+                        <Box
+                            sx={{
+                                p: 2,
+                                mb: 2,
+                                borderRadius: 2,
+                                bgcolor: 'action.hover',
+                                border: '1px solid',
+                                borderColor: 'divider'
+                            }}
+                        >
+                            <Typography
+                                variant="body2"
+                                sx={{
+                                    fontWeight: 700,
+                                    color: 'text.primary',
+                                    mb: 0.5
+                                }}
+                            >
+                                Atenção
+                            </Typography>
+
+                            <Typography
+                                variant="body2"
+                                sx={{
+                                    color: 'text.secondary',
+                                    lineHeight: 1.6
+                                }}
+                            >
+                                Esta ação deve ser utilizada quando os itens desta
+                                nota já foram destinados a clientes e enviados para venda.
+                            </Typography>
+                        </Box>
+
+                        <Typography
+                            variant="body2"
+                            sx={{
+                                color: 'text.primary',
+                                lineHeight: 1.7,
+                                mb: 1.5
+                            }}
+                        >
+                            Ao confirmar, a nota será marcada como{' '}
+                            <strong>CONFERIDA</strong> e a conferência será registrada no
+                            sistema.
+                        </Typography>
+
+                        <Typography
+                            variant="body2"
+                            sx={{
+                                color: 'text.primary',
+                                lineHeight: 1.7,
+                                mb: 1.5
+                            }}
+                        >
+                            A observação registrada será:
+                        </Typography>
+
+                        <Box
+                            sx={{
+                                p: 1.5,
+                                borderRadius: 2,
+                                bgcolor: 'background.default',
+                                border: '1px solid',
+                                borderColor: 'divider',
+                                mb: 2
+                            }}
+                        >
+                            <Typography
+                                variant="body2"
+                                sx={{
+                                    fontWeight: 700,
+                                    color: 'text.primary'
+                                }}
+                            >
+                                ITENS FORAM PARA VENDA -{' '}
+                                {userInfo?.nome}
+                            </Typography>
+                        </Box>
+
+                        <Typography
+                            variant="body2"
+                            sx={{
+                                color: 'text.secondary',
+                                lineHeight: 1.6
+                            }}
+                        >
+                            A ação também será registrada no log do sistema.
+                        </Typography>
+
+                        {modalFinalizarVenda.nota && (
+                            <Box
+                                sx={{
+                                    mt: 2,
+                                    p: 1.5,
+                                    borderRadius: 2,
+                                    bgcolor: 'action.hover'
+                                }}
+                            >
+                                <Typography
+                                    variant="caption"
+                                    sx={{
+                                        color: 'text.secondary',
+                                        display: 'block',
+                                        mb: 0.5
+                                    }}
+                                >
+                                    Nota selecionada
+                                </Typography>
+
+                                <Typography
+                                    variant="body2"
+                                    sx={{
+                                        fontWeight: 700,
+                                        color: 'text.primary'
+                                    }}
+                                >
+                                    Nº{' '}
+                                    {modalFinalizarVenda.nota.numero} • Série {modalFinalizarVenda.nota.serie}
+                                </Typography>
+                            </Box>
+                        )}
+                    </DialogContent>
+
+                    <DialogActions
+                        sx={{
+                            px: 3,
+                            pb: 2.5,
+                            gap: 1
+                        }}
+                    >
+                        <Button
+                            onClick={fecharModalFinalizarParaVenda}
+                            disabled={finalizandoVenda}
+                            variant="outlined"
+                            color="error"
+                            sx={{
+                                borderRadius: 2,
+                                textTransform: 'none',
+                                fontWeight: 700
+                            }}
+                        >
+                            Cancelar
+                        </Button>
+
+                        <Button
+                            onClick={finalizarNotaParaVenda}
+                            disabled={finalizandoVenda}
+                            variant="contained"
+                            sx={{
+                                borderRadius: 2,
+                                textTransform: 'none',
+                                fontWeight: 700,
+                                minWidth: 170
+                            }}
+                        >
+                            {finalizandoVenda
+                                ? "Finalizando..."
+                                : "Confirmar"}
                         </Button>
                     </DialogActions>
                 </Dialog>

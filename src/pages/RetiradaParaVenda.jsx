@@ -209,12 +209,12 @@ function RetiradaParaVenda() {
     const registrarRetirada = async () => {
 
         try {
-
+            console.log(itemSelecionado)
             await registrarLog({
                 item: itemSelecionado,
                 acao: "Retirado para venda",
                 observacao:
-                    `O item ${itemSelecionado?.basico} foi pego para venda`
+                    `O item ${itemSelecionado?.basico || itemSelecionado.cean} foi pego para venda`
             });
 
             setSnackbar({
