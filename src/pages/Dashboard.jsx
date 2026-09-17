@@ -413,6 +413,7 @@ function Dashboard({ tipo }) {
             const token = localStorage.getItem("nfe_token");
 
             const response = await fetch(
+                
                 `${API}/api/notificacoes/ler-todas`,
                 {
                     method: "PUT",
@@ -423,6 +424,7 @@ function Dashboard({ tipo }) {
             );
 
             if (!response.ok) {
+
                 throw new Error("Erro ao marcar notificações");
             }
 

@@ -24,6 +24,7 @@ import Loja from "./pages/Loja";
 import PainelGames from "./pages/PainelGames";
 import PerfilJogador from "./pages/PerfilJogador";
 import Tarefas from "./pages/Tarefas";
+import Chat from "./sigel-chat/pages/Chat";
 
 import AlertaAutorizacaoManual from "./components/autorizacao/AlertaAutorizacaoManual";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -190,6 +191,11 @@ function App() {
           <Route
             path="/games/perfil/:codigo"
             element={<PerfilJogador />}
+          />
+
+          <Route
+            path="/Chat"
+            element={<Chat />}
           />
 
           <Route
