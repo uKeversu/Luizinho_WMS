@@ -493,12 +493,12 @@ function Dashboard({ tipo }) {
     const buscarNotas = async (page = 1) => {
         try {
             setLoadingNotas(true);
-
             const params = new URLSearchParams({
                 page,
                 data_inicio: dataInicio,
                 data_fim: dataFim,
                 tipo_data: tipoDataFiltro,
+                sort_by: `data_${tipoDataFiltro}`,
                 sort_order: ordemData.toUpperCase(),
                 status: obterFiltroStatus(),
                 usuarios_atribuidos: obterFiltroFunc()

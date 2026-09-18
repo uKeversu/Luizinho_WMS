@@ -46,7 +46,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import ImageIcon from "@mui/icons-material/Image";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
-import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 import MenuUsuario from "../../components/MenuUsuario";
 import LoginFuncionario from "../../components/LoginFuncionario";
@@ -347,7 +347,6 @@ function Chat() {
         try {
 
             setCriandoConversa(true);
-
             const response = await fetch(
                 "/api/chat/conversas",
                 {
@@ -358,7 +357,7 @@ function Chat() {
                     },
                     body: JSON.stringify({
                         tipo: "individual",
-                        nome: null,
+                        nome: funcionarioSelecionado.nome,
                         participantes: [
                             funcionarioSelecionado.id,
                         ],
@@ -1158,28 +1157,22 @@ function Chat() {
     // ---------------------------------------------------------
 
     const formatarData = (data) => {
-
         if (!data) {
             return "";
         }
 
         try {
-
-            return new Date(
-                data + "Z"
-            ).toLocaleString(
+            return new Date(data).toLocaleString(
                 "pt-BR",
                 {
                     timeZone: "America/Sao_Paulo",
                     day: "2-digit",
                     month: "2-digit",
                     hour: "2-digit",
-                    minute: "2-digit",
+                    minute: "2-digit"
                 }
             );
-
         } catch {
-
             return data;
         }
     };
@@ -1191,10 +1184,7 @@ function Chat() {
         }
 
         try {
-
-            return new Date(
-                data + "Z"
-            ).toLocaleTimeString(
+            return new Date(data).toLocaleTimeString(
                 "pt-BR",
                 {
                     timeZone: "America/Sao_Paulo",
@@ -1202,9 +1192,7 @@ function Chat() {
                     minute: "2-digit",
                 }
             );
-
         } catch {
-
             return "";
         }
     };
@@ -1214,7 +1202,6 @@ function Chat() {
     // ---------------------------------------------------------
 
     const obterNomeConversa = (conversa) => {
-
         if (conversa?.nome) {
             return conversa.nome;
         }
@@ -1541,10 +1528,6 @@ function Chat() {
         mensagem &&
         !mensagem.apagada_em &&
         mensagem.tipo === "texto";
-
-    // ---------------------------------------------------------
-    // TELA
-    // ---------------------------------------------------------
 
     return (
 
@@ -2234,26 +2217,18 @@ function Chat() {
                                                                         : "Nenhuma mensagem"
                                                                 )}
                                                         </Typography>
-
                                                     </Box>
-
                                                 </Box>
-
                                             </Box>
-
                                         </Box>
                                     );
                                 }
                             )
                         )}
-
                     </Box>
-
                 </Paper>
 
-                {/* =================================================
-                ÁREA DA CONVERSA
-            ================================================= */}
+                {/* ÁREA DA CONVERSA */}
 
                 <Paper
                     elevation={0}
@@ -2352,9 +2327,7 @@ function Chat() {
 
                         <>
 
-                            {/* =================================================
-                            CABEÇALHO DA CONVERSA
-                        ================================================= */}
+                            {/* CABEÇALHO DA CONVERSA */}
 
                             <Box
                                 sx={{
@@ -2456,9 +2429,7 @@ function Chat() {
 
                             <Divider />
 
-                            {/* =================================================
-                            MENSAGENS
-                        ================================================= */}
+                            {/* MENSAGENS */}
 
                             <Box
                                 ref={mensagensRef}
@@ -2633,7 +2604,7 @@ function Chat() {
                                                                     ? "warning.light"
                                                                     : minha
                                                                         ? "primary.main"
-                                                                        : "background.paper",
+                                                                        : "background.alerta",
                                                             color:
                                                                 destacada
                                                                     ? "text.primary"
@@ -2675,44 +2646,22 @@ function Chat() {
                                                                     )
                                                                 }
                                                                 sx={{
-                                                                    position:
-                                                                        "absolute",
-                                                                    top: -9,
-                                                                    right:
-                                                                        minha
-                                                                            ? -8
-                                                                            : "auto",
-                                                                    left:
-                                                                        minha
-                                                                            ? "auto"
-                                                                            : -8,
-                                                                    width: 25,
-                                                                    height: 25,
-                                                                    opacity: {
-                                                                        xs: 1,
-                                                                        md: 0.2,
-                                                                    },
-                                                                    transition:
-                                                                        "opacity 0.2s",
-                                                                    bgcolor:
-                                                                        "background.paper",
-                                                                    color:
-                                                                        "text.primary",
-                                                                    border:
-                                                                        "1px solid",
-                                                                    borderColor:
-                                                                        "divider",
-                                                                    boxShadow:
-                                                                        "0 2px 5px rgba(0,0,0,0.12)",
-                                                                    "&:hover":
-                                                                    {
+                                                                    position: "absolute",
+                                                                    top: -1,
+                                                                    right: minha ? 5 : "auto",
+                                                                    left: minha ? "auto" : 0,
+                                                                    width: 20,
+                                                                    height: 20,
+
+                                                                    opacity: 0,
+                                                                    transition: "opacity 0.2s ease",
+
+                                                                    "&:hover": {
                                                                         opacity: 1,
-                                                                        bgcolor:
-                                                                            "background.paper",
                                                                     },
                                                                 }}
                                                             >
-                                                                <MoreVertIcon
+                                                                <ExpandMoreIcon
                                                                     sx={{
                                                                         fontSize: 15,
                                                                     }}
@@ -2723,7 +2672,7 @@ function Chat() {
 
                                                         {/* REMETENTE */}
 
-                                                        {!minha && (
+                                                        {!minha && conversaSelecionada.tipo !== "individual" && (
 
                                                             <Typography
                                                                 variant="caption"
@@ -3042,20 +2991,15 @@ function Chat() {
                                                                 )}
 
                                                         </Box>
-
                                                     </Box>
-
                                                 </Box>
                                             );
                                         }
                                     )
                                 )}
-
                             </Box>
 
-                            {/* =================================================
-                            COMPOSER
-                        ================================================= */}
+                            {/* COMPOSER */}
 
                             <Divider />
 
@@ -3542,9 +3486,7 @@ function Chat() {
 
             </Box>
 
-            {/* =================================================
-            MENU DA MENSAGEM
-        ================================================= */}
+            {/* MENU DA MENSAGEM */}
 
             <Menu
                 anchorEl={menuAnchorEl}
@@ -3661,9 +3603,7 @@ function Chat() {
 
             </Menu>
 
-            {/* =================================================
-            NOVA CONVERSA
-        ================================================= */}
+            {/* NOVA CONVERSA */}
 
             <Dialog
                 open={dialogNovaConversa}
@@ -3704,7 +3644,7 @@ function Chat() {
                                 "primary.main",
                         }}
                     >
-                        <ChatIcon />
+                        <ChatIcon sx={{ color: 'primary.branco', fontSize: 20 }} />
                     </Avatar>
 
                     <Box>
@@ -3734,6 +3674,41 @@ function Chat() {
                 >
 
                     <Autocomplete
+                        slotProps={{
+                            paper: {
+                                sx: {
+                                    bgcolor: "background.default",
+                                    color: "text.primary",
+                                    border: "1px solid",
+                                    borderColor: "divider",
+                                    boxShadow: 8,
+
+                                    "& .MuiAutocomplete-option": {
+                                        color: "text.primary",
+
+                                        "&[aria-selected='true']": {
+                                            bgcolor: "action.selected",
+                                        },
+
+                                        "&.Mui-focused": {
+                                            bgcolor: "action.hover",
+                                        },
+
+                                        "&[aria-selected='true'].Mui-focused": {
+                                            bgcolor: "action.selected",
+                                        },
+                                    },
+
+                                    "& .MuiAutocomplete-noOptions": {
+                                        color: "text.secondary",
+                                    },
+
+                                    "& .MuiAutocomplete-loading": {
+                                        color: "text.secondary",
+                                    },
+                                },
+                            },
+                        }}
                         fullWidth
                         options={funcionarios.filter(
                             (funcionario) =>
@@ -3776,6 +3751,7 @@ function Chat() {
                                 value.id
                             )
                         }
+
                         noOptionsText="Nenhum funcionário encontrado"
                         loadingText="Carregando funcionários..."
                         renderOption={(
@@ -3846,6 +3822,7 @@ function Chat() {
 
                             </Box>
                         )}
+
                         renderInput={(
                             params
                         ) => (
@@ -3864,6 +3841,7 @@ function Chat() {
                                 }}
                             />
                         )}
+
                     />
 
                 </DialogContent>
@@ -3928,9 +3906,7 @@ function Chat() {
 
             </Dialog>
 
-            {/* =================================================
-            CONFIRMAÇÃO DE EXCLUSÃO
-        ================================================= */}
+            {/* CONFIRMAÇÃO DE EXCLUSÃO */}
 
             <Dialog
                 open={
@@ -4076,10 +4052,6 @@ function Chat() {
                 </DialogActions>
 
             </Dialog>
-
-            {/* =================================================
-            SNACKBAR
-        ================================================= */}
 
             <Snackbar
                 open={snackbar.open}

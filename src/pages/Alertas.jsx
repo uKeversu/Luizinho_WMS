@@ -314,18 +314,11 @@ function Alertas() {
                             <Card
                                 sx={{
                                     borderRadius: '20px',
-
-                                    bgcolor:
-                                        dark
-                                            ? 'background.alerta'
-                                            : 'background.default',
-
+                                    bgcolor: 'background.alerta',
                                     border: '1px solid',
                                     borderColor: 'divider',
 
-                                    boxShadow: dark
-                                        ? '0 4px 20px rgba(0,0,0,0.4)'
-                                        : '0 4px 14px rgba(0,0,0,0.08)'
+                                    boxShadow: '0 4px 14px rgba(0,0,0,0.08)'
                                 }}
                             >
 
@@ -393,10 +386,7 @@ function Alertas() {
                         borderRadius: '20px',
                         mb: 4,
 
-                        bgcolor:
-                            dark
-                                ? 'background.alerta'
-                                : 'background.default',
+                        bgcolor: 'background.default',
 
                         border: '1px solid',
                         borderColor: 'divider'
@@ -540,10 +530,7 @@ function Alertas() {
                             p: 6,
                             textAlign: 'center',
 
-                            bgcolor:
-                                dark
-                                    ? 'background.alerta'
-                                    : 'background.default'
+                            bgcolor: 'background.default'
                         }}
                     >
 
@@ -582,16 +569,11 @@ function Alertas() {
                                             border: '1px solid',
                                             borderColor: 'divider',
 
-                                            bgcolor:
-                                                dark
-                                                    ? 'background.alerta'
-                                                    : 'background.default',
+                                            bgcolor: 'background.default',
 
                                             backdropFilter: 'blur(10px)',
 
-                                            boxShadow: dark
-                                                ? '0 4px 20px rgba(0,0,0,0.45)'
-                                                : '0 4px 14px rgba(0,0,0,0.08)',
+                                            boxShadow: '0 4px 14px rgba(0,0,0,0.08)',
 
                                             transition: '0.25s ease',
 
@@ -606,9 +588,7 @@ function Alertas() {
                                             '&:hover': {
                                                 transform: 'translateY(-3px)',
 
-                                                boxShadow: dark
-                                                    ? '0 8px 26px rgba(0,0,0,0.6)'
-                                                    : '0 8px 22px rgba(0,0,0,0.12)'
+                                                boxShadow: '0 8px 22px rgba(0,0,0,0.12)'
                                             }
                                         }}
                                     >
@@ -678,10 +658,7 @@ function Alertas() {
 
                                             <Box
                                                 sx={{
-                                                    bgcolor:
-                                                        dark
-                                                            ? 'background.card'
-                                                            : 'background.inputBg',
+                                                    bgcolor: 'background.inputBg',
 
                                                     borderRadius: '14px',
                                                     p: 1
@@ -749,10 +726,7 @@ function Alertas() {
                                                                     ? 'pointer'
                                                                     : 'default',
 
-                                                            bgcolor:
-                                                                dark
-                                                                    ? `${cor}20`
-                                                                    : `${cor}15`,
+                                                            bgcolor: `${cor}15`,
 
                                                             border: `1px solid ${cor}40`,
                                                             p: 1.2,
@@ -805,10 +779,7 @@ function Alertas() {
 
                                                 <Box
                                                     sx={{
-                                                        bgcolor:
-                                                            dark
-                                                                ? 'background.card'
-                                                                : 'background.inputBg',
+                                                        bgcolor: 'background.inputBg',
 
                                                         borderRadius: '12px',
                                                         p: 1
@@ -837,10 +808,7 @@ function Alertas() {
 
                                                 <Box
                                                     sx={{
-                                                        bgcolor:
-                                                            dark
-                                                                ? 'background.card'
-                                                                : 'background.inputBg',
+                                                        bgcolor: 'background.inputBg',
 
                                                         borderRadius: '12px',
                                                         p: 1
@@ -880,10 +848,7 @@ function Alertas() {
 
                                                 <Box
                                                     sx={{
-                                                        bgcolor:
-                                                            dark
-                                                                ? 'background.card'
-                                                                : 'background.inputBg',
+                                                        bgcolor: 'background.inputBg',
 
                                                         borderRadius: '12px',
                                                         p: 1
@@ -912,10 +877,7 @@ function Alertas() {
 
                                                 <Box
                                                     sx={{
-                                                        bgcolor:
-                                                            dark
-                                                                ? 'background.card'
-                                                                : 'background.inputBg',
+                                                        bgcolor: 'background.inputBg',
 
                                                         borderRadius: '12px',
                                                         p: 1
@@ -950,10 +912,7 @@ function Alertas() {
 
                                                 <Box
                                                     sx={{
-                                                        bgcolor:
-                                                            dark
-                                                                ? 'rgba(255,255,255,0.05)'
-                                                                : 'primary.observacao',
+                                                        bgcolor: 'rgba(255,255,255,0.05)',
 
                                                         borderRadius: '14px',
                                                         p: 1
@@ -964,10 +923,7 @@ function Alertas() {
                                                         sx={{
                                                             fontSize: '0.72rem',
 
-                                                            color:
-                                                                dark
-                                                                    ? 'warning.light'
-                                                                    : '#fff'
+                                                            color: 'warning.light'
                                                         }}
                                                     >
                                                         <strong>Obs:</strong>
