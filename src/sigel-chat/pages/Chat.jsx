@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, Fragment } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -47,6 +47,8 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import ImageIcon from "@mui/icons-material/Image";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ScienceOutlinedIcon from "@mui/icons-material/ScienceOutlined";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 
 import MenuUsuario from "../../components/MenuUsuario";
 import LoginFuncionario from "../../components/LoginFuncionario";
@@ -70,6 +72,8 @@ function Chat() {
     const [token, setToken] = useState(
         () => localStorage.getItem("nfe_token") || ""
     );
+
+    const [abrirAvisoTestes, setAbrirAvisoTestes] = useState(true);
 
     const [conversas, setConversas] = useState([]);
     const [conversaSelecionada, setConversaSelecionada] = useState(null);
@@ -574,15 +578,17 @@ function Chat() {
         }
 
         const tiposPermitidos = [
-            "image/jpeg",
+            "image/jpg",
             "image/png",
+            "image/jpeg",
             "image/webp",
+            "image/gif",
         ];
 
         if (!tiposPermitidos.includes(arquivo.type)) {
 
             mostrarSnackbar(
-                "Formato inválido. Selecione uma imagem JPG, PNG ou WEBP.",
+                "Formato inválido. Selecione uma imagem JPEG, JPG, PNG ou WEBP.",
                 "warning"
             );
 
@@ -1440,6 +1446,126 @@ function Chat() {
             Number(
                 conversa.ultima_mensagem_id || 0
             )
+        );
+    };
+
+    // SEPARA MENSAGENS POR DIA
+    const obterDataMensagem = (valor) => {
+        if (!valor) {
+            return null;
+        }
+
+        const texto = String(valor).trim();
+
+        // Converte "2026-09-21 14:30:00" para uma data local.
+        const data = new Date(
+            texto.includes("T")
+                ? texto
+                : texto.replace(" ", "T")
+        );
+
+        if (Number.isNaN(data.getTime())) {
+            return null;
+        }
+
+        return data;
+    };
+
+    const obterChaveData = (valor) => {
+        const data = obterDataMensagem(valor);
+
+        if (!data) {
+            return null;
+        }
+
+        const ano = data.getFullYear();
+        const mes = String(data.getMonth() + 1).padStart(2, "0");
+        const dia = String(data.getDate()).padStart(2, "0");
+
+        return `${ano}-${mes}-${dia}`;
+    };
+
+    const formatarDataDivisora = (valor) => {
+        const data = obterDataMensagem(valor);
+
+        if (!data) {
+            return "Data desconhecida";
+        }
+
+        const hoje = new Date();
+
+        const inicioHoje = new Date(
+            hoje.getFullYear(),
+            hoje.getMonth(),
+            hoje.getDate()
+        );
+
+        const inicioData = new Date(
+            data.getFullYear(),
+            data.getMonth(),
+            data.getDate()
+        );
+
+        const diferencaDias = Math.round(
+            (inicioHoje - inicioData) /
+            (1000 * 60 * 60 * 24)
+        );
+
+        if (diferencaDias === 0) {
+            return "HOJE";
+        }
+
+        if (diferencaDias === 1) {
+            return "ONTEM";
+        }
+
+        return data.toLocaleDateString("pt-BR", {
+            day: "2-digit",
+            month: "long",
+            year:
+                data.getFullYear() !== hoje.getFullYear()
+                    ? "numeric"
+                    : undefined,
+        }).toUpperCase();
+    };
+
+    // COMPONENTE VISUAL DO DIVISOR DE DATAS
+    const DivisorDeData = ({ data }) => {
+        return (
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    py: 1.5,
+                    px: 1,
+                }}
+            >
+                <Box
+                    sx={{
+                        px: 2,
+                        py: 0.6,
+                        borderRadius: 2,
+                        bgcolor: "action.hover",
+                        border: "1px solid",
+                        borderColor: "divider",
+                        boxShadow:
+                            "0 1px 2px rgba(0, 0, 0, 0.08)",
+                    }}
+                >
+                    <Typography
+                        variant="caption"
+                        sx={{
+                            fontSize: "0.68rem",
+                            fontWeight: 700,
+                            color: "text.secondary",
+                            letterSpacing: "0.025em",
+                        }}
+                    >
+                        {formatarDataDivisora(data)}
+                    </Typography>
+                </Box>
+            </Box>
         );
     };
 
@@ -2684,7 +2810,21 @@ function Chat() {
                                 ) : (
 
                                     mensagens.map(
-                                        (mensagem) => {
+                                        (mensagem, index) => {
+
+                                            const mensagemAnterior = mensagens[index - 1];
+
+                                            const chaveDataAtual = obterChaveData(
+                                                mensagem.criada_em
+                                            );
+
+                                            const chaveDataAnterior = mensagemAnterior
+                                                ? obterChaveData(mensagemAnterior.criada_em)
+                                                : null;
+
+                                            const deveExibirData =
+                                                index === 0 ||
+                                                chaveDataAtual !== chaveDataAnterior;
 
                                             const minha =
                                                 String(
@@ -2699,178 +2839,125 @@ function Chat() {
                                                 mensagem.id;
                                             console.log("MENSAGEM RESPONDIDA:", mensagem);
                                             return (
-
-                                                <Box
-                                                    key={
-                                                        mensagem.id
-                                                    }
-                                                    id={`msg-${mensagem.id}`}
-                                                    sx={{
-                                                        display:
-                                                            "flex",
-                                                        justifyContent:
-                                                            minha
-                                                                ? "flex-end"
-                                                                : "flex-start",
-                                                        px: {
-                                                            xs: 0,
-                                                            md: 1,
-                                                        },
-                                                    }}
+                                                <Fragment
+                                                    key={mensagem.id}
                                                 >
 
+                                                    {deveExibirData && (
+                                                        <DivisorDeData
+                                                            data={mensagem.criada_em}
+                                                        />
+                                                    )}
                                                     <Box
+                                                        key={
+                                                            mensagem.id
+                                                        }
+                                                        id={`msg-${mensagem.id}`}
                                                         sx={{
-                                                            maxWidth: {
-                                                                xs: "88%",
-                                                                sm: "75%",
-                                                                md: "68%",
-                                                            },
-                                                            minWidth:
-                                                                70,
-                                                            px: 1.6,
-                                                            py: 1,
-                                                            borderRadius:
+                                                            display:
+                                                                "flex",
+                                                            justifyContent:
                                                                 minha
-                                                                    ? "18px 18px 4px 18px"
-                                                                    : "18px 18px 18px 4px",
-                                                            position:
-                                                                "relative",
-                                                            bgcolor:
-                                                                destacada
-                                                                    ? "warning.light"
-                                                                    : minha
-                                                                        ? "primary.main"
-                                                                        : "background.alerta",
-                                                            color:
-                                                                destacada
-                                                                    ? "text.primary"
-                                                                    : minha
-                                                                        ? "primary.contrastText"
-                                                                        : "text.primary",
-                                                            border:
-                                                                minha
-                                                                    ? "none"
-                                                                    : "1px solid",
-                                                            borderColor:
-                                                                minha
-                                                                    ? "transparent"
-                                                                    : "divider",
-                                                            boxShadow:
-                                                                "0 1px 2px rgba(0,0,0,0.08)",
-                                                            transition:
-                                                                "all 0.25s ease",
-                                                            "&:hover .menu-mensagem-btn":
-                                                            {
-                                                                opacity: 1,
+                                                                    ? "flex-end"
+                                                                    : "flex-start",
+                                                            px: {
+                                                                xs: 0,
+                                                                md: 1,
                                                             },
                                                         }}
                                                     >
 
-                                                        {/* MENU */}
+                                                        <Box
+                                                            sx={{
+                                                                maxWidth: {
+                                                                    xs: "88%",
+                                                                    sm: "75%",
+                                                                    md: "68%",
+                                                                },
+                                                                minWidth:
+                                                                    70,
+                                                                px: 1.6,
+                                                                py: 1,
+                                                                borderRadius:
+                                                                    minha
+                                                                        ? "18px 18px 4px 18px"
+                                                                        : "18px 18px 18px 4px",
+                                                                position:
+                                                                    "relative",
+                                                                bgcolor:
+                                                                    destacada
+                                                                        ? "warning.light"
+                                                                        : minha
+                                                                            ? "primary.main"
+                                                                            : "background.alerta",
+                                                                color:
+                                                                    destacada
+                                                                        ? "text.primary"
+                                                                        : minha
+                                                                            ? "primary.contrastText"
+                                                                            : "text.primary",
+                                                                border:
+                                                                    minha
+                                                                        ? "none"
+                                                                        : "1px solid",
+                                                                borderColor:
+                                                                    minha
+                                                                        ? "transparent"
+                                                                        : "divider",
+                                                                boxShadow:
+                                                                    "0 1px 2px rgba(0,0,0,0.08)",
+                                                                transition:
+                                                                    "all 0.25s ease",
+                                                                "&:hover .menu-mensagem-btn":
+                                                                {
+                                                                    opacity: 1,
+                                                                },
+                                                            }}
+                                                        >
 
-                                                        {!mensagem.apagada_em && (
+                                                            {/* MENU */}
 
-                                                            <IconButton
-                                                                className="menu-mensagem-btn"
-                                                                size="small"
-                                                                onClick={(
-                                                                    event
-                                                                ) =>
-                                                                    abrirMenuMensagem(
-                                                                        event,
-                                                                        mensagem
-                                                                    )
-                                                                }
-                                                                sx={{
-                                                                    position: "absolute",
-                                                                    top: -1,
-                                                                    right: minha ? 5 : "auto",
-                                                                    left: minha ? "auto" : 0,
-                                                                    width: 20,
-                                                                    height: 20,
+                                                            {!mensagem.apagada_em && (
 
-                                                                    opacity: 0,
-                                                                    transition: "opacity 0.2s ease",
-
-                                                                    "&:hover": {
-                                                                        opacity: 1,
-                                                                    },
-                                                                }}
-                                                            >
-                                                                <ExpandMoreIcon
+                                                                <IconButton
+                                                                    className="menu-mensagem-btn"
+                                                                    size="small"
+                                                                    onClick={(
+                                                                        event
+                                                                    ) =>
+                                                                        abrirMenuMensagem(
+                                                                            event,
+                                                                            mensagem
+                                                                        )
+                                                                    }
                                                                     sx={{
-                                                                        fontSize: 15,
+                                                                        position: "absolute",
+                                                                        top: -1,
+                                                                        right: minha ? 5 : "auto",
+                                                                        left: minha ? "auto" : 0,
+                                                                        width: 20,
+                                                                        height: 20,
+
+                                                                        opacity: 0,
+                                                                        transition: "opacity 0.2s ease",
+
+                                                                        "&:hover": {
+                                                                            opacity: 1,
+                                                                        },
                                                                     }}
-                                                                />
-                                                            </IconButton>
+                                                                >
+                                                                    <ExpandMoreIcon
+                                                                        sx={{
+                                                                            fontSize: 15,
+                                                                        }}
+                                                                    />
+                                                                </IconButton>
 
-                                                        )}
+                                                            )}
 
-                                                        {/* REMETENTE */}
+                                                            {/* REMETENTE */}
 
-                                                        {!minha && conversaSelecionada.tipo !== "individual" && (
-
-                                                            <Typography
-                                                                variant="caption"
-                                                                fontWeight={800}
-                                                                sx={{
-                                                                    display:
-                                                                        "block",
-                                                                    mb: 0.4,
-                                                                    color:
-                                                                        "primary.main",
-                                                                }}
-                                                            >
-                                                                {mensagem.remetente_nome ||
-                                                                    mensagem.remetente_codigo ||
-                                                                    "Usuário"}
-                                                            </Typography>
-
-                                                        )}
-
-                                                        {/* RESPOSTA */}
-
-                                                        {mensagem.resposta && (
-
-                                                            <Box
-                                                                onClick={() =>
-                                                                    rolarAteMensagem(
-                                                                        mensagem.resposta_a_id
-                                                                    )
-                                                                }
-                                                                sx={{
-                                                                    cursor:
-                                                                        "pointer",
-                                                                    mb: 0.8,
-                                                                    pl: 1,
-                                                                    py: 0.55,
-                                                                    pr: 0.8,
-                                                                    borderLeft:
-                                                                        "3px solid",
-                                                                    borderColor:
-                                                                        minha
-                                                                            ? "rgba(255,255,255,0.75)"
-                                                                            : "primary.main",
-                                                                    bgcolor:
-                                                                        minha
-                                                                            ? "rgba(255,255,255,0.12)"
-                                                                            : "action.hover",
-                                                                    borderRadius:
-                                                                        1,
-                                                                    overflow:
-                                                                        "hidden",
-                                                                    transition:
-                                                                        "background-color 0.2s",
-                                                                    "&:hover":
-                                                                    {
-                                                                        bgcolor:
-                                                                            minha
-                                                                                ? "rgba(255,255,255,0.18)"
-                                                                                : "action.selected",
-                                                                    },
-                                                                }}
-                                                            >
+                                                            {!minha && conversaSelecionada.tipo !== "individual" && (
 
                                                                 <Typography
                                                                     variant="caption"
@@ -2878,260 +2965,322 @@ function Chat() {
                                                                     sx={{
                                                                         display:
                                                                             "block",
+                                                                        mb: 0.4,
+                                                                        color:
+                                                                            "primary.main",
                                                                     }}
                                                                 >
-                                                                    {mensagem.resposta.remetente_nome ||
+                                                                    {mensagem.remetente_nome ||
+                                                                        mensagem.remetente_codigo ||
                                                                         "Usuário"}
                                                                 </Typography>
 
-                                                                <Typography
-                                                                    variant="caption"
-                                                                    noWrap
+                                                            )}
+
+                                                            {/* RESPOSTA */}
+
+                                                            {mensagem.resposta && (
+
+                                                                <Box
+                                                                    onClick={() =>
+                                                                        rolarAteMensagem(
+                                                                            mensagem.resposta_a_id
+                                                                        )
+                                                                    }
                                                                     sx={{
-                                                                        display:
-                                                                            "block",
-                                                                        opacity:
-                                                                            0.75,
+                                                                        cursor:
+                                                                            "pointer",
+                                                                        mb: 0.8,
+                                                                        pl: 1,
+                                                                        py: 0.55,
+                                                                        pr: 0.8,
+                                                                        borderLeft:
+                                                                            "3px solid",
+                                                                        borderColor:
+                                                                            minha
+                                                                                ? "rgba(255,255,255,0.75)"
+                                                                                : "primary.main",
+                                                                        bgcolor:
+                                                                            minha
+                                                                                ? "rgba(255,255,255,0.12)"
+                                                                                : "action.hover",
+                                                                        borderRadius:
+                                                                            1,
+                                                                        overflow:
+                                                                            "hidden",
+                                                                        transition:
+                                                                            "background-color 0.2s",
+                                                                        "&:hover":
+                                                                        {
+                                                                            bgcolor:
+                                                                                minha
+                                                                                    ? "rgba(255,255,255,0.18)"
+                                                                                    : "action.selected",
+                                                                        },
                                                                     }}
                                                                 >
-                                                                    {previaTexto(
-                                                                        mensagem.resposta
-                                                                    )}
-                                                                </Typography>
 
-                                                            </Box>
-
-                                                        )}
-
-                                                        {/* CONTEÚDO */}
-
-                                                        {mensagem.apagada_em ? (
-
-                                                            <Typography
-                                                                variant="body2"
-                                                                sx={{
-                                                                    fontStyle:
-                                                                        "italic",
-                                                                    opacity:
-                                                                        0.65,
-                                                                    py: 0.25,
-                                                                }}
-                                                            >
-                                                                Mensagem apagada
-                                                            </Typography>
-
-                                                        ) : mensagem.tipo ===
-                                                            "imagem" &&
-                                                            mensagem.anexo ? (
-
-                                                            <Box>
-
-                                                                {imagensAutenticadas[
-                                                                    mensagem.anexo.id
-                                                                ] ? (
-
-                                                                    <Box
-                                                                        component="img"
-                                                                        src={
-                                                                            imagensAutenticadas[
-                                                                            mensagem.anexo.id
-                                                                            ]
-                                                                        }
-                                                                        alt={
-                                                                            mensagem.anexo.nome_original ||
-                                                                            "Imagem enviada"
-                                                                        }
-                                                                        onClick={() =>
-                                                                            abrirImagem(
-                                                                                mensagem.anexo.url
-                                                                            )
-                                                                        }
+                                                                    <Typography
+                                                                        variant="caption"
+                                                                        fontWeight={800}
                                                                         sx={{
                                                                             display:
                                                                                 "block",
-                                                                            maxWidth:
-                                                                            {
-                                                                                xs: 250,
-                                                                                sm: 330,
-                                                                            },
-                                                                            maxHeight:
-                                                                                350,
-                                                                            width:
-                                                                                "auto",
-                                                                            height:
-                                                                                "auto",
-                                                                            objectFit:
-                                                                                "contain",
-                                                                            borderRadius:
-                                                                                1.5,
-                                                                            cursor:
-                                                                                "pointer",
-                                                                            border:
-                                                                                "1px solid",
-                                                                            borderColor:
-                                                                                minha
-                                                                                    ? "rgba(255,255,255,0.18)"
-                                                                                    : "divider",
-                                                                            "&:hover":
-                                                                            {
-                                                                                opacity:
-                                                                                    0.9,
-                                                                            },
-                                                                        }}
-                                                                    />
-
-                                                                ) : (
-
-                                                                    <Box
-                                                                        sx={{
-                                                                            width: 180,
-                                                                            height: 140,
-                                                                            display:
-                                                                                "flex",
-                                                                            flexDirection:
-                                                                                "column",
-                                                                            alignItems:
-                                                                                "center",
-                                                                            justifyContent:
-                                                                                "center",
-                                                                            gap: 1,
-                                                                            borderRadius:
-                                                                                2,
-                                                                            bgcolor:
-                                                                                minha
-                                                                                    ? "rgba(255,255,255,0.1)"
-                                                                                    : "action.hover",
                                                                         }}
                                                                     >
+                                                                        {mensagem.resposta.remetente_nome ||
+                                                                            "Usuário"}
+                                                                    </Typography>
 
-                                                                        <CircularProgress
-                                                                            size={24}
+                                                                    <Typography
+                                                                        variant="caption"
+                                                                        noWrap
+                                                                        sx={{
+                                                                            display:
+                                                                                "block",
+                                                                            opacity:
+                                                                                0.75,
+                                                                        }}
+                                                                    >
+                                                                        {previaTexto(
+                                                                            mensagem.resposta
+                                                                        )}
+                                                                    </Typography>
+
+                                                                </Box>
+
+                                                            )}
+
+                                                            {/* CONTEÚDO */}
+
+                                                            {mensagem.apagada_em ? (
+
+                                                                <Typography
+                                                                    variant="body2"
+                                                                    sx={{
+                                                                        fontStyle:
+                                                                            "italic",
+                                                                        opacity:
+                                                                            0.65,
+                                                                        py: 0.25,
+                                                                    }}
+                                                                >
+                                                                    Mensagem apagada
+                                                                </Typography>
+
+                                                            ) : mensagem.tipo ===
+                                                                "imagem" &&
+                                                                mensagem.anexo ? (
+
+                                                                <Box>
+
+                                                                    {imagensAutenticadas[
+                                                                        mensagem.anexo.id
+                                                                    ] ? (
+
+                                                                        <Box
+                                                                            component="img"
+                                                                            src={
+                                                                                imagensAutenticadas[
+                                                                                mensagem.anexo.id
+                                                                                ]
+                                                                            }
+                                                                            alt={
+                                                                                mensagem.anexo.nome_original ||
+                                                                                "Imagem enviada"
+                                                                            }
+                                                                            onClick={() =>
+                                                                                abrirImagem(
+                                                                                    mensagem.anexo.url
+                                                                                )
+                                                                            }
                                                                             sx={{
-                                                                                color:
+                                                                                display:
+                                                                                    "block",
+                                                                                maxWidth:
+                                                                                {
+                                                                                    xs: 250,
+                                                                                    sm: 330,
+                                                                                },
+                                                                                maxHeight:
+                                                                                    350,
+                                                                                width:
+                                                                                    "auto",
+                                                                                height:
+                                                                                    "auto",
+                                                                                objectFit:
+                                                                                    "contain",
+                                                                                borderRadius:
+                                                                                    1.5,
+                                                                                cursor:
+                                                                                    "pointer",
+                                                                                border:
+                                                                                    "1px solid",
+                                                                                borderColor:
                                                                                     minha
-                                                                                        ? "inherit"
-                                                                                        : "primary.main",
+                                                                                        ? "rgba(255,255,255,0.18)"
+                                                                                        : "divider",
+                                                                                "&:hover":
+                                                                                {
+                                                                                    opacity:
+                                                                                        0.9,
+                                                                                },
                                                                             }}
                                                                         />
 
+                                                                    ) : (
+
+                                                                        <Box
+                                                                            sx={{
+                                                                                width: 180,
+                                                                                height: 140,
+                                                                                display:
+                                                                                    "flex",
+                                                                                flexDirection:
+                                                                                    "column",
+                                                                                alignItems:
+                                                                                    "center",
+                                                                                justifyContent:
+                                                                                    "center",
+                                                                                gap: 1,
+                                                                                borderRadius:
+                                                                                    2,
+                                                                                bgcolor:
+                                                                                    minha
+                                                                                        ? "rgba(255,255,255,0.1)"
+                                                                                        : "action.hover",
+                                                                            }}
+                                                                        >
+
+                                                                            <CircularProgress
+                                                                                size={24}
+                                                                                sx={{
+                                                                                    color:
+                                                                                        minha
+                                                                                            ? "inherit"
+                                                                                            : "primary.main",
+                                                                                }}
+                                                                            />
+
+                                                                            <Typography
+                                                                                variant="caption"
+                                                                            >
+                                                                                Carregando imagem...
+                                                                            </Typography>
+
+                                                                        </Box>
+
+                                                                    )}
+
+                                                                    {mensagem.anexo.nome_original && (
+
                                                                         <Typography
                                                                             variant="caption"
+                                                                            sx={{
+                                                                                display:
+                                                                                    "block",
+                                                                                mt: 0.5,
+                                                                                opacity:
+                                                                                    0.65,
+                                                                                maxWidth:
+                                                                                    330,
+                                                                                overflow:
+                                                                                    "hidden",
+                                                                                textOverflow:
+                                                                                    "ellipsis",
+                                                                                whiteSpace:
+                                                                                    "nowrap",
+                                                                            }}
                                                                         >
-                                                                            Carregando imagem...
+                                                                            {mensagem.anexo.nome_original}
                                                                         </Typography>
 
-                                                                    </Box>
+                                                                    )}
 
-                                                                )}
+                                                                </Box>
 
-                                                                {mensagem.anexo.nome_original && (
+                                                            ) : (
 
-                                                                    <Typography
-                                                                        variant="caption"
-                                                                        sx={{
-                                                                            display:
-                                                                                "block",
-                                                                            mt: 0.5,
-                                                                            opacity:
-                                                                                0.65,
-                                                                            maxWidth:
-                                                                                330,
-                                                                            overflow:
-                                                                                "hidden",
-                                                                            textOverflow:
-                                                                                "ellipsis",
-                                                                            whiteSpace:
-                                                                                "nowrap",
-                                                                        }}
-                                                                    >
-                                                                        {mensagem.anexo.nome_original}
-                                                                    </Typography>
+                                                                <Typography
+                                                                    sx={{
+                                                                        whiteSpace:
+                                                                            "pre-wrap",
+                                                                        wordBreak:
+                                                                            "break-word",
+                                                                        lineHeight:
+                                                                            1.45,
+                                                                    }}
+                                                                >
+                                                                    {mensagem.texto}
+                                                                </Typography>
 
-                                                                )}
+                                                            )}
+
+                                                            {/* DATA */}
+
+                                                            <Box
+                                                                sx={{
+                                                                    display:
+                                                                        "flex",
+                                                                    justifyContent:
+                                                                        "flex-end",
+                                                                    alignItems:
+                                                                        "center",
+                                                                    gap: 0.5,
+                                                                    mt: 0.45,
+                                                                    ml: 1,
+                                                                }}
+                                                            >
+
+                                                                {mensagem.editada_em &&
+                                                                    !mensagem.apagada_em && (
+
+                                                                        <Typography
+                                                                            variant="caption"
+                                                                            sx={{
+                                                                                opacity:
+                                                                                    0.55,
+                                                                                fontSize:
+                                                                                    "0.64rem",
+                                                                            }}
+                                                                        >
+                                                                            editada
+                                                                        </Typography>
+
+                                                                    )}
+
+                                                                <Typography
+                                                                    variant="caption"
+                                                                    sx={{
+                                                                        opacity:
+                                                                            0.6,
+                                                                        fontSize:
+                                                                            "0.64rem",
+                                                                    }}
+                                                                >
+                                                                    {formatarHorario(
+                                                                        mensagem.criada_em
+                                                                    )}
+                                                                </Typography>
+
+                                                                {minha &&
+                                                                    !mensagem.apagada_em && (
+
+                                                                        <DoneAllIcon
+                                                                            sx={{
+                                                                                fontSize: 14,
+                                                                                color: mensagem.visualizada
+                                                                                    ? "primary.confirmar"
+                                                                                    : "text.secondary",
+                                                                            }}
+                                                                        />
+
+                                                                    )}
 
                                                             </Box>
-
-                                                        ) : (
-
-                                                            <Typography
-                                                                sx={{
-                                                                    whiteSpace:
-                                                                        "pre-wrap",
-                                                                    wordBreak:
-                                                                        "break-word",
-                                                                    lineHeight:
-                                                                        1.45,
-                                                                }}
-                                                            >
-                                                                {mensagem.texto}
-                                                            </Typography>
-
-                                                        )}
-
-                                                        {/* DATA */}
-
-                                                        <Box
-                                                            sx={{
-                                                                display:
-                                                                    "flex",
-                                                                justifyContent:
-                                                                    "flex-end",
-                                                                alignItems:
-                                                                    "center",
-                                                                gap: 0.5,
-                                                                mt: 0.45,
-                                                                ml: 1,
-                                                            }}
-                                                        >
-
-                                                            {mensagem.editada_em &&
-                                                                !mensagem.apagada_em && (
-
-                                                                    <Typography
-                                                                        variant="caption"
-                                                                        sx={{
-                                                                            opacity:
-                                                                                0.55,
-                                                                            fontSize:
-                                                                                "0.64rem",
-                                                                        }}
-                                                                    >
-                                                                        editada
-                                                                    </Typography>
-
-                                                                )}
-
-                                                            <Typography
-                                                                variant="caption"
-                                                                sx={{
-                                                                    opacity:
-                                                                        0.6,
-                                                                    fontSize:
-                                                                        "0.64rem",
-                                                                }}
-                                                            >
-                                                                {formatarHorario(
-                                                                    mensagem.criada_em
-                                                                )}
-                                                            </Typography>
-
-                                                            {minha &&
-                                                                !mensagem.apagada_em && (
-
-                                                                    <DoneAllIcon
-                                                                        sx={{
-                                                                            fontSize: 14,
-                                                                            color: mensagem.visualizada
-                                                                                ? "primary.confirmar"
-                                                                                : "text.secondary",
-                                                                        }}
-                                                                    />
-
-                                                                )}
-
                                                         </Box>
                                                     </Box>
-                                                </Box>
+                                                </Fragment>
                                             );
                                         }
                                     )
@@ -3390,7 +3539,7 @@ function Chat() {
                                                 top: 4,
                                                 right: 4,
                                                 bgcolor:
-                                                    "background.paper",
+                                                    "background.default",
                                                 border:
                                                     "1px solid",
                                                 borderColor:
@@ -3398,7 +3547,7 @@ function Chat() {
                                                 "&:hover":
                                                 {
                                                     bgcolor:
-                                                        "background.paper",
+                                                        "primary.cancelar",
                                                 },
                                             }}
                                         >
@@ -3457,7 +3606,7 @@ function Chat() {
                                                     }
                                                     hidden
                                                     type="file"
-                                                    accept="image/jpeg,image/png,image/webp"
+                                                    accept="image/jpeg,image/jpg,image/png,image/webp"
                                                     onChange={
                                                         selecionarImagem
                                                     }
@@ -4190,6 +4339,139 @@ function Chat() {
 
                 </DialogActions>
 
+            </Dialog>
+
+            <Dialog
+                open={abrirAvisoTestes}
+                onClose={() => setAbrirAvisoTestes(false)}
+                fullWidth
+                maxWidth="sm"
+                slotProps={{
+                    paper: {
+                        sx: {
+                            bgcolor: "background.default",
+                            color: "text.primary",
+                            borderRadius: 3,
+                            border: "1px solid",
+                            borderColor: "divider",
+                        },
+                    },
+                }}
+            >
+                <DialogTitle
+                    sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1.5,
+                        fontWeight: 700,
+                        pb: 1,
+                    }}
+                >
+                    <ScienceOutlinedIcon
+                        sx={{
+                            color: "#F59E0B",
+                            fontSize: 30,
+                        }}
+                    />
+
+                    <Typography
+                        component="span"
+                        variant="h6"
+                        fontWeight={700}
+                    >
+                        SIGEL Chat • Em desenvolvimento
+                    </Typography>
+                </DialogTitle>
+
+                <DialogContent>
+                    <Typography
+                        variant="body1"
+                        fontWeight={600}
+                        sx={{ mb: 2 }}
+                    >
+                        O módulo SIGEL Chat está em fase de testes e
+                        aprimoramento.
+                    </Typography>
+
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                            lineHeight: 1.8,
+                            mb: 2,
+                        }}
+                    >
+                        Durante esse período, podem ocorrer ajustes,
+                        mudanças e melhorias nas funcionalidades. Sua
+                        participação é muito importante para que possamos
+                        tornar a ferramenta cada vez mais útil para a equipe.
+                    </Typography>
+
+                    <Typography
+                        variant="body1"
+                        fontWeight={600}
+                        sx={{ mb: 1 }}
+                    >
+                        Encontrou algum problema ou tem uma sugestão de
+                        melhoria?
+                    </Typography>
+
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                            lineHeight: 1.8,
+                            mb: 2,
+                        }}
+                    >
+                        Envie seu feedback ao Setor de Desenvolvimento pelo
+                        WhatsApp
+                    </Typography>
+
+                    <Divider sx={{ mb: 2 }} />
+
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                            textAlign: "center",
+                            fontStyle: "italic",
+                        }}
+                    >
+                        Agradecemos pela colaboração! 🚀
+                    </Typography>
+                </DialogContent>
+
+                <DialogActions
+                    sx={{
+                        px: 3,
+                        pb: 3,
+                        justifyContent: "space-between",
+                        gap: 1,
+                    }}
+                >
+                    <Button
+                        variant="contained"
+                        color="success"
+                        startIcon={<WhatsAppIcon />}
+                        onClick={() => {
+                            window.open(
+                                "https://wa.me/554791692664",
+                                "_blank",
+                                "noopener,noreferrer"
+                            );
+                        }}
+                    >
+                        Enviar sugestão
+                    </Button>
+
+                    <Button
+                        variant="contained"
+                        onClick={() => setAbrirAvisoTestes(false)}
+                    >
+                        Entendi, continuar
+                    </Button>
+                </DialogActions>
             </Dialog>
 
             <Snackbar

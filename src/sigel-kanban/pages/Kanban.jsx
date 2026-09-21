@@ -34,6 +34,7 @@ import {
     Typography,
     useMediaQuery,
     useTheme,
+    Fab
 } from "@mui/material";
 
 import {
@@ -61,9 +62,12 @@ import {
     TaskAltOutlined,
     Tune,
     ViewKanbanOutlined,
+    ScienceOutlined,
+    WhatsApp
 } from "@mui/icons-material";
 
 import MenuUsuario from "../../components/MenuUsuario";
+import LoginFuncionario from "../../components/LoginFuncionario";
 
 const API = "http://192.168.1.185:8077";
 const TOKEN_KEY = "nfe_token";
@@ -650,6 +654,8 @@ function TaskFormDialog({ open, onClose, onSave, users, initialTask, loading }) 
             </DialogContent>
             <DialogActions sx={{ p: 2 }}>
                 <Button
+                    color="error"
+                    variant="contained"
                     onClick={onClose}
                     disabled={loading}>
                     Cancelar
@@ -1027,7 +1033,7 @@ function DetailsDrawer({ task, open, onClose, onEdit, onDelete, onMove, columns,
                 <Stack direction="row" spacing={1}>
                     <Button
                         fullWidth
-                        variant="outlined"
+                        variant="contained"
                         startIcon={<EditOutlined />}
                         onClick={onEdit}
                     >
@@ -1036,10 +1042,10 @@ function DetailsDrawer({ task, open, onClose, onEdit, onDelete, onMove, columns,
 
                     <Button
                         color="error"
-                        variant="outlined"
+                        variant="contained"
                         startIcon={<DeleteOutline />}
                         onClick={onDelete}
-                        sx={{px:3}}
+                        sx={{ px: 3 }}
                     >
                         Excluir
                     </Button>
@@ -1075,11 +1081,16 @@ export default function Kanban() {
 
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(USER_KEY);
+
+        localStorage.removeItem("nfe_token");
+        localStorage.removeItem("user_info");
     };
 
     const user = useMemo(() => getUser(), []);
 
     const [loading, setLoading] = useState(true);
+
+    const [abrirAvisoTestes, setAbrirAvisoTestes] = useState(true);
 
     const [saving, setSaving] = useState(false);
     const [data, setData] = useState({ quadro: null, colunas: [], tarefas: [] });
@@ -1193,6 +1204,71 @@ export default function Kanban() {
     const openCreate = () => { setEditingTask(null); setFormOpen(true); };
     const openEdit = () => { setEditingTask(selectedTask); setFormOpen(true); };
 
+    // Busca tarefas compartilhadas
+    const obterTarefasDaColuna = (coluna) => {
+        return filteredTasks.filter((task) => {
+            // Tarefa pertence ao quadro do usuário atual.
+            if (Number(task.quadro_id) === Number(data.quadro?.id)) {
+                return Number(task.coluna_id) === Number(coluna.id);
+            }
+
+            // Tarefa compartilhada de outro quadro.
+            // Usa o nome da coluna como referência.
+            return (
+                String(task.coluna_nome || "").trim().toLowerCase() ===
+                String(coluna.nome || "").trim().toLowerCase()
+            );
+        });
+    };
+
+    if (!token) {
+
+        return (
+            <LoginFuncionario
+                onLogin={(data) => {
+
+                    localStorage.setItem(
+                        "nfe_token",
+                        data.token
+                    );
+
+                    const user = {
+                        id: data.id,
+                        nome: data.nome,
+                        codigo: data.codigo,
+                        tipo: data.tipo,
+                        pode_autorizar_conferencia:
+                            data.pode_autorizar_conferencia,
+                        pode_corrigir_nfe:
+                            data.pode_corrigir_nfe,
+                        pode_finalizar_nfe:
+                            data.pode_finalizar_nfe,
+                        pode_acessar_alertas:
+                            data.pode_acessar_alertas,
+                        pode_acessar_cadastrar_funcionario:
+                            data.pode_acessar_cadastrar_funcionario,
+                        pode_acessar_painel_games:
+                            data.pode_acessar_painel_games,
+                        pode_acessar_painel_gerencial:
+                            data.pode_acessar_painel_gerencial,
+                        pode_acessar_reimprimir_senhas:
+                            data.pode_acessar_reimprimir_senhas,
+                        pode_acessar_tarefas:
+                            data.pode_acessar_tarefas,
+                    };
+
+                    localStorage.setItem(
+                        "user_info",
+                        JSON.stringify(user)
+                    );
+
+                    setUserInfo(user);
+                    setToken(data.token);
+                }}
+            />
+        );
+    }
+
     return (
         <Box sx={{ p: { xs: 1.5, md: 3 }, minHeight: "100%" }}>
             <Paper
@@ -1295,11 +1371,9 @@ export default function Kanban() {
                         >
                             <ArrowBack />
                         </IconButton>
-
                     </Tooltip>
 
                 </Box>
-
             </Paper>
 
             <Box
@@ -1490,24 +1564,219 @@ export default function Kanban() {
                 </Collapse>
             </Paper>
 
-            {loading ? <Stack direction="row" spacing={2} sx={{ overflow: "hidden" }}>{[1, 2, 3].map((item) =>
-                <Skeleton key={item} variant="rounded" width={330} height={300} />)}
-            </Stack> : (
-                <Box sx={{ display: "flex", gap: 2, overflowX: "auto", alignItems: "stretch", pb: 2 }}>
-                    {data.colunas.map((column) =>
-                        <Column key={column.id} column={column}
-                            tasks={filteredTasks.filter((task) => Number(task.coluna_id) === Number(column.id))}
-                            onOpen={openTask} onDragStart={(event, task) => {
-                                setDraggedTask(task); event.dataTransfer.effectAllowed = "move";
-                                event.dataTransfer.setData("text/plain", String(task.id));
+            {loading ? (
+                <Stack
+                    direction="row"
+                    spacing={2}
+                    sx={{ overflow: "hidden" }}
+                >
+                    {[1, 2, 3].map((item) => (
+                        <Skeleton
+                            key={item}
+                            variant="rounded"
+                            width={330}
+                            height={300}
+                        />
+                    ))}
+                </Stack>
+            ) : (
+                <Box
+                    sx={{
+                        display: "flex",
+                        gap: 2,
+                        overflowX: "auto",
+                        alignItems: "stretch",
+                        pb: 2,
+                    }}
+                >
+                    {data.colunas.map((column) => (
+                        <Column
+                            key={column.id}
+                            column={column}
+                            tasks={filteredTasks.filter((task) => {
+                                const mesmaColuna =
+                                    Number(task.coluna_id) === Number(column.id);
+
+                                const tarefaDeOutroQuadro =
+                                    Number(task.quadro_id) !== Number(data.quadro?.id);
+
+                                const mesmoNomeDeColuna =
+                                    String(task.coluna_nome || "")
+                                        .trim()
+                                        .toLowerCase() ===
+                                    String(column.nome || "")
+                                        .trim()
+                                        .toLowerCase();
+
+                                return (
+                                    mesmaColuna ||
+                                    (tarefaDeOutroQuadro && mesmoNomeDeColuna)
+                                );
+                            })}
+                            onOpen={openTask}
+                            onDragStart={(event, task) => {
+                                setDraggedTask(task);
+                                event.dataTransfer.effectAllowed = "move";
+                                event.dataTransfer.setData(
+                                    "text/plain",
+                                    String(task.id)
+                                );
                             }}
                             onDrop={() => {
-                                if (draggedTask)
+                                if (draggedTask) {
                                     moveTask(draggedTask, column.id);
+                                }
+
                                 setDraggedTask(null);
-                            }} />)}
+                            }}
+                        />
+                    ))}
                 </Box>
             )}
+
+            <Dialog
+                open={abrirAvisoTestes}
+                onClose={() => setAbrirAvisoTestes(false)}
+                fullWidth
+                maxWidth="sm"
+                slotProps={{
+                    paper: {
+                        sx: {
+                            bgcolor: "background.default",
+                            color: "text.primary",
+                            borderRadius: 3,
+                            border: "1px solid",
+                            borderColor: "divider",
+                        },
+                    },
+                }}
+            >
+                <DialogTitle
+                    sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1.5,
+                        fontWeight: 700,
+                        pb: 1,
+                    }}
+                >
+                    <ScienceOutlined
+                        sx={{
+                            color: "#F59E0B",
+                            fontSize: 30,
+                        }}
+                    />
+
+                    <Typography
+                        component="span"
+                        variant="h6"
+                        fontWeight={700}
+                    >
+                        SIGEL Kanban • Fase de testes
+                    </Typography>
+                </DialogTitle>
+
+                <DialogContent>
+                    <Typography
+                        variant="body1"
+                        fontWeight={600}
+                        sx={{ mb: 2 }}
+                    >
+                        O módulo SIGEL Kanban está em fase de testes e
+                        aprimoramento.
+                    </Typography>
+
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                            lineHeight: 1.8,
+                            mb: 2,
+                        }}
+                    >
+                        Durante esse período, podem ocorrer ajustes,
+                        mudanças e melhorias nas funcionalidades. Sua
+                        participação é muito importante para que possamos
+                        tornar a ferramenta cada vez mais útil para a equipe.
+                    </Typography>
+
+                    <Typography
+                        variant="body1"
+                        fontWeight={600}
+                        sx={{ mb: 1 }}
+                    >
+                        Encontrou algum problema ou tem uma sugestão de
+                        melhoria?
+                    </Typography>
+
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                            lineHeight: 1.8,
+                            mb: 2,
+                        }}
+                    >
+                        Envie seu feedback ao Setor de Desenvolvimento pelo
+                        WhatsApp
+                    </Typography>
+
+                    <Divider sx={{ mb: 2 }} />
+
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                            textAlign: "center",
+                            fontStyle: "italic",
+                        }}
+                    >
+                        Agradecemos pela colaboração! 🚀
+                    </Typography>
+                </DialogContent>
+
+                <DialogActions
+                    sx={{
+                        px: 3,
+                        pb: 3,
+                        justifyContent: "space-between",
+                        gap: 1,
+                    }}
+                >
+                    <Button
+                        variant="contained"
+                        color="success"
+                        startIcon={<WhatsApp />}
+                        onClick={() => {
+                            window.open(
+                                "https://wa.me/554791692664",
+                                "_blank",
+                                "noopener,noreferrer"
+                            );
+                        }}
+                    >
+                        Enviar sugestão
+                    </Button>
+
+                    <Button
+                        variant="contained"
+                        onClick={() => setAbrirAvisoTestes(false)}
+                    >
+                        Entendi, continuar
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Tooltip title="Criar tarefa">
+                <Fab
+                    color="primary"
+                    aria-label="add"
+                    onClick={openCreate}
+                    sx={{ position: 'fixed', bottom: 16, right: 16 }}
+                >
+                    <Add />
+                </Fab>
+            </Tooltip>
 
             <TaskFormDialog open={formOpen}
                 onClose={() => { if (!saving) { setFormOpen(false); setEditingTask(null); } }}
