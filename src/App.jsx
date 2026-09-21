@@ -25,6 +25,7 @@ import PainelGames from "./pages/PainelGames";
 import PerfilJogador from "./pages/PerfilJogador";
 import Tarefas from "./pages/Tarefas";
 import Chat from "./sigel-chat/pages/Chat";
+import Kanban from "./sigel-kanban/pages/Kanban"
 
 import AlertaAutorizacaoManual from "./components/autorizacao/AlertaAutorizacaoManual";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -196,6 +197,11 @@ function App() {
           <Route
             path="/Chat"
             element={<Chat />}
+          />
+
+          <Route
+            path="/Kanban"
+            element={<Kanban />}
           />
 
           <Route

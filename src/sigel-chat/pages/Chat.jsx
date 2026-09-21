@@ -53,6 +53,10 @@ import LoginFuncionario from "../../components/LoginFuncionario";
 
 function Chat() {
 
+    useEffect(() => {
+        document.title = "SIGEL - Chat";
+    })
+
     const navigate = useNavigate();
 
     const mensagensRef = useRef(null);
@@ -238,10 +242,99 @@ function Chat() {
 
             const data = await response.json();
 
-            setMensagens(data.mensagens || []);
+            const mensagensCarregadas =
+                data.mensagens || [];
+
+            setMensagens(mensagensCarregadas);
+
+            // MARCAR A CONVERSA COMO LIDA
+            if (
+                mensagensCarregadas.length > 0 &&
+                Number(conversa.mensagens_nao_lidas || 0) > 0
+            ) {
+
+                const ultimaMensagem =
+                    mensagensCarregadas[
+                    mensagensCarregadas.length - 1
+                    ];
+
+                try {
+
+                    const responseLida = await fetch(
+                        `/api/chat/conversas/${conversa.id}/ler`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-Auth-Token": token,
+                            },
+                            body: JSON.stringify({
+                                mensagem_id:
+                                    ultimaMensagem.id,
+                            }),
+                        }
+                    );
+
+                    if (!responseLida.ok) {
+
+                        const dataLida =
+                            await responseLida
+                                .json()
+                                .catch(() => null);
+
+                        console.error(
+                            "Erro ao marcar conversa como lida:",
+                            dataLida?.erro ||
+                            responseLida.status
+                        );
+
+                    } else {
+
+                        // Atualiza a lista lateral imediatamente
+                        setConversas((anteriores) =>
+                            anteriores.map((item) =>
+                                String(item.id) ===
+                                    String(conversa.id)
+                                    ? {
+                                        ...item,
+                                        mensagens_nao_lidas: 0,
+                                        ultima_leitura_id:
+                                            ultimaMensagem.id,
+                                    }
+                                    : item
+                            )
+                        );
+
+                        // Atualiza a conversa aberta
+                        setConversaSelecionada((anterior) => {
+
+                            if (
+                                !anterior ||
+                                String(anterior.id) !==
+                                String(conversa.id)
+                            ) {
+                                return anterior;
+                            }
+
+                            return {
+                                ...anterior,
+                                mensagens_nao_lidas: 0,
+                                ultima_leitura_id:
+                                    ultimaMensagem.id,
+                            };
+                        });
+                    }
+
+                } catch (error) {
+
+                    console.error(
+                        "Erro ao marcar conversa como lida:",
+                        error
+                    );
+                }
+            }
 
         } catch (error) {
-
             console.error(
                 "Erro ao carregar mensagens:",
                 error
@@ -254,7 +347,6 @@ function Chat() {
             );
 
         } finally {
-
             setLoadingMensagens(false);
         }
     };
@@ -1202,15 +1294,27 @@ function Chat() {
     // ---------------------------------------------------------
 
     const obterNomeConversa = (conversa) => {
-        if (conversa?.nome) {
-            return conversa.nome;
+        if (!conversa) {
+            return "Conversa";
         }
 
-        if (conversa?.tipo === "grupo") {
-            return "Grupo";
+        if (conversa.tipo === "grupo") {
+            return conversa.nome || "Grupo";
         }
 
-        return "Conversa";
+        const participantes = conversa.participantes || [];
+
+        const outroParticipante = participantes.find(
+            (participante) =>
+                String(participante.id) !==
+                String(userInfo?.id)
+        );
+
+        return (
+            outroParticipante?.nome ||
+            conversa.nome ||
+            "Conversa"
+        );
     };
 
     // ---------------------------------------------------------
@@ -1305,6 +1409,39 @@ function Chat() {
         );
 
     }, [conversas, buscaConversas]);
+
+    // IDENTIFICA SE ÚLTIMA MENSAGEM FOI VISUALIZADA
+    const conversaFoiVisualizada = (conversa) => {
+
+        if (
+            conversa?.tipo === "grupo" ||
+            !conversa?.ultima_mensagem ||
+            String(conversa.ultima_mensagem_remetente_id) !==
+            String(userInfo?.id)
+        ) {
+            return false;
+        }
+
+        const outroParticipante =
+            conversa.participantes?.find(
+                (participante) =>
+                    String(participante.id) !==
+                    String(userInfo?.id)
+            );
+
+        if (!outroParticipante) {
+            return false;
+        }
+
+        return (
+            Number(
+                outroParticipante.ultima_leitura_id || 0
+            ) >=
+            Number(
+                conversa.ultima_mensagem_id || 0
+            )
+        );
+    };
 
     // ---------------------------------------------------------
     // CARREGAMENTO INICIAL
@@ -1995,7 +2132,7 @@ function Chat() {
                                             conversa.mensagens_nao_lidas ||
                                             0
                                         );
-
+                                    console.log("CONVERSA:", conversa)
                                     return (
 
                                         <Box
@@ -2139,7 +2276,7 @@ function Chat() {
                                                             {nome}
                                                         </Typography>
 
-                                                        {conversa.ultima_mensagem_data && (
+                                                        {conversa.ultima_mensagem_em && (
 
                                                             <Typography
                                                                 variant="caption"
@@ -2152,7 +2289,7 @@ function Chat() {
                                                                 }}
                                                             >
                                                                 {formatarHorario(
-                                                                    conversa.ultima_mensagem_data
+                                                                    conversa.ultima_mensagem_em
                                                                 )}
                                                             </Typography>
 
@@ -2171,21 +2308,21 @@ function Chat() {
                                                         }}
                                                     >
 
-                                                        {conversa.tipo !==
-                                                            "grupo" &&
-                                                            conversa.ultima_mensagem &&
+                                                        {conversa.tipo !== "grupo" &&
+                                                            conversa.ultima_mensagem_id &&
                                                             String(
                                                                 conversa.ultima_mensagem_remetente_id
                                                             ) ===
-                                                            String(
-                                                                userInfo?.id
-                                                            ) && (
+                                                            String(userInfo?.id) && (
 
                                                                 <DoneAllIcon
                                                                     sx={{
                                                                         fontSize: 14,
-                                                                        color:
-                                                                            "primary.main",
+                                                                        color: conversaFoiVisualizada(
+                                                                            conversa
+                                                                        )
+                                                                            ? "primary.confirmar"
+                                                                            : "text.secondary",
                                                                     }}
                                                                 />
 
@@ -2560,7 +2697,7 @@ function Chat() {
                                             const destacada =
                                                 mensagemDestacada ===
                                                 mensagem.id;
-
+                                            console.log("MENSAGEM RESPONDIDA:", mensagem);
                                             return (
 
                                                 <Box
@@ -2984,7 +3121,9 @@ function Chat() {
                                                                     <DoneAllIcon
                                                                         sx={{
                                                                             fontSize: 14,
-                                                                            opacity: 0.7,
+                                                                            color: mensagem.visualizada
+                                                                                ? "primary.confirmar"
+                                                                                : "text.secondary",
                                                                         }}
                                                                     />
 

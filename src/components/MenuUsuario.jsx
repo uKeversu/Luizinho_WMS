@@ -24,6 +24,7 @@ import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import BorderColorIcon from "@mui/icons-material/BorderColor";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
+import ViewKanbanIcon from '@mui/icons-material/ViewKanban';
 
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
@@ -86,6 +87,12 @@ function MenuUsuario({ userInfo, onLogout }) {
             rota: "/Tarefas",
             permissao: "pode_acessar_tarefas",
             icone: <AssignmentIcon fontSize="small" />
+        },
+        {
+            nome: "Kanban",
+            rota: "/Kanban",
+            permissao: null,
+            icone: <ViewKanbanIcon fontSize="small" />
         }
     ];
 
