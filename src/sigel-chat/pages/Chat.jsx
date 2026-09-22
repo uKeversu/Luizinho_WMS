@@ -4492,6 +4492,15 @@ function Chat() {
                     sx={{
                         width: "100%",
                         borderRadius: 2,
+                        color: 'primary.branco',
+
+                        "& .MuiAlert-icon": {
+                            color: 'primary.branco'
+                        },
+
+                        "& .MuiAlert-action": {
+                            color: 'primary.branco'
+                        }
                     }}
                 >
                     {snackbar.message}

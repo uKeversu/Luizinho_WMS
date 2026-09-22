@@ -25,6 +25,7 @@ import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import BorderColorIcon from "@mui/icons-material/BorderColor";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import ViewKanbanIcon from '@mui/icons-material/ViewKanban';
+import ChatIcon from '@mui/icons-material/Chat';
 
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
@@ -93,6 +94,12 @@ function MenuUsuario({ userInfo, onLogout }) {
             rota: "/Kanban",
             permissao: null,
             icone: <ViewKanbanIcon fontSize="small" />
+        },
+         {
+            nome: "Chat",
+            rota: "/Chat",
+            permissao: null,
+            icone: <ChatIcon fontSize="small" />
         }
     ];
 

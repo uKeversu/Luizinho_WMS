@@ -39,7 +39,6 @@ import {
 
 import {
     Add,
-    ArchiveOutlined,
     ArrowBack,
     AssignmentTurnedInOutlined,
     AttachFileOutlined,
@@ -65,6 +64,7 @@ import {
     ScienceOutlined,
     WhatsApp
 } from "@mui/icons-material";
+import RefreshIcon from "@mui/icons-material/Refresh";
 
 import MenuUsuario from "../../components/MenuUsuario";
 import LoginFuncionario from "../../components/LoginFuncionario";
@@ -1466,10 +1466,12 @@ export default function Kanban() {
                                     <Search fontSize="small" />
                                 </InputAdornment>
                         }} />
-                    <Button variant="contained" startIcon={<FilterAltOutlined />}
-                        onClick={() => setFiltersOpen((value) => !value)}>
-                        {isMobile ? "Filtros" : "Filtrar"}
-                    </Button>
+                    {isMobile &&
+                        <Button variant="contained" startIcon={<FilterAltOutlined />}
+                            onClick={() => setFiltersOpen((value) => !value)}>
+                            {isMobile ? "Filtros" : "Filtrar"}
+                        </Button>
+                    }
                     <FormControl size="small" sx={{ minWidth: 150 }}>
                         <InputLabel>
                             Ordenar
@@ -1493,7 +1495,13 @@ export default function Kanban() {
                         </Select>
                     </FormControl>
 
-                    <Tooltip title="Atualizar"><IconButton onClick={loadBoard}><ArchiveOutlined /></IconButton></Tooltip>
+                    <Tooltip title="Atualizar">
+                        <IconButton
+                            onClick={loadBoard}>
+                            <RefreshIcon />
+                        </IconButton>
+                    </Tooltip>
+
                 </Stack>
                 <Collapse in={filtersOpen || !isMobile}>
                     <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} sx={{ mt: 1.5 }}>
@@ -1797,6 +1805,17 @@ export default function Kanban() {
             <Snackbar open={toast.open} autoHideDuration={4500}
                 onClose={() => setToast((current) => ({ ...current, open: false }))}>
                 <Alert severity={toast.severity} variant="filled"
+                    sx={{
+                        color: 'primary.branco',
+
+                        "& .MuiAlert-icon": {
+                            color: 'primary.branco'
+                        },
+
+                        "& .MuiAlert-action": {
+                            color: 'primary.branco'
+                        }
+                    }}
                     onClose={() => setToast((current) => ({ ...current, open: false }))}>
                     {toast.message}
                 </Alert>
