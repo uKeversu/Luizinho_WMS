@@ -2051,7 +2051,7 @@ function Conferencia() {
         /* DIGITAÇÃO MANUAL */
         if (
             codigoRecebido.length >= 8 &&
-            duracao > 1500
+            duracao > 2500
         ) {
 
             registrarLog({
