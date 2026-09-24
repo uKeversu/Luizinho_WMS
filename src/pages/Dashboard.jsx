@@ -1208,7 +1208,7 @@ function Dashboard({ tipo }) {
                         zoom: '0.9',
                     }}
                 >
-                    <Typography variant="h4" sx={{ fontFamily: 'Consolas', color: "background.paper" }}>
+                    <Typography variant="h4" sx={{ color: "background.paper" }}>
                         <strong>
                             {aba === 0 && "Notas em Trânsito"}
                             {aba === 1 && "Notas Recebidas"}

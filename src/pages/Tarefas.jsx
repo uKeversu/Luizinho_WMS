@@ -72,6 +72,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 // Componentes
 import MenuUsuario from "../components/MenuUsuario";
 import LoginFuncionario from "../components/LoginFuncionario";
+import NotificacoesMenu from "../components/Notificacoes";
 
 export default function Tarefas() {
 
@@ -774,10 +775,23 @@ export default function Tarefas() {
                     </Typography>
 
                     <Box>
-                        <MenuUsuario
-                            userInfo={userInfo}
-                            onLogout={logout}
-                        />
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "right",
+                            }}
+                        >
+                            <NotificacoesMenu
+                                apiBase={API_URL}
+                                token={token}
+                                userInfo={userInfo}
+                            />
+                            <MenuUsuario
+                                userInfo={userInfo}
+                                onLogout={logout}
+                            />
+                        </Box>
                         <Box
                             sx={{
                                 display: "flex",

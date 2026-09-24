@@ -25,6 +25,7 @@ import ReplayIcon from "@mui/icons-material/Replay";
 import MenuUsuario from "../components/MenuUsuario";
 import LoginFuncionario from "../components/LoginFuncionario";
 import SolicitarCorrecaoFab from "../components/SolicitarCorrecaoFab";
+import NotificacoesMenu from "../components/Notificacoes";
 
 import '../style/App.css';
 
@@ -3887,10 +3888,23 @@ function Conferencia() {
                     </strong>
                 </Typography>
                 <Box>
-                    <MenuUsuario
-                        userInfo={userInfo}
-                        onLogout={logout}
-                    />
+                    <Box
+                        sx={{
+                            display: "flex",
+                            flexDirection: "row",
+                            justifyContent: "right",
+                        }}
+                    >
+                        <NotificacoesMenu
+                            apiBase={API}
+                            token={token}
+                            userInfo={userInfo}
+                        />
+                        <MenuUsuario
+                            userInfo={userInfo}
+                            onLogout={logout}
+                        />
+                    </Box>
                     <Box
                         sx={{
                             display: "flex",

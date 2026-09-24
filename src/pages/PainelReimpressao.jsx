@@ -16,6 +16,7 @@ import PrintIcon from '@mui/icons-material/Print';
 // Componentes
 import MenuUsuario from "../components/MenuUsuario";
 import LoginFuncionario from "../components/LoginFuncionario";
+import NotificacoesMenu from "../components/Notificacoes";
 
 function PainelReimpressao() {
 
@@ -482,10 +483,23 @@ function PainelReimpressao() {
                     </Typography>
 
                     <Box>
-                        <MenuUsuario
-                            userInfo={userInfo}
-                            onLogout={logout}
-                        />
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "right",
+                            }}
+                        >
+                            <NotificacoesMenu
+                                apiBase={API}
+                                token={token}
+                                userInfo={userInfo}
+                            />
+                            <MenuUsuario
+                                userInfo={userInfo}
+                                onLogout={logout}
+                            />
+                        </Box>
                         <Box
                             sx={{
                                 display: "flex",

@@ -41,6 +41,7 @@ import ModalRetira from "../components/ModalRetira";
 import ModalObservacao from "../components/ModalObservacoes";
 import ModalConfirmaRecebimento from "../components/ModalConfirmaRecebimento";
 import Cronometro from "../components/Cronometro";
+import NotificacoesMenu from "../components/Notificacoes";
 
 import Dashboard from "./Dashboard";
 
@@ -1000,10 +1001,23 @@ function Recebimentos() {
                         <strong>Recebimento de mercadorias</strong>
                     </Typography>
                     <Box>
-                        <MenuUsuario
-                            userInfo={userInfo}
-                            onLogout={logout}
-                        />
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "right",
+                            }}
+                        >
+                            <NotificacoesMenu
+                                apiBase={API}
+                                token={token}
+                                userInfo={userInfo}
+                            />
+                            <MenuUsuario
+                                userInfo={userInfo}
+                                onLogout={logout}
+                            />
+                        </Box>
                         <Box
                             sx={{
                                 display: "flex",

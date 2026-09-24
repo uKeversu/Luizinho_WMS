@@ -73,6 +73,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import MenuUsuario from "../../components/MenuUsuario";
 import LoginFuncionario from "../../components/LoginFuncionario";
 import WiseLog from "../components/wiselog/WiseLog";
+import NotificacoesMenu from "../../components/Notificacoes";
 
 const API = "http://192.168.1.185:8077";
 const TOKEN_KEY = "nfe_token";
@@ -1385,17 +1386,22 @@ export default function Kanban() {
                         display: "flex",
                         alignItems: "center",
                         gap: 0.5,
+                        zoom: 0.9
                     }}
                 >
 
                     <Box
                         sx={{
-                            display: {
-                                xs: "none",
-                                sm: "block",
-                            },
+                            display: "flex",
+                            flexDirection: "row",
+                            justifyContent: "right",
                         }}
                     >
+                        <NotificacoesMenu
+                            apiBase={API}
+                            token={token}
+                            userInfo={userInfo}
+                        />
                         <MenuUsuario
                             userInfo={userInfo}
                             onLogout={logout}

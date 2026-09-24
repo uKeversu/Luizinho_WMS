@@ -50,8 +50,10 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ScienceOutlinedIcon from "@mui/icons-material/ScienceOutlined";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 
+// Componentes
 import MenuUsuario from "../../components/MenuUsuario";
 import LoginFuncionario from "../../components/LoginFuncionario";
+import NotificacoesMenu from "../../components/Notificacoes";
 
 function Chat() {
 
@@ -1838,6 +1840,7 @@ function Chat() {
                     justifyContent: "space-between",
                     gap: 2,
                     minHeight: 70,
+                    zoom: 0.9
                 }}
             >
 
@@ -1898,12 +1901,15 @@ function Chat() {
 
                     <Box
                         sx={{
-                            display: {
-                                xs: "none",
-                                sm: "block",
-                            },
+                            display: "flex",
+                            flexDirection: "row",
+                            justifyContent: "right",
                         }}
                     >
+                        <NotificacoesMenu
+                            token={token}
+                            userInfo={userInfo}
+                        />
                         <MenuUsuario
                             userInfo={userInfo}
                             onLogout={logout}
