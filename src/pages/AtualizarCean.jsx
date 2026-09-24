@@ -192,6 +192,46 @@ function AtualizarCean() {
         }
     };
 
+    // BUSCAR NOTA DIRETAMENTE PELO ID
+    const buscarNotaPorId = async (notaId) => {
+        if (!notaId) {
+            return null;
+        }
+
+        try {
+            const res = await fetch(
+                `${API}/api/notas/listar?id=${encodeURIComponent(notaId)}`,
+                {
+                    headers: {
+                        "X-Auth-Token": token
+                    }
+                }
+            );
+
+            if (!res.ok) {
+                throw new Error(
+                    "Erro ao buscar nota pelo ID"
+                );
+            }
+
+            const data = await res.json();
+
+            const nota = (data.data || []).find(
+                item => String(item.id) === String(notaId)
+            );
+
+            return nota || null;
+
+        } catch (error) {
+            console.error(
+                "Erro ao buscar nota pelo ID:",
+                error
+            );
+
+            return null;
+        }
+    };
+
     useEffect(() => {
         const notaUrl = searchParams.get("nota");
 
@@ -247,6 +287,77 @@ function AtualizarCean() {
             setLoadingItens(false);
         }
     };
+
+    useEffect(() => {
+        const notaIdUrl = searchParams.get("nota_id");
+
+        if (!notaIdUrl) {
+            return;
+        }
+
+        let cancelado = false;
+
+        const carregarNotaDaNotificacao = async () => {
+            setLoadingNotas(true);
+
+            try {
+                const nota = await buscarNotaPorId(notaIdUrl);
+
+                if (cancelado) {
+                    return;
+                }
+
+                if (!nota) {
+                    setSnackbar({
+                        open: true,
+                        message:
+                            "Não foi possível encontrar a nota da notificação.",
+                        severity: "warning"
+                    });
+
+                    return;
+                }
+
+                // Limpa seleções anteriores
+                setItens([]);
+                setItensEditados({});
+                setEditIndex(null);
+
+                // Preenche a lista e seleciona a nota
+                setNotasEncontradas([nota]);
+                setNotaSelecionada(nota);
+
+                // Carrega automaticamente os itens da NF-e
+                await buscarItens(nota.id);
+
+            } catch (error) {
+                console.error(
+                    "Erro ao abrir nota da notificação:",
+                    error
+                );
+
+                if (!cancelado) {
+                    setSnackbar({
+                        open: true,
+                        message:
+                            "Erro ao carregar a nota da notificação.",
+                        severity: "error"
+                    });
+                }
+
+            } finally {
+                if (!cancelado) {
+                    setLoadingNotas(false);
+                }
+            }
+        };
+
+        carregarNotaDaNotificacao();
+
+        return () => {
+            cancelado = true;
+        };
+    }, [searchParams]);
 
     const registrarLog = async ({
         item = null,

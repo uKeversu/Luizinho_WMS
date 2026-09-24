@@ -183,7 +183,7 @@ function Dashboard({ tipo }) {
 
         const intervalo = setInterval(() => {
             carregarNotificacoes();
-        }, 30000);
+        }, 15000);
 
         return () => clearInterval(intervalo);
     }, []);
@@ -371,6 +371,28 @@ function Dashboard({ tipo }) {
         } catch (error) {
             console.error(
                 "Erro ao marcar notificação como lida:",
+                error
+            );
+        }
+    };
+
+    const abrirNotificacao = async (notificacao) => {
+        if (!notificacao?.nfe_id) {
+            return;
+        }
+
+        try {
+            // Marca como lida quando o usuário abre a notificação
+            if (!notificacao.lida) {
+                await marcarNotificacaoComoLida(notificacao.id);
+            }
+
+            fecharNotificacoes();
+
+            navigate(`/AtualizarCean?nota_id=${notificacao.nfe_id}`);
+        } catch (error) {
+            console.error(
+                "Erro ao abrir notificação:",
                 error
             );
         }
@@ -1406,8 +1428,13 @@ function Dashboard({ tipo }) {
                                                 : "action.hover",
 
                                             opacity: notificacao.lida
-                                                ? '60%'
-                                                : '100%',
+                                                ? "60%"
+                                                : "100%",
+
+                                            cursor:
+                                                notificacao.nfe_id
+                                                    ? "pointer"
+                                                    : "default",
 
                                             "&:hover": {
                                                 bgcolor: notificacao.lida
@@ -1453,11 +1480,31 @@ function Dashboard({ tipo }) {
                                                             } else {
                                                                 marcarNotificacaoComoLida(notificacao.id);
                                                             }
+
+                                                            const textoNotificacao = `
+                                                                ${notificacao.tipo || ""}
+                                                                ${notificacao.titulo || ""}
+                                                                ${notificacao.mensagem || ""}
+                                                            `.toUpperCase();
+
+                                                            const ehNotificacaoCorrecao =
+                                                                textoNotificacao.includes("CEAN") ||
+                                                                textoNotificacao.includes("CORREÇÃO") ||
+                                                                textoNotificacao.includes("CORRECAO");
+
+                                                            if (
+                                                                notificacao.nfe_id &&
+                                                                ehNotificacaoCorrecao
+                                                            ) {
+                                                                abrirNotificacao(notificacao);
+                                                            }
                                                         }}
                                                     >
                                                         {notificacao.tipo === "CONFERENCIA_FINALIZADA"
                                                             ? "Marcar como gravada"
-                                                            : "Marcar como lida"}
+                                                            : notificacao.tipo === "SOLICITACAO_CORRECAO_NFE"
+                                                                ? "Corrigir nota"
+                                                                : "Marcar como lida"}
                                                     </Button>
                                                 )}
                                             </Box>

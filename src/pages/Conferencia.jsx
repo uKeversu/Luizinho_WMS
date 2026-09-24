@@ -24,6 +24,7 @@ import ReplayIcon from "@mui/icons-material/Replay";
 // Componentes
 import MenuUsuario from "../components/MenuUsuario";
 import LoginFuncionario from "../components/LoginFuncionario";
+import SolicitarCorrecaoFab from "../components/SolicitarCorrecaoFab";
 
 import '../style/App.css';
 
@@ -5448,6 +5449,12 @@ function Conferencia() {
 
                 </DialogContent>
             </Dialog>
+
+            <SolicitarCorrecaoFab
+                API={API}
+                token={token}
+                notaAtual={notaAtual}
+            />
 
             {/* Snackbar */}
             <Snackbar
