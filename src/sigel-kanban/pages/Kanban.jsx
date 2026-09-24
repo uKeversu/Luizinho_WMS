@@ -29,6 +29,8 @@ import {
     Skeleton,
     Snackbar,
     Stack,
+    Tab,
+    Tabs,
     TextField,
     Tooltip,
     Typography,
@@ -62,12 +64,15 @@ import {
     Tune,
     ViewKanbanOutlined,
     ScienceOutlined,
+    TwoWheeler,
     WhatsApp
 } from "@mui/icons-material";
+
 import RefreshIcon from "@mui/icons-material/Refresh";
 
 import MenuUsuario from "../../components/MenuUsuario";
 import LoginFuncionario from "../../components/LoginFuncionario";
+import WiseLog from "../components/wiselog/WiseLog";
 
 const API = "http://192.168.1.185:8077";
 const TOKEN_KEY = "nfe_token";
@@ -1088,10 +1093,11 @@ export default function Kanban() {
 
     const user = useMemo(() => getUser(), []);
 
-    const [loading, setLoading] = useState(true);
+
+    const [activeModule, setActiveModule] = useState("kanban");
 
     const [abrirAvisoTestes, setAbrirAvisoTestes] = useState(true);
-
+    const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [data, setData] = useState({ quadro: null, colunas: [], tarefas: [] });
     const [users, setUsers] = useState([]);
@@ -1113,20 +1119,32 @@ export default function Kanban() {
     const loadBoard = useCallback(async () => {
         setLoading(true);
         try {
-            const [board, people] = await Promise.all([apiRequest("/api/kanban"), apiRequest("/api/kanban/usuarios")]);
+            const [board, people] = await Promise.all([apiRequest("/api/kanban"),
+            apiRequest("/api/kanban/usuarios")]);
+
             setData({ quadro: board.quadro, colunas: board.colunas || [], tarefas: board.tarefas || [] });
             setUsers(people.usuarios || []);
-        } catch (error) { notify(error.message, "error"); } finally { setLoading(false); }
+
+        } catch (error) {
+            notify(error.message, "error");
+        } finally {
+            setLoading(false);
+        }
     }, [notify]);
 
     useEffect(() => { loadBoard(); }, [loadBoard]);
 
     const openTask = async (task) => {
+
         setSelectedTask(task);
+
         try {
             const result = await apiRequest(`/api/kanban/tarefas/${task.id}/comentarios`);
+
             setComments(result.comentarios || []);
-        } catch (error) { notify(error.message, "error"); }
+        } catch (error) {
+            notify(error.message, "error");
+        }
     };
 
     const saveTask = async (form) => {
@@ -1154,12 +1172,42 @@ export default function Kanban() {
 
     const moveTask = async (task, columnId) => {
         if (!task || Number(task.coluna_id) === Number(columnId)) return;
-        try { await apiRequest(`/api/kanban/tarefas/${task.id}/mover`, { method: "PATCH", body: JSON.stringify({ coluna_id: columnId }) }); await loadBoard(); if (selectedTask?.id === task.id) setSelectedTask((current) => ({ ...current, coluna_id: columnId, coluna_nome: data.colunas.find((item) => item.id === columnId)?.nome })); notify("Tarefa movimentada."); } catch (error) { notify(error.message, "error"); }
+        try {
+            await apiRequest(`/api/kanban/tarefas/${task.id}/mover`,
+                {
+                    method: "PATCH",
+                    body: JSON.stringify({
+                        coluna_id: columnId
+                    })
+                });
+            await loadBoard();
+
+            if (selectedTask?.id === task.id)
+
+                setSelectedTask((current) => ({ ...current, coluna_id: columnId, coluna_nome: data.colunas.find((item) => item.id === columnId)?.nome }));
+
+            notify("Tarefa movimentada.");
+
+        } catch (error) {
+            notify(error.message, "error");
+        }
     };
 
     const deleteTask = async (task) => {
-        if (!window.confirm(`Excluir a tarefa "${task.titulo}"?`)) return;
-        try { await apiRequest(`/api/kanban/tarefas/${task.id}`, { method: "DELETE" }); setSelectedTask(null); await loadBoard(); notify("Tarefa excluída."); } catch (error) { notify(error.message, "error"); }
+        if (!window.confirm(`Excluir a tarefa "${task.titulo}"?`))
+            return;
+        try {
+            await apiRequest(`/api/kanban/tarefas/${task.id}`,
+                {
+                    method: "DELETE"
+                });
+            setSelectedTask(null);
+
+            await loadBoard();
+            notify("Tarefa excluída.");
+        } catch (error) {
+            notify(error.message, "error");
+        }
     };
 
     const addComment = async (comment) => {
@@ -1305,7 +1353,6 @@ export default function Kanban() {
                         minWidth: 0,
                     }}
                 >
-                    <ViewKanbanOutlined />
 
                     <Box sx={{ minWidth: 0 }}>
 
@@ -1326,7 +1373,7 @@ export default function Kanban() {
                                 opacity: 0.75,
                             }}
                         >
-                            Gestão de tarefas coletivas e individuais
+                            Gestão de tarefas e controle operacional
                         </Typography>
 
                     </Box>
@@ -1376,432 +1423,481 @@ export default function Kanban() {
                 </Box>
             </Paper>
 
-            <Box
-                sx={{
-                    display: "grid",
-                    gridTemplateColumns: {
-                        xs: "repeat(2, 1fr)",
-                        md: "repeat(4, 1fr)",
-                    },
-                    gap: 1.5,
-                    mb: 2.5,
-                }}
-            >
-                {[
-                    {
-                        label: "Total",
-                        value: stats.total,
-                        icon: <AssignmentTurnedInOutlined />,
-                        color: "primary.main",
-                    },
-                    {
-                        label: "Em aberto",
-                        value: stats.abertas,
-                        icon: <TaskAltOutlined />,
-                        color: "info.main",
-                    },
-                    {
-                        label: "Urgentes",
-                        value: stats.urgentes,
-                        icon: <FlagOutlined />,
-                        color: "error.main",
-                    },
-                    {
-                        label: "Atrasadas",
-                        value: stats.atrasadas,
-                        icon: <CalendarMonthOutlined />,
-                        color: "warning.main",
-                    },
-                ].map((item) => (
-                    <Paper
-                        key={item.label}
-                        variant="outlined"
+            {userInfo.pode_acessar_painel_gerencial && (
+                <Paper
+                    variant="outlined"
+                    sx={{
+                        mb: 2.5,
+                        borderRadius: 2.5,
+                        overflow: "hidden",
+                        bgcolor: "background.default",
+                    }}
+                >
+                    <Tabs
+                        value={activeModule}
+                        onChange={(event, newValue) => setActiveModule(newValue)}
+                        variant="scrollable"
+                        scrollButtons="auto"
                         sx={{
-                            p: 1.75,
-                            borderRadius: 2.5,
-                            backgroundColor: "background.default",
-                            color: "text.primary",
+                            minHeight: 48,
+                            "& .MuiTab-root": {
+                                minHeight: 48,
+                                fontWeight: 700,
+                            },
                         }}
                     >
+                        <Tab
+                            value="kanban"
+                            label="Kanban"
+                            icon={<ViewKanbanOutlined />}
+                            iconPosition="start"
+                        />
+
+                        <Tab
+                            value="wiselog"
+                            label="WiseLog"
+                            icon={<TwoWheeler />}
+                            iconPosition="start"
+                        />
+                    </Tabs>
+                </Paper>
+            )}
+            {activeModule === "kanban" && (
+                <>
+                    <Box
+                        sx={{
+                            display: "grid",
+                            gridTemplateColumns: {
+                                xs: "repeat(2, 1fr)",
+                                md: "repeat(4, 1fr)",
+                            },
+                            gap: 1.5,
+                            mb: 2.5,
+                        }}
+                    >
+                        {[
+                            {
+                                label: "Total",
+                                value: stats.total,
+                                icon: <AssignmentTurnedInOutlined />,
+                                color: "primary.main",
+                            },
+                            {
+                                label: "Em aberto",
+                                value: stats.abertas,
+                                icon: <TaskAltOutlined />,
+                                color: "info.main",
+                            },
+                            {
+                                label: "Urgentes",
+                                value: stats.urgentes,
+                                icon: <FlagOutlined />,
+                                color: "error.main",
+                            },
+                            {
+                                label: "Atrasadas",
+                                value: stats.atrasadas,
+                                icon: <CalendarMonthOutlined />,
+                                color: "warning.main",
+                            },
+                        ].map((item) => (
+                            <Paper
+                                key={item.label}
+                                variant="outlined"
+                                sx={{
+                                    p: 1.75,
+                                    borderRadius: 2.5,
+                                    backgroundColor: "background.default",
+                                    color: "text.primary",
+                                }}
+                            >
+                                <Stack
+                                    direction="row"
+                                    alignItems="center"
+                                    justifyContent="space-between"
+                                >
+                                    <Box>
+                                        <Typography
+                                            variant="caption"
+                                            color="text.secondary"
+                                        >
+                                            {item.label}
+                                        </Typography>
+
+                                        <Typography
+                                            variant="h5"
+                                            fontWeight={900}
+                                            color="text.primary"
+                                        >
+                                            {item.value}
+                                        </Typography>
+                                    </Box>
+
+                                    <Box sx={{ color: item.color }}>
+                                        {item.icon}
+                                    </Box>
+                                </Stack>
+                            </Paper>
+                        ))}
+                    </Box>
+
+                    <Paper variant="outlined" sx={{ bgcolor: 'background.default', p: 1.5, mb: 2.5, borderRadius: 2.5 }}>
+                        <Stack direction={{ xs: "column", md: "row" }}
+                            spacing={1.25}
+                            alignItems={{ xs: "stretch", md: "center" }}>
+                            <TextField size="small" fullWidth placeholder="Buscar tarefas..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                InputProps={{
+                                    startAdornment:
+                                        <InputAdornment position="start">
+                                            <Search fontSize="small" />
+                                        </InputAdornment>
+                                }} />
+                            {isMobile &&
+                                <Button variant="contained" startIcon={<FilterAltOutlined />}
+                                    onClick={() => setFiltersOpen((value) => !value)}>
+                                    {isMobile ? "Filtros" : "Filtrar"}
+                                </Button>
+                            }
+                            <FormControl size="small" sx={{ minWidth: 150 }}>
+                                <InputLabel>
+                                    Ordenar
+                                </InputLabel>
+                                <Select label="Ordenar" value={sortMode}
+                                    MenuProps={{
+                                        PaperProps: {
+                                            sx: {
+                                                bgcolor: "background.default",
+                                                color: "text.primary",
+                                            },
+                                        },
+                                    }}
+                                    onChange={(e) => setSortMode(e.target.value)}>
+                                    <MenuItem value="recentes">
+                                        Mais recentes
+                                    </MenuItem>
+                                    <MenuItem value="prazo">
+                                        Por prazo
+                                    </MenuItem>
+                                </Select>
+                            </FormControl>
+
+                            <Tooltip title="Atualizar">
+                                <IconButton
+                                    onClick={loadBoard}>
+                                    <RefreshIcon />
+                                </IconButton>
+                            </Tooltip>
+
+                        </Stack>
+                        <Collapse in={filtersOpen || !isMobile}>
+                            <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} sx={{ mt: 1.5 }}>
+                                <FormControl size="small" sx={{ minWidth: 150 }}>
+                                    <InputLabel>
+                                        Prioridade
+                                    </InputLabel>
+                                    <Select label="Prioridade" value={priorityFilter}
+                                        onChange={(e) => setPriorityFilter(e.target.value)}
+                                        MenuProps={{
+                                            PaperProps: {
+                                                sx: {
+                                                    bgcolor: "background.default",
+                                                    color: "text.primary",
+                                                },
+                                            },
+                                        }}>
+                                        <MenuItem value="TODAS">
+                                            Todas
+                                        </MenuItem>
+                                        {PRIORIDADES.map((item) =>
+                                            <MenuItem key={item.value}
+                                                value={item.value}>
+                                                {item.label}
+                                            </MenuItem>)}
+                                    </Select>
+                                </FormControl>
+                                <FormControl size="small" sx={{ minWidth: 170 }}>
+                                    <InputLabel>
+                                        Participação
+                                    </InputLabel>
+                                    <Select label="Participação" value={ownerFilter}
+                                        onChange={(e) => setOwnerFilter(e.target.value)}
+                                        MenuProps={{
+                                            PaperProps: {
+                                                sx: {
+                                                    bgcolor: "background.default",
+                                                    color: "text.primary",
+                                                },
+                                            },
+                                        }}>
+                                        <MenuItem value="TODOS">
+                                            Todas
+                                        </MenuItem>
+                                        <MenuItem value="MINHAS">
+                                            Criadas por mim
+                                        </MenuItem>
+                                        <MenuItem value="RESPONSAVEL">
+                                            Sou responsável
+                                        </MenuItem>
+                                    </Select>
+                                </FormControl>
+                                <Button variant={onlyOverdue ? "contained" : "outlined"} color={onlyOverdue ? "error" : "inherit"}
+                                    onClick={() => setOnlyOverdue((value) => !value)}
+                                    startIcon={<CalendarMonthOutlined />}>
+                                    Atrasadas
+                                </Button>
+                                <Button color="inherit"
+                                    onClick={() => {
+                                        setSearch("");
+                                        setPriorityFilter("TODAS");
+                                        setOwnerFilter("TODOS");
+                                        setOnlyOverdue(false);
+                                    }}>
+                                    Limpar
+                                </Button>
+                            </Stack>
+                        </Collapse>
+                    </Paper>
+
+                    {loading ? (
                         <Stack
                             direction="row"
-                            alignItems="center"
-                            justifyContent="space-between"
+                            spacing={2}
+                            sx={{ overflow: "hidden" }}
                         >
-                            <Box>
-                                <Typography
-                                    variant="caption"
-                                    color="text.secondary"
-                                >
-                                    {item.label}
-                                </Typography>
-
-                                <Typography
-                                    variant="h5"
-                                    fontWeight={900}
-                                    color="text.primary"
-                                >
-                                    {item.value}
-                                </Typography>
-                            </Box>
-
-                            <Box sx={{ color: item.color }}>
-                                {item.icon}
-                            </Box>
+                            {[1, 2, 3].map((item) => (
+                                <Skeleton
+                                    key={item}
+                                    variant="rounded"
+                                    width={330}
+                                    height={300}
+                                />
+                            ))}
                         </Stack>
-                    </Paper>
-                ))}
-            </Box>
-
-            <Paper variant="outlined" sx={{ bgcolor: 'background.default', p: 1.5, mb: 2.5, borderRadius: 2.5 }}>
-                <Stack direction={{ xs: "column", md: "row" }}
-                    spacing={1.25}
-                    alignItems={{ xs: "stretch", md: "center" }}>
-                    <TextField size="small" fullWidth placeholder="Buscar tarefas..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        InputProps={{
-                            startAdornment:
-                                <InputAdornment position="start">
-                                    <Search fontSize="small" />
-                                </InputAdornment>
-                        }} />
-                    {isMobile &&
-                        <Button variant="contained" startIcon={<FilterAltOutlined />}
-                            onClick={() => setFiltersOpen((value) => !value)}>
-                            {isMobile ? "Filtros" : "Filtrar"}
-                        </Button>
-                    }
-                    <FormControl size="small" sx={{ minWidth: 150 }}>
-                        <InputLabel>
-                            Ordenar
-                        </InputLabel>
-                        <Select label="Ordenar" value={sortMode}
-                            MenuProps={{
-                                PaperProps: {
-                                    sx: {
-                                        bgcolor: "background.default",
-                                        color: "text.primary",
-                                    },
-                                },
+                    ) : (
+                        <Box
+                            sx={{
+                                display: "flex",
+                                gap: 2,
+                                overflowX: "auto",
+                                alignItems: "stretch",
+                                pb: 2,
                             }}
-                            onChange={(e) => setSortMode(e.target.value)}>
-                            <MenuItem value="recentes">
-                                Mais recentes
-                            </MenuItem>
-                            <MenuItem value="prazo">
-                                Por prazo
-                            </MenuItem>
-                        </Select>
-                    </FormControl>
+                        >
+                            {data.colunas.map((column) => (
+                                <Column
+                                    key={column.id}
+                                    column={column}
+                                    tasks={filteredTasks.filter((task) => {
+                                        const mesmaColuna =
+                                            Number(task.coluna_id) === Number(column.id);
 
-                    <Tooltip title="Atualizar">
-                        <IconButton
-                            onClick={loadBoard}>
-                            <RefreshIcon />
-                        </IconButton>
+                                        const tarefaDeOutroQuadro =
+                                            Number(task.quadro_id) !== Number(data.quadro?.id);
+
+                                        const mesmoNomeDeColuna =
+                                            String(task.coluna_nome || "")
+                                                .trim()
+                                                .toLowerCase() ===
+                                            String(column.nome || "")
+                                                .trim()
+                                                .toLowerCase();
+
+                                        return (
+                                            mesmaColuna ||
+                                            (tarefaDeOutroQuadro && mesmoNomeDeColuna)
+                                        );
+                                    })}
+                                    onOpen={openTask}
+                                    onDragStart={(event, task) => {
+                                        setDraggedTask(task);
+                                        event.dataTransfer.effectAllowed = "move";
+                                        event.dataTransfer.setData(
+                                            "text/plain",
+                                            String(task.id)
+                                        );
+                                    }}
+                                    onDrop={() => {
+                                        if (draggedTask) {
+                                            moveTask(draggedTask, column.id);
+                                        }
+
+                                        setDraggedTask(null);
+                                    }}
+                                />
+                            ))}
+                        </Box>
+                    )}
+
+                    <Dialog
+                        open={abrirAvisoTestes}
+                        onClose={() => setAbrirAvisoTestes(false)}
+                        fullWidth
+                        maxWidth="sm"
+                        slotProps={{
+                            paper: {
+                                sx: {
+                                    bgcolor: "background.default",
+                                    color: "text.primary",
+                                    borderRadius: 3,
+                                    border: "1px solid",
+                                    borderColor: "divider",
+                                },
+                            },
+                        }}
+                    >
+                        <DialogTitle
+                            sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1.5,
+                                fontWeight: 700,
+                                pb: 1,
+                            }}
+                        >
+                            <ScienceOutlined
+                                sx={{
+                                    color: "#F59E0B",
+                                    fontSize: 30,
+                                }}
+                            />
+
+                            <Typography
+                                component="span"
+                                variant="h6"
+                                fontWeight={700}
+                            >
+                                SIGEL Kanban • Fase de testes
+                            </Typography>
+                        </DialogTitle>
+
+                        <DialogContent>
+                            <Typography
+                                variant="body1"
+                                fontWeight={600}
+                                sx={{ mb: 2 }}
+                            >
+                                O módulo SIGEL Kanban está em fase de testes e
+                                aprimoramento.
+                            </Typography>
+
+                            <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                sx={{
+                                    lineHeight: 1.8,
+                                    mb: 2,
+                                }}
+                            >
+                                Durante esse período, podem ocorrer ajustes,
+                                mudanças e melhorias nas funcionalidades. Sua
+                                participação é muito importante para que possamos
+                                tornar a ferramenta cada vez mais útil para a equipe.
+                            </Typography>
+
+                            <Typography
+                                variant="body1"
+                                fontWeight={600}
+                                sx={{ mb: 1 }}
+                            >
+                                Encontrou algum problema ou tem uma sugestão de
+                                melhoria?
+                            </Typography>
+
+                            <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                sx={{
+                                    lineHeight: 1.8,
+                                    mb: 2,
+                                }}
+                            >
+                                Envie seu feedback ao Setor de Desenvolvimento pelo
+                                WhatsApp
+                            </Typography>
+
+                            <Divider sx={{ mb: 2 }} />
+
+                            <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                sx={{
+                                    textAlign: "center",
+                                    fontStyle: "italic",
+                                }}
+                            >
+                                Agradecemos pela colaboração! 🚀
+                            </Typography>
+                        </DialogContent>
+
+                        <DialogActions
+                            sx={{
+                                px: 3,
+                                pb: 3,
+                                justifyContent: "space-between",
+                                gap: 1,
+                            }}
+                        >
+                            <Button
+                                variant="contained"
+                                color="success"
+                                startIcon={<WhatsApp />}
+                                onClick={() => {
+                                    window.open(
+                                        "https://wa.me/554791692664",
+                                        "_blank",
+                                        "noopener,noreferrer"
+                                    );
+                                }}
+                            >
+                                Enviar sugestão
+                            </Button>
+
+                            <Button
+                                variant="contained"
+                                onClick={() => setAbrirAvisoTestes(false)}
+                            >
+                                Entendi, continuar
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
+
+                    <Tooltip title="Criar tarefa">
+                        <Fab
+                            color="primary"
+                            aria-label="add"
+                            onClick={openCreate}
+                            sx={{ position: 'fixed', bottom: 16, right: 16 }}
+                        >
+                            <Add />
+                        </Fab>
                     </Tooltip>
 
-                </Stack>
-                <Collapse in={filtersOpen || !isMobile}>
-                    <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} sx={{ mt: 1.5 }}>
-                        <FormControl size="small" sx={{ minWidth: 150 }}>
-                            <InputLabel>
-                                Prioridade
-                            </InputLabel>
-                            <Select label="Prioridade" value={priorityFilter}
-                                onChange={(e) => setPriorityFilter(e.target.value)}
-                                MenuProps={{
-                                    PaperProps: {
-                                        sx: {
-                                            bgcolor: "background.default",
-                                            color: "text.primary",
-                                        },
-                                    },
-                                }}>
-                                <MenuItem value="TODAS">
-                                    Todas
-                                </MenuItem>
-                                {PRIORIDADES.map((item) =>
-                                    <MenuItem key={item.value}
-                                        value={item.value}>
-                                        {item.label}
-                                    </MenuItem>)}
-                            </Select>
-                        </FormControl>
-                        <FormControl size="small" sx={{ minWidth: 170 }}>
-                            <InputLabel>
-                                Participação
-                            </InputLabel>
-                            <Select label="Participação" value={ownerFilter}
-                                onChange={(e) => setOwnerFilter(e.target.value)}
-                                MenuProps={{
-                                    PaperProps: {
-                                        sx: {
-                                            bgcolor: "background.default",
-                                            color: "text.primary",
-                                        },
-                                    },
-                                }}>
-                                <MenuItem value="TODOS">
-                                    Todas
-                                </MenuItem>
-                                <MenuItem value="MINHAS">
-                                    Criadas por mim
-                                </MenuItem>
-                                <MenuItem value="RESPONSAVEL">
-                                    Sou responsável
-                                </MenuItem>
-                            </Select>
-                        </FormControl>
-                        <Button variant={onlyOverdue ? "contained" : "outlined"} color={onlyOverdue ? "error" : "inherit"}
-                            onClick={() => setOnlyOverdue((value) => !value)}
-                            startIcon={<CalendarMonthOutlined />}>
-                            Atrasadas
-                        </Button>
-                        <Button color="inherit"
-                            onClick={() => {
-                                setSearch("");
-                                setPriorityFilter("TODAS");
-                                setOwnerFilter("TODOS");
-                                setOnlyOverdue(false);
-                            }}>
-                            Limpar
-                        </Button>
-                    </Stack>
-                </Collapse>
-            </Paper>
+                    <TaskFormDialog open={formOpen}
+                        onClose={() => { if (!saving) { setFormOpen(false); setEditingTask(null); } }}
+                        onSave={saveTask}
+                        users={users}
+                        initialTask={editingTask}
+                        loading={saving} />
 
-            {loading ? (
-                <Stack
-                    direction="row"
-                    spacing={2}
-                    sx={{ overflow: "hidden" }}
-                >
-                    {[1, 2, 3].map((item) => (
-                        <Skeleton
-                            key={item}
-                            variant="rounded"
-                            width={330}
-                            height={300}
-                        />
-                    ))}
-                </Stack>
-            ) : (
-                <Box
-                    sx={{
-                        display: "flex",
-                        gap: 2,
-                        overflowX: "auto",
-                        alignItems: "stretch",
-                        pb: 2,
-                    }}
-                >
-                    {data.colunas.map((column) => (
-                        <Column
-                            key={column.id}
-                            column={column}
-                            tasks={filteredTasks.filter((task) => {
-                                const mesmaColuna =
-                                    Number(task.coluna_id) === Number(column.id);
+                    <DetailsDrawer task={selectedTask} open={Boolean(selectedTask)}
+                        onClose={() => setSelectedTask(null)}
+                        columns={data.colunas}
+                        comments={comments}
+                        loading={saving}
+                        onMove={(columnId) => moveTask(selectedTask,
+                            columnId)} onEdit={openEdit}
+                        onDelete={() => deleteTask(selectedTask)}
+                        onAddComment={addComment} />
 
-                                const tarefaDeOutroQuadro =
-                                    Number(task.quadro_id) !== Number(data.quadro?.id);
-
-                                const mesmoNomeDeColuna =
-                                    String(task.coluna_nome || "")
-                                        .trim()
-                                        .toLowerCase() ===
-                                    String(column.nome || "")
-                                        .trim()
-                                        .toLowerCase();
-
-                                return (
-                                    mesmaColuna ||
-                                    (tarefaDeOutroQuadro && mesmoNomeDeColuna)
-                                );
-                            })}
-                            onOpen={openTask}
-                            onDragStart={(event, task) => {
-                                setDraggedTask(task);
-                                event.dataTransfer.effectAllowed = "move";
-                                event.dataTransfer.setData(
-                                    "text/plain",
-                                    String(task.id)
-                                );
-                            }}
-                            onDrop={() => {
-                                if (draggedTask) {
-                                    moveTask(draggedTask, column.id);
-                                }
-
-                                setDraggedTask(null);
-                            }}
-                        />
-                    ))}
-                </Box>
+                </>
             )}
 
-            <Dialog
-                open={abrirAvisoTestes}
-                onClose={() => setAbrirAvisoTestes(false)}
-                fullWidth
-                maxWidth="sm"
-                slotProps={{
-                    paper: {
-                        sx: {
-                            bgcolor: "background.default",
-                            color: "text.primary",
-                            borderRadius: 3,
-                            border: "1px solid",
-                            borderColor: "divider",
-                        },
-                    },
-                }}
-            >
-                <DialogTitle
-                    sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1.5,
-                        fontWeight: 700,
-                        pb: 1,
-                    }}
-                >
-                    <ScienceOutlined
-                        sx={{
-                            color: "#F59E0B",
-                            fontSize: 30,
-                        }}
-                    />
+            {activeModule === "wiselog" && (
+                <WiseLog notify={notify} />
+            )}
 
-                    <Typography
-                        component="span"
-                        variant="h6"
-                        fontWeight={700}
-                    >
-                        SIGEL Kanban • Fase de testes
-                    </Typography>
-                </DialogTitle>
-
-                <DialogContent>
-                    <Typography
-                        variant="body1"
-                        fontWeight={600}
-                        sx={{ mb: 2 }}
-                    >
-                        O módulo SIGEL Kanban está em fase de testes e
-                        aprimoramento.
-                    </Typography>
-
-                    <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{
-                            lineHeight: 1.8,
-                            mb: 2,
-                        }}
-                    >
-                        Durante esse período, podem ocorrer ajustes,
-                        mudanças e melhorias nas funcionalidades. Sua
-                        participação é muito importante para que possamos
-                        tornar a ferramenta cada vez mais útil para a equipe.
-                    </Typography>
-
-                    <Typography
-                        variant="body1"
-                        fontWeight={600}
-                        sx={{ mb: 1 }}
-                    >
-                        Encontrou algum problema ou tem uma sugestão de
-                        melhoria?
-                    </Typography>
-
-                    <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{
-                            lineHeight: 1.8,
-                            mb: 2,
-                        }}
-                    >
-                        Envie seu feedback ao Setor de Desenvolvimento pelo
-                        WhatsApp
-                    </Typography>
-
-                    <Divider sx={{ mb: 2 }} />
-
-                    <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{
-                            textAlign: "center",
-                            fontStyle: "italic",
-                        }}
-                    >
-                        Agradecemos pela colaboração! 🚀
-                    </Typography>
-                </DialogContent>
-
-                <DialogActions
-                    sx={{
-                        px: 3,
-                        pb: 3,
-                        justifyContent: "space-between",
-                        gap: 1,
-                    }}
-                >
-                    <Button
-                        variant="contained"
-                        color="success"
-                        startIcon={<WhatsApp />}
-                        onClick={() => {
-                            window.open(
-                                "https://wa.me/554791692664",
-                                "_blank",
-                                "noopener,noreferrer"
-                            );
-                        }}
-                    >
-                        Enviar sugestão
-                    </Button>
-
-                    <Button
-                        variant="contained"
-                        onClick={() => setAbrirAvisoTestes(false)}
-                    >
-                        Entendi, continuar
-                    </Button>
-                </DialogActions>
-            </Dialog>
-
-            <Tooltip title="Criar tarefa">
-                <Fab
-                    color="primary"
-                    aria-label="add"
-                    onClick={openCreate}
-                    sx={{ position: 'fixed', bottom: 16, right: 16 }}
-                >
-                    <Add />
-                </Fab>
-            </Tooltip>
-
-            <TaskFormDialog open={formOpen}
-                onClose={() => { if (!saving) { setFormOpen(false); setEditingTask(null); } }}
-                onSave={saveTask}
-                users={users}
-                initialTask={editingTask}
-                loading={saving} />
-
-            <DetailsDrawer task={selectedTask} open={Boolean(selectedTask)}
-                onClose={() => setSelectedTask(null)}
-                columns={data.colunas}
-                comments={comments}
-                loading={saving}
-                onMove={(columnId) => moveTask(selectedTask,
-                    columnId)} onEdit={openEdit}
-                onDelete={() => deleteTask(selectedTask)}
-                onAddComment={addComment} />
             <Snackbar open={toast.open} autoHideDuration={4500}
                 onClose={() => setToast((current) => ({ ...current, open: false }))}>
                 <Alert severity={toast.severity} variant="filled"
