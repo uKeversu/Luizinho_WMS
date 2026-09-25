@@ -26,6 +26,7 @@ import PerfilJogador from "./pages/PerfilJogador";
 import Tarefas from "./pages/Tarefas";
 import Chat from "./sigel-chat/pages/Chat";
 import Kanban from "./sigel-kanban/pages/Kanban"
+import NotasGravadas from "./pages/NotasGravadas"
 
 import AlertaAutorizacaoManual from "./components/autorizacao/AlertaAutorizacaoManual";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -202,6 +203,20 @@ function App() {
           <Route
             path="/Kanban"
             element={<Kanban />}
+          />
+
+          <Route
+            path="/NotasGravadas"
+            element={
+              <ProtectedRoute
+                permissao={[
+                  "pode_acessar_painel_gerencial",
+                  "pode_corrigir_nfe"
+                ]}
+              >
+                <NotasGravadas />
+              </ProtectedRoute>
+            }
           />
 
           <Route

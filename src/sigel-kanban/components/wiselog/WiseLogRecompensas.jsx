@@ -231,17 +231,7 @@ export default function WiseLogRecompensas({ notify }) {
                 `/api/wiselog/recompensas${query}`,
             );
 
-            console.log(
-                "[WiseLog] Resposta de recompensas:",
-                result,
-            );
-
             const extractedRewards = extractList(result);
-
-            console.log(
-                "[WiseLog] Lista extraída:",
-                extractedRewards,
-            );
 
             setRewards(extractedRewards);
 

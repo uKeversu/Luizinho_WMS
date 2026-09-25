@@ -17,6 +17,7 @@ import {
     TableCell,
     TableHead,
     TableRow,
+    Tooltip,
     Chip,
     Grid,
     Paper,
@@ -495,18 +496,25 @@ function ConsultaGuarda() {
                                 mr: "2vh"
                             }}
                         >
-                            <Button
-                                onClick={() =>
-                                    navigate("/")
-                                }
-                                sx={{
-                                    color: "background.paper",
-                                    gap: 1
-                                }}
-                            >
-                                Voltar
-                                <ArrowBackIcon />
-                            </Button>
+                            <Tooltip title="Retornar ao dashboard">
+                                <Button
+                                    onClick={() =>
+                                        navigate("/")
+                                    }
+                                    sx={{
+                                        color: "background.paper",
+                                        display: 'flex',
+                                        gap: 0.5,
+                                        fontSize: '0.75rem',
+                                        minWidth: 'auto',
+                                        padding: '4px 8px',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    Voltar
+                                    <ArrowBackIcon />
+                                </Button>
+                            </Tooltip>
                         </Box>
                     </Box>
                 </Box>

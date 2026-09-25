@@ -14,6 +14,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SyncIcon from '@mui/icons-material/Sync';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import LocalPrintshopIcon from '@mui/icons-material/LocalPrintshop';
 
 //Icones caixa
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -4417,6 +4418,17 @@ function Conferencia() {
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <Typography><strong>Caixa: {c.numero}</strong></Typography>
                                             <Box sx={{ display: 'flex', justifyContent: 'right', gap: 1 }}>
+
+                                                {/* Reimprimir etiqueta da caixa */}
+                                                <Tooltip title="Reimprimir etiqueta da caixa">
+                                                    <IconButton
+                                                        size="small"
+                                                        disabled
+                                                        onClick={() => setCaixaFechadaDialog(c)}
+                                                    >
+                                                        <LocalPrintshopIcon />
+                                                    </IconButton>
+                                                </Tooltip>
 
                                                 {/* Ver itens */}
                                                 <Tooltip title="Ver itens da caixa">

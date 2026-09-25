@@ -1,5 +1,3 @@
-// src\components\ProtectedRoute.jsx
-
 import { Navigate } from "react-router-dom";
 
 function ProtectedRoute({ permissao, children }) {
@@ -13,7 +11,13 @@ function ProtectedRoute({ permissao, children }) {
         return <Navigate to="/" replace />;
     }
 
-    if (!userInfo[permissao]) {
+    const temPermissao = Array.isArray(permissao)
+        ? permissao.some(
+            (nomePermissao) => userInfo?.[nomePermissao] === true
+        )
+        : userInfo?.[permissao] === true;
+
+    if (!temPermissao) {
         return <Navigate to="/" replace />;
     }
 

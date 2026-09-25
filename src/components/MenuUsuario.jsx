@@ -26,6 +26,7 @@ import BorderColorIcon from "@mui/icons-material/BorderColor";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import ViewKanbanIcon from '@mui/icons-material/ViewKanban';
 import ChatIcon from '@mui/icons-material/Chat';
+import TaskIcon from '@mui/icons-material/Task';
 
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
@@ -48,10 +49,22 @@ function MenuUsuario({ userInfo, onLogout }) {
             icone: <WarningIcon fontSize="small" />
         },
         {
+            nome: "Atribuir Notas",
+            rota: "/PainelGerencial",
+            permissao: "pode_acessar_painel_gerencial",
+            icone: <AssignmentTurnedInIcon fontSize="small" />
+        },
+        {
             nome: "Cadastrar Funcionário",
             rota: "/CadastrarFuncionario",
             permissao: "pode_acessar_cadastrar_funcionario",
             icone: <PersonAddIcon fontSize="small" />
+        },
+        {
+            nome: "Chat",
+            rota: "/Chat",
+            permissao: null,
+            icone: <ChatIcon fontSize="small" />
         },
         {
             nome: "Correção de Notas",
@@ -60,16 +73,25 @@ function MenuUsuario({ userInfo, onLogout }) {
             icone: <BorderColorIcon fontSize="small" />
         },
         {
-            nome: "Atribuir Notas",
-            rota: "/PainelGerencial",
-            permissao: "pode_acessar_painel_gerencial",
-            icone: <AssignmentTurnedInIcon fontSize="small" />
-        },
-        {
             nome: "Gamificação",
             rota: "/PainelGames",
             permissao: "pode_acessar_painel_games",
             icone: <SportsEsportsIcon fontSize="small" />
+        },
+        {
+            nome: "Kanban",
+            rota: "/Kanban",
+            permissao: null,
+            icone: <ViewKanbanIcon fontSize="small" />
+        },
+        {
+            nome: "Notas Gravadas",
+            rota: "/NotasGravadas",
+            permissao: [
+                "pode_acessar_painel_gerencial",
+                "pode_corrigir_nfe"
+            ],
+            icone: <TaskIcon fontSize="small" />
         },
         {
             nome: "Produtividade",
@@ -89,26 +111,23 @@ function MenuUsuario({ userInfo, onLogout }) {
             permissao: "pode_acessar_tarefas",
             icone: <AssignmentIcon fontSize="small" />
         },
-        {
-            nome: "Kanban",
-            rota: "/Kanban",
-            permissao: null,
-            icone: <ViewKanbanIcon fontSize="small" />
-        },
-         {
-            nome: "Chat",
-            rota: "/Chat",
-            permissao: null,
-            icone: <ChatIcon fontSize="small" />
-        }
     ];
 
     const paginasPermitidas = paginas.filter((pagina) => {
 
+        // Páginas sem permissão são liberadas para todos
         if (!pagina.permissao) {
             return true;
         }
 
+        // Quando houver várias permissões, basta possuir uma delas
+        if (Array.isArray(pagina.permissao)) {
+            return pagina.permissao.some(
+                (permissao) => userInfo?.[permissao] === true
+            );
+        }
+
+        // Compatibilidade com páginas que possuem apenas uma permissão
         return userInfo?.[pagina.permissao] === true;
     });
 

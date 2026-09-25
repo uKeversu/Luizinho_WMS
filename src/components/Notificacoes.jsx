@@ -361,7 +361,7 @@ export default function Notificacoes({ apiBase, token, userInfo }) {
             <Tooltip title="Notificações">
                 <IconButton color="inherit" onClick={abrirNotificacoes}>
                     <Badge badgeContent={quantidadeNaoLidas} color="error">
-                        <NotificationsIcon />
+                        <NotificationsIcon sx={{ color: 'primary.branco' }} />
                     </Badge>
                 </IconButton>
             </Tooltip>
