@@ -302,6 +302,10 @@ function NotasGravadas() {
         });
     };
 
+    // Retorna a quantidade de notas únicas
+    const quantidadeNotasUnicas = (lista = []) => {
+        return removerNotasDuplicadas(lista).length;
+    };
 
     // Filtra as notas pelo status e remove duplicadas pela chave de acesso
     const notasPorStatus = (status) => {
@@ -312,11 +316,22 @@ function NotasGravadas() {
         );
     };
 
-
     // Quantidade de notas únicas por status
     const quantidadePorStatus = (status) => {
         return notasPorStatus(status).length;
     };
+
+    const totalAtualizadas = removerNotasDuplicadas(
+        resultado?.atualizadas || []
+    ).length;
+
+    const totalPendentes = removerNotasDuplicadas(
+        resultado?.pendentes || []
+    ).length;
+
+    const totalErros = removerNotasDuplicadas(
+        resultado?.erros || []
+    ).length;
 
     if (!token) {
 
@@ -567,7 +582,7 @@ function NotasGravadas() {
                                 sx={{
                                     borderRadius: 3,
                                     height: "100%",
-                                    bgcolor: 'background.alerta'
+                                    bgcolor: "background.alerta"
                                 }}
                             >
 
@@ -600,7 +615,7 @@ function NotasGravadas() {
                                 sx={{
                                     borderRadius: 3,
                                     height: "100%",
-                                    bgcolor: 'background.alerta'
+                                    bgcolor: "background.alerta"
                                 }}
                             >
 
@@ -618,7 +633,7 @@ function NotasGravadas() {
                                         fontWeight="bold"
                                         color="success.main"
                                     >
-                                        {resultado.total_atualizadas ?? 0}
+                                        {totalAtualizadas}
                                     </Typography>
 
                                 </CardContent>
@@ -634,7 +649,7 @@ function NotasGravadas() {
                                 sx={{
                                     borderRadius: 3,
                                     height: "100%",
-                                    bgcolor: 'background.alerta'
+                                    bgcolor: "background.alerta"
                                 }}
                             >
 
@@ -652,7 +667,7 @@ function NotasGravadas() {
                                         fontWeight="bold"
                                         color="warning.main"
                                     >
-                                        {resultado.total_pendentes ?? 0}
+                                       {totalPendentes}
                                     </Typography>
 
                                 </CardContent>
@@ -668,7 +683,7 @@ function NotasGravadas() {
                                 sx={{
                                     borderRadius: 3,
                                     height: "100%",
-                                    bgcolor: 'background.alerta'
+                                    bgcolor: "background.alerta"
                                 }}
                             >
 
@@ -686,7 +701,7 @@ function NotasGravadas() {
                                         fontWeight="bold"
                                         color="error.main"
                                     >
-                                        {resultado.total_erros ?? 0}
+                                      {totalErros}
                                     </Typography>
 
                                 </CardContent>
@@ -1057,7 +1072,7 @@ function NotasGravadas() {
                                 severity="success"
                                 icon={<CheckCircleIcon />}
                             >
-                                Nenhuma nota encontrada com o status{" "}
+                                Nenhuma nota pendente encontrada com o status{" "}
                                 {statusSelecionado}.
                             </Alert>
 
