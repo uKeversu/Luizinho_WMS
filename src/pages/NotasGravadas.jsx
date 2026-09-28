@@ -26,7 +26,13 @@ import {
     Divider,
     Alert,
     Snackbar,
-    Stack
+    Stack,
+    Select,
+    MenuItem,
+    FormControl,
+    InputLabel,
+    Checkbox,
+    ListItemText
 } from "@mui/material";
 
 import SearchIcon from "@mui/icons-material/Search";
@@ -81,6 +87,10 @@ function NotasGravadas() {
         message: "",
         severity: "success"
     });
+
+    // Filtro por fornecedor
+    const [fornecedoresSelecionados, setFornecedoresSelecionados] = useState([]);
+    const [fornecedores, setFornecedores] = useState([]);
 
     // LOGIN
     const [userInfo, setUserInfo] = useState(() => {
@@ -302,18 +312,51 @@ function NotasGravadas() {
         });
     };
 
+    // Atualiza a lista de fornecedores disponíveis
+    useEffect(() => {
+        const lista = removerNotasDuplicadas(notas)
+            .map((nota) => String(nota.fornecedor || "").trim())
+            .filter(Boolean);
+
+        const fornecedoresUnicos = [...new Set(lista)].sort((a, b) =>
+            a.localeCompare(b, "pt-BR")
+        );
+
+        setFornecedores(fornecedoresUnicos);
+
+        // Remove da seleção fornecedores que não existem mais na lista atual
+        setFornecedoresSelecionados((selecionados) =>
+            selecionados.filter((fornecedor) =>
+                fornecedoresUnicos.includes(fornecedor)
+            )
+        );
+    }, [notas]);
+
+    const selecionarFornecedores = (valores) => {
+        setFornecedoresSelecionados(valores);
+    };
+
     // Retorna a quantidade de notas únicas
     const quantidadeNotasUnicas = (lista = []) => {
         return removerNotasDuplicadas(lista).length;
     };
 
     // Filtra as notas pelo status e remove duplicadas pela chave de acesso
+    // Filtra as notas pelo status e pelos fornecedores selecionados
     const notasPorStatus = (status) => {
         const notasUnicas = removerNotasDuplicadas(notas);
 
-        return notasUnicas.filter(
-            (nota) => nota.status === status
-        );
+        return notasUnicas.filter((nota) => {
+            const correspondeStatus = nota.status === status;
+
+            const correspondeFornecedor =
+                fornecedoresSelecionados.length === 0 ||
+                fornecedoresSelecionados.includes(
+                    String(nota.fornecedor || "").trim()
+                );
+
+            return correspondeStatus && correspondeFornecedor;
+        });
     };
 
     // Quantidade de notas únicas por status
@@ -667,7 +710,7 @@ function NotasGravadas() {
                                         fontWeight="bold"
                                         color="warning.main"
                                     >
-                                       {totalPendentes}
+                                        {totalPendentes}
                                     </Typography>
 
                                 </CardContent>
@@ -701,7 +744,7 @@ function NotasGravadas() {
                                         fontWeight="bold"
                                         color="error.main"
                                     >
-                                      {totalErros}
+                                        {totalErros}
                                     </Typography>
 
                                 </CardContent>
@@ -810,7 +853,7 @@ function NotasGravadas() {
 
             {busca.trim() && notas.length > 0 && !resultado && (
 
-                <Box sx={{ mb: 3 }}>
+                <Box sx={{ mb: 2 }}>
 
                     <Typography
                         variant="h6"
@@ -893,7 +936,7 @@ function NotasGravadas() {
 
             {/* NOTAS PENDENTES */}
 
-            <Box sx={{ mt: 4 }}>
+            <Box>
 
                 <Stack
                     direction={{
@@ -926,6 +969,71 @@ function NotasGravadas() {
                         </Typography>
 
                     </Box>
+
+                    <FormControl sx={{ width: 280 }} size="small">
+                        <InputLabel>Fornecedor</InputLabel>
+
+                        <Select
+                            multiple
+                            value={fornecedoresSelecionados}
+                            label="Fornecedor"
+                            onChange={(e) =>
+                                selecionarFornecedores(e.target.value)
+                            }
+                            renderValue={(selecionados) => {
+                                if (selecionados.length === 0) {
+                                    return "Todos os fornecedores";
+                                }
+
+                                return (
+                                    <Box
+                                        sx={{
+                                            display: "flex",
+                                            flexWrap: "wrap",
+                                            gap: 0.5,
+                                        }}
+                                    >
+                                        {selecionados.map((fornecedor) => (
+                                            <Chip
+                                                key={fornecedor}
+                                                label={fornecedor}
+                                                size="small"
+                                            />
+                                        ))}
+                                    </Box>
+                                );
+                            }}
+                            MenuProps={{
+                                PaperProps: {
+                                    sx: {
+                                        bgcolor: "background.default",
+                                        color: "text.primary",
+                                        maxHeight: 400,
+                                        zoom: 0.8
+                                    },
+                                },
+                            }}
+                        >
+                            {fornecedores.map((fornecedor) => (
+                                <MenuItem
+                                    key={fornecedor}
+                                    value={fornecedor}
+                                >
+                                    <Checkbox
+                                        checked={
+                                            fornecedoresSelecionados.includes(
+                                                fornecedor
+                                            )
+                                        }
+                                    />
+
+                                    <ListItemText
+                                        primary={fornecedor}
+                                    />
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
 
                 </Stack>
 

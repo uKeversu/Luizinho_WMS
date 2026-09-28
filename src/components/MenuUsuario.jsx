@@ -1,7 +1,7 @@
 // src/components/MenuUsuario.jsx
 
 import { useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { redirect, useNavigate } from "react-router-dom";
 
 import {
     Box,
@@ -27,6 +27,7 @@ import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import ViewKanbanIcon from '@mui/icons-material/ViewKanban';
 import ChatIcon from '@mui/icons-material/Chat';
 import TaskIcon from '@mui/icons-material/Task';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
@@ -110,7 +111,7 @@ function MenuUsuario({ userInfo, onLogout }) {
             rota: "/Tarefas",
             permissao: "pode_acessar_tarefas",
             icone: <AssignmentIcon fontSize="small" />
-        },
+        }
     ];
 
     const paginasPermitidas = paginas.filter((pagina) => {
@@ -252,6 +253,28 @@ function MenuUsuario({ userInfo, onLogout }) {
                     </MenuItem>
 
                 ))}
+
+                {/* HubPay */}
+
+                <MenuItem
+                    onClick={() => window.open("http://192.168.1.185:3001/", "_blank")}
+                    sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1.2,
+                        color: "text.primary"
+                    }}
+                >
+                    <AttachMoneyIcon fontSize="small" />
+
+                    <Typography
+                        sx={{
+                            fontSize: "0.85rem"
+                        }}
+                    >
+                        HubPay
+                    </Typography>
+                </MenuItem>
 
                 {/* Tema */}
 
