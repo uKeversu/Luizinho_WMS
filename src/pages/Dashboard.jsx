@@ -50,13 +50,13 @@ import LocalPrintshopIcon from '@mui/icons-material/LocalPrintshop';
 import ReplayIcon from '@mui/icons-material/Replay';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import HistoryIcon from '@mui/icons-material/History';
-import NotificationsIcon from '@mui/icons-material/Notifications';
 import DescriptionIcon from '@mui/icons-material/Description';
 
 // Componentes
 import MenuUsuario from "../components/MenuUsuario";
 import LoginFuncionario from "../components/LoginFuncionario";
 import XmlViewer from "../components/XmlViewer";
+import NotificacoesMenu from "../components/Notificacoes";
 
 import '../style/App.css';
 
@@ -110,11 +110,6 @@ function Dashboard({ tipo }) {
     // Etiquetas
     const [anchorEtiqueta, setAnchorEtiqueta] = useState(null);
     const [notaEtiqueta, setNotaEtiqueta] = useState(null);
-
-    // Notificações
-    const [notificacoes, setNotificacoes] = useState([]);
-    const [quantidadeNaoLidas, setQuantidadeNaoLidas] = useState(0);
-    const [anchorNotificacoes, setAnchorNotificacoes] = useState(null);
 
     // Modal da NFe
     const [openXmlModal, setOpenXmlModal] = useState(false);
@@ -178,28 +173,6 @@ function Dashboard({ tipo }) {
         buscarFuncionarios();
     }, []);
 
-    useEffect(() => {
-        carregarNotificacoes();
-
-        const intervalo = setInterval(() => {
-            carregarNotificacoes();
-        }, 15000);
-
-        return () => clearInterval(intervalo);
-    }, []);
-
-    useEffect(() => {
-        if (quantidadeNaoLidas > 0) {
-            document.title = `(${quantidadeNaoLidas}) SIGEL WMS`;
-        } else {
-            document.title = "SIGEL WMS";
-        }
-
-        return () => {
-            document.title = "SIGEL WMS";
-        };
-    }, [quantidadeNaoLidas]);
-
     const obterFiltroStatus = () => {
         switch (aba) {
             case 0:
@@ -239,14 +212,6 @@ function Dashboard({ tipo }) {
         ALTA: 3,
         MEDIA: 2,
         BAIXA: 1
-    };
-
-    const abrirNotificacoes = (event) => {
-        setAnchorNotificacoes(event.currentTarget);
-    };
-
-    const fecharNotificacoes = () => {
-        setAnchorNotificacoes(null);
     };
 
     const abrirModalFinalizarParaVenda = (nota) => {
@@ -298,191 +263,6 @@ function Dashboard({ tipo }) {
 
         } catch (error) {
             console.error("Erro ao enviar log:", error);
-        }
-    };
-
-    const carregarNotificacoes = async () => {
-        try {
-            const token = localStorage.getItem("nfe_token");
-
-            const response = await fetch(
-                `${API}/api/notificacoes`,
-                {
-                    headers: {
-                        "X-Auth-Token": token
-                    }
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error("Erro ao buscar notificações");
-            }
-
-            const data = await response.json();
-
-            const listaNotificacoes = data.notificacoes || [];
-
-            setNotificacoes(listaNotificacoes);
-
-            setQuantidadeNaoLidas(
-                listaNotificacoes.filter(
-                    notificacao => !notificacao.lida
-                ).length
-            );
-
-        } catch (error) {
-            console.error(
-                "Erro ao carregar notificações:",
-                error
-            );
-        }
-    };
-
-    const marcarNotificacaoComoLida = async (notificacaoId) => {
-        try {
-            const token = localStorage.getItem("nfe_token");
-
-            const response = await fetch(
-                `${API}/api/notificacoes/${notificacaoId}/ler`,
-                {
-                    method: "PUT",
-                    headers: {
-                        "X-Auth-Token": token
-                    }
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error("Erro ao marcar notificação");
-            }
-
-            setNotificacoes(prev =>
-                prev.map(notificacao =>
-                    notificacao.id === notificacaoId
-                        ? { ...notificacao, lida: true }
-                        : notificacao
-                )
-            );
-
-            setQuantidadeNaoLidas(prev =>
-                Math.max(0, prev - 1)
-            );
-
-        } catch (error) {
-            console.error(
-                "Erro ao marcar notificação como lida:",
-                error
-            );
-        }
-    };
-
-    const abrirNotificacao = async (notificacao) => {
-        if (!notificacao?.nfe_id) {
-            return;
-        }
-
-        try {
-            // Marca como lida quando o usuário abre a notificação
-            if (!notificacao.lida) {
-                await marcarNotificacaoComoLida(notificacao.id);
-            }
-
-            fecharNotificacoes();
-
-            navigate(`/AtualizarCean?nota_id=${notificacao.nfe_id}`);
-        } catch (error) {
-            console.error(
-                "Erro ao abrir notificação:",
-                error
-            );
-        }
-    };
-
-    const marcarComoGravada = async (notificacao) => {
-        try {
-            let nota = notas.find(
-                n => n.id === notificacao.nfe_id
-            );
-
-            // Se a nota não estiver na página atual, busca diretamente pelo ID
-            if (!nota) {
-                nota = await buscarNotaPorId(
-                    notificacao.nfe_id
-                );
-            }
-
-            if (!nota) {
-                setSnackbar({
-                    open: true,
-                    message: "Não foi possível encontrar a nota.",
-                    severity: "error"
-                });
-
-                return;
-            }
-
-            const etiquetaAlterada = await alterarEtiqueta(
-                nota,
-                "Gravada"
-            );
-
-            // Só marca a notificação como lida se a alteração realmente funcionou
-            if (!etiquetaAlterada) {
-                return;
-            }
-
-            await marcarNotificacaoComoLida(
-                notificacao.id
-            );
-
-        } catch (error) {
-            console.error(
-                "Erro ao marcar notificação como gravada:",
-                error
-            );
-
-            setSnackbar({
-                open: true,
-                message: "Erro ao marcar nota como gravada.",
-                severity: "error"
-            });
-        }
-    };
-
-    const marcarTodasComoLidas = async () => {
-        try {
-            const token = localStorage.getItem("nfe_token");
-
-            const response = await fetch(
-
-                `${API}/api/notificacoes/ler-todas`,
-                {
-                    method: "PUT",
-                    headers: {
-                        "X-Auth-Token": token
-                    }
-                }
-            );
-
-            if (!response.ok) {
-
-                throw new Error("Erro ao marcar notificações");
-            }
-
-            setNotificacoes(prev =>
-                prev.map(notificacao => ({
-                    ...notificacao,
-                    lida: true
-                }))
-            );
-
-            setQuantidadeNaoLidas(0);
-
-        } catch (error) {
-            console.error(
-                "Erro ao marcar todas como lidas:",
-                error
-            );
         }
     };
 
@@ -1218,27 +998,18 @@ function Dashboard({ tipo }) {
                         </strong>
                     </Typography>
                     <Box>
-                        <Box sx={{
-                            display: "flex",
-                            flexDirection: "row",
-                            justifyContent: "right",
-                        }}>
-                            <Box>
-                                <IconButton
-                                    onClick={abrirNotificacoes}
-                                    sx={{
-                                        color: "background.paper"
-                                    }}
-                                >
-                                    <Badge
-                                        badgeContent={quantidadeNaoLidas}
-                                        color="error"
-                                        max={99}
-                                    >
-                                        <NotificationsIcon />
-                                    </Badge>
-                                </IconButton>
-                            </Box>
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "right",
+                            }}
+                        >
+                            <NotificacoesMenu
+                                apiBase={API}
+                                token={token}
+                                userInfo={userInfo}
+                            />
                             <MenuUsuario
                                 userInfo={userInfo}
                                 onLogout={logout}
@@ -1332,189 +1103,6 @@ function Dashboard({ tipo }) {
                         </Box>
                     </Box>
                 </Box>
-
-                {/* Drawer das notificações */}
-                <Popover
-                    open={Boolean(anchorNotificacoes)}
-                    anchorEl={anchorNotificacoes}
-                    onClose={fecharNotificacoes}
-                    anchorOrigin={{
-                        vertical: "bottom",
-                        horizontal: "right"
-                    }}
-                    transformOrigin={{
-                        vertical: "top",
-                        horizontal: "right"
-                    }}
-                >
-                    <Box
-                        sx={{
-                            width: 380,
-                            maxWidth: "90vw",
-                            bgcolor: "background.card",
-                            color: "text.primary",
-                        }}
-                    >
-                        <Box
-                            sx={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                p: 2
-                            }}
-                        >
-                            <Typography
-                                variant="h6"
-                                sx={{
-                                    fontFamily: "Consolas",
-                                    fontWeight: "bold"
-                                }}
-                            >
-                                Notificações
-                            </Typography>
-
-                            {quantidadeNaoLidas > 0 && (
-                                <Button
-                                    size="small"
-                                    onClick={marcarTodasComoLidas}
-                                >
-                                    Marcar todas
-                                </Button>
-                            )}
-                        </Box>
-
-                        <Divider />
-
-                        {notificacoes.length === 0 ? (
-                            <Box
-                                sx={{
-                                    p: 4,
-                                    textAlign: "center"
-                                }}
-                            >
-                                <NotificationsIcon
-                                    sx={{
-                                        fontSize: 40,
-                                        opacity: 0.4,
-                                        mb: 1
-                                    }}
-                                />
-
-                                <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                >
-                                    Nenhuma notificação nova
-                                </Typography>
-                            </Box>
-                        ) : (
-                            <List
-                                sx={{
-                                    maxHeight: 400,
-                                    overflowY: "auto",
-                                    p: 0
-                                }}
-                            >
-                                {notificacoes.map((notificacao) => (
-                                    <ListItem
-                                        key={notificacao.id}
-                                        sx={{
-                                            px: 2,
-                                            py: 1.5,
-                                            alignItems: "flex-start",
-
-                                            bgcolor: notificacao.lida
-                                                ? "transparent"
-                                                : "action.hover",
-
-                                            opacity: notificacao.lida
-                                                ? "60%"
-                                                : "100%",
-
-                                            cursor:
-                                                notificacao.nfe_id
-                                                    ? "pointer"
-                                                    : "default",
-
-                                            "&:hover": {
-                                                bgcolor: notificacao.lida
-                                                    ? "action.hover"
-                                                    : "action.selected"
-                                            }
-                                        }}
-                                    >
-                                        <Box sx={{ width: "100%" }}>
-                                            <Typography
-                                                variant="body2"
-                                                fontWeight="bold"
-                                            >
-                                                {notificacao.titulo}
-                                            </Typography>
-
-                                            <Typography
-                                                variant="body2"
-                                                sx={{
-                                                    mt: 0.5
-                                                }}
-                                            >
-                                                {notificacao.mensagem}
-                                            </Typography>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                <Typography
-                                                    variant="caption"
-                                                    color="text.secondary"
-                                                >
-                                                    {new Date(
-                                                        notificacao.data_criacao
-                                                    ).toLocaleString("pt-BR")}
-                                                </Typography>
-
-                                                {!notificacao.lida && (
-                                                    <Button
-                                                        size="small"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-
-                                                            if (notificacao.tipo === "CONFERENCIA_FINALIZADA") {
-                                                                marcarComoGravada(notificacao);
-                                                            } else {
-                                                                marcarNotificacaoComoLida(notificacao.id);
-                                                            }
-
-                                                            const textoNotificacao = `
-                                                                ${notificacao.tipo || ""}
-                                                                ${notificacao.titulo || ""}
-                                                                ${notificacao.mensagem || ""}
-                                                            `.toUpperCase();
-
-                                                            const ehNotificacaoCorrecao =
-                                                                textoNotificacao.includes("CEAN") ||
-                                                                textoNotificacao.includes("CORREÇÃO") ||
-                                                                textoNotificacao.includes("CORRECAO");
-
-                                                            if (
-                                                                notificacao.nfe_id &&
-                                                                ehNotificacaoCorrecao
-                                                            ) {
-                                                                abrirNotificacao(notificacao);
-                                                            }
-                                                        }}
-                                                    >
-                                                        {notificacao.tipo === "CONFERENCIA_FINALIZADA"
-                                                            ? "Marcar como gravada"
-                                                            : notificacao.tipo === "SOLICITACAO_CORRECAO_NFE"
-                                                                ? "Corrigir nota"
-                                                                : "Marcar como lida"}
-                                                    </Button>
-                                                )}
-                                            </Box>
-                                        </Box>
-                                    </ListItem>
-                                ))}
-                            </List>
-                        )}
-                    </Box>
-                </Popover>
 
                 {/* Loading de sincronização SS Plus*/}
                 <Backdrop

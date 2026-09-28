@@ -4423,8 +4423,9 @@ function Conferencia() {
                                                 <Tooltip title="Reimprimir etiqueta da caixa">
                                                     <IconButton
                                                         size="small"
-                                                        disabled
-                                                        onClick={() => setCaixaFechadaDialog(c)}
+                                                        onClick={() =>
+                                                            imprimirEtiquetaCaixa(c)
+                                                        }
                                                     >
                                                         <LocalPrintshopIcon />
                                                     </IconButton>

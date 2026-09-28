@@ -14,7 +14,11 @@ import {
     Divider,
     Tooltip,
 } from "@mui/material";
+
 import NotificationsIcon from "@mui/icons-material/Notifications";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 
 const DEFAULT_API_BASE = "http://192.168.1.185:8077";
 
@@ -356,6 +360,40 @@ export default function Notificacoes({ apiBase, token, userInfo }) {
 
     const openPopover = Boolean(anchorNotificacoes);
 
+    const obterIconeNotificacao = (tipo) => {
+        switch (tipo) {
+            case "CONFERENCIA_FINALIZADA":
+                return (
+                    <CheckCircleIcon
+                        sx={{
+                            color: "#4CAF50",
+                            fontSize: 22,
+                        }}
+                    />
+                );
+
+            case "SOLICITACAO_CORRECAO_NFE":
+                return (
+                    <WarningAmberIcon
+                        sx={{
+                            color: "#FF9800",
+                            fontSize: 22,
+                        }}
+                    />
+                );
+
+            default:
+                return (
+                    <NotificationsNoneIcon
+                        sx={{
+                            color: "text.secondary",
+                            fontSize: 22,
+                        }}
+                    />
+                );
+        }
+    };
+
     return (
         <>
             <Tooltip title="Notificações">
@@ -468,12 +506,22 @@ export default function Notificacoes({ apiBase, token, userInfo }) {
                                     }}
                                 >
                                     <Box sx={{ width: "100%" }}>
-                                        <Typography
-                                            variant="body2"
-                                            fontWeight="bold"
+                                        <Box
+                                            sx={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                gap: 1,
+                                            }}
                                         >
-                                            {notificacao.titulo}
-                                        </Typography>
+                                            {obterIconeNotificacao(notificacao.tipo)}
+
+                                            <Typography
+                                                variant="body2"
+                                                fontWeight="bold"
+                                            >
+                                                {notificacao.titulo}
+                                            </Typography>
+                                        </Box>
 
                                         <Typography
                                             variant="body2"
