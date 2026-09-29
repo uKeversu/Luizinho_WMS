@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState, useRef } from "react";
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import {
     Alert,
@@ -282,23 +282,47 @@ function Column({ column, tasks, onOpen, onDrop, onDragStart }) {
     );
 }
 
-function TaskFormDialog({ open, onClose, onSave, users, initialTask, loading }) {
+function TaskFormDialog({
+    open,
+    onClose,
+    onSave,
+    users,
+    initialTask,
+    initialFormData,
+    loading
+}) {
     const editing = Boolean(initialTask);
     const [form, setForm] = useState(EMPTY_FORM);
     const [showSharing, setShowSharing] = useState(false);
+    const observacaoRef = useRef(null);
 
     useEffect(() => {
         if (!open) return;
-        setForm(initialTask ? {
-            titulo: initialTask.titulo || "",
-            descricao: initialTask.descricao || "",
-            prioridade: initialTask.prioridade || "MEDIA",
-            prazo: initialTask.prazo ? String(initialTask.prazo).slice(0, 10) : "",
-            responsavel_id: initialTask.responsavel_id || "",
-            compartilhar_com: (initialTask.compartilhamentos || []).map((item) => item.funcionario_id),
-        } : EMPTY_FORM);
-        setShowSharing(Boolean(initialTask?.compartilhamentos?.length));
-    }, [open, initialTask]);
+
+        if (initialTask) {
+            setForm({
+                titulo: initialTask.titulo || "",
+                descricao: initialTask.descricao || "",
+                prioridade: initialTask.prioridade || "MEDIA",
+                prazo: initialTask.prazo
+                    ? String(initialTask.prazo).slice(0, 10)
+                    : "",
+                responsavel_id: initialTask.responsavel_id || "",
+                compartilhar_com: (initialTask.compartilhamentos || [])
+                    .map((item) => item.funcionario_id),
+            });
+
+            setShowSharing(Boolean(initialTask?.compartilhamentos?.length));
+            return;
+        }
+
+        setForm({
+            ...EMPTY_FORM,
+            ...(initialFormData || {}),
+        });
+
+        setShowSharing(false);
+    }, [open, initialTask, initialFormData]);
 
     const update = (field, value) => setForm((current) => ({ ...current, [field]: value }));
 
@@ -355,6 +379,7 @@ function TaskFormDialog({ open, onClose, onSave, users, initialTask, loading }) 
                         multiline
                         minRows={3}
                         label="Descrição"
+                        inputRef={observacaoRef}
                         value={form.descricao}
                         onChange={(e) => update("descricao", e.target.value)}
                     />
@@ -1067,6 +1092,7 @@ export default function Kanban() {
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [userInfo, setUserInfo] = useState(() => {
         try {
@@ -1094,10 +1120,8 @@ export default function Kanban() {
 
     const user = useMemo(() => getUser(), []);
 
-
     const [activeModule, setActiveModule] = useState("kanban");
 
-    const [abrirAvisoTestes, setAbrirAvisoTestes] = useState(true);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [data, setData] = useState({ quadro: null, colunas: [], tarefas: [] });
@@ -1115,7 +1139,27 @@ export default function Kanban() {
     const [draggedTask, setDraggedTask] = useState(null);
     const [toast, setToast] = useState({ open: false, message: "", severity: "success" });
 
+    const [formInitialData, setFormInitialData] = useState(null);
+
     const notify = useCallback((message, severity = "success") => setToast({ open: true, message, severity }), []);
+
+    useEffect(() => {
+        if (!location.state?.openModal) return;
+
+        setEditingTask(null);
+
+        setFormInitialData({
+            titulo: location.state.titulo || "",
+            descricao: "",
+        });
+
+        setFormOpen(true);
+
+        navigate(location.pathname, {
+            replace: true,
+            state: {}
+        });
+    }, [location, navigate]);
 
     const loadBoard = useCallback(async () => {
         setLoading(true);
@@ -1248,7 +1292,13 @@ export default function Kanban() {
         return result;
     }, [data.tarefas, search, priorityFilter, ownerFilter, onlyOverdue, sortMode, user]);
 
-    const stats = useMemo(() => ({ total: data.tarefas.length, abertas: data.tarefas.filter((task) => task.coluna_nome !== "Concluído").length, urgentes: data.tarefas.filter((task) => task.prioridade === "URGENTE").length, atrasadas: data.tarefas.filter((task) => isOverdue(task.prazo) && task.coluna_nome !== "Concluído").length }), [data.tarefas]);
+    const stats = useMemo(() => ({
+        total: data.tarefas.length,
+        abertas: data.tarefas.filter((task) => task.coluna_nome !== "Concluído").length,
+        urgentes: data.tarefas.filter((task) => task.prioridade === "URGENTE").length,
+        atrasadas: data.tarefas.filter((task) => isOverdue(task.prazo) && task.coluna_nome !== "Concluído").length
+    }),
+        [data.tarefas]);
 
     const openCreate = () => { setEditingTask(null); setFormOpen(true); };
     const openEdit = () => { setEditingTask(selectedTask); setFormOpen(true); };
@@ -1736,139 +1786,6 @@ export default function Kanban() {
                         </Box>
                     )}
 
-                    <Dialog
-                        open={abrirAvisoTestes}
-                        onClose={() => setAbrirAvisoTestes(false)}
-                        fullWidth
-                        maxWidth="sm"
-                        slotProps={{
-                            paper: {
-                                sx: {
-                                    bgcolor: "background.default",
-                                    color: "text.primary",
-                                    borderRadius: 3,
-                                    border: "1px solid",
-                                    borderColor: "divider",
-                                },
-                            },
-                        }}
-                    >
-                        <DialogTitle
-                            sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 1.5,
-                                fontWeight: 700,
-                                pb: 1,
-                            }}
-                        >
-                            <ScienceOutlined
-                                sx={{
-                                    color: "#F59E0B",
-                                    fontSize: 30,
-                                }}
-                            />
-
-                            <Typography
-                                component="span"
-                                variant="h6"
-                                fontWeight={700}
-                            >
-                                SIGEL Kanban • Fase de testes
-                            </Typography>
-                        </DialogTitle>
-
-                        <DialogContent>
-                            <Typography
-                                variant="body1"
-                                fontWeight={600}
-                                sx={{ mb: 2 }}
-                            >
-                                O módulo SIGEL Kanban está em fase de testes e
-                                aprimoramento.
-                            </Typography>
-
-                            <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                sx={{
-                                    lineHeight: 1.8,
-                                    mb: 2,
-                                }}
-                            >
-                                Durante esse período, podem ocorrer ajustes,
-                                mudanças e melhorias nas funcionalidades. Sua
-                                participação é muito importante para que possamos
-                                tornar a ferramenta cada vez mais útil para a equipe.
-                            </Typography>
-
-                            <Typography
-                                variant="body1"
-                                fontWeight={600}
-                                sx={{ mb: 1 }}
-                            >
-                                Encontrou algum problema ou tem uma sugestão de
-                                melhoria?
-                            </Typography>
-
-                            <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                sx={{
-                                    lineHeight: 1.8,
-                                    mb: 2,
-                                }}
-                            >
-                                Envie seu feedback ao Setor de Desenvolvimento pelo
-                                WhatsApp
-                            </Typography>
-
-                            <Divider sx={{ mb: 2 }} />
-
-                            <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                sx={{
-                                    textAlign: "center",
-                                    fontStyle: "italic",
-                                }}
-                            >
-                                Agradecemos pela colaboração! 🚀
-                            </Typography>
-                        </DialogContent>
-
-                        <DialogActions
-                            sx={{
-                                px: 3,
-                                pb: 3,
-                                justifyContent: "space-between",
-                                gap: 1,
-                            }}
-                        >
-                            <Button
-                                variant="contained"
-                                color="success"
-                                startIcon={<WhatsApp />}
-                                onClick={() => {
-                                    window.open(
-                                        "https://wa.me/554791692664",
-                                        "_blank",
-                                        "noopener,noreferrer"
-                                    );
-                                }}
-                            >
-                                Enviar sugestão
-                            </Button>
-
-                            <Button
-                                variant="contained"
-                                onClick={() => setAbrirAvisoTestes(false)}
-                            >
-                                Entendi, continuar
-                            </Button>
-                        </DialogActions>
-                    </Dialog>
-
                     <Tooltip title="Criar tarefa">
                         <Fab
                             color="primary"
@@ -1880,12 +1797,21 @@ export default function Kanban() {
                         </Fab>
                     </Tooltip>
 
-                    <TaskFormDialog open={formOpen}
-                        onClose={() => { if (!saving) { setFormOpen(false); setEditingTask(null); } }}
+                    <TaskFormDialog
+                        open={formOpen}
+                        onClose={() => {
+                            if (!saving) {
+                                setFormOpen(false);
+                                setEditingTask(null);
+                                setFormInitialData(null);
+                            }
+                        }}
                         onSave={saveTask}
                         users={users}
                         initialTask={editingTask}
-                        loading={saving} />
+                        initialFormData={formInitialData}
+                        loading={saving}
+                    />
 
                     <DetailsDrawer task={selectedTask} open={Boolean(selectedTask)}
                         onClose={() => setSelectedTask(null)}

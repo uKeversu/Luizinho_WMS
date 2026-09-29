@@ -32,7 +32,8 @@ import {
     FormControl,
     InputLabel,
     Checkbox,
-    ListItemText
+    ListItemText,
+    IconButton
 } from "@mui/material";
 
 import SearchIcon from "@mui/icons-material/Search";
@@ -45,10 +46,13 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import SyncIcon from "@mui/icons-material/Sync";
+import AddIcon from '@mui/icons-material/Add';
+import DescriptionIcon from '@mui/icons-material/Description';
 
 // Componentes
 import MenuUsuario from "../components/MenuUsuario";
 import LoginFuncionario from "../components/LoginFuncionario";
+import XmlViewer from "../components/XmlViewer";
 import NotificacoesMenu from "../components/Notificacoes";
 
 import "../style/App.css";
@@ -91,6 +95,12 @@ function NotasGravadas() {
     // Filtro por fornecedor
     const [fornecedoresSelecionados, setFornecedoresSelecionados] = useState([]);
     const [fornecedores, setFornecedores] = useState([]);
+
+    // Modal completo da NFe
+    const [openXmlModal, setOpenXmlModal] = useState(false);
+    const [xmlSelecionado, setXmlSelecionado] = useState("");
+    const [nomeXmlSelecionado, setNomeXmlSelecionado] = useState("");
+    const [notaXmlSelecionada, setNotaXmlSelecionada] = useState(null);
 
     // LOGIN
     const [userInfo, setUserInfo] = useState(() => {
@@ -341,7 +351,6 @@ function NotasGravadas() {
         return removerNotasDuplicadas(lista).length;
     };
 
-    // Filtra as notas pelo status e remove duplicadas pela chave de acesso
     // Filtra as notas pelo status e pelos fornecedores selecionados
     const notasPorStatus = (status) => {
         const notasUnicas = removerNotasDuplicadas(notas);
@@ -375,6 +384,25 @@ function NotasGravadas() {
     const totalErros = removerNotasDuplicadas(
         resultado?.erros || []
     ).length;
+
+    // Modal completo da NFe
+    const visualizarXML = (nota) => {
+        console.log(nota)
+
+        if (!nota?.xml) {
+            setSnackbar({
+                open: true,
+                message: "XML não disponível para esta nota",
+                severity: "warning"
+            });
+
+            return;
+        }
+
+        setNotaXmlSelecionada(nota);
+        setXmlSelecionado(nota.xml);
+        setOpenXmlModal(true);
+    };
 
     if (!token) {
 
@@ -1240,6 +1268,14 @@ function NotasGravadas() {
                                                     Status
                                                 </TableCell>
 
+                                                <TableCell>
+                                                    XML
+                                                </TableCell>
+
+                                                <TableCell>
+                                                    Obs
+                                                </TableCell>
+
                                             </TableRow>
 
                                         </TableHead>
@@ -1358,6 +1394,34 @@ function NotasGravadas() {
                                                             }}
                                                         />
 
+                                                    </TableCell>
+
+                                                    <TableCell
+                                                        onClick={() => visualizarXML(nota)}
+                                                    >
+                                                        <Tooltip title={"Visualizar nota"}>
+                                                            <IconButton>
+                                                                <DescriptionIcon />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                    </TableCell>
+
+                                                    <TableCell>
+                                                        <Tooltip title={"Criar uma tarefa no Kanban"}>
+                                                            <IconButton
+                                                                onClick={() => {
+                                                                    navigate("/Kanban", {
+                                                                        state: {
+                                                                            openModal: true,
+                                                                            titulo: `NF ${nota.numero + " - " + nota.serie || "" }`,
+                                                                            focarObservacao: true
+                                                                        }
+                                                                    });
+                                                                }}
+                                                            >
+                                                                <AddIcon />
+                                                            </IconButton>
+                                                        </Tooltip>
                                                     </TableCell>
 
                                                 </TableRow>
@@ -1527,6 +1591,17 @@ function NotasGravadas() {
                 </Box>
 
             </Backdrop>
+
+            <XmlViewer
+                open={openXmlModal}
+                onClose={() => {
+                    setOpenXmlModal(false);
+                    setXmlSelecionado("");
+                    setNotaXmlSelecionada(null);
+                }}
+                xml={xmlSelecionado}
+                nota={notaXmlSelecionada}
+            />
 
             <Snackbar
                 open={snackbar.open}
