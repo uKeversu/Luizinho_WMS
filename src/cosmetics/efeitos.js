@@ -134,7 +134,6 @@ export const EFEITOS = {
         accent: "#00ff66",
         overlay: "radial-gradient(circle at 50% 45%, rgba(0,255,102,.22), transparent 55%), radial-gradient(circle at 50% 50%, rgba(255,255,255,.06), transparent 70%)",
         animation: "optimus"
-
     },
 
     "Fundo da Grota": {
@@ -144,6 +143,15 @@ export const EFEITOS = {
         accent: "#dcae6e",
         overlay: "radial-gradient(circle at 50% 40%, rgba(244,177,104,.18), transparent 52%), radial-gradient(circle at 50% 75%, rgba(169,122,68,.12), transparent 60%), radial-gradient(circle at 50% 100%, rgba(0,0,0,.5), transparent 70%)",
         animation: "gauderio"
+    },
+
+    "Protocolo Nexus": {
+        background: "linear-gradient(135deg, #00142e, #003b73)",
+        cardGlow: "0 0 18px rgba(0,174,255,.70), 0 0 40px rgba(0,110,255,.38), inset 0 0 25px rgba(0,174,255,.08)",
+        nomeGlow: "0 0 12px #ffffff, 0 0 24px #00aeff, 0 0 45px rgba(0,174,255,.65)",
+        accent: "#00aeff",
+        overlay: "radial-gradient(circle at 50% 45%, rgba(0,174,255,.24), transparent 55%), radial-gradient(circle at 50% 50%, rgba(255,255,255,.07), transparent 70%)",
+        animation: "nexus-effect"
     },
 
     default: {

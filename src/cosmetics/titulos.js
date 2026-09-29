@@ -76,6 +76,18 @@ export const TITULOS = {
     `
     },
 
+    "Sem Nexus": {
+        color: "#3ec2ff",
+        textShadow: `
+        0 0 5px #FFFFFF,
+        0 0 12px #B8F5FF,
+        0 0 22px #00E5FF,
+        0 0 38px #00AEFF,
+        0 0 58px rgba(0,174,255,.78),
+        0 0 85px rgba(0,90,255,.38)
+    `
+    },
+
     "Gaudério": {
         color: "#d49336",
         textShadow:

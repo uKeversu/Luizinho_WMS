@@ -5,6 +5,7 @@ import LeviathanEffect from "../leviathan/LeviathanEffect";
 import ArcaneEffect from "../arcane/ArcaneEffect";
 import OptimusEffect from "../optimus/OptimusEffect";
 import GauderioEffect from "../gauderio/GauderioEffect"
+import NexusEffect from "../nexus/NexusEffect"
 
 const EFFECT_COMPONENTS = {
     sentinela: SentinelaEffect,
@@ -14,6 +15,7 @@ const EFFECT_COMPONENTS = {
     pulse: ArcaneEffect,
     optimus: OptimusEffect,
     gauderio: GauderioEffect,
+    "nexus-effect": NexusEffect,
 };
 
 export default function EffectRenderer({ animation }) {

@@ -81,6 +81,19 @@ export const MOLDURAS = {
     `,
     },
 
+    "Núcleo Nexus": {
+        borderColor: "#00AEFF",
+        glow: `
+        0 0 8px #FFFFFF,
+        0 0 18px #00E5FF,
+        0 0 35px #00AEFF,
+        0 0 60px rgba(0,174,255,.50),
+        0 0 90px rgba(0,80,255,.25),
+        inset 0 0 15px rgba(255,255,255,.25),
+        inset 0 0 30px rgba(0,174,255,.20)
+    `,
+    },
+
     "Rei dos Pampas": {
         borderColor: "#8B6B3E",
         glow:

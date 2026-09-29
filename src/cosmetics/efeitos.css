@@ -10599,9 +10599,7 @@
 }
 
 
-/* =========================================================
-   REDUÇÃO DE MOVIMENTO
-========================================================= */
+/* REDUÇÃO DE MOVIMENTO */
 
 @media (prefers-reduced-motion: reduce) {
 
@@ -10614,7 +10612,9 @@
 
 }
 
+/* ========================================================= */
 /* COLEÇÃO GAUDÉRIA - GRITO DE LIBERDADE */
+/* ========================================================= */
 
 .pampero-scene {
     --sky-top: #0a1726;
@@ -11602,4 +11602,1954 @@
         inset 0 0 40px rgba(0, 0, 0, 0.4);
 
     z-index: 21;
+}
+
+
+/* ================================================= */
+/* COLEÇÃO TEMPORADA 4 - NEXUS */
+/* ================================================= */
+
+.nexus-effect {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+
+    --nexus-blue: #00bfff;
+    --nexus-blue-dark: #0066cc;
+    --nexus-blue-deep: #003d80;
+    --nexus-cyan: #4deaff;
+    --nexus-white: #ffffff;
+    --nexus-dark: #020b16;
+
+    z-index: 1;
+
+    background:
+        radial-gradient(circle at 50% 50%,
+            rgba(0, 191, 255, 0.16),
+            transparent 25%),
+        radial-gradient(circle at 20% 35%,
+            rgba(0, 102, 204, 0.10),
+            transparent 35%),
+        radial-gradient(circle at 80% 65%,
+            rgba(0, 191, 255, 0.08),
+            transparent 40%),
+        linear-gradient(135deg,
+            rgba(0, 15, 30, 0.95),
+            rgba(1, 8, 18, 0.98));
+}
+
+
+/* =========================================================
+   NÚCLEO CENTRAL
+========================================================= */
+
+.nexus-core {
+    position: absolute;
+
+    width: 145px;
+    height: 145px;
+
+    left: 50%;
+    top: 50%;
+
+    transform: translate(-50%, -50%);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    z-index: 12;
+}
+
+
+/* =========================================================
+   HALO
+========================================================= */
+
+.nexus-core-outer {
+    position: absolute;
+
+    inset: -60px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(circle,
+            rgba(0, 191, 255, 0.30),
+            rgba(0, 191, 255, 0.12) 30%,
+            rgba(0, 102, 204, 0.05) 50%,
+            transparent 72%);
+
+    filter: blur(12px);
+
+    animation:
+        nexusCoreGlow 3s ease-in-out infinite;
+}
+
+
+/* =========================================================
+   ENERGIA DO NÚCLEO
+========================================================= */
+
+.nexus-core-energy {
+    position: absolute;
+
+    width: 62px;
+    height: 62px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(circle,
+            #ffffff 0%,
+            #dffaff 10%,
+            var(--nexus-cyan) 25%,
+            var(--nexus-blue) 45%,
+            rgba(0, 119, 255, 0.45) 65%,
+            transparent 75%);
+
+    box-shadow:
+        0 0 12px #ffffff,
+        0 0 25px var(--nexus-cyan),
+        0 0 50px var(--nexus-blue),
+        0 0 90px rgba(0, 191, 255, 0.55);
+
+    animation:
+        nexusCorePulse 2.2s ease-in-out infinite,
+        nexusCoreBreath 4s ease-in-out infinite;
+}
+
+
+/* =========================================================
+   SÍMBOLO NEXUS
+========================================================= */
+
+.nexus-core-symbol {
+    position: absolute;
+
+    width: 72px;
+    height: 72px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    z-index: 5;
+}
+
+
+/* NX */
+
+.nexus-core-symbol b {
+    position: relative;
+
+    font-family:
+        "Arial Black",
+        "Segoe UI",
+        sans-serif;
+
+    font-size: 18px;
+    letter-spacing: 2px;
+
+    color: #ffffff;
+
+    text-shadow:
+        0 0 5px #ffffff,
+        0 0 12px var(--nexus-cyan),
+        0 0 25px var(--nexus-blue);
+
+    z-index: 10;
+
+    animation:
+        nexusSymbolPulse 2s ease-in-out infinite;
+}
+
+
+/* =========================================================
+   NÓS DO SÍMBOLO
+========================================================= */
+
+.nexus-symbol-node {
+    position: absolute;
+
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 0 7px #ffffff,
+        0 0 15px var(--nexus-cyan),
+        0 0 25px var(--nexus-blue);
+
+    animation:
+        nexusSymbolNodePulse 2s ease-in-out infinite;
+}
+
+
+.nexus-symbol-node:nth-of-type(1) {
+    top: 7px;
+    left: 32px;
+}
+
+
+.nexus-symbol-node.node-2 {
+    right: 7px;
+    top: 32px;
+
+    animation-delay: 0.4s;
+}
+
+
+.nexus-symbol-node.node-3 {
+    bottom: 7px;
+    left: 32px;
+
+    animation-delay: 0.8s;
+}
+
+
+.nexus-symbol-node.node-4 {
+    left: 7px;
+    top: 32px;
+
+    animation-delay: 1.2s;
+}
+
+
+/* =========================================================
+   LINHAS DO SÍMBOLO
+========================================================= */
+
+.nexus-symbol-line {
+    position: absolute;
+
+    height: 1px;
+
+    background:
+        linear-gradient(90deg,
+            transparent,
+            var(--nexus-cyan),
+            #ffffff,
+            var(--nexus-cyan),
+            transparent);
+
+    box-shadow:
+        0 0 5px var(--nexus-blue);
+}
+
+
+.nexus-symbol-line.line-1 {
+    width: 42px;
+
+    transform: rotate(45deg);
+}
+
+
+.nexus-symbol-line.line-2 {
+    width: 42px;
+
+    transform: rotate(-45deg);
+}
+
+
+.nexus-symbol-line.line-3 {
+    width: 35px;
+
+    transform: rotate(90deg);
+}
+
+
+/* =========================================================
+   ANÉIS DO NÚCLEO
+========================================================= */
+
+.nexus-core-ring {
+    position: absolute;
+
+    border-radius: 50%;
+
+    border: 1px solid rgba(0, 191, 255, 0.55);
+
+    box-shadow:
+        0 0 8px rgba(0, 191, 255, 0.35),
+        inset 0 0 10px rgba(0, 191, 255, 0.18);
+}
+
+
+.nexus-core-ring.ring-1 {
+    width: 95px;
+    height: 95px;
+
+    border-top-color: #ffffff;
+    border-right-color: transparent;
+
+    animation:
+        nexusRingRotate 5s linear infinite;
+}
+
+
+.nexus-core-ring.ring-2 {
+    width: 122px;
+    height: 122px;
+
+    border-left-color: var(--nexus-cyan);
+    border-bottom-color: transparent;
+
+    animation:
+        nexusRingRotateReverse 8s linear infinite;
+}
+
+
+.nexus-core-ring.ring-3 {
+    width: 150px;
+    height: 150px;
+
+    border-style: dashed;
+
+    opacity: 0.45;
+
+    animation:
+        nexusRingRotate 15s linear infinite;
+}
+
+
+/* =========================================================
+   REDE DE CONEXÕES
+========================================================= */
+
+.nexus-network {
+    position: absolute;
+    inset: 0;
+
+    z-index: 4;
+}
+
+
+/* =========================================================
+   LINHAS DA REDE
+========================================================= */
+
+.nexus-network-line {
+    position: absolute;
+
+    height: 1px;
+
+    background:
+        linear-gradient(90deg,
+            transparent,
+            rgba(0, 119, 255, 0.15),
+            var(--nexus-blue),
+            rgba(77, 234, 255, 0.9),
+            var(--nexus-blue),
+            rgba(0, 119, 255, 0.15),
+            transparent);
+
+    box-shadow:
+        0 0 7px rgba(0, 191, 255, 0.6);
+
+    transform-origin: center;
+
+    opacity: 0.45;
+}
+
+
+.network-line-1 {
+    width: 38%;
+
+    left: 5%;
+    top: 28%;
+
+    transform: rotate(12deg);
+}
+
+
+.network-line-2 {
+    width: 34%;
+
+    right: 5%;
+    top: 30%;
+
+    transform: rotate(-14deg);
+}
+
+
+.network-line-3 {
+    width: 42%;
+
+    left: 4%;
+    top: 52%;
+
+    transform: rotate(-4deg);
+}
+
+
+.network-line-4 {
+    width: 40%;
+
+    right: 3%;
+    top: 55%;
+
+    transform: rotate(5deg);
+}
+
+
+.network-line-5 {
+    width: 35%;
+
+    left: 10%;
+    top: 73%;
+
+    transform: rotate(-17deg);
+}
+
+
+.network-line-6 {
+    width: 33%;
+
+    right: 9%;
+    top: 75%;
+
+    transform: rotate(16deg);
+}
+
+
+.network-line-7 {
+    width: 28%;
+
+    left: 25%;
+    top: 15%;
+
+    transform: rotate(32deg);
+}
+
+
+.network-line-8 {
+    width: 28%;
+
+    right: 25%;
+    top: 16%;
+
+    transform: rotate(-30deg);
+}
+
+
+/* =========================================================
+   NÓS DA REDE
+========================================================= */
+
+.nexus-network-node {
+    position: absolute;
+
+    width: 9px;
+    height: 9px;
+
+    border-radius: 50%;
+
+    background: #ffffff;
+
+    border: 1px solid var(--nexus-cyan);
+
+    box-shadow:
+        0 0 7px #ffffff,
+        0 0 15px var(--nexus-cyan),
+        0 0 28px var(--nexus-blue);
+
+    animation:
+        nexusNetworkNode 2.5s ease-in-out infinite;
+}
+
+
+.network-node-1 {
+    left: 8%;
+    top: 27%;
+}
+
+
+.network-node-2 {
+    left: 23%;
+    top: 31%;
+
+    animation-delay: 0.4s;
+}
+
+
+.network-node-3 {
+    right: 10%;
+    top: 29%;
+
+    animation-delay: 0.8s;
+}
+
+
+.network-node-4 {
+    right: 25%;
+    top: 35%;
+
+    animation-delay: 1.2s;
+}
+
+
+.network-node-5 {
+    left: 10%;
+    top: 65%;
+
+    animation-delay: 0.6s;
+}
+
+
+.network-node-6 {
+    left: 25%;
+    bottom: 16%;
+
+    animation-delay: 1s;
+}
+
+
+.network-node-7 {
+    right: 11%;
+    bottom: 23%;
+
+    animation-delay: 1.4s;
+}
+
+
+.network-node-8 {
+    right: 27%;
+    bottom: 17%;
+
+    animation-delay: 1.8s;
+}
+
+
+/* =========================================================
+   ANÉIS DE CONEXÃO
+========================================================= */
+
+.nexus-connection-rings {
+    position: absolute;
+    inset: 0;
+
+    z-index: 2;
+}
+
+
+.nexus-ring {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    border-radius: 50%;
+
+    transform: translate(-50%, -50%);
+
+    border: 1px solid rgba(0, 191, 255, 0.2);
+
+    box-shadow:
+        0 0 12px rgba(0, 191, 255, 0.12);
+}
+
+
+.connection-ring-1 {
+    width: 240px;
+    height: 240px;
+
+    border-top-color: var(--nexus-blue);
+
+    animation:
+        nexusRingRotate 18s linear infinite;
+}
+
+
+.connection-ring-2 {
+    width: 340px;
+    height: 340px;
+
+    border-right-color: var(--nexus-cyan);
+
+    animation:
+        nexusRingRotateReverse 25s linear infinite;
+}
+
+
+.connection-ring-3 {
+    width: 470px;
+    height: 470px;
+
+    border-style: dashed;
+
+    opacity: 0.35;
+
+    animation:
+        nexusRingRotate 35s linear infinite;
+}
+
+
+.connection-ring-4 {
+    width: 650px;
+    height: 650px;
+
+    border-color: rgba(0, 119, 255, 0.08);
+
+    animation:
+        nexusRingRotateReverse 50s linear infinite;
+}
+
+
+/* =========================================================
+   ÓRBITAS
+========================================================= */
+
+.nexus-orbits {
+    position: absolute;
+    inset: 0;
+
+    z-index: 3;
+}
+
+
+.nexus-orbit {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    border-radius: 50%;
+
+    border: 1px solid rgba(77, 234, 255, 0.18);
+
+    transform: translate(-50%, -50%) rotate(0deg);
+}
+
+
+.nexus-orbit i {
+    position: absolute;
+
+    width: 8px;
+    height: 8px;
+
+    top: -4px;
+    left: 50%;
+
+    border-radius: 50%;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 0 8px #ffffff,
+        0 0 18px var(--nexus-cyan),
+        0 0 30px var(--nexus-blue);
+}
+
+
+.orbit-1 {
+    width: 290px;
+    height: 130px;
+
+    animation:
+        nexusOrbit1 12s linear infinite;
+}
+
+
+.orbit-2 {
+    width: 420px;
+    height: 190px;
+
+    transform: translate(-50%, -50%) rotate(60deg);
+
+    animation:
+        nexusOrbit2 18s linear infinite;
+}
+
+
+.orbit-3 {
+    width: 560px;
+    height: 260px;
+
+    transform: translate(-50%, -50%) rotate(-55deg);
+
+    opacity: 0.45;
+
+    animation:
+        nexusOrbit3 25s linear infinite;
+}
+
+
+/* =========================================================
+   FLUXO DE DADOS
+========================================================= */
+
+.nexus-data-flow {
+    position: absolute;
+    inset: 0;
+
+    z-index: 8;
+}
+
+
+.nexus-data-line {
+    position: absolute;
+
+    overflow: hidden;
+
+    background:
+        linear-gradient(90deg,
+            transparent,
+            rgba(0, 191, 255, 0.18),
+            rgba(0, 191, 255, 0.5),
+            transparent);
+
+    opacity: 0.6;
+}
+
+
+.nexus-data-line i {
+    position: absolute;
+
+    width: 35px;
+    height: 2px;
+
+    top: 0;
+
+    background:
+        linear-gradient(90deg,
+            transparent,
+            #ffffff,
+            var(--nexus-cyan),
+            transparent);
+
+    box-shadow:
+        0 0 8px #ffffff,
+        0 0 15px var(--nexus-cyan);
+
+    animation:
+        nexusDataTravel 2.5s linear infinite;
+}
+
+
+.data-line-1 {
+    width: 240px;
+    height: 1px;
+
+    left: 4%;
+    top: 34%;
+
+    transform: rotate(12deg);
+}
+
+
+.data-line-2 {
+    width: 220px;
+    height: 1px;
+
+    right: 5%;
+    top: 37%;
+
+    transform: rotate(-15deg);
+}
+
+
+.data-line-3 {
+    width: 280px;
+    height: 1px;
+
+    left: 3%;
+    top: 61%;
+
+    transform: rotate(-8deg);
+
+    animation-delay: 0.7s;
+}
+
+
+.data-line-4 {
+    width: 250px;
+    height: 1px;
+
+    right: 3%;
+    top: 63%;
+
+    transform: rotate(9deg);
+
+    animation-delay: 1.2s;
+}
+
+
+.data-line-5 {
+    width: 180px;
+    height: 1px;
+
+    left: 20%;
+    top: 20%;
+
+    transform: rotate(30deg);
+
+    animation-delay: 0.4s;
+}
+
+
+.data-line-6 {
+    width: 180px;
+    height: 1px;
+
+    right: 20%;
+    top: 21%;
+
+    transform: rotate(-30deg);
+
+    animation-delay: 1.7s;
+}
+
+
+/* =========================================================
+   CONEXÕES RADIAIS
+========================================================= */
+
+.nexus-radial-connections {
+    position: absolute;
+    inset: 0;
+
+    z-index: 3;
+}
+
+
+.radial {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 1px;
+    height: 230px;
+
+    transform-origin: bottom center;
+
+    background:
+        linear-gradient(to top,
+            rgba(0, 191, 255, 0.65),
+            rgba(0, 191, 255, 0.15),
+            transparent);
+
+    box-shadow:
+        0 0 5px rgba(0, 191, 255, 0.4);
+
+    opacity: 0.3;
+}
+
+
+.radial-1 {
+    transform: translate(-50%, -100%) rotate(0deg);
+}
+
+
+.radial-2 {
+    transform: translate(-50%, -100%) rotate(45deg);
+}
+
+
+.radial-3 {
+    transform: translate(-50%, -100%) rotate(90deg);
+}
+
+
+.radial-4 {
+    transform: translate(-50%, -100%) rotate(135deg);
+}
+
+
+.radial-5 {
+    transform: translate(-50%, -100%) rotate(180deg);
+}
+
+
+.radial-6 {
+    transform: translate(-50%, -100%) rotate(225deg);
+}
+
+
+.radial-7 {
+    transform: translate(-50%, -100%) rotate(270deg);
+}
+
+
+.radial-8 {
+    transform: translate(-50%, -100%) rotate(315deg);
+}
+
+
+.radial-9 {
+    height: 160px;
+
+    transform:
+        translate(-50%, -100%) rotate(22deg);
+
+    opacity: 0.18;
+}
+
+
+.radial-10 {
+    height: 160px;
+
+    transform:
+        translate(-50%, -100%) rotate(202deg);
+
+    opacity: 0.18;
+}
+
+
+/* =========================================================
+   CIRCUITOS
+========================================================= */
+
+.nexus-circuits {
+    position: absolute;
+    inset: 0;
+
+    z-index: 6;
+}
+
+
+.nexus-circuit {
+    position: absolute;
+
+    width: 120px;
+    height: 2px;
+
+    background:
+        linear-gradient(90deg,
+            transparent,
+            var(--nexus-blue),
+            var(--nexus-cyan),
+            transparent);
+
+    box-shadow:
+        0 0 8px var(--nexus-blue);
+
+    opacity: 0.55;
+}
+
+
+.nexus-circuit i {
+    position: absolute;
+
+    width: 6px;
+    height: 6px;
+
+    top: -2px;
+
+    border-radius: 50%;
+
+    background: var(--nexus-cyan);
+
+    box-shadow:
+        0 0 8px var(--nexus-cyan),
+        0 0 16px var(--nexus-blue);
+
+    animation:
+        nexusCircuitPulse 2.4s ease-in-out infinite;
+}
+
+
+.nexus-circuit i:nth-child(1) {
+    left: 20%;
+}
+
+
+.nexus-circuit i:nth-child(2) {
+    left: 55%;
+
+    animation-delay: 0.5s;
+}
+
+
+.nexus-circuit i:nth-child(3) {
+    left: 85%;
+
+    animation-delay: 1s;
+}
+
+
+.circuit-1 {
+    left: 2%;
+    top: 22%;
+
+    transform: rotate(16deg);
+}
+
+
+.circuit-2 {
+    right: 2%;
+    top: 26%;
+
+    transform: rotate(-17deg);
+}
+
+
+.circuit-3 {
+    left: 4%;
+    top: 70%;
+
+    transform: rotate(-12deg);
+}
+
+
+.circuit-4 {
+    right: 4%;
+    top: 74%;
+
+    transform: rotate(14deg);
+}
+
+
+.circuit-5 {
+    left: 27%;
+    top: 8%;
+
+    width: 85px;
+
+    transform: rotate(28deg);
+}
+
+
+.circuit-6 {
+    right: 27%;
+    bottom: 9%;
+
+    width: 85px;
+
+    transform: rotate(-28deg);
+}
+
+
+/* =========================================================
+   HUD
+========================================================= */
+
+.nexus-hud {
+    position: absolute;
+
+    inset: 15px;
+
+    border:
+        1px solid rgba(0, 191, 255, 0.08);
+
+    z-index: 2;
+}
+
+
+.nexus-hud-corner {
+    position: absolute;
+
+    width: 40px;
+    height: 40px;
+
+    border-color:
+        rgba(0, 191, 255, 0.55);
+
+    filter:
+        drop-shadow(0 0 5px var(--nexus-blue));
+}
+
+
+.nexus-hud .corner-tl {
+    left: 0;
+    top: 0;
+
+    border-left: 2px solid;
+    border-top: 2px solid;
+}
+
+
+.nexus-hud .corner-tr {
+    right: 0;
+    top: 0;
+
+    border-right: 2px solid;
+    border-top: 2px solid;
+}
+
+
+.nexus-hud .corner-bl {
+    left: 0;
+    bottom: 0;
+
+    border-left: 2px solid;
+    border-bottom: 2px solid;
+}
+
+
+.nexus-hud .corner-br {
+    right: 0;
+    bottom: 0;
+
+    border-right: 2px solid;
+    border-bottom: 2px solid;
+}
+
+
+.nexus-hud-line {
+    position: absolute;
+
+    background:
+        rgba(0, 191, 255, 0.08);
+}
+
+
+.nexus-hud-line.horizontal-1 {
+    left: 8%;
+    right: 8%;
+    top: 33%;
+
+    height: 1px;
+}
+
+
+.nexus-hud-line.horizontal-2 {
+    left: 12%;
+    right: 12%;
+    bottom: 28%;
+
+    height: 1px;
+}
+
+
+.nexus-hud-line.vertical-1 {
+    top: 8%;
+    bottom: 8%;
+    left: 28%;
+
+    width: 1px;
+}
+
+
+.nexus-hud-line.vertical-2 {
+    top: 8%;
+    bottom: 8%;
+    right: 28%;
+
+    width: 1px;
+}
+
+
+/* =========================================================
+   NÓS DE DADOS
+========================================================= */
+
+.nexus-data-nodes {
+    position: absolute;
+    inset: 0;
+
+    z-index: 7;
+}
+
+
+.nexus-data-node {
+    position: absolute;
+
+    left: var(--x);
+    top: var(--y);
+
+    width: 12px;
+    height: 12px;
+
+    opacity: 0;
+
+    animation:
+        nexusDataNodePulse var(--duration) ease-in-out var(--delay) infinite;
+}
+
+
+.nexus-data-node b {
+    position: absolute;
+
+    width: 5px;
+    height: 5px;
+
+    border-radius: 50%;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 0 7px #ffffff,
+        0 0 16px var(--nexus-cyan),
+        0 0 25px var(--nexus-blue);
+}
+
+
+.nexus-data-node i {
+    position: absolute;
+
+    width: 28px;
+    height: 1px;
+
+    left: 5px;
+    top: 2px;
+
+    background:
+        linear-gradient(90deg,
+            var(--nexus-cyan),
+            transparent);
+
+    transform-origin: left center;
+}
+
+
+/* =========================================================
+   PARTÍCULAS
+========================================================= */
+
+.nexus-particles {
+    position: absolute;
+    inset: 0;
+
+    z-index: 9;
+}
+
+
+.nexus-particle {
+    position: absolute;
+
+    left: var(--x);
+    top: var(--y);
+
+    width: var(--size);
+    height: var(--size);
+
+    border-radius: 50%;
+
+    background: var(--nexus-cyan);
+
+    box-shadow:
+        0 0 5px var(--nexus-cyan),
+        0 0 12px var(--nexus-blue);
+
+    opacity: 0;
+
+    animation:
+        nexusParticleFloat var(--duration) ease-in-out var(--delay) infinite;
+}
+
+
+/* =========================================================
+   PULSOS DE CONEXÃO
+========================================================= */
+
+.nexus-pulses {
+    position: absolute;
+    inset: 0;
+
+    z-index: 5;
+}
+
+
+.nexus-pulse {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 90px;
+    height: 90px;
+
+    border:
+        1px solid var(--nexus-blue);
+
+    border-radius: 50%;
+
+    transform:
+        translate(-50%, -50%) scale(0);
+
+    opacity: 0;
+
+    box-shadow:
+        0 0 15px rgba(0, 191, 255, 0.6),
+        inset 0 0 15px rgba(0, 191, 255, 0.25);
+
+    animation:
+        nexusPulse 5s linear infinite;
+}
+
+
+.nexus-pulse.pulse-1 {
+    animation-delay: 0s;
+}
+
+
+.nexus-pulse.pulse-2 {
+    animation-delay: 1s;
+}
+
+
+.nexus-pulse.pulse-3 {
+    animation-delay: 2s;
+}
+
+
+.nexus-pulse.pulse-4 {
+    animation-delay: 3s;
+}
+
+
+.nexus-pulse.pulse-5 {
+    animation-delay: 4s;
+}
+
+
+/* =========================================================
+   ONDAS
+========================================================= */
+
+.nexus-wave {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 100px;
+    height: 100px;
+
+    border-radius: 50%;
+
+    border:
+        1px solid rgba(77, 234, 255, 0.5);
+
+    transform:
+        translate(-50%, -50%) scale(0);
+
+    opacity: 0;
+
+    z-index: 4;
+
+    animation:
+        nexusWave 7s ease-out infinite;
+}
+
+
+.nexus-wave.wave-1 {
+    animation-delay: 0s;
+}
+
+
+.nexus-wave.wave-2 {
+    animation-delay: 2.3s;
+}
+
+
+.nexus-wave.wave-3 {
+    animation-delay: 4.6s;
+}
+
+
+/* =========================================================
+   SCANNER
+========================================================= */
+
+.nexus-scanner {
+    position: absolute;
+
+    left: -10%;
+    right: -10%;
+
+    top: -5px;
+
+    height: 1px;
+
+    background:
+        linear-gradient(90deg,
+            transparent,
+            rgba(0, 191, 255, 0.1),
+            #ffffff,
+            var(--nexus-cyan),
+            rgba(0, 191, 255, 0.1),
+            transparent);
+
+    box-shadow:
+        0 0 10px var(--nexus-blue),
+        0 0 25px var(--nexus-blue);
+
+    z-index: 18;
+
+    animation:
+        nexusScanner 6s ease-in-out infinite;
+}
+
+
+/* =========================================================
+   FLASH DE SINCRONIZAÇÃO
+========================================================= */
+
+.nexus-sync-flash {
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        radial-gradient(circle at 50% 50%,
+            rgba(255, 255, 255, 0.32),
+            rgba(0, 191, 255, 0.15) 22%,
+            transparent 58%);
+
+    opacity: 0;
+
+    z-index: 14;
+
+    animation:
+        nexusSyncFlash 7s ease-in-out infinite;
+}
+
+
+/* =========================================================
+   REFLEXO
+========================================================= */
+
+.nexus-light-sweep {
+    position: absolute;
+
+    top: -30%;
+    left: -70%;
+
+    width: 30%;
+    height: 160%;
+
+    background:
+        linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.22),
+            rgba(0, 191, 255, 0.18),
+            transparent);
+
+    transform: rotate(18deg);
+
+    filter: blur(6px);
+
+    z-index: 16;
+
+    animation:
+        nexusLightSweep 10s ease-in-out infinite;
+}
+
+
+/* =========================================================
+   BORDA
+========================================================= */
+
+.nexus-border {
+    position: absolute;
+
+    inset: 2px;
+
+    border:
+        1px solid rgba(0, 191, 255, 0.4);
+
+    box-shadow:
+        inset 0 0 15px rgba(0, 191, 255, 0.08),
+        0 0 10px rgba(0, 191, 255, 0.1);
+
+    z-index: 20;
+
+    animation:
+        nexusBorderPulse 3s ease-in-out infinite;
+}
+
+
+/* =========================================================
+   ANIMAÇÕES
+========================================================= */
+
+
+/* Núcleo */
+
+@keyframes nexusCorePulse {
+
+    0%,
+    100% {
+        transform: scale(0.88);
+    }
+
+    50% {
+        transform: scale(1.18);
+    }
+}
+
+
+@keyframes nexusCoreGlow {
+
+    0%,
+    100% {
+        opacity: 0.35;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+
+@keyframes nexusCoreBreath {
+
+    0%,
+    100% {
+        filter: brightness(0.9);
+    }
+
+    50% {
+        filter: brightness(1.35);
+    }
+}
+
+
+@keyframes nexusSymbolPulse {
+
+    0%,
+    100% {
+        opacity: 0.7;
+        transform: scale(0.92);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.08);
+    }
+}
+
+
+@keyframes nexusSymbolNodePulse {
+
+    0%,
+    100% {
+        transform: scale(0.7);
+        opacity: 0.5;
+    }
+
+    50% {
+        transform: scale(1.35);
+        opacity: 1;
+    }
+}
+
+
+/* Anéis */
+
+@keyframes nexusRingRotate {
+
+    from {
+        transform:
+            translate(-50%, -50%) rotate(0deg);
+    }
+
+    to {
+        transform:
+            translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+
+@keyframes nexusRingRotateReverse {
+
+    from {
+        transform:
+            translate(-50%, -50%) rotate(360deg);
+    }
+
+    to {
+        transform:
+            translate(-50%, -50%) rotate(0deg);
+    }
+}
+
+
+/* Pulsos */
+
+@keyframes nexusPulse {
+
+    0% {
+        transform:
+            translate(-50%, -50%) scale(0.2);
+
+        opacity: 0;
+    }
+
+    12% {
+        opacity: 0.9;
+    }
+
+    100% {
+        transform:
+            translate(-50%, -50%) scale(4.5);
+
+        opacity: 0;
+    }
+}
+
+
+/* Rede */
+
+@keyframes nexusNetworkNode {
+
+    0%,
+    100% {
+        transform: scale(0.65);
+        opacity: 0.35;
+    }
+
+    50% {
+        transform: scale(1.35);
+        opacity: 1;
+    }
+}
+
+
+/* Órbitas */
+
+@keyframes nexusOrbit1 {
+
+    from {
+        transform:
+            translate(-50%, -50%) rotate(0deg);
+    }
+
+    to {
+        transform:
+            translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+
+@keyframes nexusOrbit2 {
+
+    from {
+        transform:
+            translate(-50%, -50%) rotate(60deg);
+    }
+
+    to {
+        transform:
+            translate(-50%, -50%) rotate(420deg);
+    }
+}
+
+
+@keyframes nexusOrbit3 {
+
+    from {
+        transform:
+            translate(-50%, -50%) rotate(-55deg);
+    }
+
+    to {
+        transform:
+            translate(-50%, -50%) rotate(-415deg);
+    }
+}
+
+
+/* Fluxo de dados */
+
+@keyframes nexusDataTravel {
+
+    0% {
+        left: -40px;
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    90% {
+        opacity: 0.8;
+    }
+
+    100% {
+        left: 100%;
+        opacity: 0;
+    }
+}
+
+
+@keyframes nexusCircuitPulse {
+
+    0%,
+    100% {
+        opacity: 0.25;
+        transform: scale(0.65);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.4);
+    }
+}
+
+
+/* Nós de dados */
+
+@keyframes nexusDataNodePulse {
+
+    0%,
+    100% {
+        opacity: 0.12;
+        transform: scale(0.65);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.25);
+    }
+}
+
+
+/* Partículas */
+
+@keyframes nexusParticleFloat {
+
+    0% {
+        transform:
+            translateY(35px) translateX(0) scale(0);
+
+        opacity: 0;
+    }
+
+    20% {
+        opacity: 0.7;
+    }
+
+    50% {
+        transform:
+            translateY(-15px) translateX(8px) scale(1);
+
+        opacity: 1;
+    }
+
+    80% {
+        opacity: 0.45;
+    }
+
+    100% {
+        transform:
+            translateY(-65px) translateX(-8px) scale(0);
+
+        opacity: 0;
+    }
+}
+
+
+/* Ondas */
+
+@keyframes nexusWave {
+
+    0% {
+        transform:
+            translate(-50%, -50%) scale(0.2);
+
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 0.65;
+    }
+
+    100% {
+        transform:
+            translate(-50%, -50%) scale(5);
+
+        opacity: 0;
+    }
+}
+
+
+/* Scanner */
+
+@keyframes nexusScanner {
+
+    0% {
+        top: -5%;
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.9;
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        top: 105%;
+        opacity: 0;
+    }
+}
+
+
+/* Flash */
+
+@keyframes nexusSyncFlash {
+
+    0%,
+    88%,
+    100% {
+        opacity: 0;
+    }
+
+    91% {
+        opacity: 0.7;
+    }
+
+    93% {
+        opacity: 0;
+    }
+}
+
+
+/* Reflexo */
+
+@keyframes nexusLightSweep {
+
+    0% {
+        left: -70%;
+        opacity: 0;
+    }
+
+    15% {
+        opacity: 0.65;
+    }
+
+    45% {
+        opacity: 0.3;
+    }
+
+    75% {
+        opacity: 0;
+    }
+
+    100% {
+        left: 135%;
+        opacity: 0;
+    }
+}
+
+
+/* Borda */
+
+@keyframes nexusBorderPulse {
+
+    0%,
+    100% {
+        border-color:
+            rgba(0, 191, 255, 0.25);
+
+        box-shadow:
+            inset 0 0 10px rgba(0, 191, 255, 0.05),
+            0 0 5px rgba(0, 191, 255, 0.08);
+    }
+
+    50% {
+        border-color:
+            rgba(77, 234, 255, 0.75);
+
+        box-shadow:
+            inset 0 0 25px rgba(0, 191, 255, 0.15),
+            0 0 20px rgba(0, 191, 255, 0.3);
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVIDADE
+========================================================= */
+
+@media (max-width: 900px) {
+
+    .nexus-connection-rings .connection-ring-4 {
+        width: 500px;
+        height: 500px;
+    }
+
+    .nexus-orbit.orbit-3 {
+        width: 450px;
+        height: 210px;
+    }
+
+    .nexus-network-line {
+        opacity: 0.25;
+    }
+}
+
+
+@media (max-width: 600px) {
+
+    .nexus-core {
+        width: 120px;
+        height: 120px;
+    }
+
+    .nexus-core-energy {
+        width: 52px;
+        height: 52px;
+    }
+
+    .nexus-core-ring.ring-1 {
+        width: 80px;
+        height: 80px;
+    }
+
+    .nexus-core-ring.ring-2 {
+        width: 100px;
+        height: 100px;
+    }
+
+    .nexus-core-ring.ring-3 {
+        width: 125px;
+        height: 125px;
+    }
+
+    .connection-ring-3 {
+        width: 350px;
+        height: 350px;
+    }
+
+    .connection-ring-4 {
+        width: 430px;
+        height: 430px;
+    }
+
+    .nexus-circuit {
+        opacity: 0.35;
+    }
+
+    .nexus-radial-connections {
+        opacity: 0.45;
+    }
+
+    .nexus-network {
+        opacity: 0.6;
+    }
+}
+
+
+/* =========================================================
+   REDUÇÃO DE MOVIMENTO
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .nexus-effect *,
+    .nexus-effect::before,
+    .nexus-effect::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
 }

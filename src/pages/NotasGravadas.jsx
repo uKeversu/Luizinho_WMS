@@ -1413,7 +1413,7 @@ function NotasGravadas() {
                                                                     navigate("/Kanban", {
                                                                         state: {
                                                                             openModal: true,
-                                                                            titulo: `NF ${nota.numero + " - " + nota.serie || "" }`,
+                                                                            titulo: `NF ${nota.numero + " - " + nota.serie || ""}`,
                                                                             focarObservacao: true
                                                                         }
                                                                     });
