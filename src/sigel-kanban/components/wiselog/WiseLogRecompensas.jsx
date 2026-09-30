@@ -1,4 +1,3 @@
-
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
@@ -45,36 +44,51 @@ function getToken() {
 }
 
 
-async function apiRequest(path, options = {}) {
+function getCurrentDateString() {
+    const now = new Date();
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+}
+
+
+function apiRequest(path, options = {}) {
     const token = getToken();
 
-    const response = await fetch(`${API_BASE_URL}${path}`, {
+    return fetch(`${API_BASE_URL}${path}`, {
         ...options,
         headers: {
             "Content-Type": "application/json",
             "X-Auth-Token": token,
             ...(options.headers || {}),
         },
+    }).then(async (response) => {
+        const contentType =
+            response.headers.get("content-type") || "";
+
+        const result = contentType.includes("application/json")
+            ? await response.json()
+            : await response.text();
+
+        if (!response.ok) {
+            const message =
+                typeof result === "object"
+                    ? result?.message ||
+                    result?.erro ||
+                    result?.error
+                    : result;
+
+            throw new Error(
+                message ||
+                `Erro HTTP ${response.status}.`,
+            );
+        }
+
+        return result;
     });
-
-    const contentType = response.headers.get("content-type") || "";
-
-    const result = contentType.includes("application/json")
-        ? await response.json()
-        : await response.text();
-
-    if (!response.ok) {
-        const message =
-            typeof result === "object"
-                ? result?.message || result?.erro || result?.error
-                : result;
-
-        throw new Error(
-            message || `Erro HTTP ${response.status}.`,
-        );
-    }
-
-    return result;
 }
 
 
@@ -190,6 +204,20 @@ function formatDate(value) {
 }
 
 
+function formatCurrency(value) {
+    const numericValue = Number(value);
+
+    if (!Number.isFinite(numericValue)) {
+        return "R$ 0,00";
+    }
+
+    return numericValue.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+    });
+}
+
+
 const EMPTY_DELIVERY_FORM = {
     tipo_oleo: "",
     observacao: "",
@@ -199,11 +227,27 @@ const EMPTY_DELIVERY_FORM = {
 export default function WiseLogRecompensas({ notify }) {
     const [rewards, setRewards] = useState([]);
 
-    const [statusFilter, setStatusFilter] = useState("TODOS");
+    const [statusFilter, setStatusFilter] =
+        useState("TODOS");
+
+    /*
+     * Data usada como referência para a semana.
+     *
+     * Exemplo:
+     * 2026-09-22
+     *
+     * O backend transforma isso em:
+     * segunda 22/09
+     * até sexta 26/09
+     */
+    const [selectedWeekDate, setSelectedWeekDate] =
+        useState(getCurrentDateString());
 
     const [loading, setLoading] = useState(true);
-    const [generating, setGenerating] = useState(false);
-    const [processingId, setProcessingId] = useState("");
+    const [generating, setGenerating] =
+        useState(false);
+    const [processingId, setProcessingId] =
+        useState("");
 
     const [error, setError] = useState("");
 
@@ -217,24 +261,40 @@ export default function WiseLogRecompensas({ notify }) {
         useState(EMPTY_DELIVERY_FORM);
 
 
+    /*
+     * Carrega as recompensas da semana selecionada.
+     */
     const loadRewards = useCallback(async () => {
         setLoading(true);
         setError("");
 
         try {
-            const query =
-                statusFilter === "TODOS"
-                    ? ""
-                    : `?status=${encodeURIComponent(statusFilter)}`;
+            const params = new URLSearchParams();
 
-            const result = await apiRequest(
-                `/api/wiselog/recompensas${query}`,
+            /*
+             * O backend recebe semana_inicio e calcula
+             * automaticamente a segunda e sexta daquela semana.
+             */
+            params.set(
+                "semana_inicio",
+                selectedWeekDate,
             );
 
-            const extractedRewards = extractList(result);
+            if (statusFilter !== "TODOS") {
+                params.set(
+                    "status",
+                    statusFilter,
+                );
+            }
+
+            const result = await apiRequest(
+                `/api/wiselog/recompensas?${params.toString()}`,
+            );
+
+            const extractedRewards =
+                extractList(result);
 
             setRewards(extractedRewards);
-
         } catch (requestError) {
             const message =
                 requestError?.message ||
@@ -248,6 +308,7 @@ export default function WiseLogRecompensas({ notify }) {
         }
     }, [
         notify,
+        selectedWeekDate,
         statusFilter,
     ]);
 
@@ -257,6 +318,10 @@ export default function WiseLogRecompensas({ notify }) {
     }, [loadRewards]);
 
 
+    /*
+     * Quantidade de recompensas pendentes
+     * dentro da semana selecionada.
+     */
     const pendingRewards = useMemo(() => {
         if (!Array.isArray(rewards)) {
             return 0;
@@ -277,29 +342,48 @@ export default function WiseLogRecompensas({ notify }) {
         }).length;
     }, [rewards]);
 
-    // Extrai dia atual para gerar recompensa
-    function getCurrentDateString() {
-        const now = new Date();
 
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, "0");
-        const day = String(now.getDate()).padStart(2, "0");
-
-        return `${year}-${month}-${day}`;
-    }
-
+    /*
+     * Gera recompensas para todos os motoboys
+     * elegíveis da semana selecionada.
+     */
     const handleGenerateRewards = async () => {
+        if (!selectedWeekDate) {
+            notify?.(
+                "Selecione uma data para a semana.",
+                "warning",
+            );
+
+            return;
+        }
+
+        /*
+         * Não permite semana futura.
+         *
+         * A comparação é feita usando a data YYYY-MM-DD
+         * diretamente para evitar problemas de timezone.
+         */
+        const today = getCurrentDateString();
+
+        if (selectedWeekDate > today) {
+            notify?.(
+                "Não é possível gerar recompensa para uma semana futura.",
+                "warning",
+            );
+
+            return;
+        }
+
         setGenerating(true);
 
         try {
-            const currentDate = getCurrentDateString();
-
             /*
-             * Busca os motoboys e a situação da semana atual.
-             * O backend espera o parâmetro ?data=YYYY-MM-DD.
+             * Busca os motoboys da semana selecionada.
              */
             const weekResult = await apiRequest(
-                `/api/wiselog/semana?data=${currentDate}`,
+                `/api/wiselog/semana?data=${encodeURIComponent(
+                    selectedWeekDate,
+                )}`,
             );
 
             const motoboys = Array.isArray(
@@ -308,13 +392,22 @@ export default function WiseLogRecompensas({ notify }) {
                 ? weekResult.dados.motoboys
                 : [];
 
-            const eligibleMotoboys = motoboys.filter(
-                (motoboy) => motoboy?.elegivel === true,
-            );
+            /*
+             * O backend já calcula:
+             *
+             * dias_validados >= 5
+             *
+             * e retorna elegivel=true.
+             */
+            const eligibleMotoboys =
+                motoboys.filter(
+                    (motoboy) =>
+                        motoboy?.elegivel === true,
+                );
 
             if (eligibleMotoboys.length === 0) {
                 notify?.(
-                    "Nenhum motoboy elegível para gerar recompensa.",
+                    "Nenhum motoboy elegível para gerar recompensa nesta semana.",
                     "info",
                 );
 
@@ -322,6 +415,7 @@ export default function WiseLogRecompensas({ notify }) {
             }
 
             let processedCount = 0;
+            let alreadyExistsCount = 0;
             let errorCount = 0;
 
             for (const motoboy of eligibleMotoboys) {
@@ -329,7 +423,10 @@ export default function WiseLogRecompensas({ notify }) {
                     motoboy?.motoboy_id,
                 );
 
-                if (!Number.isInteger(motoboyId) || motoboyId <= 0) {
+                if (
+                    !Number.isInteger(motoboyId) ||
+                    motoboyId <= 0
+                ) {
                     console.warn(
                         "[WiseLog] Motoboy com ID inválido:",
                         motoboy,
@@ -344,23 +441,35 @@ export default function WiseLogRecompensas({ notify }) {
                         "[WiseLog] Gerando recompensa:",
                         {
                             motoboy_id: motoboyId,
-                            data_referencia: currentDate,
+                            data_referencia:
+                                selectedWeekDate,
                             nome: motoboy?.nome,
+                            dias_validados:
+                                motoboy?.dias_validados,
                         },
                     );
 
-                    await apiRequest(
+                    const result = await apiRequest(
                         "/api/wiselog/recompensas/gerar",
                         {
                             method: "POST",
                             body: JSON.stringify({
-                                motoboy_id: motoboyId,
-                                data_referencia: currentDate,
+                                motoboy_id:
+                                    motoboyId,
+                                data_referencia:
+                                    selectedWeekDate,
                             }),
                         },
                     );
 
-                    processedCount += 1;
+                    if (
+                        result?.dados?.ja_existia === true ||
+                        result?.ja_existia === true
+                    ) {
+                        alreadyExistsCount += 1;
+                    } else {
+                        processedCount += 1;
+                    }
                 } catch (requestError) {
                     errorCount += 1;
 
@@ -371,18 +480,41 @@ export default function WiseLogRecompensas({ notify }) {
                 }
             }
 
-            if (errorCount > 0) {
-                notify?.(
-                    `${processedCount} recompensa(s) processada(s) e ${errorCount} com erro.`,
-                    "warning",
-                );
-            } else {
-                notify?.(
-                    `${processedCount} recompensa(s) processada(s) com sucesso.`,
-                    "success",
+            /*
+             * Mensagem final.
+             */
+            const messages = [];
+
+            if (processedCount > 0) {
+                messages.push(
+                    `${processedCount} recompensa(s) gerada(s)`,
                 );
             }
 
+            if (alreadyExistsCount > 0) {
+                messages.push(
+                    `${alreadyExistsCount} já existente(s)`,
+                );
+            }
+
+            if (errorCount > 0) {
+                messages.push(
+                    `${errorCount} com erro`,
+                );
+            }
+
+            if (messages.length > 0) {
+                notify?.(
+                    `${messages.join(", ")}.`,
+                    errorCount > 0
+                        ? "warning"
+                        : "success",
+                );
+            }
+
+            /*
+             * Atualiza a tabela da semana selecionada.
+             */
             await loadRewards();
         } catch (requestError) {
             notify?.(
@@ -398,7 +530,9 @@ export default function WiseLogRecompensas({ notify }) {
 
     const openDeliveryDialog = (reward) => {
         setSelectedReward(reward);
-        setDeliveryForm(EMPTY_DELIVERY_FORM);
+        setDeliveryForm(
+            EMPTY_DELIVERY_FORM,
+        );
         setDeliveryDialogOpen(true);
     };
 
@@ -410,139 +544,145 @@ export default function WiseLogRecompensas({ notify }) {
 
         setDeliveryDialogOpen(false);
         setSelectedReward(null);
-        setDeliveryForm(EMPTY_DELIVERY_FORM);
+        setDeliveryForm(
+            EMPTY_DELIVERY_FORM,
+        );
     };
 
 
-    const handleDeliveryChange = (field, value) => {
+    const handleDeliveryChange = (
+        field,
+        value,
+    ) => {
         setDeliveryForm((current) => ({
             ...current,
             [field]: value,
         }));
     };
 
-    // Extrai valor da recompensa em dinheiro
-    function formatCurrency(value) {
-        const numericValue = Number(value);
 
-        if (!Number.isFinite(numericValue)) {
-            return "R$ 0,00";
-        }
+    const handleConfirmDelivery =
+        async () => {
+            const rewardId =
+                getRewardId(selectedReward);
 
-        return numericValue.toLocaleString("pt-BR", {
-            style: "currency",
-            currency: "BRL",
-        });
-    }
+            if (!rewardId) {
+                notify?.(
+                    "Recompensa sem identificador válido.",
+                    "error",
+                );
 
-    const handleConfirmDelivery = async () => {
-        const rewardId = getRewardId(selectedReward);
+                return;
+            }
 
-        if (!rewardId) {
-            notify?.(
-                "Recompensa sem identificador válido.",
-                "error",
+            if (!deliveryForm.tipo_oleo) {
+                notify?.(
+                    "Selecione o tipo de óleo entregue.",
+                    "warning",
+                );
+
+                return;
+            }
+
+            setProcessingId(
+                String(rewardId),
             );
 
-            return;
-        }
+            try {
+                await apiRequest(
+                    `/api/wiselog/recompensas/${rewardId}/entregar`,
+                    {
+                        method: "PATCH",
+                        body: JSON.stringify({
+                            oleo_descricao:
+                                deliveryForm.tipo_oleo,
+                            observacao:
+                                deliveryForm.observacao.trim() ||
+                                null,
+                        }),
+                    },
+                );
 
-        if (!deliveryForm.tipo_oleo) {
-            notify?.(
-                "Selecione o tipo de óleo entregue.",
-                "warning",
+                notify?.(
+                    "Recompensa registrada como entregue.",
+                    "success",
+                );
+
+                closeDeliveryDialog();
+
+                await loadRewards();
+            } catch (requestError) {
+                notify?.(
+                    requestError?.message ||
+                    "Não foi possível registrar a entrega.",
+                    "error",
+                );
+            } finally {
+                setProcessingId("");
+            }
+        };
+
+
+    const handleCancelReward =
+        async (reward) => {
+            const rewardId =
+                getRewardId(reward);
+
+            if (!rewardId) {
+                notify?.(
+                    "Recompensa sem identificador válido.",
+                    "error",
+                );
+
+                return;
+            }
+
+            const confirmed =
+                window.confirm(
+                    "Deseja realmente cancelar esta recompensa?",
+                );
+
+            if (!confirmed) {
+                return;
+            }
+
+            setProcessingId(
+                String(rewardId),
             );
 
-            return;
-        }
+            try {
+                await apiRequest(
+                    `/api/wiselog/recompensas/${rewardId}/cancelar`,
+                    {
+                        method: "PATCH",
+                        body: JSON.stringify({
+                            observacao:
+                                "Cancelada",
+                        }),
+                    },
+                );
 
-        setProcessingId(String(rewardId));
+                notify?.(
+                    "Recompensa cancelada.",
+                    "success",
+                );
 
-        try {
-            await apiRequest(
-                `/api/wiselog/recompensas/${rewardId}/entregar`,
-                {
-                    method: "PATCH",
-                    body: JSON.stringify({
-                        oleo_descricao: deliveryForm.tipo_oleo,
-                        observacao:
-                            deliveryForm.observacao.trim() ||
-                            null,
-                    }),
-                },
-            );
-
-            notify?.(
-                "Recompensa registrada como entregue.",
-                "success",
-            );
-
-            closeDeliveryDialog();
-            await loadRewards();
-        } catch (requestError) {
-            notify?.(
-                requestError?.message ||
-                "Não foi possível registrar a entrega.",
-                "error",
-            );
-        } finally {
-            setProcessingId("");
-        }
-    };
+                await loadRewards();
+            } catch (requestError) {
+                notify?.(
+                    requestError?.message ||
+                    "Não foi possível cancelar a recompensa.",
+                    "error",
+                );
+            } finally {
+                setProcessingId("");
+            }
+        };
 
 
-    const handleCancelReward = async (reward) => {
-        const rewardId = getRewardId(reward);
-
-        if (!rewardId) {
-            notify?.(
-                "Recompensa sem identificador válido.",
-                "error",
-            );
-
-            return;
-        }
-
-        const confirmed = window.confirm(
-            "Deseja realmente cancelar esta recompensa?",
-        );
-
-        if (!confirmed) {
-            return;
-        }
-
-        setProcessingId(String(rewardId));
-
-        try {
-            await apiRequest(
-                `/api/wiselog/recompensas/${rewardId}/cancelar`,
-                {
-                    method: "PATCH",
-                    body: JSON.stringify({
-                        observacao: `Cancelada`
-                    }),
-                },
-            );
-
-            notify?.(
-                "Recompensa cancelada.",
-                "success",
-            );
-
-            await loadRewards();
-        } catch (requestError) {
-            notify?.(
-                requestError?.message ||
-                "Não foi possível cancelar a recompensa.",
-                "error",
-            );
-        } finally {
-            setProcessingId("");
-        }
-    };
-
-
-    const canProcessReward = (reward) => {
+    const canProcessReward = (
+        reward,
+    ) => {
         const status = String(
             reward?.status || "",
         ).toUpperCase();
@@ -565,7 +705,8 @@ export default function WiseLogRecompensas({ notify }) {
                     p: 2,
                     mb: 2,
                     borderRadius: 3,
-                    bgcolor: 'background.default'
+                    bgcolor:
+                        "background.default",
                 }}
             >
                 <Stack
@@ -592,15 +733,19 @@ export default function WiseLogRecompensas({ notify }) {
                             variant="body2"
                             color="text.secondary"
                         >
-                            Controle das recompensas de R$ 50,00
-                            e 1 litro de óleo.
+                            Controle das recompensas de
+                            R$ 50,00 e 1 litro de óleo.
                         </Typography>
                     </Box>
 
                     <Button
                         variant="contained"
-                        startIcon={<CardGiftcardOutlined />}
-                        onClick={handleGenerateRewards}
+                        startIcon={
+                            <CardGiftcardOutlined />
+                        }
+                        onClick={
+                            handleGenerateRewards
+                        }
                         disabled={generating}
                     >
                         {generating
@@ -609,7 +754,9 @@ export default function WiseLogRecompensas({ notify }) {
                     </Button>
                 </Stack>
 
-                <Divider sx={{ my: 2 }} />
+                <Divider
+                    sx={{ my: 2 }}
+                />
 
                 <Stack
                     direction={{
@@ -623,40 +770,83 @@ export default function WiseLogRecompensas({ notify }) {
                     }}
                     spacing={2}
                 >
-                    <Select
-                        size="small"
-                        value={statusFilter}
-                        onChange={(event) =>
-                            setStatusFilter(event.target.value)
-                        }
-                        sx={{
-                            minWidth: 180,
+                    <Stack
+                        direction={{
+                            xs: "column",
+                            sm: "row",
                         }}
-                        MenuProps={{
-                            PaperProps: {
-                                sx: {
-                                    bgcolor: "background.default",
-                                    color: "text.primary",
-                                },
-                            },
-                        }}
+                        spacing={1}
                     >
-                        <MenuItem value="TODOS">
-                            Todos os status
-                        </MenuItem>
+                        <TextField
+                            size="small"
+                            type="date"
+                            label="Semana de referência"
+                            value={
+                                selectedWeekDate
+                            }
+                            onChange={(
+                                event,
+                            ) =>
+                                setSelectedWeekDate(
+                                    event.target
+                                        .value,
+                                )
+                            }
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                            inputProps={{
+                                max: getCurrentDateString(),
+                            }}
+                            sx={{
+                                minWidth: 200,
+                            }}
+                        />
 
-                        <MenuItem value="ELEGIVEL">
-                            Pendentes
-                        </MenuItem>
+                        <Select
+                            size="small"
+                            value={
+                                statusFilter
+                            }
+                            onChange={(
+                                event,
+                            ) =>
+                                setStatusFilter(
+                                    event.target
+                                        .value,
+                                )
+                            }
+                            sx={{
+                                minWidth: 180,
+                            }}
+                            MenuProps={{
+                                PaperProps: {
+                                    sx: {
+                                        bgcolor:
+                                            "background.default",
+                                        color:
+                                            "text.primary",
+                                    },
+                                },
+                            }}
+                        >
+                            <MenuItem value="TODOS">
+                                Todos os status
+                            </MenuItem>
 
-                        <MenuItem value="ENTREGUE">
-                            Entregues
-                        </MenuItem>
+                            <MenuItem value="ELEGIVEL">
+                                Pendentes
+                            </MenuItem>
 
-                        <MenuItem value="CANCELADA">
-                            Canceladas
-                        </MenuItem>
-                    </Select>
+                            <MenuItem value="ENTREGUE">
+                                Entregues
+                            </MenuItem>
+
+                            <MenuItem value="CANCELADA">
+                                Canceladas
+                            </MenuItem>
+                        </Select>
+                    </Stack>
 
                     <Stack
                         direction="row"
@@ -667,14 +857,21 @@ export default function WiseLogRecompensas({ notify }) {
                             color="warning"
                             size="small"
                             label={`${pendingRewards} pendente(s)`}
-                            sx={{ color: 'primary.branco' }}
+                            sx={{
+                                color:
+                                    "primary.branco",
+                            }}
                         />
 
                         <Tooltip title="Atualizar">
                             <span>
                                 <IconButton
-                                    onClick={loadRewards}
-                                    disabled={loading}
+                                    onClick={
+                                        loadRewards
+                                    }
+                                    disabled={
+                                        loading
+                                    }
                                 >
                                     <RefreshOutlined />
                                 </IconButton>
@@ -682,6 +879,17 @@ export default function WiseLogRecompensas({ notify }) {
                         </Tooltip>
                     </Stack>
                 </Stack>
+
+                <Box sx={{ mt: 1 }}>
+                    <Typography
+                        variant="caption"
+                        color="text.secondary"
+                    >
+                        A data selecionada é usada como
+                        referência para a semana. O sistema
+                        considera segunda a sexta-feira.
+                    </Typography>
+                </Box>
             </Paper>
 
 
@@ -702,14 +910,16 @@ export default function WiseLogRecompensas({ notify }) {
                         p: 4,
                         borderRadius: 3,
                         display: "flex",
-                        justifyContent: "center",
+                        justifyContent:
+                            "center",
                     }}
                 >
                     <CircularProgress />
                 </Paper>
             ) : rewards.length === 0 ? (
                 <Alert severity="info">
-                    Nenhuma recompensa encontrada.
+                    Nenhuma recompensa encontrada
+                    para a semana selecionada.
                 </Alert>
             ) : (
                 <TableContainer
@@ -718,7 +928,8 @@ export default function WiseLogRecompensas({ notify }) {
                     sx={{
                         borderRadius: 3,
                         overflowX: "auto",
-                        bgcolor: 'background.default'
+                        bgcolor:
+                            "background.default",
                     }}
                 >
                     <Table
@@ -729,158 +940,219 @@ export default function WiseLogRecompensas({ notify }) {
                         <TableHead>
                             <TableRow>
                                 <TableCell>
-                                    <strong>Motoboy</strong>
+                                    <strong>
+                                        Motoboy
+                                    </strong>
                                 </TableCell>
 
                                 <TableCell>
-                                    <strong>Período</strong>
+                                    <strong>
+                                        Período
+                                    </strong>
                                 </TableCell>
 
                                 <TableCell>
-                                    <strong>Valor</strong>
+                                    <strong>
+                                        Dias
+                                    </strong>
                                 </TableCell>
 
                                 <TableCell>
-                                    <strong>Óleo</strong>
+                                    <strong>
+                                        Valor
+                                    </strong>
                                 </TableCell>
 
                                 <TableCell>
-                                    <strong>Status</strong>
+                                    <strong>
+                                        Óleo
+                                    </strong>
+                                </TableCell>
+
+                                <TableCell>
+                                    <strong>
+                                        Status
+                                    </strong>
                                 </TableCell>
 
                                 <TableCell align="right">
-                                    <strong>Ações</strong>
+                                    <strong>
+                                        Ações
+                                    </strong>
                                 </TableCell>
                             </TableRow>
                         </TableHead>
 
                         <TableBody>
-                            {rewards.map((reward) => {
-                                const rewardId =
-                                    getRewardId(reward);
+                            {rewards.map(
+                                (reward) => {
+                                    const rewardId =
+                                        getRewardId(
+                                            reward,
+                                        );
 
-                                const processing =
-                                    processingId ===
-                                    String(rewardId);
+                                    const processing =
+                                        processingId ===
+                                        String(
+                                            rewardId,
+                                        );
 
-                                const canProcess =
-                                    canProcessReward(reward);
+                                    const canProcess =
+                                        canProcessReward(
+                                            reward,
+                                        );
 
-                                return (
-                                    <TableRow
-                                        key={rewardId}
-                                        hover
-                                    >
-                                        <TableCell>
-                                            <Typography
-                                                variant="body2"
-                                                fontWeight={700}
-                                            >
-                                                {getMotoboyName(
-                                                    reward,
-                                                )}
-                                            </Typography>
-                                        </TableCell>
-
-                                        <TableCell>
-                                            <Typography
-                                                variant="body2"
-                                            >
-                                                {formatDate(
-                                                    reward?.semana_inicio,
-                                                )}
-                                                {" até "}
-                                                {formatDate(
-                                                    reward?.semana_fim,
-                                                )}
-                                            </Typography>
-                                        </TableCell>
-
-                                        <TableCell>
-                                            <Typography
-                                                variant="body2"
-                                                fontWeight={700}
-                                            >
-                                                {formatCurrency(reward?.valor_dinheiro)}
-                                            </Typography>
-                                        </TableCell>
-
-                                        <TableCell>
-                                            {reward?.oleo_descricao || "A definir"}
-                                        </TableCell>
-
-                                        <TableCell>
-                                            <Chip
-                                                size="small"
-                                                color={getStatusColor(
-                                                    reward?.status,
-                                                )}
-                                                label={getStatusLabel(
-                                                    reward?.status,
-                                                )}
-                                                sx={{ color: 'primary.branco' }}
-                                            />
-                                        </TableCell>
-
-                                        <TableCell align="right">
-                                            {canProcess ? (
-                                                <Stack
-                                                    direction="row"
-                                                    justifyContent="flex-end"
-                                                    spacing={0.5}
-                                                >
-                                                    <Tooltip title="Registrar entrega">
-                                                        <span>
-                                                            <IconButton
-                                                                size="small"
-                                                                color="success"
-                                                                disabled={processing}
-                                                                onClick={() =>
-                                                                    openDeliveryDialog(
-                                                                        reward,
-                                                                    )
-                                                                }
-                                                            >
-                                                                {processing ? (
-                                                                    <CircularProgress
-                                                                        size={18}
-                                                                    />
-                                                                ) : (
-                                                                    <CheckCircleOutlined fontSize="small" />
-                                                                )}
-                                                            </IconButton>
-                                                        </span>
-                                                    </Tooltip>
-
-                                                    <Tooltip title="Cancelar recompensa">
-                                                        <span>
-                                                            <IconButton
-                                                                size="small"
-                                                                color="error"
-                                                                disabled={processing}
-                                                                onClick={() =>
-                                                                    handleCancelReward(
-                                                                        reward,
-                                                                    )
-                                                                }
-                                                            >
-                                                                <CloseOutlined fontSize="small" />
-                                                            </IconButton>
-                                                        </span>
-                                                    </Tooltip>
-                                                </Stack>
-                                            ) : (
+                                    return (
+                                        <TableRow
+                                            key={
+                                                rewardId
+                                            }
+                                            hover
+                                        >
+                                            <TableCell>
                                                 <Typography
-                                                    variant="caption"
-                                                    color="text.secondary"
+                                                    variant="body2"
+                                                    fontWeight={
+                                                        700
+                                                    }
                                                 >
-                                                    Sem ações
+                                                    {getMotoboyName(
+                                                        reward,
+                                                    )}
                                                 </Typography>
-                                            )}
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })}
+                                            </TableCell>
+
+                                            <TableCell>
+                                                <Typography variant="body2">
+                                                    {formatDate(
+                                                        reward?.semana_inicio,
+                                                    )}
+                                                    {" até "}
+                                                    {formatDate(
+                                                        reward?.semana_fim,
+                                                    )}
+                                                </Typography>
+                                            </TableCell>
+
+                                            <TableCell>
+                                                <Chip
+                                                    size="small"
+                                                    label={`${reward?.dias_validados ?? 0}/5`}
+                                                    color={
+                                                        Number(
+                                                            reward?.dias_validados ||
+                                                            0,
+                                                        ) >=
+                                                            5
+                                                            ? "success"
+                                                            : "warning"
+                                                    }
+                                                    sx={{color: 'primary.branco'}}
+                                                />
+                                            </TableCell>
+
+                                            <TableCell>
+                                                <Typography
+                                                    variant="body2"
+                                                    fontWeight={
+                                                        700
+                                                    }
+                                                >
+                                                    {formatCurrency(
+                                                        reward?.valor_dinheiro,
+                                                    )}
+                                                </Typography>
+                                            </TableCell>
+
+                                            <TableCell>
+                                                {reward?.oleo_descricao ||
+                                                    "A definir"}
+                                            </TableCell>
+
+                                            <TableCell>
+                                                <Chip
+                                                    size="small"
+                                                    color={getStatusColor(
+                                                        reward?.status,
+                                                    )}
+                                                    label={getStatusLabel(
+                                                        reward?.status,
+                                                    )}
+                                                    sx={{
+                                                        color:
+                                                            "primary.branco",
+                                                    }}
+                                                />
+                                            </TableCell>
+
+                                            <TableCell align="right">
+                                                {canProcess ? (
+                                                    <Stack
+                                                        direction="row"
+                                                        justifyContent="flex-end"
+                                                        spacing={
+                                                            0.5
+                                                        }
+                                                    >
+                                                        <Tooltip title="Registrar entrega">
+                                                            <span>
+                                                                <IconButton
+                                                                    size="small"
+                                                                    color="success"
+                                                                    disabled={
+                                                                        processing
+                                                                    }
+                                                                    onClick={() =>
+                                                                        openDeliveryDialog(
+                                                                            reward,
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    {processing ? (
+                                                                        <CircularProgress
+                                                                            size={
+                                                                                18
+                                                                            }
+                                                                        />
+                                                                    ) : (
+                                                                        <CheckCircleOutlined fontSize="small" />
+                                                                    )}
+                                                                </IconButton>
+                                                            </span>
+                                                        </Tooltip>
+
+                                                        <Tooltip title="Cancelar recompensa">
+                                                            <span>
+                                                                <IconButton
+                                                                    size="small"
+                                                                    color="error"
+                                                                    disabled={
+                                                                        processing
+                                                                    }
+                                                                    onClick={() =>
+                                                                        handleCancelReward(
+                                                                            reward,
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    <CloseOutlined fontSize="small" />
+                                                                </IconButton>
+                                                            </span>
+                                                        </Tooltip>
+                                                    </Stack>
+                                                ) : (
+                                                    <Typography
+                                                        variant="caption"
+                                                        color="text.secondary"
+                                                    >
+                                                        Sem ações
+                                                    </Typography>
+                                                )}
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                },
+                            )}
                         </TableBody>
                     </Table>
                 </TableContainer>
@@ -888,18 +1160,25 @@ export default function WiseLogRecompensas({ notify }) {
 
 
             <Dialog
-                open={deliveryDialogOpen}
-                onClose={closeDeliveryDialog}
+                open={
+                    deliveryDialogOpen
+                }
+                onClose={
+                    closeDeliveryDialog
+                }
                 fullWidth
                 maxWidth="sm"
                 slotProps={{
                     paper: {
                         sx: {
-                            bgcolor: "background.default",
-                            color: "text.primary",
+                            bgcolor:
+                                "background.default",
+                            color:
+                                "text.primary",
                             borderRadius: 3,
                             border: "1px solid",
-                            borderColor: "divider",
+                            borderColor:
+                                "divider",
                         },
                     },
                 }}
@@ -914,9 +1193,10 @@ export default function WiseLogRecompensas({ notify }) {
                         sx={{ pt: 1 }}
                     >
                         <Alert severity="info">
-                            Registre o tipo de óleo entregue ao
-                            motoboy junto com a recompensa de
-                            R$ 50,00.
+                            Registre o tipo de óleo
+                            entregue ao motoboy
+                            junto com a recompensa
+                            de R$ 50,00.
                         </Alert>
 
                         <Typography
@@ -926,7 +1206,24 @@ export default function WiseLogRecompensas({ notify }) {
                             Motoboy:{" "}
                             <strong>
                                 {getMotoboyName(
-                                    selectedReward || {},
+                                    selectedReward ||
+                                    {},
+                                )}
+                            </strong>
+                        </Typography>
+
+                        <Typography
+                            variant="body2"
+                            color="text.secondary"
+                        >
+                            Período:{" "}
+                            <strong>
+                                {formatDate(
+                                    selectedReward?.semana_inicio,
+                                )}
+                                {" até "}
+                                {formatDate(
+                                    selectedReward?.semana_fim,
                                 )}
                             </strong>
                         </Typography>
@@ -936,18 +1233,22 @@ export default function WiseLogRecompensas({ notify }) {
                             fullWidth
                             required
                             label="Tipo de óleo"
-                            value={deliveryForm.tipo_oleo}
+                            value={
+                                deliveryForm.tipo_oleo
+                            }
                             onChange={(event) =>
                                 handleDeliveryChange(
                                     "tipo_oleo",
-                                    event.target.value,
+                                    event.target
+                                        .value,
                                 )
                             }
                             SelectProps={{
                                 MenuProps: {
                                     PaperProps: {
                                         sx: {
-                                            bgcolor: 'background.default',
+                                            bgcolor:
+                                                "background.default",
                                         },
                                     },
                                 },
@@ -957,16 +1258,8 @@ export default function WiseLogRecompensas({ notify }) {
                                 5W30
                             </MenuItem>
 
-                            <MenuItem value="10W40">
-                                10W40
-                            </MenuItem>
-
-                            <MenuItem value="15W40">
-                                15W40
-                            </MenuItem>
-
-                            <MenuItem value="20W50">
-                                20W50
+                            <MenuItem value="10W30">
+                                10W30
                             </MenuItem>
 
                             <MenuItem value="OUTRO">
@@ -984,11 +1277,14 @@ export default function WiseLogRecompensas({ notify }) {
                             minRows={2}
                             label="Observação"
                             placeholder="Observações sobre a entrega..."
-                            value={deliveryForm.observacao}
+                            value={
+                                deliveryForm.observacao
+                            }
                             onChange={(event) =>
                                 handleDeliveryChange(
                                     "observacao",
-                                    event.target.value,
+                                    event.target
+                                        .value,
                                 )
                             }
                         />
@@ -997,8 +1293,12 @@ export default function WiseLogRecompensas({ notify }) {
 
                 <DialogActions>
                     <Button
-                        onClick={closeDeliveryDialog}
-                        disabled={Boolean(processingId)}
+                        onClick={
+                            closeDeliveryDialog
+                        }
+                        disabled={Boolean(
+                            processingId,
+                        )}
                         color="error"
                     >
                         Cancelar
@@ -1007,9 +1307,15 @@ export default function WiseLogRecompensas({ notify }) {
                     <Button
                         variant="contained"
                         color="success"
-                        startIcon={<LocalShippingOutlined />}
-                        onClick={handleConfirmDelivery}
-                        disabled={Boolean(processingId)}
+                        startIcon={
+                            <LocalShippingOutlined />
+                        }
+                        onClick={
+                            handleConfirmDelivery
+                        }
+                        disabled={Boolean(
+                            processingId,
+                        )}
                     >
                         {processingId
                             ? "Salvando..."

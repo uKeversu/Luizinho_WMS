@@ -86,7 +86,7 @@ const SolicitarCorrecaoFab = ({
             return;
         }
 
-        try {
+        try { 
             setEnviando(true);
 
             const response = await fetch(

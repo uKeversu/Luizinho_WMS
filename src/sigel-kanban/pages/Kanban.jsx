@@ -796,6 +796,7 @@ function DetailsDrawer({ task, open, onClose, onEdit, onDelete, onMove, columns,
                                 label={priority.label}
                                 color={priority.color}
                                 size="small"
+                                sx={{ color: 'primary.branco' }}
                             />
 
                             <Chip
