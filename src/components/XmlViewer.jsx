@@ -1367,8 +1367,38 @@ function XmlViewer({ open, onClose, xml, nota = null }) {
         if (!texto) return;
 
         try {
-            await navigator.clipboard.writeText(texto);
-            avisar(`${descricao} copiado para a área de transferência.`);
+            // Tenta primeiro a Clipboard API moderna
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(texto);
+
+                avisar(`${descricao} copiado para a área de transferência.`);
+                return;
+            }
+
+            // Fallback para ambientes HTTP/intranet
+            const textarea = document.createElement("textarea");
+
+            textarea.value = texto;
+            textarea.style.position = "fixed";
+            textarea.style.left = "-9999px";
+            textarea.style.top = "0";
+            textarea.setAttribute("readonly", "");
+
+            document.body.appendChild(textarea);
+
+            textarea.focus();
+            textarea.select();
+            textarea.setSelectionRange(0, textarea.value.length);
+
+            const sucesso = document.execCommand("copy");
+
+            document.body.removeChild(textarea);
+
+            if (sucesso) {
+                avisar(`${descricao} copiado para a área de transferência.`);
+            } else {
+                throw new Error("Não foi possível copiar usando o fallback.");
+            }
         } catch (error) {
             console.error("Erro ao copiar:", error);
             avisar("Não foi possível copiar. Copie manualmente.", "error");

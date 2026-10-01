@@ -154,7 +154,11 @@ function App() {
 
           <Route
             path="/NotasEmTransito"
-            element={<NotasEmTransito />}
+            element={
+              <ProtectedRoute permissao="pode_finalizar_nfe">
+                <NotasEmTransito />
+              </ProtectedRoute>
+            }
           />
 
           <Route
