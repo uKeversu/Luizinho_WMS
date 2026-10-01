@@ -19,6 +19,9 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled';
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 
 const DEFAULT_API_BASE = "http://192.168.1.185:8077";
 
@@ -310,7 +313,7 @@ export default function Notificacoes({ apiBase, token, userInfo }) {
     };
 
     const abrirNotificacao = async (notificacao) => {
-        if (!notificacao?.nfe_id) return;
+        if (!notificacao) return;
 
         try {
             if (!notificacao.lida) {
@@ -318,7 +321,28 @@ export default function Notificacoes({ apiBase, token, userInfo }) {
             }
 
             fecharNotificacoes();
-            navigate(`/AtualizarCean?nota_id=${notificacao.nfe_id}`);
+
+            // RECEBIMENTO
+            if (notificacao.tipo === "RECEBIMENTO") {
+                navigate("/PainelGerencial");
+                return;
+            }
+
+            // KANBAN
+            if (
+                notificacao.tipo === "KANBAN_TAREFA_COMPARTILHADA" ||
+                notificacao.tipo === "KANBAN_TAREFA_ATRASADA"
+            ) {
+                navigate("/Kanban");
+                return;
+            }
+
+            // Corrigir NFe
+            if (notificacao.nfe_id) {
+                navigate(
+                    `/AtualizarCean?nota_id=${notificacao.nfe_id}`
+                );
+            }
         } catch (error) {
             console.error("Erro ao abrir notificação:", error);
         }
@@ -332,10 +356,25 @@ export default function Notificacoes({ apiBase, token, userInfo }) {
             return;
         }
 
+        // RECEBIMENTO
+        if (notificacao.tipo === "RECEBIMENTO") {
+            await abrirNotificacao(notificacao);
+            return;
+        }
+
+        // KANBAN
+        if (
+            notificacao.tipo === "KANBAN_TAREFA_COMPARTILHADA" ||
+            notificacao.tipo === "KANBAN_TAREFA_ATRASADA"
+        ) {
+            await abrirNotificacao(notificacao);
+            return;
+        }
+
         const textoNotificacao = `
-            ${notificacao.tipo || ""}
-            ${notificacao.titulo || ""}
-            ${notificacao.mensagem || ""}
+        ${notificacao.tipo || ""}
+        ${notificacao.titulo || ""}
+        ${notificacao.mensagem || ""}
         `.toUpperCase();
 
         const ehNotificacaoCorrecao =
@@ -362,11 +401,11 @@ export default function Notificacoes({ apiBase, token, userInfo }) {
 
     const obterIconeNotificacao = (tipo) => {
         switch (tipo) {
-            case "CONFERENCIA_FINALIZADA":
+            case "RECEBIMENTO":
                 return (
-                    <CheckCircleIcon
+                    <LocalShippingIcon
                         sx={{
-                            color: "#4CAF50",
+                            color: "primary.main",
                             fontSize: 22,
                         }}
                     />
@@ -381,6 +420,37 @@ export default function Notificacoes({ apiBase, token, userInfo }) {
                         }}
                     />
                 );
+
+            case "CONFERENCIA_FINALIZADA":
+                return (
+                    <CheckCircleIcon
+                        sx={{
+                            color: "#4CAF50",
+                            fontSize: 22,
+                        }}
+                    />
+                );
+
+            case "KANBAN_TAREFA_COMPARTILHADA":
+                return (
+                    <PeopleAltIcon
+                        sx={{
+                            color: "#00B0FF",
+                            fontSize: 22,
+                        }}
+                    />
+                );
+
+            case "KANBAN_TAREFA_ATRASADA":
+                return (
+                    <AccessTimeFilledIcon
+                        sx={{
+                            color: "#FF5252",
+                            fontSize: 22,
+                        }}
+                    />
+                );
+
 
             default:
                 return (
@@ -557,13 +627,17 @@ export default function Notificacoes({ apiBase, token, userInfo }) {
                                                         )
                                                     }
                                                 >
-                                                    {notificacao.tipo ===
-                                                        "CONFERENCIA_FINALIZADA"
+                                                    {notificacao.tipo === "CONFERENCIA_FINALIZADA"
                                                         ? "Marcar como gravada"
-                                                        : notificacao.tipo ===
-                                                            "SOLICITACAO_CORRECAO_NFE"
+                                                        : notificacao.tipo === "SOLICITACAO_CORRECAO_NFE"
                                                             ? "Corrigir nota"
-                                                            : "Marcar como lida"}
+                                                            : notificacao.tipo === "RECEBIMENTO"
+                                                                ? "Atribuir nota"
+                                                                : notificacao.tipo === "KANBAN_TAREFA_COMPARTILHADA"
+                                                                    ? "Abrir no Kanban"
+                                                                    : notificacao.tipo === "KANBAN_TAREFA_ATRASADA"
+                                                                        ? "Ir para o Kanban"
+                                                                        : "Marcar como lida"}
                                                 </Button>
                                             )}
                                         </Box>
