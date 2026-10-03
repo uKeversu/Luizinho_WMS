@@ -1047,7 +1047,7 @@ export default function WiseLogRecompensas({ notify }) {
                                                             ? "success"
                                                             : "warning"
                                                     }
-                                                    sx={{color: 'primary.branco'}}
+                                                    sx={{ color: 'primary.branco' }}
                                                 />
                                             </TableCell>
 
@@ -1254,12 +1254,12 @@ export default function WiseLogRecompensas({ notify }) {
                                 },
                             }}
                         >
-                            <MenuItem value="5W30">
-                                5W30
-                            </MenuItem>
-
                             <MenuItem value="10W30">
                                 10W30
+                            </MenuItem>
+
+                            <MenuItem value="20W50">
+                                20W50
                             </MenuItem>
 
                             <MenuItem value="OUTRO">
