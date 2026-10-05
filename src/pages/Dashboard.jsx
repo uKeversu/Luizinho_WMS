@@ -329,10 +329,7 @@ function Dashboard({ tipo }) {
                     params.append("razao_social_emitente", valor);
                 }
             }
-
-            console.log("ABA:", aba);
-            console.log("STATUS:", obterFiltroStatus());
-            console.log("BUSCANDO NOTAS DO FUNCIONÁRIO:", obterFiltroFunc());
+            
             console.log("URL:", `${API}/api/notas/listar?${params}`);
 
             const response = await fetch(
@@ -846,10 +843,6 @@ function Dashboard({ tipo }) {
                     total_processados = 0
                 } = data.estatisticas || {};
 
-                console.log("Total processados:", total_processados)
-                console.log("Atualizados:", inseridos)
-                console.log("Erros:", erros)
-
                 const semDados =
                     total_processados === 0 &&
                     inseridos === 0 &&
@@ -1228,7 +1221,6 @@ function Dashboard({ tipo }) {
                             }}
                             value={busca}
                             onChange={(e) => {
-                                console.log("BUSCA:", e.target.value);
                                 setBusca(e.target.value);
                             }}
                             autoComplete="off"
@@ -1289,7 +1281,6 @@ function Dashboard({ tipo }) {
                                 value={tipoDataFiltro}
 
                                 onChange={(e) => {
-                                    console.log("FILTRO DE DATA:", e.target.value);
                                     setTipoDataFiltro(e.target.value);
                                 }}
                                 sx={{
@@ -1332,7 +1323,6 @@ function Dashboard({ tipo }) {
                                 InputLabelProps={{ shrink: true }}
                                 value={dataInicio}
                                 onChange={(e) => {
-                                    console.log("DATA INICIO:", e.target.value);
                                     setDataInicio(e.target.value);
                                 }}
                                 sx={{ bgcolor: 'background.default', zoom: '0.9' }}
@@ -1345,7 +1335,6 @@ function Dashboard({ tipo }) {
                                 InputLabelProps={{ shrink: true }}
                                 value={dataFim}
                                 onChange={(e) => {
-                                    console.log("DATA FIM:", e.target.value);
                                     setDataFim(e.target.value);
                                 }}
                                 sx={{ bgcolor: 'background.default', zoom: '0.9' }}
@@ -1356,6 +1345,7 @@ function Dashboard({ tipo }) {
                                 onClick={() => {
                                     setDataInicio("");
                                     setDataFim("");
+                                    setBusca("");
                                 }}
                                 sx={{ zoom: '0.9' }}
                             >

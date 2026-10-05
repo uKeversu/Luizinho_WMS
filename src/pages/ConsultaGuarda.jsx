@@ -299,8 +299,6 @@ function ConsultaGuarda() {
             const dataErros =
                 await responseErros.json();
 
-            console.log("ERROS API:", dataErros);
-
             const errosArray =
                 Array.isArray(dataErros)
                     ? dataErros

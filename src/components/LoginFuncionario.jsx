@@ -1,6 +1,6 @@
-// src\components\LoginFuncionario.jsx
+// src/components/LoginFuncionario.jsx
 
-import { useState, useEffect, useContext } from "react";
+import { useState } from "react";
 import {
   Container,
   Card,
@@ -11,13 +11,15 @@ import {
   Alert
 } from "@mui/material";
 
-import { ThemeContext } from "../context/ThemeContext";
-import '../style/App.css';
+import "../style/App.css";
 
 function LoginFuncionario({ onLogin }) {
 
   const [codigo, setCodigo] = useState("");
+  const [pin, setPin] = useState("");
+  const [pinNecessario, setPinNecessario] = useState(false);
   const [loading, setLoading] = useState(false);
+
   const [snackbar, setSnackbar] = useState({
     open: false,
     severity: "success",
@@ -34,6 +36,18 @@ function LoginFuncionario({ onLogin }) {
         severity: "warning",
         message: "Digite um código de funcionário!"
       });
+
+      return;
+    }
+
+    // Se o funcionário possui PIN, exige que ele seja informado
+    if (pinNecessario && !pin.trim()) {
+      setSnackbar({
+        open: true,
+        severity: "warning",
+        message: "Digite o PIN!"
+      });
+
       return;
     }
 
@@ -41,28 +55,65 @@ function LoginFuncionario({ onLogin }) {
 
     try {
 
-      const res = await fetch(`${API}/api/funcionario/login`, {
+      const body = {
+        codigo: codigo.trim()
+      };
+
+      // Só envia o PIN quando o funcionário possui PIN
+      if (pinNecessario) {
+        body.pin = pin;
+      }
+
+      const res = await fetch(`${API}/api/login/sigel`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ codigo })
+        body: JSON.stringify(body)
       });
 
-      // Usuário não encontrado
-      if (res.status === 404) {
+      const data = await res.json().catch(() => ({}));
+
+      if (res.status === 401 && !data.pin_necessario) {
+
         setSnackbar({
           open: true,
           severity: "error",
-          message: "Usuário não encontrado"
+          message: data.erro || "Usuário não encontrado"
+        });
+
+        setPin("");
+        return;
+      }
+
+      if (data.pin_necessario === true) {
+
+        setPinNecessario(true);
+
+        setSnackbar({
+          open: true,
+          severity: "info",
+          message: "Digite o PIN do funcionário"
         });
 
         return;
       }
 
-      if (!res.ok) throw new Error();
+      if (res.status === 401) {
 
-      const data = await res.json();
+        setSnackbar({
+          open: true,
+          severity: "error",
+          message: data.erro || "PIN incorreto"
+        });
+
+        setPin("");
+        return;
+      }
+
+      if (!res.ok) {
+        throw new Error();
+      }
 
       onLogin(data);
 
@@ -81,7 +132,7 @@ function LoginFuncionario({ onLogin }) {
       setSnackbar({
         open: true,
         severity: "error",
-        message: "Usuário não encontrado"
+        message: "Não foi possível realizar o login"
       });
 
     } finally {
@@ -91,28 +142,51 @@ function LoginFuncionario({ onLogin }) {
 
   return (
     <Container maxWidth="sm" sx={{ mt: 10 }}>
-      <Card sx={{ p: 3, boxShadow: '0vh 0.1vh 0.5vh #000000', bgcolor: 'background.card' }}>
+
+      <Card
+        sx={{
+          p: 3,
+          boxShadow: "0vh 0.1vh 0.5vh #000000",
+          bgcolor: "background.card"
+        }}
+      >
+
         <Typography variant="h5">
           Login do Funcionário
         </Typography>
+
+        {/* CÓDIGO DO FUNCIONÁRIO */}
 
         <TextField
           fullWidth
           label="Código"
           value={codigo}
-          onChange={(e) => setCodigo(e.target.value)}
+          onChange={(e) => {
+            setCodigo(e.target.value);
+
+            // Se mudar o código, volta para a etapa inicial
+            setPinNecessario(false);
+            setPin("");
+          }}
           sx={{
-            mt: 2, bgcolor: 'background.card', '& .MuiOutlinedInput-root': {
-              '&:hover fieldset': {
-                borderColor: '#007bff',
+            mt: 2,
+            bgcolor: "background.card",
+            "& .MuiOutlinedInput-root": {
+              "&:hover fieldset": {
+                borderColor: "#007bff",
               },
-              '&.Mui-focused fieldset': {
-                borderColor: '#007bff',
+              "&.Mui-focused fieldset": {
+                borderColor: "#007bff",
               }
             }
           }}
-          onKeyDown={(e) => e.key === "Enter" && fazerLogin()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              fazerLogin();
+            }
+          }}
           autoComplete="off"
+          autoFocus
           inputProps={{
             spellCheck: false,
             autoCorrect: "off",
@@ -120,27 +194,82 @@ function LoginFuncionario({ onLogin }) {
           }}
         />
 
+        {/* Só aparece quando o backend informa que o funcionário possui PIN. */}
+
+        {pinNecessario && (
+          <TextField
+            fullWidth
+            label="PIN"
+            type="password"
+            value={pin}
+            onChange={(e) => setPin(e.target.value)}
+            sx={{
+              mt: 2,
+              bgcolor: "background.card",
+              "& .MuiOutlinedInput-root": {
+                "&:hover fieldset": {
+                  borderColor: "#007bff",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "#007bff",
+                }
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                fazerLogin();
+              }
+            }}
+            autoComplete="off"
+            autoFocus
+            inputProps={{
+              spellCheck: false,
+              autoCorrect: "off",
+              autoCapitalize: "off",
+              inputMode: "numeric"
+            }}
+          />
+        )}
+
         <Button
           fullWidth
           variant="contained"
-          sx={{ mt: 2, bgcolor: '#007bff' }}
+          sx={{
+            mt: 2,
+            bgcolor: "#007bff"
+          }}
           onClick={fazerLogin}
           disabled={loading}
         >
           {loading ? "Entrando..." : "Entrar"}
         </Button>
+
       </Card>
 
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        onClose={() =>
+          setSnackbar({
+            ...snackbar,
+            open: false
+          })
+        }
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "center"
+        }}
       >
+
         <Alert
           severity={snackbar.severity}
           variant="filled"
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          onClose={() =>
+            setSnackbar({
+              ...snackbar,
+              open: false
+            })
+          }
           sx={{
             width: "100%",
             color: "white"
@@ -148,6 +277,7 @@ function LoginFuncionario({ onLogin }) {
         >
           {snackbar.message}
         </Alert>
+
       </Snackbar>
 
     </Container>
