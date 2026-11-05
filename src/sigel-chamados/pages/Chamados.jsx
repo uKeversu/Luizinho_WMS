@@ -1266,7 +1266,7 @@ export default function Chamados() {
                                                 {chamado.cancelado == 1 && (
                                                     <Chip
                                                         size="small"
-                                                        color="default"
+                                                        color="error"
                                                         label="Cancelado"
                                                         sx={{ mt: 0.5 }}
                                                     />
@@ -1417,26 +1417,26 @@ export default function Chamados() {
                         {ehSuperior && novoSetor &&
                             (setorUsuario === "TI" || setorUsuario === "GERENCIA" ||
                                 setorUsuario === String(novoSetor).trim().toUpperCase()) && (
-                            <FormControl fullWidth>
-                                <InputLabel>Atribuir para colaborador (opcional)</InputLabel>
-                                <Select
-                                    value={novoAtendenteId}
-                                    label="Atribuir para colaborador (opcional)"
-                                    onChange={(event) => setNovoAtendenteId(event.target.value)}
-                                    MenuProps={{ PaperProps: { sx: { bgcolor: "background.default", color: "text.primary" } } }}
-                                >
-                                    <MenuItem value="">Deixar sem responsável</MenuItem>
-                                    {funcionariosNovoChamado.map((funcionario) => (
-                                        <MenuItem key={funcionario.id} value={String(funcionario.id)}>
-                                            {funcionario.nome} {funcionario.codigo ? `(${funcionario.codigo})` : ""}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                                <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
-                                    Apenas colaboradores ativos do setor selecionado.
-                                </Typography>
-                            </FormControl>
-                        )}
+                                <FormControl fullWidth>
+                                    <InputLabel>Atribuir para colaborador (opcional)</InputLabel>
+                                    <Select
+                                        value={novoAtendenteId}
+                                        label="Atribuir para colaborador (opcional)"
+                                        onChange={(event) => setNovoAtendenteId(event.target.value)}
+                                        MenuProps={{ PaperProps: { sx: { bgcolor: "background.default", color: "text.primary" } } }}
+                                    >
+                                        <MenuItem value="">Deixar sem responsável</MenuItem>
+                                        {funcionariosNovoChamado.map((funcionario) => (
+                                            <MenuItem key={funcionario.id} value={String(funcionario.id)}>
+                                                {funcionario.nome} {funcionario.codigo ? `(${funcionario.codigo})` : ""}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                    <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
+                                        Apenas colaboradores ativos do setor selecionado.
+                                    </Typography>
+                                </FormControl>
+                            )}
 
                         <FormControl fullWidth>
                             <InputLabel>Prioridade</InputLabel>
@@ -1598,7 +1598,8 @@ export default function Chamados() {
                                         <Chip
                                             label="Cancelado"
                                             size="small"
-                                            variant="outlined"
+                                            color="error"
+                                            sx={{ color: 'primary.branco' }}
                                         />
                                     )}
                                 </Stack>
@@ -1621,7 +1622,7 @@ export default function Chamados() {
                                 {/* AVISO DE CANCELAMENTO */}
 
                                 {chamadoSelecionado.cancelado == 1 && (
-                                    <Alert severity="warning">
+                                    <Alert severity="error">
                                         <Typography variant="body2" fontWeight={700}>
                                             Este chamado foi cancelado.
                                         </Typography>
@@ -1798,33 +1799,33 @@ export default function Chamados() {
                                         )}
 
                                     {podeAlterarStatus(chamadoSelecionado) && (
-                                    <FormControl fullWidth size="small">
-                                        <InputLabel>Atualizar status</InputLabel>
+                                        <FormControl fullWidth size="small">
+                                            <InputLabel>Atualizar status</InputLabel>
 
-                                        <Select
-                                            value=""
-                                            label="Atualizar status"
-                                            onChange={(event) => alterarStatus(event.target.value)}
-                                            disabled={salvando}
-                                            MenuProps={{
-                                                PaperProps: {
-                                                    sx: {
-                                                        bgcolor: "background.default",
-                                                        color: "text.primary",
+                                            <Select
+                                                value=""
+                                                label="Atualizar status"
+                                                onChange={(event) => alterarStatus(event.target.value)}
+                                                disabled={salvando}
+                                                MenuProps={{
+                                                    PaperProps: {
+                                                        sx: {
+                                                            bgcolor: "background.default",
+                                                            color: "text.primary",
+                                                        },
                                                     },
-                                                },
-                                            }}
-                                        >
-                                            {STATUS
-                                                .filter((item) => ehSuperior || item.value !== "ABERTO")
-                                                .filter((item) => item.value !== chamadoSelecionado.status)
-                                                .map((item) => (
-                                                    <MenuItem key={item.value} value={item.value}>
-                                                        {item.label}
-                                                    </MenuItem>
-                                                ))}
-                                        </Select>
-                                    </FormControl>
+                                                }}
+                                            >
+                                                {STATUS
+                                                    .filter((item) => ehSuperior || item.value !== "ABERTO")
+                                                    .filter((item) => item.value !== chamadoSelecionado.status)
+                                                    .map((item) => (
+                                                        <MenuItem key={item.value} value={item.value}>
+                                                            {item.label}
+                                                        </MenuItem>
+                                                    ))}
+                                            </Select>
+                                        </FormControl>
                                     )}
 
                                     {!chamadoSelecionado.cancelado &&
