@@ -125,6 +125,9 @@ function formatarData(valor, incluirHora = true) {
 
     if (Number.isNaN(data.getTime())) return valor;
 
+    // Desconta 3 horas
+    data.setTime(data.getTime() - (3 * 60 * 60 * 1000));
+
     return data.toLocaleString("pt-BR", incluirHora
         ? {
             day: "2-digit",
@@ -870,7 +873,7 @@ export default function Chamados() {
                 }}
             >
 
-                <Tooltip title="Criar tarefa">
+                <Tooltip title="Abrir chamado">
                     <Fab
                         color="primary"
                         aria-label="add"
