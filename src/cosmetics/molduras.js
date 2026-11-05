@@ -94,6 +94,19 @@ export const MOLDURAS = {
     `,
     },
 
+    "Portal Dimensional": {
+        borderColor: "#A020F0",
+        glow: `
+        0 0 8px #FFFFFF,
+        0 0 18px #E040FB,
+        0 0 35px #A020F0,
+        0 0 60px rgba(160,32,240,.50),
+        0 0 90px rgba(90,0,180,.30),
+        inset 0 0 15px rgba(255,255,255,.25),
+        inset 0 0 30px rgba(160,32,240,.20)
+    `,
+    },
+
     "Rei dos Pampas": {
         borderColor: "#8B6B3E",
         glow:

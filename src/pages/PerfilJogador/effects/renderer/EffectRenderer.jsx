@@ -1,3 +1,5 @@
+// src\pages\PerfilJogador\effects\renderer\EffectRenderer.jsx
+
 import SentinelaEffect from "../sentinela/SentinelaEffect";
 import GenesisEffect from "../genesis/GenesisEffect";
 import CaravelaEffect from "../caravela/CaravelaEffect";
@@ -6,6 +8,7 @@ import ArcaneEffect from "../arcane/ArcaneEffect";
 import OptimusEffect from "../optimus/OptimusEffect";
 import GauderioEffect from "../gauderio/GauderioEffect"
 import NexusEffect from "../nexus/NexusEffect"
+import VortexEffect from "../vortex/VortexEffect"
 
 const EFFECT_COMPONENTS = {
     sentinela: SentinelaEffect,
@@ -16,6 +19,8 @@ const EFFECT_COMPONENTS = {
     optimus: OptimusEffect,
     gauderio: GauderioEffect,
     "nexus-effect": NexusEffect,
+    "vortex-effect": VortexEffect,
+
 };
 
 export default function EffectRenderer({ animation }) {

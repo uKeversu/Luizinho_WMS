@@ -1,3 +1,5 @@
+// src\cosmetics\index.js
+
 export { MOLDURAS } from "./molduras";
 export { EFEITOS } from "./efeitos";
 export { AVATARES } from "./avatars";

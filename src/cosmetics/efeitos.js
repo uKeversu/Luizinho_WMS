@@ -1,3 +1,5 @@
+// src\cosmetics\efeitos.js
+
 export const EFEITOS = {
 
     "Aura Arcana": {
@@ -152,6 +154,15 @@ export const EFEITOS = {
         accent: "#00aeff",
         overlay: "radial-gradient(circle at 50% 45%, rgba(0,174,255,.24), transparent 55%), radial-gradient(circle at 50% 50%, rgba(255,255,255,.07), transparent 70%)",
         animation: "nexus-effect"
+    },
+
+    "Colapso Vortex": {
+        background: "linear-gradient(135deg, #170025, #450078)",
+        cardGlow: "0 0 18px rgba(160,32,240,.70), 0 0 40px rgba(120,0,255,.38), inset 0 0 25px rgba(224,64,251,.08)",
+        nomeGlow: "0 0 12px #ffffff, 0 0 24px #A020F0, 0 0 45px rgba(160,32,240,.65)",
+        accent: "#A020F0",
+        overlay: "radial-gradient(circle at 50% 45%, rgba(160,32,240,.24), transparent 55%), radial-gradient(circle at 50% 50%, rgba(224,64,251,.07), transparent 70%)",
+        animation: "vortex-effect"
     },
 
     default: {

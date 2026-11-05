@@ -88,6 +88,18 @@ export const TITULOS = {
     `
     },
 
+    "Além do Vazio": {
+        color: "#C77DFF",
+        textShadow: `
+        0 0 5px #FFFFFF,
+        0 0 12px #E040FB,
+        0 0 22px #A020F0,
+        0 0 38px #8B00FF,
+        0 0 58px rgba(160,32,240,.78),
+        0 0 85px rgba(90,0,180,.45)
+    `
+    },
+
     "Gaudério": {
         color: "#d49336",
         textShadow:
