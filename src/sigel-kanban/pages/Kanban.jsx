@@ -1048,7 +1048,7 @@ function DetailsDrawer({ task, open, onClose, onEdit, onDelete, onMove, columns,
                         onClick={sendComment}
                         disabled={loading || !comment.trim()}
                     >
-                        Adicionar comentário
+                        Enviar comentário
                     </Button>
                 </Stack>
             </Box>

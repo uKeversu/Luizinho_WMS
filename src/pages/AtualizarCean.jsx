@@ -87,25 +87,25 @@ function AtualizarCean() {
         severity: "success"
     });
 
-    const SENHAS = [
+    const chupiscos = [
         "4Kq7Zp2M4vN1yX",
         "Y3AhD8mQ1sJ6cV",
         "F7KkR9uT3wB5yN",
         "M2vH7pK9DdS4jW",
         "L5vN1pK7DtS8v3W",
-        "W8nA4pQ6BfJ3r5K",
-        "K9xT4"
+        "K9xT4",
+        "014083112361289231440"
     ];
 
-    const [senha, setSenha] = useState("");
+    const [chupisco, setChupisco] = useState("");
     const [autorizado, setAutorizado] = useState(false);
 
     const inputArquivoRef = useRef(null);
     const [loadingCorrespondencias, setLoadingCorrespondencias] = useState(false);
 
-    const validarSenha = () => {
+    const validarChupisco = () => {
 
-        if (SENHAS.includes(senha.trim())) {
+        if (chupiscos.includes(chupisco.trim())) {
             setAutorizado(true);
             return;
         }
@@ -116,7 +116,7 @@ function AtualizarCean() {
             severity: "error"
         });
 
-        setSenha("");
+        setChupisco("");
     };
 
     // BUSCAR NOTAS
@@ -971,11 +971,11 @@ function AtualizarCean() {
                         fullWidth
                         label="Senha"
                         type="password"
-                        value={senha}
-                        onChange={(e) => setSenha(e.target.value)}
+                        value={chupisco}
+                        onChange={(e) => setChupisco(e.target.value)}
                         onKeyDown={(e) => {
                             if (e.key === "Enter") {
-                                validarSenha();
+                                validarChupisco();
                             }
                         }}
                         autoComplete="off"
@@ -990,7 +990,7 @@ function AtualizarCean() {
                         fullWidth
                         variant="contained"
                         sx={{ mt: 2 }}
-                        onClick={validarSenha}
+                        onClick={validarChupisco}
                     >
                         Entrar
                     </Button>

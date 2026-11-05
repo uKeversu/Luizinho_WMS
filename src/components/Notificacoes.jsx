@@ -22,6 +22,7 @@ import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 
 const DEFAULT_API_BASE = "http://192.168.1.185:8077";
 
@@ -337,6 +338,14 @@ export default function Notificacoes({ apiBase, token, userInfo }) {
                 return;
             }
 
+            // DESK
+            if (
+                notificacao.tipo === "NOVO_CHAMADO"
+            ) {
+                navigate("/Chamados");
+                return;
+            }
+
             // Corrigir NFe
             if (notificacao.nfe_id) {
                 navigate(
@@ -367,6 +376,12 @@ export default function Notificacoes({ apiBase, token, userInfo }) {
             notificacao.tipo === "KANBAN_TAREFA_COMPARTILHADA" ||
             notificacao.tipo === "KANBAN_TAREFA_ATRASADA"
         ) {
+            await abrirNotificacao(notificacao);
+            return;
+        }
+
+        // DESK
+        if (notificacao.tipo === "NOVO_CHAMADO") {
             await abrirNotificacao(notificacao);
             return;
         }
@@ -446,6 +461,16 @@ export default function Notificacoes({ apiBase, token, userInfo }) {
                     <AccessTimeFilledIcon
                         sx={{
                             color: "#FF5252",
+                            fontSize: 22,
+                        }}
+                    />
+                );
+
+            case "NOVO_CHAMADO":
+                return (
+                    <SupportAgentIcon
+                        sx={{
+                            color: "primary.main",
                             fontSize: 22,
                         }}
                     />
@@ -637,7 +662,9 @@ export default function Notificacoes({ apiBase, token, userInfo }) {
                                                                     ? "Abrir no Kanban"
                                                                     : notificacao.tipo === "KANBAN_TAREFA_ATRASADA"
                                                                         ? "Ir para o Kanban"
-                                                                        : "Marcar como lida"}
+                                                                        : notificacao.tipo === "NOVO_CHAMADO"
+                                                                            ? "Ir para o Desk"
+                                                                            : "Marcar como lida"}
                                                 </Button>
                                             )}
                                         </Box>

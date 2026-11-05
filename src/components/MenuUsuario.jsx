@@ -28,6 +28,7 @@ import ViewKanbanIcon from '@mui/icons-material/ViewKanban';
 import ChatIcon from '@mui/icons-material/Chat';
 import TaskIcon from '@mui/icons-material/Task';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
@@ -72,6 +73,12 @@ function MenuUsuario({ userInfo, onLogout }) {
             rota: "/AtualizarCean",
             permissao: "pode_corrigir_nfe",
             icone: <BorderColorIcon fontSize="small" />
+        },
+        {
+            nome: "Desk",
+            rota: "/Chamados",
+            permissao: null,
+            icone: <SupportAgentIcon fontSize="small" />
         },
         {
             nome: "Gamificação",

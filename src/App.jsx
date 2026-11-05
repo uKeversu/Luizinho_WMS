@@ -27,6 +27,7 @@ import Tarefas from "./pages/Tarefas";
 import Chat from "./sigel-chat/pages/Chat";
 import Kanban from "./sigel-kanban/pages/Kanban"
 import NotasGravadas from "./pages/NotasGravadas"
+import Chamados from "./sigel-chamados/pages/Chamados"
 
 import AlertaAutorizacaoManual from "./components/autorizacao/AlertaAutorizacaoManual";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -207,6 +208,11 @@ function App() {
           <Route
             path="/Kanban"
             element={<Kanban />}
+          />
+
+          <Route
+            path="/Chamados"
+            element={<Chamados />}
           />
 
           <Route

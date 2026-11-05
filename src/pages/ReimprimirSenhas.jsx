@@ -20,10 +20,34 @@ import PrintIcon from "@mui/icons-material/Print";
 
 function ReimpressaoCredenciais() {
 
-    const SENHA_ACESSO = "K9xT4";
+    // LOGIN
+    const [userInfo, setUserInfo] = useState(() => {
+
+        const user =
+            localStorage.getItem("user_info");
+
+        return user
+            ? JSON.parse(user)
+            : null;
+    });
+
+    const [token, setToken] = useState(
+        () => localStorage.getItem("nfe_token") || ""
+    );
+
+    const logout = () => {
+
+        setToken("");
+        setUserInfo(null);
+
+        localStorage.removeItem("nfe_token");
+        localStorage.removeItem("user_info");
+    };
+
+    const ACESSO = "K9xT4";
 
     const [autenticado, setAutenticado] = useState(false);
-    const [senhaDigitada, setSenhaDigitada] = useState("");
+    const [acessoDigitada, setSenhaDigitada] = useState("");
 
     const [snackbar, setSnackbar] = useState({
         open: false,
@@ -33,34 +57,46 @@ function ReimpressaoCredenciais() {
 
     const usuarios = [
         {
-            senha: "4Kq7Zp2M4vN1yX",
+            acesso: "4Kq7Zp2M4vN1yX",
             nome: "Kelwin Gameiro"
         },
         {
-            senha: "Y3AhD8mQ1sJ6cV",
+            acesso: "Y3AhD8mQ1sJ6cV",
             nome: "Fabio da Silva"
         },
         {
-            senha: "F7KkR9uT3wB5yN",
+            acesso: "F7KkR9uT3wB5yN",
             nome: "Daniel Novais"
         },
         {
-            senha: "M2vH7pK9DdS4jW",
+            acesso: "M2vH7pK9DdS4jW",
             nome: "Mateus Nascimento"
         },
         {
-            senha: "L5vN1pK7DtS8v3W",
+            acesso: "L5vN1pK7DtS8v3W",
             nome: "Vinicius Pires"
         },
         {
-            senha: "W8nA4pQ6BfJ3r5K",
+            acesso: "014083112361289231440",
             nome: "Matheus Lessa"
+        },
+        {
+            acesso: "250405",
+            nome: "Emanoel Brenneisen"
+        },
+        {
+            acesso: "100378",
+            nome: "Guilherme Quintino"
+        },
+        {
+            acesso: "2725",
+            nome: "Gabriel Cabral"
         }
     ];
 
     const validarSenha = () => {
 
-        if (senhaDigitada === SENHA_ACESSO) {
+        if (acessoDigitada === ACESSO) {
 
             setAutenticado(true);
 
@@ -95,7 +131,7 @@ function ReimpressaoCredenciais() {
 ^FO10,150
 ^BY1.5,5,35
 ^BCN,50,N,N,N
-^FD${user.senha}^FS
+^FD${user.acesso}^FS
 
 ^XZ
 `;
@@ -197,7 +233,7 @@ function ReimpressaoCredenciais() {
                             margin="normal"
                             label="Senha de acesso"
                             type="password"
-                            value={senhaDigitada}
+                            value={acessoDigitada}
                             onChange={(e) =>
                                 setSenhaDigitada(e.target.value)
                             }
@@ -265,7 +301,7 @@ function ReimpressaoCredenciais() {
                         pode_acessar_cadastrar_funcionario: data.pode_acessar_cadastrar_funcionario,
                         pode_acessar_painel_games: data.pode_acessar_painel_games,
                         pode_acessar_painel_gerencial: data.pode_acessar_painel_gerencial,
-                        pode_acessar_reimprimir_senhas: data.pode_acessar_reimprimir_senhas,
+                        pode_acessar_reimprimir_acessos: data.pode_acessar_reimprimir_acessos,
                         pode_acessar_tarefas: data.pode_acessar_tarefas,
                     };
 
@@ -304,7 +340,7 @@ function ReimpressaoCredenciais() {
 
                     {usuarios.map((user) => (
 
-                        <Grid item xs={12} md={6} key={user.senha}>
+                        <Grid item xs={12} md={6} key={user.acesso}>
 
                             <Card
                                 sx={{
@@ -330,7 +366,7 @@ function ReimpressaoCredenciais() {
                                             mb: 3
                                         }}
                                     >
-                                        {user.senha}
+                                        {user.acesso}
                                     </Typography>
 
                                     <Button
