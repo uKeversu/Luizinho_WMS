@@ -194,8 +194,8 @@ function Conferencia() {
     const [processandoScanner, setProcessandoScanner] = useState(false);
 
     // Agrupa caixas por localizações próximas
-    const [agrupamentosBanco, setAgrupamentosBanco] = useState(null);
     const [agrupamentosSelecionados, setAgrupamentosSelecionados] = useState([]);
+    const [gruposLocalizacao, setGruposLocalizacao] = useState([]);
     const [dialogAgrupamentos, setDialogAgrupamentos] = useState({
         open: false,
         sugestoes: []
@@ -229,14 +229,52 @@ function Conferencia() {
 
     useEffect(() => {
 
-        if (
-            !notasIds ||
-            notasIds.length === 0
-        ) {
-            return;
-        }
+        if (!notasIds || notasIds.length === 0) return;
 
-        carregarTudo();
+        const chaveItens = `itens_conferencia_${notasIds.join("_")}`;
+        const chaveCaixas = `caixas_conferencia_${notasIds.join("_")}`;
+
+        const itensSalvos = localStorage.getItem(chaveItens);
+
+        const caixasSalvas = JSON.parse(
+            localStorage.getItem(chaveCaixas) || "[]"
+        );
+
+        const itensParse = itensSalvos
+            ? JSON.parse(itensSalvos)
+            : [];
+
+        const itensCorrigidos = itensParse.map(i => ({
+            ...i,
+            caixaId: i.caixaId ?? i.caixa ?? null
+        }));
+
+        const caixasParse = caixasSalvas.map(c => ({
+            ...c,
+            cheia: c.cheia ?? false
+        }));
+
+        const cacheValido =
+            itensCorrigidos.length > 0 &&
+            itensCorrigidos.some(i =>
+                notasIds.includes(i.notaId)
+            );
+
+        if (cacheValido) {
+
+            console.log("USANDO CACHE");
+
+            setItens(itensCorrigidos);
+            atualizarCaixas(caixasParse);
+
+            return;
+
+        } else {
+
+            console.log("CACHE INVALIDO → BUSCANDO API");
+
+            carregarTudo();
+        }
 
     }, [notasIds]);
 
@@ -779,37 +817,36 @@ function Conferencia() {
     };
 
     const carregarTudo = async () => {
-
         try {
-
             setLoading(true);
 
-            if (
-                !notas ||
-                notas.length === 0
-            ) {
-                return;
-            }
+            if (!notas || notas.length === 0) return;
 
             console.log("NOTAS RECEBIDAS:", notas);
-
             setNotaInfo(notas);
 
-            const chaveItens =
-                `itens_conferencia_${notasIds.join("_")}`;
+            const chaveItens = `itens_conferencia_${notasIds.join("_")}`;
+            const itensSalvos = JSON.parse(localStorage.getItem(chaveItens) || "[]");
 
-            const itensSalvos =
-                JSON.parse(
-                    localStorage.getItem(
-                        chaveItens
-                    ) || "[]"
-                );
+            const chaveCaixas = `caixas_conferencia_${notasIds.join("_")}`;
+            const caixasSalvas = JSON.parse(
+                localStorage.getItem(chaveCaixas) || "[]"
+            );
+
+            const agrupamentosSalvos = JSON.parse(
+                localStorage.getItem(
+                    `agrupamentos_${notasIds.join("_")}`
+                ) || "[]"
+            );
+
+            setAgrupamentosSelecionados(
+                agrupamentosSalvos
+            );
 
             let todosItens = [];
 
+            // Sugestões de agrupamento
             const sugestoes = [];
-
-            const configuracoesAgrupamento = [];
 
             // Gera codigo da caixa vindo da API
             const gerarIdCaixa = (nome) => nome;
@@ -824,15 +861,6 @@ function Conferencia() {
                 });
 
                 const dataItens = await response.json();
-
-                const caixasAgrupadasNota =
-                    dataItens?.nfe?.caixas_agrupadas;
-
-                configuracoesAgrupamento.push({
-                    nfeId: nota.id,
-                    caixasAgrupadas:
-                        caixasAgrupadasNota
-                });
 
                 if (!response.ok) {
                     console.error("Erro ao buscar itens da nota:", nota.id, dataItens);
@@ -893,29 +921,6 @@ function Conferencia() {
 
                 todosItens = [...todosItens, ...itensFormatados];
             }
-
-            // ==========================================
-            // AGRUPAMENTOS SALVOS VINDOS DA API
-            // ==========================================
-
-            const agrupamentosSalvos =
-                configuracoesAgrupamento
-                    .flatMap(config => {
-
-                        if (!Array.isArray(config.caixasAgrupadas)) {
-                            return [];
-                        }
-
-                        return config.caixasAgrupadas.map(grupo => ({
-                            ...grupo,
-                            nfeId: config.nfeId
-                        }));
-                    });
-
-            console.log(
-                "AGRUPAMENTOS SALVOS:",
-                agrupamentosSalvos
-            );
 
             const mapaLocalizacoes = {};
 
@@ -1010,117 +1015,57 @@ function Conferencia() {
             const mapaCaixas = {};
             let novasCaixas = [];
 
-            const criarCaixa = ({
-                id,
-                grupo,
-                sequencia = 1,
-                origem = "API",
-                jaImprimiu = true,
-                cheia = false
-            }) => {
+            todosItens.forEach(item => {
 
-                if (!mapaCaixas[id]) {
+                const nomeCaixa = item.caixaApi;
 
-                    mapaCaixas[id] = {
-                        id,
-                        numero: id,
+                if (!nomeCaixa || nomeCaixa === "0") return;
 
+                if (!mapaCaixas[nomeCaixa]) {
+
+                    const caixaSalva = caixasRef.current.find(
+                        c => c.id === nomeCaixa
+                    ) || caixasSalvas.find(
+                        c => c.id === nomeCaixa
+                    );
+
+                    // EX:
+                    // 001A - 1
+                    // 001A/001B - 1
+                    const match = nomeCaixa.match(/^(.+)\s-\s(\d+)$/);
+
+                    const grupo =
+                        caixaSalva?.grupo ||
+                        match?.[1] ||
+                        "SEM_LOC";
+
+                    const sequencia =
+                        caixaSalva?.sequencia ||
+                        Number(match?.[2] || 1);
+
+                    const novaCaixa = {
+                        id: nomeCaixa,
+                        numero: nomeCaixa,
                         grupo,
                         prateleira: grupo,
-
-                        localizacoes:
-                            grupo.includes("/")
-                                ? grupo.split("/")
-                                : [grupo],
+                        localizacoes: grupo.includes("/")
+                            ? grupo.split("/")
+                            : [grupo],
 
                         sequencia,
 
                         itens: [],
 
-                        jaImprimiu,
-                        origem,
-                        cheia
+                        jaImprimiu: true,
+                        origem: "API",
+
+                        cheia: caixaSalva?.cheia ?? false
                     };
 
-                    novasCaixas.push(
-                        mapaCaixas[id]
-                    );
+                    mapaCaixas[nomeCaixa] = novaCaixa;
+
+                    novasCaixas.push(novaCaixa);
                 }
-
-                return mapaCaixas[id];
-            };
-
-            todosItens.forEach(item => {
-
-                const agrupamento =
-                    encontrarAgrupamentoDoItem(
-                        item,
-                        agrupamentosSalvos
-                    );
-
-                // ==========================================
-                // ITEM PERTENCE A UM AGRUPAMENTO DO BANCO
-                // ==========================================
-
-                if (agrupamento) {
-
-                    const sequenciaApi =
-                        item.caixaApi?.match(
-                            /^.+\s-\s(\d+)$/
-                        )?.[1];
-
-                    const sequencia =
-                        Number(sequenciaApi || 1);
-
-                    const nomeCaixa =
-                        `${agrupamento.nome} - ${sequencia}`;
-
-                    criarCaixa({
-                        id: nomeCaixa,
-                        grupo: agrupamento.nome,
-                        sequencia,
-                        origem: "AGRUPAMENTO_BANCO",
-                        jaImprimiu: true
-                    });
-
-                    return;
-                }
-
-                // ==========================================
-                // ITEM SEM AGRUPAMENTO
-                // ==========================================
-
-                const nomeCaixa =
-                    item.caixaApi;
-
-                if (
-                    !nomeCaixa ||
-                    nomeCaixa === "0"
-                ) {
-                    return;
-                }
-
-                const match =
-                    nomeCaixa.match(
-                        /^(.+)\s-\s(\d+)$/
-                    );
-
-                const grupo =
-                    match?.[1] ||
-                    "SEM_LOC";
-
-                const sequencia =
-                    Number(
-                        match?.[2] || 1
-                    );
-
-                criarCaixa({
-                    id: nomeCaixa,
-                    grupo,
-                    sequencia,
-                    origem: "API",
-                    jaImprimiu: true
-                });
             });
 
             agrupamentosSalvos.forEach(grupo => {
@@ -1141,82 +1086,46 @@ function Conferencia() {
                 });
             });
 
-            const itensComCaixaCorrigida =
-                todosItens.map(item => {
+            const itensComCaixaCorrigida = todosItens.map(item => {
 
-                    const agrupamento =
-                        encontrarAgrupamentoDoItem(
-                            item,
-                            agrupamentosSalvos
-                        );
+                // JÁ POSSUI CAIXA LOCAL
+                if (item.caixaId) {
 
-                    // ITEM PERTENCE A AGRUPAMENTO SALVO
-                    if (agrupamento) {
+                    const caixaLocal = novasCaixas.find(
+                        c => c.id === item.caixaId
+                    );
 
-                        const sequenciaApi =
-                            item.caixaApi?.match(
-                                /^.+\s-\s(\d+)$/
-                            )?.[1];
+                    return item;
+                }
 
-                        const sequencia =
-                            Number(
-                                sequenciaApi || 1
-                            );
+                // USA CAIXA DA API
+                if (item.caixaApi) {
 
-                        const caixaId =
-                            `${agrupamento.nome} - ${sequencia}`;
+                    const caixaObj = mapaCaixas[item.caixaApi];
+
+                    if (caixaObj) {
 
                         return {
                             ...item,
-
-                            caixaId,
-
-                            grupoCaixa:
-                                agrupamento.nome
+                            caixaId: caixaObj.id
                         };
                     }
+                }
 
-                    // ITEM JÁ POSSUI CAIXA LOCAL
-                    if (item.caixaId) {
-                        return item;
-                    }
-
-                    // USA CAIXA ORIGINAL DA API
-                    if (item.caixaApi) {
-
-                        const caixaObj =
-                            mapaCaixas[item.caixaApi];
-
-                        if (caixaObj) {
-
-                            return {
-                                ...item,
-                                caixaId:
-                                    caixaObj.id
-                            };
-                        }
-                    }
-
-                    return item;
-                });
+                return item;
+            });
 
             // Preenche as caixas da api com os itens
-            novasCaixas = novasCaixas.map(
-                caixa => ({
-                    ...caixa,
+            novasCaixas = novasCaixas.map(caixa => ({
+                ...caixa,
+                itens: itensComCaixaCorrigida.filter(i => i.caixaId === caixa.id)
+            }));
 
-                    itens:
-                        itensComCaixaCorrigida.filter(
-                            item =>
-                                item.caixaId === caixa.id
-                        )
-                })
-            );
+            console.log("ITENS CARREGADOS:", itensComCaixaCorrigida);
+            console.log("CAIXAS CARREGADAS:", novasCaixas);
+            console.log("SUGESTOES COMPLETAS:", sugestoes);
 
-            if (
-                existeNfeSemDecisao &&
-                sugestoes.length > 0
-            ) {
+            if (sugestoes.length > 0) {
                 setDialogAgrupamentos({
                     open: true,
                     sugestoes
@@ -1225,19 +1134,6 @@ function Conferencia() {
 
             setItens(itensComCaixaCorrigida);
             atualizarCaixas(novasCaixas);
-
-            const existeNfeSemDecisao =
-                configuracoesAgrupamento.some(
-                    config =>
-                        config.caixasAgrupadas === null ||
-                        config.caixasAgrupadas === undefined
-                );
-
-            const agrupamentosExistentes =
-                configuracoesAgrupamento
-                    .filter(config =>
-                        Array.isArray(config.caixasAgrupadas)
-                    );
 
         } catch (error) {
             console.error("Erro no carregarTudo:", error);
@@ -1400,6 +1296,9 @@ function Conferencia() {
 
             const data = await response.json();
 
+            console.log("STATUS:", response.status);
+            console.log("RETORNO:", data);
+
             if (!response.ok) {
                 throw new Error(data.erro || "Erro ao atribuir nota");
             }
@@ -1412,24 +1311,6 @@ function Conferencia() {
 
         }
     }
-
-    const encontrarAgrupamentoDoItem = (
-        item,
-        agrupamentos
-    ) => {
-
-        if (!Array.isArray(agrupamentos)) {
-            return null;
-        }
-
-        const prateleira =
-            getPrateleira(item.localizacao);
-
-        return agrupamentos.find(grupo =>
-            Array.isArray(grupo.localizacoes) &&
-            grupo.localizacoes.includes(prateleira)
-        ) || null;
-    };
 
     // Fecha caixa e envia para API
     const enviarItensDaCaixa = async (caixa, itensAtualizados = itens) => {
@@ -3501,187 +3382,31 @@ function Conferencia() {
         });
     };
 
-    const ignorarAgrupamentos = async () => {
+    const confirmarAgrupamentos = async (selecionados) => {
 
-        try {
+        setGruposLocalizacao(selecionados);
 
-            setProcessandoAgrupamento(true);
+        localStorage.setItem(
+            `agrupamentos_${notasIds.join("_")}`,
+            JSON.stringify(selecionados)
+        );
 
-            for (const nfeId of notasIds) {
+        setDialogAgrupamentos({
+            open: false,
+            sugestoes: []
+        });
 
-                const response =
-                    await fetch(
-                        `${API}/api/nfe/${nfeId}/agrupamentos`,
-                        {
-                            method: "POST",
+        await carregarTudo();
 
-                            headers: {
-                                "Content-Type":
-                                    "application/json",
+        registrarLog({
+            acao: "Agrupou caixas com localizações próximas"
+        });
 
-                                "X-Auth-Token":
-                                    token
-                            },
-
-                            body: JSON.stringify({
-                                caixas_agrupadas: []
-                            })
-                        }
-                    );
-
-                const data =
-                    await response.json();
-
-                if (!response.ok) {
-
-                    throw new Error(
-                        data?.erro ||
-                        "Erro ao salvar decisão"
-                    );
-                }
-            }
-
-            setAgrupamentosSelecionados([]);
-
-            setAgrupamentosBanco([]);
-
-            setDialogAgrupamentos({
-                open: false,
-                sugestoes: []
-            });
-
-            registrarLog({
-                acao:
-                    "Ignorou agrupamentos de caixas"
-            });
-
-            setSnackbar({
-                open: true,
-                message:
-                    "Configuração salva. Nenhum agrupamento será sugerido novamente.",
-                severity: "info"
-            });
-
-            await carregarTudo();
-
-        } catch (error) {
-
-            console.error(
-                "Erro ao ignorar agrupamentos:",
-                error
-            );
-
-            setSnackbar({
-                open: true,
-                message:
-                    error.message ||
-                    "Erro ao salvar decisão",
-                severity: "error"
-            });
-
-        } finally {
-
-            setProcessandoAgrupamento(false);
-        }
-    };
-
-    const confirmarAgrupamentos = async (
-        selecionados
-    ) => {
-
-        try {
-
-            setProcessandoAgrupamento(true);
-
-            if (!notasIds || notasIds.length === 0) {
-                throw new Error(
-                    "Nenhuma NFE selecionada"
-                );
-            }
-
-            for (const nfeId of notasIds) {
-
-                const response =
-                    await fetch(
-                        `${API}/api/nfe/${nfeId}/agrupamentos`,
-                        {
-                            method: "POST",
-
-                            headers: {
-                                "Content-Type":
-                                    "application/json",
-
-                                "X-Auth-Token":
-                                    token
-                            },
-
-                            body: JSON.stringify({
-                                caixas_agrupadas:
-                                    selecionados
-                            })
-                        }
-                    );
-
-                const data =
-                    await response.json();
-
-                if (!response.ok) {
-
-                    throw new Error(
-                        data?.erro ||
-                        "Erro ao salvar agrupamentos"
-                    );
-                }
-            }
-
-            setAgrupamentosSelecionados(
-                selecionados
-            );
-
-            setAgrupamentosBanco(
-                selecionados
-            );
-
-            setDialogAgrupamentos({
-                open: false,
-                sugestoes: []
-            });
-
-            /* Recarrega do backend garantindo que o agrupamento 
-            seja montado com o que já foi selecionado */
-            await carregarTudo();
-
-            registrarLog({
-                acao:
-                    "Agrupamentos de caixas salvos"
-            });
-
-            setSnackbar({
-                open: true,
-                message:
-                    "Agrupamentos salvos no banco",
-                severity: "success"
-            });
-
-        } catch (error) {
-
-            console.error(
-                "Erro ao salvar agrupamentos:",
-                error
-            );
-
-            setSnackbar({
-                open: true,
-                message:
-                    error.message ||
-                    "Erro ao salvar agrupamentos",
-                severity: "error"
-            });
-
-        } finally {
-
-            setProcessandoAgrupamento(false);
-        }
+        setSnackbar({
+            open: true,
+            message: "Agrupamentos aplicados",
+            severity: "success"
+        });
     };
 
     const solicitarAutorizacaoManual = async (codigoManual) => {
@@ -5330,8 +5055,12 @@ function Conferencia() {
                     }}
                 >
                     <Button
-                        onClick={ignorarAgrupamentos}
-                        disabled={processandoAgrupamento}
+                        onClick={() =>
+                            setDialogAgrupamentos({
+                                open: false,
+                                sugestoes: []
+                            })
+                        }
                     >
                         Ignorar
                     </Button>
