@@ -357,6 +357,7 @@ function TaskFormDialog({
                 <Stack direction="row" alignItems="center" spacing={1}>
                     <AssignmentTurnedInOutlined color="primary" />
                     <Box>
+
                         <Typography variant="h6" fontWeight={800}>{editing ? "Editar tarefa" : "Nova tarefa"}</Typography>
                         <Typography variant="caption" color="text.secondary">Organize uma demanda do seu dia a dia.</Typography>
                     </Box>
@@ -823,7 +824,7 @@ function DetailsDrawer({ task, open, onClose, onEdit, onDelete, onMove, columns,
 
                     <Divider />
 
-                    <SectionTitle icon={<Tune fontSize="small" />}>
+                    <SectionTitle icon={<Tune fontSize="small" color="primary" />}>
                         Atualizar estágio
                     </SectionTitle>
 
@@ -899,7 +900,7 @@ function DetailsDrawer({ task, open, onClose, onEdit, onDelete, onMove, columns,
                         >
                             <CalendarMonthOutlined
                                 fontSize="small"
-                                color="action"
+                                color="primary"
                             />
 
                             <Typography
@@ -917,7 +918,7 @@ function DetailsDrawer({ task, open, onClose, onEdit, onDelete, onMove, columns,
                         >
                             <PersonOutline
                                 fontSize="small"
-                                color="action"
+                                color="primary"
                             />
 
                             <Typography
@@ -936,7 +937,7 @@ function DetailsDrawer({ task, open, onClose, onEdit, onDelete, onMove, columns,
                         >
                             <GroupOutlined
                                 fontSize="small"
-                                color="action"
+                                color="primary"
                             />
 
                             <Typography
@@ -952,7 +953,7 @@ function DetailsDrawer({ task, open, onClose, onEdit, onDelete, onMove, columns,
                     <Divider />
 
                     <SectionTitle
-                        icon={<CommentOutlined fontSize="small" />}
+                        icon={<CommentOutlined fontSize="small" color="primary" />}
                     >
                         Comentários
                     </SectionTitle>

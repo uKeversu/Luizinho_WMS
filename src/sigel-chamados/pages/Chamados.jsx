@@ -1659,20 +1659,11 @@ export default function Chamados() {
                                         </Typography>
                                     </Stack>
 
-                                    <Paper
-                                        variant="outlined"
-                                        sx={{
-                                            p: 1.5,
-                                            bgcolor: "action.hover",
-                                            borderColor: "divider",
-                                            whiteSpace: "pre-wrap",
-                                            overflowWrap: "anywhere",
-                                        }}
-                                    >
+                                    <Box sx={{ pt: 1 }}>
                                         <Typography variant="body2">
                                             {chamadoSelecionado.descricao}
                                         </Typography>
-                                    </Paper>
+                                    </Box>
                                 </Box>
 
                                 {/* INFORMAÇÕES */}
