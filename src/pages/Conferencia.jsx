@@ -9,8 +9,6 @@ import {
     Select, MenuItem, Stack
 } from "@mui/material";
 
-import PersonIcon from '@mui/icons-material/Person';
-import LogoutIcon from '@mui/icons-material/Logout';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SyncIcon from '@mui/icons-material/Sync';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
@@ -31,6 +29,22 @@ import NotificacoesMenu from "../components/Notificacoes";
 import '../style/App.css';
 
 function Conferencia() {
+
+    // Mede o tempo de execução de uma função assíncrona
+    const medirTempo = async (nome, funcao) => {
+        const inicio = performance.now();
+
+        try {
+            return await funcao();
+        } finally {
+            const tempo = performance.now() - inicio;
+
+            console.log(
+                `%c[PERFORMANCE] ${nome}: ${tempo.toFixed(2)} ms`,
+                "color: #00bcd4; font-weight: bold;"
+            );
+        }
+    };
 
     // Acessar outras pages        
     const navigate = useNavigate();
