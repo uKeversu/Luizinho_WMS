@@ -81,6 +81,12 @@ function MenuUsuario({ userInfo, onLogout }) {
             icone: <SupportAgentIcon fontSize="small" />
         },
         {
+            nome: "Ecommerce",
+            rota: "/Ecommerce",
+            permissao: null,
+            icone: <SupportAgentIcon fontSize="small" />
+        },
+        {
             nome: "Gamificação",
             rota: "/PainelGames",
             permissao: "pode_acessar_painel_games",

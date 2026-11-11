@@ -30,22 +30,6 @@ import '../style/App.css';
 
 function Conferencia() {
 
-    // Mede o tempo de execução de uma função assíncrona
-    const medirTempo = async (nome, funcao) => {
-        const inicio = performance.now();
-
-        try {
-            return await funcao();
-        } finally {
-            const tempo = performance.now() - inicio;
-
-            console.log(
-                `%c[PERFORMANCE] ${nome}: ${tempo.toFixed(2)} ms`,
-                "color: #00bcd4; font-weight: bold;"
-            );
-        }
-    };
-
     // Acessar outras pages        
     const navigate = useNavigate();
 

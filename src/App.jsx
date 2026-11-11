@@ -28,6 +28,7 @@ import Chat from "./sigel-chat/pages/Chat";
 import Kanban from "./sigel-kanban/pages/Kanban"
 import NotasGravadas from "./pages/NotasGravadas"
 import Chamados from "./sigel-chamados/pages/Chamados"
+import AlertaEstoque from "./sigel-ecommerce/pages/AlertasEstoque"
 
 import AlertaAutorizacaoManual from "./components/autorizacao/AlertaAutorizacaoManual";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -213,6 +214,11 @@ function App() {
           <Route
             path="/Chamados"
             element={<Chamados />}
+          />
+
+          <Route
+            path="/AlertaEstoque"
+            element={<AlertaEstoque />}
           />
 
           <Route
