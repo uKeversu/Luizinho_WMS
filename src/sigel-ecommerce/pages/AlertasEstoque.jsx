@@ -45,6 +45,7 @@ import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 
 import MenuUsuario from "../../components/MenuUsuario";
+import LoginFuncionario from "../../components/LoginFuncionario";
 import NotificacoesMenu from "../../components/Notificacoes";
 
 import "../../style/App.css";
@@ -549,6 +550,44 @@ function AlertaEstoque() {
         </Card>
     );
 
+    if (!token) {
+        return (
+            <LoginFuncionario
+                onLogin={(data) => {
+
+                    localStorage.setItem(
+                        "nfe_token",
+                        data.token
+                    );
+
+                    const user = {
+                        id: data.id,
+                        nome: data.nome,
+                        codigo: data.codigo,
+                        tipo: data.tipo,
+                        pode_autorizar_conferencia: data.pode_autorizar_conferencia,
+                        pode_corrigir_nfe: data.pode_corrigir_nfe,
+                        pode_finalizar_nfe: data.pode_finalizar_nfe,
+                        pode_acessar_alertas: data.pode_acessar_alertas,
+                        pode_acessar_cadastrar_funcionario: data.pode_acessar_cadastrar_funcionario,
+                        pode_acessar_painel_games: data.pode_acessar_painel_games,
+                        pode_acessar_painel_gerencial: data.pode_acessar_painel_gerencial,
+                        pode_acessar_reimprimir_senhas: data.pode_acessar_reimprimir_senhas,
+                        pode_acessar_tarefas: data.pode_acessar_tarefas,
+                    };
+
+                    localStorage.setItem(
+                        "user_info",
+                        JSON.stringify(user)
+                    );
+
+                    setUserInfo(user);
+                    setToken(data.token);
+                }}
+            />
+        );
+    }
+
     return (
         <Container
             maxWidth={false}
@@ -627,32 +666,24 @@ function AlertaEstoque() {
                             userInfo={userInfo}
                             onLogout={logout}
                         />
-                    </Stack>
+                        <Tooltip title="Voltar ao SIGEL">
 
-                    <Box
-                        sx={{
-                            display: "flex",
-                            justifyContent: "flex-end",
-                            mr: "2vh"
-                        }}
-                    >
-                        <Tooltip title="Voltar ao Dashboard de notas">
-                            <Button
+                            <IconButton
                                 onClick={() => navigate("/")}
                                 sx={{
                                     color: "white",
-                                    display: "flex",
-                                    gap: 0.5,
-                                    fontSize: "0.75rem",
-                                    minWidth: "auto",
-                                    padding: "4px 8px",
-                                    whiteSpace: "nowrap"
+                                    bgcolor:
+                                        "rgba(255,255,255,0.08)",
+                                    "&:hover": {
+                                        bgcolor:
+                                            "rgba(255,255,255,0.16)",
+                                    },
                                 }}
                             >
-                                Voltar <ArrowBackIcon />
-                            </Button>
+                                <ArrowBackIcon />
+                            </IconButton>
                         </Tooltip>
-                    </Box>
+                    </Stack>
                 </Box>
             </Box>
 
@@ -951,7 +982,7 @@ function AlertaEstoque() {
                             <TextField
                                 fullWidth
                                 size="small"
-                                placeholder="Buscar por código ou código de barras..."
+                                placeholder="Buscar por código da peça ou código de barras..."
                                 value={buscaEstoque}
                                 onChange={event =>
                                     setBuscaEstoque(event.target.value)
@@ -1098,7 +1129,7 @@ function AlertaEstoque() {
                             <TextField
                                 fullWidth
                                 size="small"
-                                placeholder="Buscar por código ou código de barras..."
+                                placeholder="Buscar por código da peça ou código de barras..."
                                 value={buscaEstoque}
                                 onChange={event =>
                                     setBuscaEstoque(event.target.value)

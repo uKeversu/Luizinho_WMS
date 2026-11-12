@@ -217,7 +217,7 @@ function App() {
           />
 
           <Route
-            path="/AlertaEstoque"
+            path="/ecommerce/dashboard"
             element={<AlertaEstoque />}
           />
 

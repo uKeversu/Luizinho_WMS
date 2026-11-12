@@ -29,6 +29,7 @@ import ChatIcon from '@mui/icons-material/Chat';
 import TaskIcon from '@mui/icons-material/Task';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
+import StorefrontIcon from '@mui/icons-material/Storefront';
 
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
@@ -82,9 +83,9 @@ function MenuUsuario({ userInfo, onLogout }) {
         },
         {
             nome: "Ecommerce",
-            rota: "/Ecommerce",
+            rota: "/ecommerce/dashboard",
             permissao: null,
-            icone: <SupportAgentIcon fontSize="small" />
+            icone: <StorefrontIcon fontSize="small" />
         },
         {
             nome: "Gamificação",
