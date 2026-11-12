@@ -230,7 +230,7 @@ export default function Temporadas() {
                     startIcon={<ArrowBack />}
                     variant="contained"
                     onClick={() =>
-                        navigate("/Produtividade")
+                        navigate("/produtividade")
                     }
                 >
                     Voltar

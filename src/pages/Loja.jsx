@@ -350,7 +350,7 @@ export default function Loja() {
                             <Button
                                 variant="contained"
                                 startIcon={<ArrowBack />}
-                                onClick={() => navigate("/Produtividade")}
+                                onClick={() => navigate("/produtividade")}
                             >
                                 Voltar
                             </Button>

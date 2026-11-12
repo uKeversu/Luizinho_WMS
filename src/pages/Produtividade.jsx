@@ -1884,7 +1884,7 @@ export default function Produtividade() {
                         variant="contained"
                         color="success"
                         startIcon={<Storefront />}
-                        onClick={() => navigate("/Loja")}
+                        onClick={() => navigate("/loja")}
                     >
                         Loja SigelCoins
                     </Button>
@@ -1893,7 +1893,7 @@ export default function Produtividade() {
                         variant="contained"
                         color="warning"
                         startIcon={<EmojiEventsIcon />}
-                        onClick={() => navigate("/Temporadas")}
+                        onClick={() => navigate("/temporadas")}
                     >
                         Temporadas Anteriores
                     </Button>

@@ -55,7 +55,7 @@ function App() {
           <Route path="/" element={<Dashboard />} />
 
           <Route
-            path="/Recebimento"
+            path="/recebimento"
             element={
               <ProtectedRoute permissao="pode_finalizar_nfe">
                 <Recebimentos />
@@ -64,12 +64,12 @@ function App() {
           />
 
           <Route
-            path="/Conferencia"
+            path="/conferencia"
             element={<Conferencia />}
           />
 
           <Route
-            path="/CadastrarFuncionario"
+            path="/cadastros/funcionario"
             element={
               <ProtectedRoute permissao="pode_acessar_cadastrar_funcionario">
                 <CadastrarFuncionario />
@@ -78,7 +78,7 @@ function App() {
           />
 
           <Route
-            path="/Alertas"
+            path="/alertas"
             element={
               <ProtectedRoute permissao="pode_acessar_alertas">
                 <Alertas />
@@ -112,7 +112,7 @@ function App() {
           />
 
           <Route
-            path="/AtualizarCean"
+            path="/notas/corrigir"
             element={
               <ProtectedRoute permissao="pode_corrigir_nfe">
                 <AtualizarCean />
@@ -121,32 +121,32 @@ function App() {
           />
 
           <Route
-            path="/ConsultaGeral"
+            path="/consulta/geral"
             element={<ConsultaGeral />}
           />
 
           <Route
-            path="/PainelReimpressao"
+            path="/reimpressao/etiquetas"
             element={<PainelReimpressao />}
           />
 
           <Route
-            path="/Produtividade"
+            path="/produtividade"
             element={<Produtividade />}
           />
 
           <Route
-            path="/ConsultaGuarda"
+            path="/consulta/guarda"
             element={<ConsultaGuarda />}
           />
 
           <Route
-            path="/HistoricoLogs/:notaId"
+            path="/notas/logs/:notaId"
             element={<HistoricoLogs />}
           />
 
           <Route
-            path="/ReimprimirSenhas"
+            path="/reimpressao/permissoes"
             element={
               <ProtectedRoute permissao="pode_acessar_reimprimir_senhas">
                 <ReimprimirSenhas />
@@ -164,7 +164,7 @@ function App() {
           />
 
           <Route
-            path="/PainelGerencial"
+            path="/notas/atribuir"
             element={
               <ProtectedRoute permissao="pode_acessar_painel_gerencial">
                 <PainelGerencial />
@@ -178,17 +178,17 @@ function App() {
           />
 
           <Route
-            path="/Temporadas"
+            path="/temporadas"
             element={<Temporadas />}
           />
 
           <Route
-            path="/Loja"
+            path="/loja"
             element={<Loja />}
           />
 
           <Route
-            path="/PainelGames"
+            path="/games/painel"
             element={
               <ProtectedRoute permissao="pode_acessar_painel_games">
                 <PainelGames />
@@ -202,17 +202,17 @@ function App() {
           />
 
           <Route
-            path="/Chat"
+            path="/chat"
             element={<Chat />}
           />
 
           <Route
-            path="/Kanban"
+            path="/kanban"
             element={<Kanban />}
           />
 
           <Route
-            path="/Chamados"
+            path="/desk"
             element={<Chamados />}
           />
 
@@ -222,7 +222,7 @@ function App() {
           />
 
           <Route
-            path="/NotasGravadas"
+            path="/notas/gravadas"
             element={
               <ProtectedRoute
                 permissao={[
@@ -236,7 +236,7 @@ function App() {
           />
 
           <Route
-            path="/Tarefas"
+            path="/tarefas"
             element={
               <ProtectedRoute permissao="pode_acessar_tarefas">
                 <Tarefas />

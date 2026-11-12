@@ -228,7 +228,7 @@ function Rastreio({ tipo = "unidade" }) {
 
                         <Button
                             startIcon={<ArrowBackIcon />}
-                            onClick={() => navigate("/ConsultaGeral")}
+                            onClick={() => navigate("/consulta/geral")}
                             sx={{ mt: 3 }}
                         >
                             Voltar
@@ -335,7 +335,7 @@ function Rastreio({ tipo = "unidade" }) {
 
 
                 <Button
-                    onClick={() => navigate("/ConsultaGeral")}
+                    onClick={() => navigate("/consulta/geral")}
                     sx={{
                         color: "background.paper",
                         display: "flex",

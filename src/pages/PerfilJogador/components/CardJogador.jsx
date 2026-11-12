@@ -155,7 +155,7 @@ export default function CardJogador({
                     {!preview && (
                         <Button
                             onClick={() =>
-                                navigate("/Produtividade")
+                                navigate("/produtividade")
                             }
                             sx={{
                                 color: "background.paper",

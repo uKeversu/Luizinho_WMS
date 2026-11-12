@@ -47,37 +47,37 @@ function MenuUsuario({ userInfo, onLogout }) {
     const paginas = [
         {
             nome: "Alertas",
-            rota: "/Alertas",
+            rota: "/alertas",
             permissao: "pode_acessar_alertas",
             icone: <WarningIcon fontSize="small" />
         },
         {
             nome: "Atribuir Notas",
-            rota: "/PainelGerencial",
+            rota: "/notas/atribuir",
             permissao: "pode_acessar_painel_gerencial",
             icone: <AssignmentTurnedInIcon fontSize="small" />
         },
         {
             nome: "Cadastrar Funcionário",
-            rota: "/CadastrarFuncionario",
+            rota: "/cadastros/funcionario",
             permissao: "pode_acessar_cadastrar_funcionario",
             icone: <PersonAddIcon fontSize="small" />
         },
         {
             nome: "Chat",
-            rota: "/Chat",
+            rota: "/chat",
             permissao: null,
             icone: <ChatIcon fontSize="small" />
         },
         {
             nome: "Correção de Notas",
-            rota: "/AtualizarCean",
+            rota: "/notas/corrigir",
             permissao: "pode_corrigir_nfe",
             icone: <BorderColorIcon fontSize="small" />
         },
         {
             nome: "Desk",
-            rota: "/Chamados",
+            rota: "/desk",
             permissao: null,
             icone: <SupportAgentIcon fontSize="small" />
         },
@@ -89,19 +89,19 @@ function MenuUsuario({ userInfo, onLogout }) {
         },
         {
             nome: "Gamificação",
-            rota: "/PainelGames",
+            rota: "/games/painel",
             permissao: "pode_acessar_painel_games",
             icone: <SportsEsportsIcon fontSize="small" />
         },
         {
             nome: "Kanban",
-            rota: "/Kanban",
+            rota: "/kanban",
             permissao: null,
             icone: <ViewKanbanIcon fontSize="small" />
         },
         {
             nome: "Notas Gravadas",
-            rota: "/NotasGravadas",
+            rota: "/notas/gravadas",
             permissao: [
                 "pode_acessar_painel_gerencial",
                 "pode_corrigir_nfe"
@@ -110,19 +110,19 @@ function MenuUsuario({ userInfo, onLogout }) {
         },
         {
             nome: "Produtividade",
-            rota: "/Produtividade",
+            rota: "/produtividade",
             permissao: null,
             icone: <LeaderboardIcon fontSize="small" />
         },
         {
             nome: "Recebimento",
-            rota: "/Recebimento",
+            rota: "/recebimento",
             permissao: "pode_finalizar_nfe",
             icone: <LocalShippingIcon fontSize="small" />
         },
         {
             nome: "Tarefas",
-            rota: "/Tarefas",
+            rota: "/tarefas",
             permissao: "pode_acessar_tarefas",
             icone: <AssignmentIcon fontSize="small" />
         }

@@ -543,7 +543,7 @@ function Dashboard({ tipo }) {
 
     // Logs de conferência
     const abrirHistoricoLogs = (nota) => {
-        navigate(`/HistoricoLogs/${nota.id}`);
+        navigate(`/notas/logs/${nota.id}`);
     };
 
     // Altera status para pendente
@@ -1039,7 +1039,7 @@ function Dashboard({ tipo }) {
 
                             <Tooltip title="Reimprimir etiquetas">
                                 <Button
-                                    onClick={() => navigate("/PainelReimpressao")}
+                                    onClick={() => navigate("/reimpressao/etiquetas")}
                                     sx={{
                                         color: "background.paper",
                                         display: 'flex',
@@ -1060,7 +1060,7 @@ function Dashboard({ tipo }) {
 
                             <Tooltip title="Consultar notas e itens">
                                 <Button
-                                    onClick={() => navigate("/ConsultaGeral")}
+                                    onClick={() => navigate("/consulta/geral")}
                                     sx={{
                                         color: "background.paper",
                                         display: 'flex',
@@ -1078,7 +1078,7 @@ function Dashboard({ tipo }) {
 
                             <Tooltip title="Consultar guarda de itens">
                                 <Button
-                                    onClick={() => navigate("/ConsultaGuarda")}
+                                    onClick={() => navigate("/consulta/guarda")}
                                     sx={{
                                         color: "background.paper",
                                         display: 'flex',
@@ -1391,7 +1391,7 @@ function Dashboard({ tipo }) {
                                     return;
                                 }
 
-                                navigate("/Conferencia", {
+                                navigate("/conferencia", {
                                     state: { notas: notasValidas }
                                 });
                             }}

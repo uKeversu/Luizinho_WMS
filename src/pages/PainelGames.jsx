@@ -737,7 +737,7 @@ export default function PainelGames() {
 
                         <Paper
                             elevation={0}
-                            onClick={() => navigate("/Temporadas")}
+                            onClick={() => navigate("/temporadas")}
                             sx={{
                                 p: 2.5,
                                 borderRadius: 4,
@@ -788,7 +788,7 @@ export default function PainelGames() {
 
                         <Paper
                             elevation={0}
-                            onClick={() => navigate("/Loja")}
+                            onClick={() => navigate("/loja")}
                             sx={{
                                 p: 2.5,
                                 borderRadius: 4,
@@ -839,7 +839,7 @@ export default function PainelGames() {
 
                         <Paper
                             elevation={0}
-                            onClick={() => navigate("/Produtividade")}
+                            onClick={() => navigate("/produtividade")}
                             sx={{
                                 p: 2.5,
                                 borderRadius: 4,
