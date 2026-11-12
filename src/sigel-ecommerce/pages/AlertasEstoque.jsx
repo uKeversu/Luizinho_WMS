@@ -8,6 +8,10 @@ import {
     Card,
     CardContent,
     Chip,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
     Divider,
     Box,
     TextField,
@@ -43,6 +47,8 @@ import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import StorefrontIcon from "@mui/icons-material/Storefront";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+import ScienceOutlinedIcon from "@mui/icons-material/ScienceOutlined";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 
 import MenuUsuario from "../../components/MenuUsuario";
 import LoginFuncionario from "../../components/LoginFuncionario";
@@ -151,7 +157,7 @@ function AlertaEstoque() {
 
     const navigate = useNavigate();
 
-    const API = "http://192.168.1.185:6062";
+    const API = "http://192.168.1.185:8077";
 
     const ROTAS = {
         vendas: "/api/vendas-ml",
@@ -190,6 +196,8 @@ function AlertaEstoque() {
     };
 
     // ESTADOS
+    const [abrirAvisoTestes, setAbrirAvisoTestes] = useState(true);
+
     const [vendas, setVendas] = useState([]);
     const [estoque, setEstoque] = useState([]);
 
@@ -1369,6 +1377,139 @@ function AlertaEstoque() {
                     </Typography>
                 </>
             )}
+
+            <Dialog
+                open={abrirAvisoTestes}
+                onClose={() => setAbrirAvisoTestes(false)}
+                fullWidth
+                maxWidth="sm"
+                slotProps={{
+                    paper: {
+                        sx: {
+                            bgcolor: "background.default",
+                            color: "text.primary",
+                            borderRadius: 3,
+                            border: "1px solid",
+                            borderColor: "divider",
+                        },
+                    },
+                }}
+            >
+                <DialogTitle
+                    sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1.5,
+                        fontWeight: 700,
+                        pb: 1,
+                    }}
+                >
+                    <ScienceOutlinedIcon
+                        sx={{
+                            color: "#F59E0B",
+                            fontSize: 30,
+                        }}
+                    />
+
+                    <Typography
+                        component="span"
+                        variant="h6"
+                        fontWeight={700}
+                    >
+                        SIGEL Ecommerce • Em desenvolvimento
+                    </Typography>
+                </DialogTitle>
+
+                <DialogContent>
+                    <Typography
+                        variant="body1"
+                        fontWeight={600}
+                        sx={{ mb: 2 }}
+                    >
+                        O módulo Ecommerce está em fase de testes e
+                        aprimoramento.
+                    </Typography>
+
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                            lineHeight: 1.8,
+                            mb: 2,
+                        }}
+                    >
+                        Durante esse período, podem ocorrer ajustes,
+                        mudanças e melhorias nas funcionalidades. Sua
+                        participação é muito importante para que possamos
+                        tornar a ferramenta cada vez mais útil para a equipe.
+                    </Typography>
+
+                    <Typography
+                        variant="body1"
+                        fontWeight={600}
+                        sx={{ mb: 1 }}
+                    >
+                        Encontrou algum problema ou tem uma sugestão de
+                        melhoria?
+                    </Typography>
+
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                            lineHeight: 1.8,
+                            mb: 2,
+                        }}
+                    >
+                        Envie seu feedback ao Setor de Desenvolvimento pelo
+                        WhatsApp
+                    </Typography>
+
+                    <Divider sx={{ mb: 2 }} />
+
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                            textAlign: "center",
+                            fontStyle: "italic",
+                        }}
+                    >
+                        Agradecemos pela colaboração! 🚀
+                    </Typography>
+                </DialogContent>
+
+                <DialogActions
+                    sx={{
+                        px: 3,
+                        pb: 3,
+                        justifyContent: "space-between",
+                        gap: 1,
+                    }}
+                >
+                    <Button
+                        variant="contained"
+                        color="success"
+                        startIcon={<WhatsAppIcon />}
+                        onClick={() => {
+                            window.open(
+                                "https://wa.me/554791692664",
+                                "_blank",
+                                "noopener,noreferrer"
+                            );
+                        }}
+                    >
+                        Enviar sugestão
+                    </Button>
+
+                    <Button
+                        variant="contained"
+                        onClick={() => setAbrirAvisoTestes(false)}
+                    >
+                        Entendi, continuar
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
             {/* SNACKBAR */}
 
