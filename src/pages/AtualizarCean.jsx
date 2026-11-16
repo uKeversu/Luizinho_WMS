@@ -94,7 +94,8 @@ function AtualizarCean() {
         "M2vH7pK9DdS4jW",
         "L5vN1pK7DtS8v3W",
         "K9xT4",
-        "014083112361289231440"
+        "014083112361289231440",
+        "122772"
     ];
 
     const [chupisco, setChupisco] = useState("");

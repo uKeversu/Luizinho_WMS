@@ -812,16 +812,16 @@ function AlertaEstoque() {
                             <CardIndicador
                                 titulo="Estoque positivo"
                                 valor={indicadores.positivos.toLocaleString("pt-BR")}
-                                descricao={`${indicadores.totalPositivo.toLocaleString("pt-BR")} unidades disponíveis`}
+                                descricao={`${indicadores.totalPositivo.toLocaleString("pt-BR")} unidades reservadas`}
                                 icone={<TrendingUpIcon fontSize="large" />}
-                                cor="#2e7d32"
-                                fundo="rgba(46, 125, 50, 0.10)"
+                                cor="#ed6c02"
+                                fundo="rgba(237, 108, 2, 0.10)"
                             />
 
                             <CardIndicador
                                 titulo="Estoque negativo"
                                 valor={indicadores.negativos.toLocaleString("pt-BR")}
-                                descricao={`${indicadores.totalNegativo.toLocaleString("pt-BR")} unidades em déficit`}
+                                descricao={`${indicadores.totalNegativo.toLocaleString("pt-BR")} unidades negativadas`}
                                 icone={<TrendingDownIcon fontSize="large" />}
                                 cor="#d32f2f"
                                 fundo="rgba(211, 47, 47, 0.10)"
@@ -830,10 +830,10 @@ function AlertaEstoque() {
                             <CardIndicador
                                 titulo="Estoque zerado"
                                 valor={indicadores.zerados.toLocaleString("pt-BR")}
-                                descricao="Produtos sem saldo"
+                                descricao="Unidades sem pendências"
                                 icone={<RemoveCircleOutlineIcon fontSize="large" />}
-                                cor="#ed6c02"
-                                fundo="rgba(237, 108, 2, 0.10)"
+                                cor="#2e7d32"
+                                fundo="rgba(46, 125, 50, 0.10)"
                             />
                         </Box>
                     </Box>
@@ -915,21 +915,21 @@ function AlertaEstoque() {
                                                     size="small"
                                                     color="success"
                                                     label={`+ ${empresa.positivos}`}
-                                                    sx={{ color: 'text.primary' }}
+                                                    sx={{ color: 'primary.branco' }}
                                                 />
 
                                                 <Chip
                                                     size="small"
                                                     color="error"
                                                     label={`- ${empresa.negativos}`}
-                                                    sx={{ color: 'text.primary' }}
+                                                    sx={{ color: 'primary.branco' }}
                                                 />
 
                                                 <Chip
                                                     size="small"
                                                     color="warning"
                                                     label={`0 ${empresa.zerados}`}
-                                                    sx={{ color: 'text.primary' }}
+                                                    sx={{ color: 'primary.branco' }}
                                                 />
                                             </Stack>
                                         </CardContent>
@@ -980,7 +980,7 @@ function AlertaEstoque() {
                             <Chip
                                 color="error"
                                 label={`${estoqueFiltrado.filter(item => item._saldo < 0).length} produtos`}
-                                sx={{ color: 'text.primary' }}
+                                sx={{ color: 'primary.branco' }}
                             />
                         </Box>
 
@@ -1060,7 +1060,7 @@ function AlertaEstoque() {
                                                         size="small"
                                                         color="error"
                                                         label={item._saldo}
-                                                        sx={{ color: 'text.primary' }}
+                                                        sx={{ color: 'primary.branco' }}
                                                     />
                                                 </TableCell>
                                             </TableRow>
@@ -1127,7 +1127,7 @@ function AlertaEstoque() {
                             <Chip
                                 color="success"
                                 label={`${estoqueFiltrado.filter(item => item._saldo > 0).length} produtos`}
-                                sx={{ color: 'text.primary' }}
+                                sx={{ color: 'primary.branco' }}
                             />
                         </Box>
 
@@ -1207,7 +1207,7 @@ function AlertaEstoque() {
                                                         size="small"
                                                         color="success"
                                                         label={item._saldo}
-                                                        sx={{ color: 'text.primary' }}
+                                                        sx={{ color: 'primary.branco' }}
                                                     />
                                                 </TableCell>
                                             </TableRow>
@@ -1274,7 +1274,7 @@ function AlertaEstoque() {
                             <Chip
                                 color="error"
                                 label={`${vendasFiltradas.length} vendas`}
-                                sx={{ color: 'text.primary' }}
+                                sx={{ color: 'primary.branco' }}
                             />
                         </Box>
 
@@ -1530,7 +1530,7 @@ function AlertaEstoque() {
                     }
                     severity={snackbar.tipo}
                     variant="filled"
-                    sx={{ width: "100%", color: 'text.primary' }}
+                    sx={{ width: "100%", color: 'primary.branco' }}
                 >
                     {snackbar.mensagem}
                 </Alert>

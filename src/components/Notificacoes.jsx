@@ -342,7 +342,7 @@ export default function Notificacoes({ apiBase, token, userInfo }) {
             if (
                 notificacao.tipo === "NOVO_CHAMADO"
             ) {
-                navigate("/Chamados");
+                navigate("/desk");
                 return;
             }
 
