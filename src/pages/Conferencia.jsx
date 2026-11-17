@@ -78,6 +78,7 @@ function Conferencia() {
     const [solicitacaoManualId, setSolicitacaoManualId] = useState(null);
     const [statusAutorizacao, setStatusAutorizacao] = useState(null);
     const [superiorAtendimento, setSuperiorAtendimento] = useState(null);
+    const [superiorNome, setSuperiorNome] = useState(null);
     const [codigoManualPendente, setCodigoManualPendente] = useState(null);
     const [codigoCracha, setCodigoCracha] = useState("");
     const [pinSuperior, setPinSuperior] = useState("");
@@ -558,6 +559,10 @@ function Conferencia() {
                     setSuperiorAtendimento(
                         superiorNome
                     );
+
+                    setSuperiorNome(
+                        superiorNome
+                    )
                 }
 
                 // AUTORIZADA
@@ -1171,7 +1176,8 @@ function Conferencia() {
         acao,
         caixa = null,
         quantidade = null,
-        observacao = ""
+        observacao = "",
+        superior = null
     }) => {
 
         try {
@@ -1179,7 +1185,7 @@ function Conferencia() {
             console.log({
                 nfe_item_id: item?.id ?? null,
                 nota_id: notaAtual?.id,
-                usuario: userInfo.codigo,
+                usuario: superior || userInfo.codigo,
                 acao,
                 local_anterior: item?.localizacao ?? null,
                 local_novo: item?.localizacao ?? null,
@@ -3606,20 +3612,21 @@ function Conferencia() {
                 return false;
             }
 
-            /* LIMPA ESTADO DA AUTORIZAÇÃO */
-            setBloqueioManual(false);
-            setSolicitacaoManualId(null);
-            setStatusAutorizacao(null);
-            setSuperiorAtendimento(null);
-            setCodigoManualPendente(null);
-
-            setCodigo("");
+            console.log("Superior:", superiorNome)
 
             registrarLog({
                 acao: "Autorização manual utilizada",
                 observacao:
-                    `Código autorizado: ${codigoAutorizado}`
+                    `${codigoAutorizado} autorizado por: ${superiorNome}`
             });
+
+            /* LIMPA ESTADO DA AUTORIZAÇÃO */
+            setBloqueioManual(false);
+            setSolicitacaoManualId(null);
+            setStatusAutorizacao(null);
+            setCodigoManualPendente(null);
+
+            setCodigo("");
 
             /* Entra no fluxo normal de conferência */
 
