@@ -29,6 +29,7 @@ import Kanban from "./sigel-kanban/pages/Kanban"
 import NotasGravadas from "./pages/NotasGravadas"
 import Chamados from "./sigel-chamados/pages/Chamados"
 import AlertaEstoque from "./sigel-ecommerce/pages/AlertasEstoque"
+import Certificados from "./pages/Certificados"
 
 import AlertaAutorizacaoManual from "./components/autorizacao/AlertaAutorizacaoManual";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -73,6 +74,15 @@ function App() {
             element={
               <ProtectedRoute permissao="pode_acessar_cadastrar_funcionario">
                 <CadastrarFuncionario />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/certificados"
+            element={
+              <ProtectedRoute permissao="pode_acessar_alertas">
+                <Certificados />
               </ProtectedRoute>
             }
           />

@@ -32,6 +32,7 @@ import IconButton from "@mui/material/IconButton";
 import LightModeIcon from '@mui/icons-material/LightMode';
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 
 // Componentes
 import MenuUsuario from "../components/MenuUsuario";
@@ -1026,6 +1027,23 @@ function Recebimentos() {
                                 mr: "2vh"
                             }}
                         >
+                            <Tooltip title="Notas em trânsito">
+                                <Button
+                                    onClick={() => navigate("/NotasEmTransito")}
+                                    sx={{
+                                        color: "background.paper",
+                                        display: 'flex',
+                                        gap: 0.5,
+                                        fontSize: '0.75rem',
+                                        minWidth: 'auto',
+                                        padding: '4px 8px',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    Em Trânsito
+                                    {< LocalShippingIcon />}
+                                </Button>
+                            </Tooltip>
                             <Tooltip title="Dashboard de notas recebidas">
                                 <Button
                                     onClick={() => navigate("/")}
@@ -1043,6 +1061,7 @@ function Recebimentos() {
                                     {< ArticleIcon />}
                                 </Button>
                             </Tooltip>
+
                             <pre id="resultado"></pre>
                         </Box>
                     </Box>

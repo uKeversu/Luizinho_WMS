@@ -250,10 +250,6 @@ function SectionTitle({ icon, children }) {
     );
 }
 
-// ============================================================
-// COMPONENTE PRINCIPAL
-// ============================================================
-
 export default function Chamados() {
     const navigate = useNavigate();
 
@@ -747,9 +743,7 @@ export default function Chamados() {
     return (
         <Box sx={{ p: { xs: 1.5, md: 3 }, minHeight: "100%" }}>
 
-            {/* =====================================================
-                CABEÇALHO E NAVEGAÇÃO
-            ====================================================== */}
+            {/* CABEÇALHO E NAVEGAÇÃO */}
 
             <Paper
                 elevation={0}
@@ -860,11 +854,6 @@ export default function Chamados() {
 
                 </Box>
             </Paper>
-
-
-            {/* =====================================================
-                CONTEÚDO
-            ====================================================== */}
 
             <Box
                 sx={{
@@ -1338,11 +1327,7 @@ export default function Chamados() {
                 </Paper>
             </Box>
 
-
-            {/* =====================================================
-                DIALOG: NOVO CHAMADO
-            ====================================================== */}
-
+            {/* NOVO CHAMADO */}
             <Dialog
                 open={dialogNovo}
                 onClose={() => !salvando && setDialogNovo(false)}
@@ -1494,14 +1479,6 @@ export default function Chamados() {
                     </Button>
                 </DialogActions>
             </Dialog>
-
-
-            {/* DIALOG: DETALHES DO CHAMADO */}
-
-
-            {/* =====================================================
-    DRAWER: DETALHES DO CHAMADO
-====================================================== */}
 
             <Drawer
                 anchor="right"

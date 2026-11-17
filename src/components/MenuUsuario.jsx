@@ -30,6 +30,7 @@ import TaskIcon from '@mui/icons-material/Task';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import StorefrontIcon from '@mui/icons-material/Storefront';
+import SecurityIcon from '@mui/icons-material/Security';
 
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
@@ -62,6 +63,12 @@ function MenuUsuario({ userInfo, onLogout }) {
             rota: "/cadastros/funcionario",
             permissao: "pode_acessar_cadastrar_funcionario",
             icone: <PersonAddIcon fontSize="small" />
+        },
+        {
+            nome: "Certificados",
+            rota: "/certificados",
+            permissao: "pode_acessar_alertas",
+            icone: <SecurityIcon fontSize="small" />
         },
         {
             nome: "Chat",
