@@ -373,6 +373,12 @@ function TaskFormDialog({
                         value={form.titulo}
                         onChange={(e) => update("titulo", e.target.value)}
                         required
+                        autoComplete="off"
+                        inputProps={{
+                            spellCheck: false,
+                            autoCorrect: "off",
+                            autoCapitalize: "off",
+                        }}
                     />
 
                     <TextField
@@ -383,6 +389,12 @@ function TaskFormDialog({
                         inputRef={observacaoRef}
                         value={form.descricao}
                         onChange={(e) => update("descricao", e.target.value)}
+                        autoComplete="off"
+                        inputProps={{
+                            spellCheck: false,
+                            autoCorrect: "off",
+                            autoCapitalize: "off",
+                        }}
                     />
 
                     <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
@@ -420,6 +432,12 @@ function TaskFormDialog({
                             InputLabelProps={{ shrink: true }}
                             value={form.prazo}
                             onChange={(e) => update("prazo", e.target.value)}
+                            autoComplete="off"
+                            inputProps={{
+                                spellCheck: false,
+                                autoCorrect: "off",
+                                autoCapitalize: "off",
+                            }}
                         />
                     </Stack>
 
@@ -1041,6 +1059,12 @@ function DetailsDrawer({ task, open, onClose, onEdit, onDelete, onMove, columns,
                                 borderColor: "text.secondary",
                             },
                         }}
+                        autoComplete="off"
+                        inputProps={{
+                            spellCheck: false,
+                            autoCorrect: "off",
+                            autoCapitalize: "off",
+                        }}
                     />
 
                     <Button
@@ -1611,6 +1635,12 @@ export default function Kanban() {
                                         <InputAdornment position="start">
                                             <Search fontSize="small" />
                                         </InputAdornment>
+                                }}
+                                autoComplete="off"
+                                inputProps={{
+                                    spellCheck: false,
+                                    autoCorrect: "off",
+                                    autoCapitalize: "off",
                                 }} />
                             {isMobile &&
                                 <Button variant="contained" startIcon={<FilterAltOutlined />}

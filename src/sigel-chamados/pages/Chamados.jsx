@@ -144,6 +144,28 @@ function formatarData(valor, incluirHora = true) {
     );
 }
 
+function formatarDataResolvido(valor, incluirHora = true) {
+    if (!valor) return "-";
+
+    const data = new Date(valor);
+
+    if (Number.isNaN(data.getTime())) return valor;
+
+    return data.toLocaleString("pt-BR", incluirHora
+        ? {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+        }
+        : {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+        }
+    );
+}
 
 function nomeStatus(valor) {
     return STATUS.find((item) => item.value === valor)?.label || valor;
@@ -1038,6 +1060,13 @@ export default function Chamados() {
                                         </InputAdornment>
                                     ),
                                 }}
+                                autoComplete="off"
+                                inputProps={{
+                                    maxLength: 10000,
+                                    spellCheck: false,
+                                    autoCorrect: "off",
+                                    autoCapitalize: "off",
+                                }}
                             />
                         </Grid>
 
@@ -1363,8 +1392,14 @@ export default function Chamados() {
                             placeholder="Ex.: Problema no recebimento de mercadorias"
                             value={novoTitulo}
                             onChange={(event) => setNovoTitulo(event.target.value)}
-                            inputProps={{ maxLength: 255 }}
                             required
+                            autoComplete="off"
+                            inputProps={{
+                                maxLength: 255,
+                                spellCheck: false,
+                                autoCorrect: "off",
+                                autoCapitalize: "off",
+                            }}
                         />
 
                         <TextField
@@ -1375,7 +1410,13 @@ export default function Chamados() {
                             placeholder="Descreva o problema, a solicitação ou a necessidade..."
                             value={novaDescricao}
                             onChange={(event) => setNovaDescricao(event.target.value)}
-                            inputProps={{ maxLength: 10000 }}
+                            autoComplete="off"
+                            inputProps={{
+                                maxLength: 10000,
+                                spellCheck: false,
+                                autoCorrect: "off",
+                                autoCapitalize: "off",
+                            }}
                             required
                         />
 
@@ -1708,7 +1749,7 @@ export default function Chamados() {
                                                     Resolvido em
                                                 </Typography>
                                                 <Typography variant="body2" fontWeight={700}>
-                                                    {formatarData(chamadoSelecionado.resolvido_em)}
+                                                    {formatarDataResolvido(chamadoSelecionado.resolvido_em)}
                                                 </Typography>
                                             </Box>
                                         </Stack>
@@ -1919,7 +1960,13 @@ export default function Chamados() {
                                             placeholder="Escreva um comentário..."
                                             value={novoComentario}
                                             onChange={(event) => setNovoComentario(event.target.value)}
-                                            inputProps={{ maxLength: 10000 }}
+                                            autoComplete="off"
+                                            inputProps={{
+                                                maxLength: 10000,
+                                                spellCheck: false,
+                                                autoCorrect: "off",
+                                                autoCapitalize: "off",
+                                            }}
                                         />
 
                                         <Button
@@ -2056,8 +2103,15 @@ export default function Chamados() {
                         placeholder="Explique por que este chamado será cancelado..."
                         value={motivoCancelamento}
                         onChange={(event) => setMotivoCancelamento(event.target.value)}
-                        inputProps={{ maxLength: 2000 }}
+                        autoComplete="off"
+                        inputProps={{
+                            maxLength: 10000,
+                            spellCheck: false,
+                            autoCorrect: "off",
+                            autoCapitalize: "off",
+                        }}
                         required
+
                     />
                 </DialogContent>
 
