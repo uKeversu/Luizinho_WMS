@@ -244,33 +244,50 @@ function PainelReimpressao() {
 `;
     };
 
-    // Etiqueta apenas código de barras
     const gerarZPLBarcode = (unidade) => {
-        const cean =
-            unidade.cean ||
-            unidade.cod_produto;
+        const codigo = String(unidade.cean ?? "").trim();
+
+        if (!/^\d+$/.test(codigo)) {
+            throw new Error(`Código inválido: ${codigo}`);
+        }
+
+        let barcode;
+
+        if (codigo.length === 13) {
+            // EAN-13: envia os 12 primeiros dígitos.
+            // A impressora calcula o dígito verificador.
+            barcode = `
+^BY3,2,100
+^FO30,40
+^BEN,100,Y,N
+^FD${codigo.substring(0, 12)}^FS
+`;
+        } else {
+            // Códigos internos: Code 128
+            barcode = `
+^BY2,2,100
+^FO30,40
+^BCN,100,Y,N,N
+^FD${codigo}^FS
+`;
+        }
+
         return `
 ^XA
 ^PW400
 ^LL180
 ^LH0,0
 
-^FO150,30
+^FO100,8
 ^A0N,25,25
-^FD${unidade.basico}^FS
+^FD${unidade.basico || ""}^FS
 
-^FO10,80
-^BY3,100
-^BCN,100,Y,N,N
-^FD${cean}^FS
-
-^FO10,150
-^A0N,25,25
-^FD${cean}^FS
+${barcode}
 
 ^XZ
 `;
     };
+
 
     // Etiqueta Bremsys
     const gerarZPLBremsys = (unidade, qr) => {
