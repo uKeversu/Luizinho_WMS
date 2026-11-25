@@ -12,6 +12,8 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 import LoginFuncionario from "../components/LoginFuncionario";
 
+import { quantidadeValida } from "./validarQuantidade";
+
 function Conferencia() {
     const navigate = useNavigate();
 
@@ -281,6 +283,16 @@ function Conferencia() {
 
         const novosItens = [...itens];
         const item = novosItens[index];
+
+        if (!quantidadeValida(item.quantidade)) {
+            setSnackbar({
+                open: true,
+                message: "Quantidade inválida para conferência",
+                severity: "warning"
+            });
+            setCodigo("");
+            return;
+        }
 
         const codigoExibicao =
             item.codigo_barras && item.codigo_barras !== "SEM GTIN"
