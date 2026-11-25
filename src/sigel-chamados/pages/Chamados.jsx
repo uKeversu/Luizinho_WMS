@@ -699,7 +699,7 @@ export default function Chamados() {
     );
 
     const podeCancelar = (chamado) => (
-        !chamado.cancelado &&
+        !chamado.cancelado && chamado.status !== "RESOLVIDO" &&
         Number(chamado.solicitante_id) === funcionarioId
     );
 

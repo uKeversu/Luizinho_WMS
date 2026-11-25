@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -41,8 +40,6 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import SearchIcon from "@mui/icons-material/Search";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
-import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import StorefrontIcon from "@mui/icons-material/Storefront";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
@@ -56,12 +53,15 @@ import NotificacoesMenu from "../../components/Notificacoes";
 
 import "../../style/App.css";
 
-// Empresas do Ecommerce
+// Empresas do Ecommerce (nomes de exibição)
+// Ajuste o nome da 0004 conforme o cadastro real.
 const EMPRESAS = {
-    "0002": "Nova Geração",
     "0003": "Cani Auto Peças",
+    "0004": "Empresa 0004",
     "0005": "Cani Parts"
 };
+
+const nomeEmpresa = (codigo) => EMPRESAS[codigo] || `Empresa ${codigo}`;
 
 // Retorna o primeiro campo existente entre as opções
 function obterCampo(objeto, campos, padrao = "") {
@@ -157,11 +157,10 @@ function AlertaEstoque() {
 
     const navigate = useNavigate();
 
-    const API = "http://192.168.1.185:8077";
+    const API = "http://192.168.1.184:7079";
 
     const ROTAS = {
-        vendas: "/api/vendas-ml",
-        estoque: "/api/estoque-ml"
+        estoque: "/api/estoque_empresas"
     };
 
     // LOGIN E LOGOUT
@@ -200,6 +199,9 @@ function AlertaEstoque() {
 
     const [vendas, setVendas] = useState([]);
     const [estoque, setEstoque] = useState([]);
+    const [resumoEmpresas, setResumoEmpresas] = useState([]);
+    const [empresasApi, setEmpresasApi] = useState([]);
+    const [baseCalculo, setBaseCalculo] = useState("qtatua");
 
     const [loading, setLoading] = useState(true);
     const [atualizando, setAtualizando] = useState(false);
@@ -263,6 +265,8 @@ function AlertaEstoque() {
                 ]);
 
             let houveErro = false;
+            let houveErroNasCanceladas = false;
+            let houveErroNoEstoque = false;
 
             if (resultadoVendas.status === "fulfilled") {
                 const registrosVendas = extrairRegistros(
@@ -273,6 +277,7 @@ function AlertaEstoque() {
                 setVendas(registrosVendas);
             } else {
                 houveErro = true;
+                houveErroNasCanceladas = true;
                 console.error(
                     "[Ecommerce] Erro ao consultar vendas:",
                     resultadoVendas.reason
@@ -280,21 +285,39 @@ function AlertaEstoque() {
             }
 
             if (resultadoEstoque.status === "fulfilled") {
-                const registrosEstoque = extrairRegistros(
-                    resultadoEstoque.value,
-                    ["estoque", "produtos", "dados", "itens", "resultados"]
+                const dadosEstoque = resultadoEstoque.value;
+
+                // Novo formato: { itens, resumo_por_empresa, empresas, base_calculo }
+                setEstoque(
+                    extrairRegistros(
+                        dadosEstoque,
+                        ["itens", "estoque", "produtos", "dados", "resultados"]
+                    )
                 );
 
-                setEstoque(registrosEstoque);
+                setResumoEmpresas(
+                    Array.isArray(dadosEstoque?.resumo_por_empresa)
+                        ? dadosEstoque.resumo_por_empresa
+                        : []
+                );
+
+                setEmpresasApi(
+                    Array.isArray(dadosEstoque?.empresas)
+                        ? dadosEstoque.empresas
+                        : []
+                );
+
+                setBaseCalculo(dadosEstoque?.base_calculo || "qtatua");
             } else {
                 houveErro = true;
+                houveErroNoEstoque = true;
                 console.error(
                     "[Ecommerce] Erro ao consultar estoque:",
                     resultadoEstoque.reason
                 );
             }
 
-            if (houveErro) {
+            if (houveErro && houveErroNasCanceladas && houveErroNoEstoque) {
                 mostrarMensagem(
                     "Não foi possível atualizar todos os dados. Verifique as consultas da API.",
                     "warning"
@@ -319,24 +342,52 @@ function AlertaEstoque() {
         buscarDados();
     }, [buscarDados]);
 
+    // LISTA DE EMPRESAS (vem da API; fallback para o mapa local)
+    const listaEmpresas = useMemo(() => {
+        if (empresasApi.length > 0) {
+            return empresasApi.map(codigo => String(codigo).padStart(4, "0"));
+        }
+
+        return Object.keys(EMPRESAS);
+    }, [empresasApi]);
+
     // NORMALIZAÇÃO DO ESTOQUE
     const estoqueNormalizado = useMemo(() => {
-        return estoque.map((item, index) => ({
-            ...item,
-            _id: `${item.empfill || "empresa"}-${item.codigo || index}-${index}`,
-            _saldo: converterNumero(item.estoque),
-            _empresa: String(item.empfill || "").padStart(4, "0"),
-            _codigo: obterCampo(item, ["codigo", "cod_produto", "produto"]),
-            _ean: obterCampo(item, ["cean", "ean", "codigo_barras"])
-        }));
-    }, [estoque]);
+        return estoque.map((item, index) => {
+            const saldo = converterNumero(
+                obterCampo(item, [baseCalculo, "qtatua", "estoque"], 0)
+            );
+
+            const empresa = String(
+                obterCampo(item, ["empfil", "empfill", "empresa"], "")
+            ).padStart(4, "0");
+
+            const codigo = obterCampo(item, ["codigo", "cod_produto", "produto"]);
+
+            return {
+                ...item,
+                _id: `${empresa}-${codigo || "sem-codigo"}-${index}`,
+                _saldo: saldo,
+                _disponivel: converterNumero(
+                    obterCampo(item, ["saldo_disponivel"], saldo)
+                ),
+                _os: converterNumero(item.osatua),
+                _empresa: empresa,
+                _codigo: codigo,
+                _ean: obterCampo(item, ["codire", "cean", "ean", "codigo_barras"]),
+                _referencia: obterCampo(item, ["basico", "referencia"]),
+                _descricao: obterCampo(item, ["descricao", "descricao_produto"]),
+                _marca: obterCampo(item, ["marca"])
+            };
+        });
+    }, [estoque, baseCalculo]);
 
     // NORMALIZAÇÃO DAS VENDAS
     const vendasNormalizadas = useMemo(() => {
         return vendas.map((item, index) => {
             const empresa = obterCampo(
                 item,
-                ["empfill", "empresa", "codigo_empresa"],
+                ["empfill", "empfil", "empresa", "codigo_empresa"],
                 ""
             );
 
@@ -396,7 +447,7 @@ function AlertaEstoque() {
         });
     }, [vendasNormalizadas, empresaSelecionada]);
 
-    // FILTRO DE ESTOQUE
+    // FILTRO DE ESTOQUE (empresa + busca)
     const estoqueFiltrado = useMemo(() => {
         const termo = buscaEstoque.toLowerCase().trim();
 
@@ -405,14 +456,30 @@ function AlertaEstoque() {
                 empresaSelecionada === "TODAS" ||
                 item._empresa === empresaSelecionada;
 
-            const buscaCorresponde =
-                !termo ||
-                String(item._codigo).toLowerCase().includes(termo) ||
-                String(item._ean).toLowerCase().includes(termo);
+            if (!empresaCorresponde) return false;
+            if (!termo) return true;
 
-            return empresaCorresponde && buscaCorresponde;
+            const texto = [
+                item._codigo,
+                item._ean,
+                item._referencia,
+                item._descricao,
+                item._marca
+            ].join(" ").toLowerCase();
+
+            return texto.includes(termo);
         });
     }, [estoqueNormalizado, empresaSelecionada, buscaEstoque]);
+
+    const estoqueNegativo = useMemo(
+        () => estoqueFiltrado.filter(item => item._saldo < 0),
+        [estoqueFiltrado]
+    );
+
+    const estoquePositivo = useMemo(
+        () => estoqueFiltrado.filter(item => item._saldo > 0),
+        [estoqueFiltrado]
+    );
 
     // FILTRO DE BUSCA DAS VENDAS
     const vendasFiltradas = useMemo(() => {
@@ -432,56 +499,80 @@ function AlertaEstoque() {
         });
     }, [vendasCanceladas, buscaVendas]);
 
-    // INDICADORES
-    const indicadores = useMemo(() => {
-        const produtos = estoqueNormalizado.filter(item => {
-            return (
-                empresaSelecionada === "TODAS" ||
-                item._empresa === empresaSelecionada
-            );
-        });
-
-        const positivos = produtos.filter(item => item._saldo > 0);
-        const negativos = produtos.filter(item => item._saldo < 0);
-        const zerados = produtos.filter(item => item._saldo === 0);
-
-        const totalPositivo = positivos.reduce(
-            (total, item) => total + item._saldo,
-            0
-        );
-
-        const totalNegativo = negativos.reduce(
-            (total, item) => total + Math.abs(item._saldo),
-            0
-        );
-
-        return {
-            totalProdutos: produtos.length,
-            positivos: positivos.length,
-            negativos: negativos.length,
-            zerados: zerados.length,
-            totalPositivo,
-            totalNegativo
-        };
-    }, [estoqueNormalizado, empresaSelecionada]);
-
     // INDICADORES POR EMPRESA
+    // Usa o resumo_por_empresa da API; se não vier, calcula pelos itens.
     const indicadoresEmpresas = useMemo(() => {
-        return Object.entries(EMPRESAS).map(([codigo, nome]) => {
+        return listaEmpresas.map(codigo => {
             const produtos = estoqueNormalizado.filter(
                 item => item._empresa === codigo
             );
 
+            const zerados = produtos.filter(item => item._saldo === 0).length;
+
+            const resumo = resumoEmpresas.find(
+                r => String(r.empfil).padStart(4, "0") === codigo
+            );
+
+            if (resumo) {
+                const positivos = converterNumero(resumo.qtd_itens_positivos);
+                const negativos = converterNumero(resumo.qtd_itens_negativos);
+
+                return {
+                    codigo,
+                    nome: nomeEmpresa(codigo),
+                    total: positivos + negativos + zerados,
+                    positivos,
+                    negativos,
+                    zerados,
+                    somaPositivo: converterNumero(resumo.soma_estoque_positivo),
+                    somaNegativo: Math.abs(
+                        converterNumero(resumo.soma_estoque_negativo)
+                    )
+                };
+            }
+
+            const lista = (fn) => produtos.filter(fn);
+
             return {
                 codigo,
-                nome,
+                nome: nomeEmpresa(codigo),
                 total: produtos.length,
-                positivos: produtos.filter(item => item._saldo > 0).length,
-                negativos: produtos.filter(item => item._saldo < 0).length,
-                zerados: produtos.filter(item => item._saldo === 0).length
+                positivos: lista(i => i._saldo > 0).length,
+                negativos: lista(i => i._saldo < 0).length,
+                zerados,
+                somaPositivo: lista(i => i._saldo > 0)
+                    .reduce((t, i) => t + i._saldo, 0),
+                somaNegativo: lista(i => i._saldo < 0)
+                    .reduce((t, i) => t + Math.abs(i._saldo), 0)
             };
         });
-    }, [estoqueNormalizado]);
+    }, [estoqueNormalizado, resumoEmpresas, listaEmpresas]);
+
+    // INDICADORES GERAIS (respeitam o filtro de empresa)
+    const indicadores = useMemo(() => {
+        const empresas = indicadoresEmpresas.filter(
+            e => empresaSelecionada === "TODAS" || e.codigo === empresaSelecionada
+        );
+
+        return empresas.reduce(
+            (acc, e) => ({
+                totalProdutos: acc.totalProdutos + e.total,
+                positivos: acc.positivos + e.positivos,
+                negativos: acc.negativos + e.negativos,
+                zerados: acc.zerados + e.zerados,
+                totalPositivo: acc.totalPositivo + e.somaPositivo,
+                totalNegativo: acc.totalNegativo + e.somaNegativo
+            }),
+            {
+                totalProdutos: 0,
+                positivos: 0,
+                negativos: 0,
+                zerados: 0,
+                totalPositivo: 0,
+                totalNegativo: 0
+            }
+        );
+    }, [indicadoresEmpresas, empresaSelecionada]);
 
     // COMPONENTE DE CARD
     const CardIndicador = ({
@@ -556,6 +647,185 @@ function AlertaEstoque() {
                 </Stack>
             </CardContent>
         </Card>
+    );
+
+    // Cor do chip de saldo disponível
+    const corDisponivel = (valor) => {
+        if (valor < 0) return "warning";
+        if (valor === 0) return "primary";
+        return "success";
+    };
+
+    // TABELA DE ESTOQUE (usada para negativo e positivo)
+    const renderTabelaEstoque = ({
+        titulo,
+        subtitulo,
+        icone,
+        cor,
+        lista,
+        textoVazio
+    }) => (
+        <Paper
+            variant="outlined"
+            sx={{
+                mb: 3,
+                borderRadius: 2,
+                overflow: "hidden",
+                bgcolor: 'background.default'
+            }}
+        >
+            <Box
+                sx={{
+                    p: 2,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 1,
+                    flexWrap: "wrap"
+                }}
+            >
+                <Stack direction="row" spacing={1} alignItems="center">
+                    {icone}
+
+                    <Box>
+                        <Typography fontWeight={800}>
+                            {titulo}
+                        </Typography>
+
+                        <Typography
+                            variant="caption"
+                            color="text.secondary"
+                        >
+                            {subtitulo}
+                        </Typography>
+                    </Box>
+                </Stack>
+
+                <Chip
+                    color={cor}
+                    label={`${lista.length} produtos`}
+                    sx={{ color: 'primary.branco' }}
+                />
+            </Box>
+
+            <Divider />
+
+            <Box sx={{ p: 2 }}>
+                <TextField
+                    fullWidth
+                    size="small"
+                    placeholder="Buscar por código, descrição, marca, referência ou código de barras..."
+                    value={buscaEstoque}
+                    onChange={event =>
+                        setBuscaEstoque(event.target.value)
+                    }
+                    InputProps={{
+                        startAdornment: (
+                            <InputAdornment position="start">
+                                <SearchIcon />
+                            </InputAdornment>
+                        )
+                    }}
+                    autoComplete="off"
+                    inputProps={{
+                        spellCheck: false,
+                        autoCorrect: "off",
+                        autoCapitalize: "off",
+                    }}
+                />
+            </Box>
+
+            <TableContainer sx={{ maxHeight: 400 }}>
+                <Table stickyHeader size="small">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Código</TableCell>
+                            <TableCell>Descrição</TableCell>
+                            <TableCell>EAN</TableCell>
+                            <TableCell>Empresa</TableCell>
+                            <TableCell align="right">Estoque</TableCell>
+                            <TableCell align="right">Disponível</TableCell>
+                        </TableRow>
+                    </TableHead>
+
+                    <TableBody>
+                        {lista.map(item => (
+                            <TableRow key={item._id} hover>
+                                <TableCell>
+                                    <Typography fontWeight={700}>
+                                        {item._codigo || "-"}
+                                    </Typography>
+                                </TableCell>
+
+                                <TableCell sx={{ minWidth: 240, maxWidth: 380 }}>
+                                    <Typography variant="body2">
+                                        {item._descricao || "-"}
+                                    </Typography>
+
+                                    <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                    >
+                                        {[item._marca, item._referencia]
+                                            .filter(Boolean)
+                                            .join(" • ")}
+                                    </Typography>
+                                </TableCell>
+
+                                <TableCell>
+                                    {item._ean || "-"}
+                                </TableCell>
+
+                                <TableCell>
+                                    <Typography variant="body2">
+                                        {nomeEmpresa(item._empresa)}
+                                    </Typography>
+
+                                    <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                    >
+                                        {item._empresa}
+                                    </Typography>
+                                </TableCell>
+
+                                <TableCell align="right">
+                                    <Chip
+                                        size="small"
+                                        color={cor}
+                                        label={item._saldo}
+                                        sx={{ color: 'primary.branco' }}
+                                    />
+                                </TableCell>
+
+                                <TableCell align="right">
+                                    <Chip
+                                        size="small"
+                                        variant="outlined"
+                                        color={corDisponivel(item._disponivel)}
+                                        label={item._disponivel}
+                                    />
+                                </TableCell>
+                            </TableRow>
+                        ))}
+
+                        {lista.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={7}>
+                                    <Typography
+                                        textAlign="center"
+                                        color="text.secondary"
+                                        sx={{ py: 3 }}
+                                    >
+                                        {textoVazio}
+                                    </Typography>
+                                </TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+            </TableContainer>
+        </Paper>
     );
 
     if (!token) {
@@ -645,25 +915,6 @@ function AlertaEstoque() {
                         justifyContent="flex-end"
                         alignItems="center"
                     >
-                        <Tooltip title="Atualizar dados">
-                            <span>
-                                <IconButton
-                                    onClick={() => buscarDados(true)}
-                                    disabled={loading || atualizando}
-                                    sx={{ color: "white" }}
-                                >
-                                    {atualizando ? (
-                                        <CircularProgress
-                                            size={21}
-                                            color="inherit"
-                                        />
-                                    ) : (
-                                        <RefreshIcon />
-                                    )}
-                                </IconButton>
-                            </span>
-                        </Tooltip>
-
                         <NotificacoesMenu
                             apiBase={API}
                             token={token}
@@ -750,9 +1001,9 @@ function AlertaEstoque() {
                                 Todas as empresas
                             </MenuItem>
 
-                            {Object.entries(EMPRESAS).map(([codigo, nome]) => (
+                            {listaEmpresas.map(codigo => (
                                 <MenuItem key={codigo} value={codigo}>
-                                    {codigo} - {nome}
+                                    {codigo} - {nomeEmpresa(codigo)}
                                 </MenuItem>
                             ))}
                         </Select>
@@ -781,14 +1032,6 @@ function AlertaEstoque() {
                     {/* INDICADORES GERAIS */}
 
                     <Box sx={{ mb: 3 }}>
-                        <Typography
-                            variant="subtitle1"
-                            fontWeight={800}
-                            sx={{ mb: 1.5 }}
-                        >
-                            Resumo do estoque
-                        </Typography>
-
                         <Box
                             sx={{
                                 display: "grid",
@@ -801,9 +1044,9 @@ function AlertaEstoque() {
                             }}
                         >
                             <CardIndicador
-                                titulo="Produtos cadastrados"
+                                titulo="Produtos com saldo"
                                 valor={indicadores.totalProdutos.toLocaleString("pt-BR")}
-                                descricao="Produtos retornados pela API"
+                                descricao="Diferentes de zero"
                                 icone={<Inventory2OutlinedIcon fontSize="large" />}
                                 cor="#1976d2"
                                 fundo="rgba(25, 118, 210, 0.10)"
@@ -812,10 +1055,10 @@ function AlertaEstoque() {
                             <CardIndicador
                                 titulo="Estoque positivo"
                                 valor={indicadores.positivos.toLocaleString("pt-BR")}
-                                descricao={`${indicadores.totalPositivo.toLocaleString("pt-BR")} unidades reservadas`}
+                                descricao={`${indicadores.totalPositivo.toLocaleString("pt-BR")} unidades em estoque`}
                                 icone={<TrendingUpIcon fontSize="large" />}
-                                cor="#ed6c02"
-                                fundo="rgba(237, 108, 2, 0.10)"
+                                cor="#2e7d32"
+                                fundo="rgba(46, 125, 50, 0.10)"
                             />
 
                             <CardIndicador
@@ -823,17 +1066,17 @@ function AlertaEstoque() {
                                 valor={indicadores.negativos.toLocaleString("pt-BR")}
                                 descricao={`${indicadores.totalNegativo.toLocaleString("pt-BR")} unidades negativadas`}
                                 icone={<TrendingDownIcon fontSize="large" />}
-                                cor="#d32f2f"
-                                fundo="rgba(211, 47, 47, 0.10)"
+                                cor="#ed6c02"
+                                fundo="rgba(237, 108, 2, 0.10)"
                             />
 
                             <CardIndicador
-                                titulo="Estoque zerado"
+                                titulo="Vendas canceladas"
                                 valor={indicadores.zerados.toLocaleString("pt-BR")}
-                                descricao="Unidades sem pendências"
-                                icone={<RemoveCircleOutlineIcon fontSize="large" />}
-                                cor="#2e7d32"
-                                fundo="rgba(46, 125, 50, 0.10)"
+                                descricao="Produtos com pendência"
+                                icone={<CancelOutlinedIcon fontSize="large" />}
+                                cor="#d32f2f"
+                                fundo="rgba(211, 47, 47, 0.10)"
                             />
                         </Box>
                     </Box>
@@ -855,7 +1098,7 @@ function AlertaEstoque() {
                                     display: "grid",
                                     gridTemplateColumns: {
                                         xs: "1fr",
-                                        md: "repeat(3, 1fr)"
+                                        md: "repeat(auto-fit, minmax(260px, 1fr))"
                                     },
                                     gap: 2
                                 }}
@@ -911,26 +1154,23 @@ function AlertaEstoque() {
                                                 flexWrap="wrap"
                                                 gap={1}
                                             >
-                                                <Chip
-                                                    size="small"
-                                                    color="success"
-                                                    label={`+ ${empresa.positivos}`}
-                                                    sx={{ color: 'primary.branco' }}
-                                                />
+                                                <Tooltip title={`${empresa.somaPositivo.toLocaleString("pt-BR")} unidades`}>
+                                                    <Chip
+                                                        size="small"
+                                                        color="success"
+                                                        label={`+ ${empresa.positivos}`}
+                                                        sx={{ color: 'primary.branco' }}
+                                                    />
+                                                </Tooltip>
 
-                                                <Chip
-                                                    size="small"
-                                                    color="error"
-                                                    label={`- ${empresa.negativos}`}
-                                                    sx={{ color: 'primary.branco' }}
-                                                />
-
-                                                <Chip
-                                                    size="small"
-                                                    color="warning"
-                                                    label={`0 ${empresa.zerados}`}
-                                                    sx={{ color: 'primary.branco' }}
-                                                />
+                                                <Tooltip title={`${empresa.somaNegativo.toLocaleString("pt-BR")} unidades`}>
+                                                    <Chip
+                                                        size="small"
+                                                        color="error"
+                                                        label={`- ${empresa.negativos}`}
+                                                        sx={{ color: 'primary.branco' }}
+                                                    />
+                                                </Tooltip>
                                             </Stack>
                                         </CardContent>
                                     </Card>
@@ -938,300 +1178,6 @@ function AlertaEstoque() {
                             </Box>
                         </Box>
                     )}
-
-                    {/* ESTOQUE NEGATIVO */}
-
-                    <Paper
-                        variant="outlined"
-                        sx={{
-                            mb: 3,
-                            borderRadius: 2,
-                            overflow: "hidden",
-                            bgcolor: 'background.default'
-                        }}
-                    >
-                        <Box
-                            sx={{
-                                p: 2,
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                gap: 1,
-                                flexWrap: "wrap"
-                            }}
-                        >
-                            <Stack direction="row" spacing={1} alignItems="center">
-                                <WarningAmberIcon color="error" />
-
-                                <Box>
-                                    <Typography fontWeight={800}>
-                                        Produtos com estoque negativo
-                                    </Typography>
-
-                                    <Typography
-                                        variant="caption"
-                                        color="text.secondary"
-                                    >
-                                        Produtos que apresentam saldo abaixo de zero
-                                    </Typography>
-                                </Box>
-                            </Stack>
-
-                            <Chip
-                                color="error"
-                                label={`${estoqueFiltrado.filter(item => item._saldo < 0).length} produtos`}
-                                sx={{ color: 'primary.branco' }}
-                            />
-                        </Box>
-
-                        <Divider />
-
-                        <Box sx={{ p: 2 }}>
-                            <TextField
-                                fullWidth
-                                size="small"
-                                placeholder="Buscar por código da peça ou código de barras..."
-                                value={buscaEstoque}
-                                onChange={event =>
-                                    setBuscaEstoque(event.target.value)
-                                }
-                                InputProps={{
-                                    startAdornment: (
-                                        <InputAdornment position="start">
-                                            <SearchIcon />
-                                        </InputAdornment>
-                                    )
-                                }}
-                                autoComplete="off"
-                                inputProps={{
-                                    spellCheck: false,
-                                    autoCorrect: "off",
-                                    autoCapitalize: "off",
-                                }}
-                            />
-                        </Box>
-
-                        <TableContainer sx={{ maxHeight: 400 }}>
-                            <Table stickyHeader size="small">
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell>Código</TableCell>
-                                        <TableCell>EAN</TableCell>
-                                        <TableCell>Empresa</TableCell>
-                                        <TableCell align="right">
-                                            Estoque
-                                        </TableCell>
-                                    </TableRow>
-                                </TableHead>
-
-                                <TableBody>
-                                    {estoqueFiltrado
-                                        .filter(item => item._saldo < 0)
-                                        .map(item => (
-                                            <TableRow
-                                                key={item._id}
-                                                hover
-                                            >
-                                                <TableCell>
-                                                    <Typography fontWeight={700}>
-                                                        {item._codigo || "-"}
-                                                    </Typography>
-                                                </TableCell>
-
-                                                <TableCell>
-                                                    {item._ean || "-"}
-                                                </TableCell>
-
-                                                <TableCell>
-                                                    <Typography variant="body2">
-                                                        {EMPRESAS[item._empresa] || item._empresa || "-"}
-                                                    </Typography>
-
-                                                    <Typography
-                                                        variant="caption"
-                                                        color="text.secondary"
-                                                    >
-                                                        {item._empresa}
-                                                    </Typography>
-                                                </TableCell>
-
-                                                <TableCell align="right">
-                                                    <Chip
-                                                        size="small"
-                                                        color="error"
-                                                        label={item._saldo}
-                                                        sx={{ color: 'primary.branco' }}
-                                                    />
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-
-                                    {estoqueFiltrado.filter(
-                                        item => item._saldo < 0
-                                    ).length === 0 && (
-                                            <TableRow>
-                                                <TableCell colSpan={4}>
-                                                    <Typography
-                                                        textAlign="center"
-                                                        color="text.secondary"
-                                                        sx={{ py: 3 }}
-                                                    >
-                                                        Nenhum produto com estoque negativo encontrado.
-                                                    </Typography>
-                                                </TableCell>
-                                            </TableRow>
-                                        )}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                    </Paper>
-
-                    {/* ESTOQUE POSITIVO */}
-
-                    <Paper
-                        variant="outlined"
-                        sx={{
-                            mb: 3,
-                            borderRadius: 2,
-                            overflow: "hidden",
-                            bgcolor: 'background.default'
-                        }}
-                    >
-                        <Box
-                            sx={{
-                                p: 2,
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                gap: 1,
-                                flexWrap: "wrap"
-                            }}
-                        >
-                            <Stack direction="row" spacing={1} alignItems="center">
-                                <TrendingUpIcon color="success" />
-
-                                <Box>
-                                    <Typography fontWeight={800}>
-                                        Produtos com estoque positivo
-                                    </Typography>
-
-                                    <Typography
-                                        variant="caption"
-                                        color="text.secondary"
-                                    >
-                                        Produtos com saldo disponível
-                                    </Typography>
-                                </Box>
-                            </Stack>
-
-                            <Chip
-                                color="success"
-                                label={`${estoqueFiltrado.filter(item => item._saldo > 0).length} produtos`}
-                                sx={{ color: 'primary.branco' }}
-                            />
-                        </Box>
-
-                        <Divider />
-
-                        <Box sx={{ p: 2 }}>
-                            <TextField
-                                fullWidth
-                                size="small"
-                                placeholder="Buscar por código da peça ou código de barras..."
-                                value={buscaEstoque}
-                                onChange={event =>
-                                    setBuscaEstoque(event.target.value)
-                                }
-                                InputProps={{
-                                    startAdornment: (
-                                        <InputAdornment position="start">
-                                            <SearchIcon />
-                                        </InputAdornment>
-                                    )
-                                }}
-                                autoComplete="off"
-                                inputProps={{
-                                    spellCheck: false,
-                                    autoCorrect: "off",
-                                    autoCapitalize: "off",
-                                }}
-                            />
-                        </Box>
-
-                        <TableContainer sx={{ maxHeight: 400 }}>
-                            <Table stickyHeader size="small">
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell>Código</TableCell>
-                                        <TableCell>EAN</TableCell>
-                                        <TableCell>Empresa</TableCell>
-                                        <TableCell align="right">
-                                            Estoque
-                                        </TableCell>
-                                    </TableRow>
-                                </TableHead>
-
-                                <TableBody>
-                                    {estoqueFiltrado
-                                        .filter(item => item._saldo > 0)
-                                        .map(item => (
-                                            <TableRow
-                                                key={item._id}
-                                                hover
-                                            >
-                                                <TableCell>
-                                                    <Typography fontWeight={700}>
-                                                        {item._codigo || "-"}
-                                                    </Typography>
-                                                </TableCell>
-
-                                                <TableCell>
-                                                    {item._ean || "-"}
-                                                </TableCell>
-
-                                                <TableCell>
-                                                    <Typography variant="body2">
-                                                        {EMPRESAS[item._empresa] || item._empresa || "-"}
-                                                    </Typography>
-
-                                                    <Typography
-                                                        variant="caption"
-                                                        color="text.secondary"
-                                                    >
-                                                        {item._empresa}
-                                                    </Typography>
-                                                </TableCell>
-
-                                                <TableCell align="right">
-                                                    <Chip
-                                                        size="small"
-                                                        color="success"
-                                                        label={item._saldo}
-                                                        sx={{ color: 'primary.branco' }}
-                                                    />
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-
-                                    {estoqueFiltrado.filter(
-                                        item => item._saldo > 0
-                                    ).length === 0 && (
-                                            <TableRow>
-                                                <TableCell colSpan={4}>
-                                                    <Typography
-                                                        textAlign="center"
-                                                        color="text.secondary"
-                                                        sx={{ py: 3 }}
-                                                    >
-                                                        Nenhum produto com estoque positivo encontrado.
-                                                    </Typography>
-                                                </TableCell>
-                                            </TableRow>
-                                        )}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                    </Paper>
 
                     {/* VENDAS CANCELADAS */}
 
@@ -1266,7 +1212,7 @@ function AlertaEstoque() {
                                         variant="caption"
                                         color="text.secondary"
                                     >
-                                        Vendas canceladas nas empresas selecionadas
+                                        Vendas canceladas nas plataformas de ecommerce
                                     </Typography>
                                 </Box>
                             </Stack>
@@ -1367,14 +1313,25 @@ function AlertaEstoque() {
                         </TableContainer>
                     </Paper>
 
-                    {/* RODAPÉ */}
-                    <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ display: "block", textAlign: "right", mt: 2 }}
-                    >
-                        Produtos zerados: {indicadores.zerados.toLocaleString("pt-BR")}
-                    </Typography>
+                    {/* ESTOQUE NEGATIVO */}
+                    {renderTabelaEstoque({
+                        titulo: "Produtos com estoque negativo",
+                        subtitulo: "Produtos que apresentam saldo abaixo de zero",
+                        icone: <WarningAmberIcon color="warning" />,
+                        cor: "warning",
+                        lista: estoqueNegativo,
+                        textoVazio: "Nenhum produto com estoque negativo encontrado."
+                    })}
+
+                    {/* ESTOQUE POSITIVO */}
+                    {renderTabelaEstoque({
+                        titulo: "Produtos com estoque positivo",
+                        subtitulo: "Produtos que apresentam saldo acima de zero",
+                        icone: <TrendingUpIcon color="success" />,
+                        cor: "success",
+                        lista: estoquePositivo,
+                        textoVazio: "Nenhum produto com estoque positivo encontrado."
+                    })}
                 </>
             )}
 

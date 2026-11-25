@@ -1171,6 +1171,49 @@ function Conferencia() {
         return erros.length > 0;
     });
 
+    // Irens ordenados pela loc
+    const itensOrdenados = useMemo(() => {
+
+        const semLoc = (loc) => {
+            const l = String(loc ?? "").trim().toUpperCase();
+            return l === "" || l === "SEM LOCALIZAÇÃO";
+        };
+
+        return [...itens].sort((a, b) => {
+
+            // 1. Conferidos (completos) vão para o final
+            const aOk = Number(a.conferido) >= Number(a.quantidade);
+            const bOk = Number(b.conferido) >= Number(b.quantidade);
+
+            if (aOk && !bOk) return 1;
+            if (!aOk && bOk) return -1;
+
+            // 2. Itens sem localização vão para o final do grupo
+            const aSemLoc = semLoc(a.localizacao);
+            const bSemLoc = semLoc(b.localizacao);
+
+            if (aSemLoc && !bSemLoc) return 1;
+            if (!aSemLoc && bSemLoc) return -1;
+
+            // 3. Ordena pela localização (000A, 000B, 001A, ...)
+            const locCompare = String(a.localizacao ?? "").localeCompare(
+                String(b.localizacao ?? ""),
+                undefined,
+                { numeric: true, sensitivity: "base" }
+            );
+
+            if (locCompare !== 0) return locCompare;
+
+            // 4. Desempate: código básico
+            return String(a.basico ?? "").localeCompare(
+                String(b.basico ?? ""),
+                undefined,
+                { numeric: true }
+            );
+        });
+
+    }, [itens]);
+
     const registrarLog = async ({
         item = null,
         acao,
@@ -4230,10 +4273,15 @@ function Conferencia() {
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
-                                            {itens.map((item, index) => (
-                                                <TableRow key={index} sx={{
-                                                    bgcolor: item.conferido === item.quantidade ? 'primary.conferido' : 'background.alerta'
-                                                }}>
+                                            {itensOrdenados.map((item) => (
+                                                <TableRow
+                                                    key={item.id}
+                                                    sx={{
+                                                        bgcolor: item.conferido === item.quantidade
+                                                            ? 'primary.conferido'
+                                                            : 'background.alerta'
+                                                    }}
+                                                >
                                                     <TableCell>{item.localizacao}</TableCell>
                                                     <TableCell>{item.basico}</TableCell>
                                                     <TableCell>{item.descricao}</TableCell>
