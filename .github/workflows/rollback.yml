@@ -1,0 +1,29 @@
+
+name: Simulação de Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Versão para restaurar"
+        required: true
+        type: string
+      motivo:
+        description: "Motivo do rollback"
+        required: true
+        type: string
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Simular rollback
+        run: |
+          echo "================================"
+          echo "SIMULACAO DE ROLLBACK"
+          echo "================================"
+          echo "Versao selecionada: ${{ inputs.release_tag }}"
+          echo "Motivo: ${{ inputs.motivo }}"
+          echo "Rollback simulado com sucesso."
+          echo "Nenhum deploy real foi executado."
