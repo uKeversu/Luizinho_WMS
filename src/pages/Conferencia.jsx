@@ -1171,7 +1171,7 @@ function Conferencia() {
         return erros.length > 0;
     });
 
-    // Irens ordenados pela loc
+    // Itens ordenados pela loc
     const itensOrdenados = useMemo(() => {
 
         const semLoc = (loc) => {
@@ -1181,21 +1181,28 @@ function Conferencia() {
 
         return [...itens].sort((a, b) => {
 
-            // 1. Conferidos (completos) vão para o final
+            // 1. Recém-bipado vai para o topo
+            const aRecemBipado = a.id === ultimoItemScaneado?.id;
+            const bRecemBipado = b.id === ultimoItemScaneado?.id;
+
+            if (aRecemBipado && !bRecemBipado) return -1;
+            if (!aRecemBipado && bRecemBipado) return 1;
+
+            // 2. Conferidos (completos) vão para o final
             const aOk = Number(a.conferido) >= Number(a.quantidade);
             const bOk = Number(b.conferido) >= Number(b.quantidade);
 
             if (aOk && !bOk) return 1;
             if (!aOk && bOk) return -1;
 
-            // 2. Itens sem localização vão para o final do grupo
+            // 3. Itens sem localização vão para o final
             const aSemLoc = semLoc(a.localizacao);
             const bSemLoc = semLoc(b.localizacao);
 
             if (aSemLoc && !bSemLoc) return 1;
             if (!aSemLoc && bSemLoc) return -1;
 
-            // 3. Ordena pela localização (000A, 000B, 001A, ...)
+            // 4. Ordena pela localização
             const locCompare = String(a.localizacao ?? "").localeCompare(
                 String(b.localizacao ?? ""),
                 undefined,
@@ -1204,7 +1211,7 @@ function Conferencia() {
 
             if (locCompare !== 0) return locCompare;
 
-            // 4. Desempate: código básico
+            // 5. Desempate: código básico
             return String(a.basico ?? "").localeCompare(
                 String(b.basico ?? ""),
                 undefined,
@@ -1212,7 +1219,7 @@ function Conferencia() {
             );
         });
 
-    }, [itens]);
+    }, [itens, ultimoItemScaneado]);
 
     const registrarLog = async ({
         item = null,

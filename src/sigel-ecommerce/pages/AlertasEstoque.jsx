@@ -745,6 +745,7 @@ function AlertaEstoque() {
                             <TableCell>Empresa</TableCell>
                             <TableCell align="right">Estoque</TableCell>
                             <TableCell align="right">Disponível</TableCell>
+                            <TableCell align="right">Full</TableCell>
                         </TableRow>
                     </TableHead>
 
@@ -804,6 +805,14 @@ function AlertaEstoque() {
                                         variant="outlined"
                                         color={corDisponivel(item._disponivel)}
                                         label={item._disponivel}
+                                    />
+                                </TableCell>
+                                <TableCell align="right">
+                                    <Chip
+                                        size="small"
+                                        variant="outlined"
+                                        color={corDisponivel(item._disponivel)}
+                                        label="Adicionar"
                                     />
                                 </TableCell>
                             </TableRow>
