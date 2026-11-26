@@ -44,8 +44,8 @@ import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import StorefrontIcon from "@mui/icons-material/Storefront";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
-import ScienceOutlinedIcon from "@mui/icons-material/ScienceOutlined";
-import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
 import MenuUsuario from "../../components/MenuUsuario";
 import LoginFuncionario from "../../components/LoginFuncionario";
@@ -158,6 +158,7 @@ function AlertaEstoque() {
     const navigate = useNavigate();
 
     const API = "http://192.168.1.184:7079";
+    const API_FULL = "http://192.168.1.185:8077";
 
     const ROTAS = {
         estoque: "/api/estoque_empresas"
@@ -209,6 +210,16 @@ function AlertaEstoque() {
     const [empresaSelecionada, setEmpresaSelecionada] = useState("TODAS");
     const [buscaEstoque, setBuscaEstoque] = useState("");
     const [buscaVendas, setBuscaVendas] = useState("");
+
+    // FULL
+    const [produtosFull, setProdutosFull] = useState([]);
+    const [loadingFull, setLoadingFull] = useState(false);
+
+    const [dialogFull, setDialogFull] = useState(false);
+    const [produtoFullSelecionado, setProdutoFullSelecionado] = useState(null);
+
+    const [quantidadeFull, setQuantidadeFull] = useState(1);
+    const [salvandoFull, setSalvandoFull] = useState(false);
 
     const [snackbar, setSnackbar] = useState({
         open: false,
@@ -337,6 +348,209 @@ function AlertaEstoque() {
             setAtualizando(false);
         }
     }, []);
+
+    // ============================================================
+    // SIGEL ECOMMERCE FULL
+    // ============================================================
+
+    const buscarProdutosFull = useCallback(async () => {
+        const tokenAtual = localStorage.getItem("nfe_token");
+
+        if (!tokenAtual) return;
+
+        setLoadingFull(true);
+
+        try {
+            const response = await fetch(`${API_FULL}/api/ecommerce/full`, {
+                headers: {
+                    "X-Auth-Token": tokenAtual
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Erro ${response.status} ao consultar Full`);
+            }
+
+            const dados = await response.json();
+
+            setProdutosFull(
+                Array.isArray(dados.produtos) ? dados.produtos : []
+            );
+        } catch (error) {
+            console.error("[Ecommerce Full] Erro ao buscar:", error);
+
+            mostrarMensagem(
+                "Não foi possível carregar os produtos do Full.",
+                "error"
+            );
+        } finally {
+            setLoadingFull(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        buscarProdutosFull();
+    }, [buscarProdutosFull]);
+
+    const abrirDialogFull = (produto = null) => {
+        setProdutoFullSelecionado(produto);
+        setQuantidadeFull(1);
+        setDialogFull(true);
+    };
+
+    const fecharDialogFull = () => {
+        if (salvandoFull) return;
+
+        setDialogFull(false);
+        setProdutoFullSelecionado(null);
+        setQuantidadeFull(1);
+    };
+
+    const adicionarProdutoFull = async () => {
+        const tokenAtual = localStorage.getItem("nfe_token");
+
+        if (!produtoFullSelecionado) {
+            mostrarMensagem("Selecione um produto.", "warning");
+            return;
+        }
+
+        const quantidade = Number(quantidadeFull);
+
+        if (!Number.isInteger(quantidade) || quantidade <= 0) {
+            mostrarMensagem("Informe uma quantidade válida.", "warning");
+            return;
+        }
+
+        if (quantidade > produtoFullSelecionado._saldoRestante) {
+            mostrarMensagem(
+                "A quantidade não pode ser maior que o estoque disponível.",
+                "warning"
+            );
+            return;
+        }
+
+        setSalvandoFull(true);
+
+        try {
+            const response = await fetch(`${API_FULL}/api/ecommerce/full/produtos`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Auth-Token": tokenAtual
+                },
+                body: JSON.stringify({
+                    empresa: produtoFullSelecionado._empresa,
+                    codigo_produto: String(produtoFullSelecionado._codigo),
+                    descricao: produtoFullSelecionado._descricao || "",
+                    quantidade
+                })
+            });
+
+            const dados = await response.json();
+
+            if (!response.ok) {
+                throw new Error(dados.erro || "Erro ao adicionar produto ao Full.");
+            }
+
+            mostrarMensagem(
+                `${produtoFullSelecionado._codigo} adicionado ao Full!`,
+                "success"
+            );
+
+            fecharDialogFull();
+            await buscarProdutosFull();
+        } catch (error) {
+            console.error("[Ecommerce Full] Erro ao adicionar:", error);
+
+            mostrarMensagem(
+                error.message || "Não foi possível adicionar ao Full.",
+                "error"
+            );
+        } finally {
+            setSalvandoFull(false);
+        }
+    };
+
+    const removerProdutoFull = async (produto) => {
+        const tokenAtual = localStorage.getItem("nfe_token");
+
+        try {
+            const response = await fetch(
+                `${API_FULL}/api/ecommerce/full/produtos/${encodeURIComponent(produto.codigo_produto)}?empresa=${encodeURIComponent(produto.empresa)}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        "X-Auth-Token": tokenAtual
+                    }
+                }
+            );
+
+            const dados = await response.json();
+
+            if (!response.ok) {
+                throw new Error(dados.erro || "Erro ao remover produto.");
+            }
+
+            mostrarMensagem(
+                `${produto.codigo_produto} removido do Full.`,
+                "success"
+            );
+
+            await buscarProdutosFull();
+        } catch (error) {
+            console.error("[Ecommerce Full] Erro ao remover:", error);
+
+            mostrarMensagem(
+                error.message || "Não foi possível remover o produto.",
+                "error"
+            );
+        }
+    };
+
+    const alternarVendaMercadoLivre = async (produto) => {
+        const tokenAtual = localStorage.getItem("nfe_token");
+        const novoValor = !Boolean(Number(produto.venda_mercado_livre));
+
+        try {
+            const response = await fetch(
+                `${API_FULL}/api/ecommerce/full/produtos/${encodeURIComponent(produto.codigo_produto)}/venda-mercado-livre`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Auth-Token": tokenAtual
+                    },
+                    body: JSON.stringify({
+                        venda_mercado_livre: novoValor
+                    })
+                }
+            );
+
+            const dados = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    dados.erro || "Não foi possível atualizar a identificação."
+                );
+            }
+
+            await buscarProdutosFull();
+
+            mostrarMensagem(
+                novoValor
+                    ? "Produto identificado como venda Mercado Livre."
+                    : "Identificação de venda Mercado Livre removida.",
+                "success"
+            );
+        } catch (error) {
+            console.error("[Ecommerce Full] Erro ao atualizar venda:", error);
+
+            mostrarMensagem(
+                error.message || "Erro ao atualizar identificação.",
+                "error"
+            );
+        }
+    };
 
     useEffect(() => {
         buscarDados();
@@ -471,15 +685,47 @@ function AlertaEstoque() {
         });
     }, [estoqueNormalizado, empresaSelecionada, buscaEstoque]);
 
+    const chaveFull = (empresa, codigo) =>
+        `${String(empresa ?? "").padStart(4, "0")}-${String(codigo ?? "").trim()}`;
+
+    const reservasFullPorEmpresaCodigo = useMemo(() => {
+        const mapa = {};
+
+        produtosFull.forEach(produto => {
+            const chave = chaveFull(
+                produto.empresa,
+                produto.codigo_produto
+            );
+
+            mapa[chave] = (mapa[chave] || 0) +
+                Number(produto.quantidade_full || 0);
+        });
+
+        return mapa;
+    }, [produtosFull]);
+
     const estoqueNegativo = useMemo(
         () => estoqueFiltrado.filter(item => item._saldo < 0),
         [estoqueFiltrado]
     );
 
-    const estoquePositivo = useMemo(
-        () => estoqueFiltrado.filter(item => item._saldo > 0),
-        [estoqueFiltrado]
-    );
+    const estoquePositivo = useMemo(() => {
+        return estoqueFiltrado
+            .map(item => {
+                const chave = chaveFull(item._empresa, item._codigo);
+                const quantidadeFull =
+                    reservasFullPorEmpresaCodigo[chave] || 0;
+
+                const saldoRestante = item._saldo - quantidadeFull;
+
+                return {
+                    ...item,
+                    _saldoFull: quantidadeFull,
+                    _saldoRestante: saldoRestante
+                };
+            })
+            .filter(item => item._saldoRestante > 0);
+    }, [estoqueFiltrado, reservasFullPorEmpresaCodigo]);
 
     // FILTRO DE BUSCA DAS VENDAS
     const vendasFiltradas = useMemo(() => {
@@ -573,6 +819,34 @@ function AlertaEstoque() {
             }
         );
     }, [indicadoresEmpresas, empresaSelecionada]);
+
+    const indicadoresFullEmpresas = useMemo(() => {
+        return listaEmpresas.map(codigo => {
+            const produtos = produtosFull.filter(
+                produto => String(produto.empresa || "").padStart(4, "0") === codigo
+            );
+
+            return {
+                codigo,
+                nome: nomeEmpresa(codigo),
+                quantidade: produtos.reduce(
+                    (total, produto) =>
+                        total + Number(produto.quantidade_full || 0),
+                    0
+                ),
+                produtos: produtos.length
+            };
+        });
+    }, [produtosFull, listaEmpresas]);
+
+    const produtosFullFiltrados = useMemo(() => {
+        return produtosFull.filter(produto => {
+            if (empresaSelecionada === "TODAS") return true;
+
+            return String(produto.empresa || "").padStart(4, "0") ===
+                empresaSelecionada;
+        });
+    }, [produtosFull, empresaSelecionada]);
 
     // COMPONENTE DE CARD
     const CardIndicador = ({
@@ -745,7 +1019,9 @@ function AlertaEstoque() {
                             <TableCell>Empresa</TableCell>
                             <TableCell align="right">Estoque</TableCell>
                             <TableCell align="right">Disponível</TableCell>
-                            <TableCell align="right">Full</TableCell>
+                            {titulo === "Produtos com estoque positivo" && (
+                                <TableCell align="center">Full</TableCell>
+                            )}
                         </TableRow>
                     </TableHead>
 
@@ -794,7 +1070,11 @@ function AlertaEstoque() {
                                     <Chip
                                         size="small"
                                         color={cor}
-                                        label={item._saldo}
+                                        label={
+                                            titulo === "Produtos com estoque positivo"
+                                                ? item._saldoRestante
+                                                : item._saldo
+                                        }
                                         sx={{ color: 'primary.branco' }}
                                     />
                                 </TableCell>
@@ -807,14 +1087,20 @@ function AlertaEstoque() {
                                         label={item._disponivel}
                                     />
                                 </TableCell>
-                                <TableCell align="right">
-                                    <Chip
-                                        size="small"
-                                        variant="outlined"
-                                        color={corDisponivel(item._disponivel)}
-                                        label="Adicionar"
-                                    />
-                                </TableCell>
+
+                                {titulo === "Produtos com estoque positivo" && (
+                                    <TableCell align="center">
+                                        <Tooltip title="Adicionar produto ao Mercado Livre Full">
+                                            <IconButton
+                                                size="small"
+                                                color="primary"
+                                                onClick={() => abrirDialogFull(item)}
+                                            >
+                                                <AddCircleOutlineIcon />
+                                            </IconButton>
+                                        </Tooltip>
+                                    </TableCell>
+                                )}
                             </TableRow>
                         ))}
 
@@ -1112,78 +1398,90 @@ function AlertaEstoque() {
                                     gap: 2
                                 }}
                             >
-                                {indicadoresEmpresas.map(empresa => (
-                                    <Card
-                                        key={empresa.codigo}
-                                        variant="outlined"
-                                        sx={{ borderRadius: 2, bgcolor: 'background.default' }}
-                                    >
-                                        <CardContent>
-                                            <Stack
-                                                direction="row"
-                                                alignItems="center"
-                                                spacing={1}
-                                                sx={{ mb: 1.5 }}
-                                            >
-                                                <StorefrontIcon color="primary" />
+                                {indicadoresEmpresas.map(empresa => {
+                                    const indicadorFull = indicadoresFullEmpresas.find(
+                                        full => full.codigo === empresa.codigo
+                                    );
 
-                                                <Box>
-                                                    <Typography fontWeight={800}>
-                                                        {empresa.nome}
-                                                    </Typography>
+                                    return (
+                                        <Card
+                                            key={empresa.codigo}
+                                            variant="outlined"
+                                            sx={{ borderRadius: 2, bgcolor: "background.default" }}
+                                        >
+                                            <CardContent>
+                                                <Stack
+                                                    direction="row"
+                                                    alignItems="center"
+                                                    spacing={1}
+                                                    sx={{ mb: 1.5 }}
+                                                >
+                                                    <StorefrontIcon color="primary" />
 
-                                                    <Typography
-                                                        variant="caption"
-                                                        color="text.secondary"
-                                                    >
-                                                        Empresa {empresa.codigo}
-                                                    </Typography>
-                                                </Box>
-                                            </Stack>
+                                                    <Box>
+                                                        <Typography fontWeight={800}>
+                                                            {empresa.nome}
+                                                        </Typography>
 
-                                            <Typography
-                                                variant="h5"
-                                                fontWeight={800}
-                                            >
-                                                {empresa.total.toLocaleString("pt-BR")}
-                                            </Typography>
+                                                        <Typography
+                                                            variant="caption"
+                                                            color="text.secondary"
+                                                        >
+                                                            Empresa {empresa.codigo}
+                                                        </Typography>
+                                                    </Box>
+                                                </Stack>
 
-                                            <Typography
-                                                variant="caption"
-                                                color="text.secondary"
-                                            >
-                                                produtos encontrados
-                                            </Typography>
+                                                <Typography variant="h5" fontWeight={800}>
+                                                    {empresa.total.toLocaleString("pt-BR")}
+                                                </Typography>
 
-                                            <Divider sx={{ my: 1.5 }} />
+                                                <Typography
+                                                    variant="caption"
+                                                    color="text.secondary"
+                                                >
+                                                    produtos encontrados
+                                                </Typography>
 
-                                            <Stack
-                                                direction="row"
-                                                justifyContent="space-between"
-                                                flexWrap="wrap"
-                                                gap={1}
-                                            >
-                                                <Tooltip title={`${empresa.somaPositivo.toLocaleString("pt-BR")} unidades`}>
-                                                    <Chip
-                                                        size="small"
-                                                        color="success"
-                                                        label={`+ ${empresa.positivos}`}
-                                                        sx={{ color: 'primary.branco' }}
-                                                    />
-                                                </Tooltip>
+                                                <Divider sx={{ my: 1.5 }} />
 
-                                                <Tooltip title={`${empresa.somaNegativo.toLocaleString("pt-BR")} unidades`}>
-                                                    <Chip
-                                                        size="small"
-                                                        color="error"
-                                                        label={`- ${empresa.negativos}`}
-                                                        sx={{ color: 'primary.branco' }}
-                                                    />
-                                                </Tooltip>
-                                            </Stack>
-                                        </CardContent>
-                                    </Card>
-                                ))}
+                                                <Stack
+                                                    direction="row"
+                                                    justifyContent="space-between"
+                                                    flexWrap="wrap"
+                                                    gap={1}
+                                                >
+                                                    <Tooltip title={`${empresa.somaPositivo.toLocaleString("pt-BR")} unidades positivas`}>
+                                                        <Chip
+                                                            size="small"
+                                                            color="success"
+                                                            label={`+ ${empresa.positivos}`}
+                                                            sx={{ color: "primary.branco" }}
+                                                        />
+                                                    </Tooltip>
+
+                                                    <Tooltip title={`${indicadorFull?.produtos} produtos Full`}>
+                                                        <Chip
+                                                            size="small"
+                                                            color="primary"
+                                                            label={`${indicadorFull?.produtos || 0}`}
+                                                            sx={{ color: "primary.branco" }}
+                                                        />
+                                                    </Tooltip>
+
+                                                    <Tooltip title={`${empresa.somaNegativo.toLocaleString("pt-BR")} unidades negativas`}>
+                                                        <Chip
+                                                            size="small"
+                                                            color="error"
+                                                            label={`- ${empresa.negativos}`}
+                                                            sx={{ color: "primary.branco" }}
+                                                        />
+                                                    </Tooltip>
+                                                </Stack>
+                                            </CardContent>
+                                        </Card>
+                                    );
+                                })}
                             </Box>
                         </Box>
                     )}
@@ -1322,6 +1620,157 @@ function AlertaEstoque() {
                         </TableContainer>
                     </Paper>
 
+                    {/* TABELA PRODUTOS FULL */}
+                    <Paper
+                        variant="outlined"
+                        sx={{
+                            mb: 3,
+                            borderRadius: 2,
+                            overflow: "hidden",
+                            bgcolor: "background.default"
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                p: 2,
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                gap: 1,
+                                flexWrap: "wrap"
+                            }}
+                        >
+                            <Stack direction="row" spacing={1} alignItems="center">
+                                <Inventory2OutlinedIcon color="primary" />
+
+                                <Box>
+                                    <Typography fontWeight={800}>
+                                        Mercado Livre Full
+                                    </Typography>
+
+                                    <Typography variant="caption" color="text.secondary">
+                                        Produtos reservados para operação Full
+                                    </Typography>
+                                </Box>
+                            </Stack>
+
+                            <Stack direction="row" spacing={1} alignItems="center">
+                                <Chip
+                                    color="primary"
+                                    label={`${produtosFullFiltrados.length} registros`}
+                                />
+
+                                <Tooltip title="Atualizar Full">
+                                    <span>
+                                        <IconButton
+                                            color="primary"
+                                            onClick={buscarProdutosFull}
+                                            disabled={loadingFull}
+                                        >
+                                            {loadingFull
+                                                ? <CircularProgress size={20} />
+                                                : <RefreshIcon />
+                                            }
+                                        </IconButton>
+                                    </span>
+                                </Tooltip>
+                            </Stack>
+                        </Box>
+
+                        <Divider />
+
+                        <TableContainer sx={{ maxHeight: 400 }}>
+                            <Table stickyHeader size="small">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Empresa</TableCell>
+                                        <TableCell>Código</TableCell>
+                                        <TableCell>Descrição</TableCell>
+                                        <TableCell align="center">Qtd. Full</TableCell>
+                                        <TableCell align="center">Ações</TableCell>
+                                    </TableRow>
+                                </TableHead>
+
+                                <TableBody>
+                                    {produtosFullFiltrados.map(produto => (
+                                        <TableRow
+                                            key={produto.id || `${produto.empresa}-${produto.codigo_produto}`}
+                                            hover
+                                        >
+                                            {/* Empresa */}
+                                            <TableCell>
+                                                <Typography fontWeight={700}>
+                                                    {produto.empresa
+                                                        ? nomeEmpresa(String(produto.empresa).padStart(4, "0"))
+                                                        : "Legado sem empresa"}
+                                                </Typography>
+                                                <Typography variant="caption" color="text.secondary">
+                                                    {produto.empresa || "Não identificada"}
+                                                </Typography>
+                                            </TableCell>
+
+                                            {/* Código */}
+                                            <TableCell>
+                                                <Typography fontWeight={700}>
+                                                    {produto.codigo_produto}
+                                                </Typography>
+                                            </TableCell>
+
+                                            {/* Descrição */}
+                                            <TableCell sx={{ minWidth: 240 }}>
+                                                {produto.descricao || "-"}
+                                            </TableCell>
+
+                                            {/* Quantidade Full */}
+                                            <TableCell align="center">
+                                                <Chip
+                                                    size="small"
+                                                    color="primary"
+                                                    label={produto.quantidade_full}
+                                                />
+                                            </TableCell>
+
+                                            {/* Ações */}
+                                            <TableCell align="center">
+                                                <Stack
+                                                    direction="row"
+                                                    justifyContent="center"
+                                                    spacing={0.5}
+                                                >
+                                                    <Tooltip title="Remover do Full">
+                                                        <IconButton
+                                                            size="small"
+                                                            color="error"
+                                                            onClick={() => removerProdutoFull(produto)}
+                                                        >
+                                                            <DeleteOutlineIcon fontSize="small" />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                </Stack>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+
+                                    {produtosFullFiltrados.length === 0 && (
+                                        <TableRow>
+                                            <TableCell colSpan={5}>
+                                                <Typography
+                                                    textAlign="center"
+                                                    color="text.secondary"
+                                                    sx={{ py: 3 }}
+                                                >
+                                                    {loadingFull
+                                                        ? "Carregando produtos Full..."
+                                                        : "Nenhum produto cadastrado no Full."}
+                                                </Typography>
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Paper>
+
                     {/* ESTOQUE NEGATIVO */}
                     {renderTabelaEstoque({
                         titulo: "Produtos com estoque negativo",
@@ -1344,135 +1793,91 @@ function AlertaEstoque() {
                 </>
             )}
 
+            {/* DIALOG ADICIONAR AO FULL */}
             <Dialog
-                open={abrirAvisoTestes}
-                onClose={() => setAbrirAvisoTestes(false)}
+                open={dialogFull}
+                onClose={fecharDialogFull}
                 fullWidth
                 maxWidth="sm"
                 slotProps={{
                     paper: {
                         sx: {
-                            bgcolor: "background.default",
+                            bgcolor: "background.card",
                             color: "text.primary",
                             borderRadius: 3,
-                            border: "1px solid",
-                            borderColor: "divider",
-                        },
-                    },
+                            p: 2
+                        }
+                    }
                 }}
             >
-                <DialogTitle
-                    sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1.5,
-                        fontWeight: 700,
-                        pb: 1,
-                    }}
-                >
-                    <ScienceOutlinedIcon
-                        sx={{
-                            color: "#F59E0B",
-                            fontSize: 30,
-                        }}
-                    />
-
-                    <Typography
-                        component="span"
-                        variant="h6"
-                        fontWeight={700}
-                    >
-                        SIGEL Ecommerce • Em desenvolvimento
-                    </Typography>
+                <DialogTitle fontWeight={800}>
+                    Adicionar produto ao Mercado Livre Full
                 </DialogTitle>
 
                 <DialogContent>
-                    <Typography
-                        variant="body1"
-                        fontWeight={600}
-                        sx={{ mb: 2 }}
-                    >
-                        O módulo Ecommerce está em fase de testes e
-                        aprimoramento.
-                    </Typography>
+                    {produtoFullSelecionado && (
+                        <Stack spacing={2} sx={{ mt: 1 }}>
+                            <TextField
+                                fullWidth
+                                label="Código do produto"
+                                value={produtoFullSelecionado._codigo || ""}
+                                disabled
+                            />
 
-                    <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{
-                            lineHeight: 1.8,
-                            mb: 2,
-                        }}
-                    >
-                        Durante esse período, podem ocorrer ajustes,
-                        mudanças e melhorias nas funcionalidades. Sua
-                        participação é muito importante para que possamos
-                        tornar a ferramenta cada vez mais útil para a equipe.
-                    </Typography>
+                            <TextField
+                                fullWidth
+                                label="Descrição"
+                                value={produtoFullSelecionado._descricao || ""}
+                                disabled
+                            />
 
-                    <Typography
-                        variant="body1"
-                        fontWeight={600}
-                        sx={{ mb: 1 }}
-                    >
-                        Encontrou algum problema ou tem uma sugestão de
-                        melhoria?
-                    </Typography>
+                            <TextField
+                                fullWidth
+                                label="Empresa"
+                                value={`${produtoFullSelecionado._empresa} - ${nomeEmpresa(produtoFullSelecionado._empresa)}`}
+                                disabled
+                            />
 
-                    <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{
-                            lineHeight: 1.8,
-                            mb: 2,
-                        }}
-                    >
-                        Envie seu feedback ao Setor de Desenvolvimento pelo
-                        WhatsApp
-                    </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                Estoque disponível: <strong>{produtoFullSelecionado._saldoRestante}</strong>
+                            </Typography>
 
-                    <Divider sx={{ mb: 2 }} />
+                            <TextField
+                                fullWidth
+                                type="number"
+                                label="Quantidade para o Full"
+                                value={quantidadeFull}
+                                onChange={event => setQuantidadeFull(event.target.value)}
+                                inputProps={{
+                                    min: 1,
+                                    max: produtoFullSelecionado._saldoRestante
+                                }}
+                                helperText={`Informe a quantidade que será reservada. Máximo disponível: ${produtoFullSelecionado._saldoRestante}`}
+                            />
 
-                    <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{
-                            textAlign: "center",
-                            fontStyle: "italic",
-                        }}
-                    >
-                        Agradecemos pela colaboração! 🚀
-                    </Typography>
+                        </Stack>
+                    )}
                 </DialogContent>
 
-                <DialogActions
-                    sx={{
-                        px: 3,
-                        pb: 3,
-                        justifyContent: "space-between",
-                        gap: 1,
-                    }}
-                >
+                <DialogActions sx={{ p: 2 }}>
                     <Button
-                        variant="contained"
-                        color="success"
-                        startIcon={<WhatsAppIcon />}
-                        onClick={() => {
-                            window.open(
-                                "https://wa.me/554791692664",
-                                "_blank",
-                                "noopener,noreferrer"
-                            );
-                        }}
+                        onClick={fecharDialogFull}
+                        disabled={salvandoFull}
                     >
-                        Enviar sugestão
+                        Cancelar
                     </Button>
 
                     <Button
                         variant="contained"
-                        onClick={() => setAbrirAvisoTestes(false)}
+                        onClick={adicionarProdutoFull}
+                        disabled={salvandoFull || !produtoFullSelecionado}
+                        startIcon={
+                            salvandoFull
+                                ? <CircularProgress size={18} color="inherit" />
+                                : <AddCircleOutlineIcon />
+                        }
                     >
-                        Entendi, continuar
+                        {salvandoFull ? "Salvando..." : "Adicionar ao Full"}
                     </Button>
                 </DialogActions>
             </Dialog>
