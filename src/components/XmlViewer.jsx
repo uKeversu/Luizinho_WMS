@@ -1273,6 +1273,38 @@ function XmlViewer({ open, onClose, xml, nota = null }) {
         return alertas;
     }, [dados]);
 
+    /* ---------------- ALERTA DE GARANTIA ---------------- */
+
+    const notaGarantia = useMemo(() => {
+        if (!dados) return false;
+
+        const textos = [
+            dados.natureza,
+            dados.informacoes?.contribuinte,
+            ...dados.informacoes?.observacoes?.map(obs => obs.texto || [])
+        ];
+
+        return textos.some(texto =>
+            /\bgarantia\b/i.test(String(texto || ""))
+        );
+    }, [dados]);
+
+    /* ---------------- ALERTA DE DEVOLUÇÃO ---------------- */
+
+    const notaDevolucao = useMemo(() => {
+        if (!dados) return false;
+
+        const textos = [
+            dados.natureza,
+            dados.informacoes?.contribuinte,
+            ...(dados.informacoes?.observacoes || []).map(obs => obs.texto || "")
+        ];
+
+        return textos.some(texto =>
+            /\bdevolu[cç][aã]o\b/i.test(String(texto || ""))
+        );
+    }, [dados]);
+
     /* ---------------- PRODUTOS FILTRADOS ---------------- */
 
     const produtosVisiveis = useMemo(() => {
@@ -2180,7 +2212,20 @@ function XmlViewer({ open, onClose, xml, nota = null }) {
                                         texto="Esta nota consta como cancelada. Confira os eventos na aba Complementos."
                                     />
                                 )}
-
+                                {notaGarantia && (
+                                    <Aviso
+                                        tipo="alerta"
+                                        cores={cores}
+                                        texto="Esta NF-e está identificada como GARANTIA. Atenção durante a conferência e o recebimento dos produtos."
+                                    />
+                                )}
+                                {notaDevolucao && (
+                                    <Aviso
+                                        tipo="alerta"
+                                        cores={cores}
+                                        texto="Esta NF-e está identificada como DEVOLUÇÃO. Atenção durante a conferência e o recebimento dos produtos."
+                                    />
+                                )}
                                 {conferencias.map((texto) => (
                                     <Aviso
                                         key={texto}
